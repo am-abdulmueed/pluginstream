@@ -1,8 +1,13 @@
 {
   "name": "My pluginstream Master Repo",
-  "version": 2,
+  "version": a,
   "last_updated": "2026-03-14",
   "repositories": [
+    {
+      "name": "CloudStream Providers",
+      "url": "https://raw.githubusercontent.com/recloudstream/extensions/master/repo.json",
+      "description": "YouTube via Invidious & NewPipe, Twitch livestreams."
+    },
     {
       "name": "CloudStream Providers",
       "url": "https://raw.githubusercontent.com/recloudstream/extensions/master/repo.json",
