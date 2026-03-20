@@ -76,4 +76,4 @@ We may update this Privacy Policy from time to time. Continued use of the App af
 ## 10. Contact
 If you have any questions, feel free to contact us:
 
-- **Email:** hello@enjoymovie.pro
+- **Email:** hello@streamclusive.dev
