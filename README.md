@@ -6,9 +6,7 @@ PluginStream is a high-performance, lightweight Android application designed to 
 
 ## 📸 Screenshots
 
-| Home Feed | Provider List | Player UI |
-| :---: | :---: | :---: |
-| ![Home](1.png)  | ![Extensions](3.png) | ![Player](2.jpg) |
+ ![Home](1.png)   ![Extensions](2.png)  ![Player](3.png) ![Player](4.png)  ![Player](5.png)
 
 ---
 
