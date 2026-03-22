@@ -35,7 +35,7 @@ PluginStream is a high-performance, lightweight Android application designed to 
 ## 🚀 Key Features
 
 ### 1. Multi-Repository Support
-* **Modular Architecture:** Similar to CloudStream, you can add any external repository (.json) to unlock thousands of streaming sources.
+* **Modular Architecture:** Similar to PluginStream, you can add any external repository (.json) to unlock thousands of streaming sources.
 * **Auto-Sync:** Extensions update automatically in the background to ensure links remain active and working.
 * **Custom Repos:** Add unlimited repositories from community developers and creators.
 * **Version Control:** Track and manage multiple versions of extensions simultaneously.
