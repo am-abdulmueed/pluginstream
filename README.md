@@ -31,11 +31,11 @@ PluginStream is a high-performance, lightweight Android application designed to 
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="1.png" width="180" /> 
+  <img src="1.jpg" width="180" /> 
   <img src="2.png" width="180" /> 
-  <img src="3.png" width="180" /> 
-  <img src="4.png" width="180" /> 
-  <img src="5.png" width="180" />
+  <img src="3.jpg" width="180" /> 
+  <img src="4.jpg" width="180" /> 
+  <img src="5.jpeg" width="180" />
 </p>
 
 ---
