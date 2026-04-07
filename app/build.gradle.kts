@@ -45,10 +45,23 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("${project.rootDir}/store_key.jks")
-            storePassword = "@Iampoorman2006"
-            keyAlias = "upload"
-            keyPassword = "@Iampoorman2006"
+            // Reads signing credentials from local.properties (never committed to GitHub)
+            val localProps = gradleLocalProperties(rootDir, project.providers)
+            val keystorePath = localProps["signing.storeFile"]?.toString()
+                ?: System.getenv("SIGNING_STORE_FILE")
+            val keystorePassword = localProps["signing.storePassword"]?.toString()
+                ?: System.getenv("SIGNING_STORE_PASSWORD")
+            val keystoreKeyAlias = localProps["signing.keyAlias"]?.toString()
+                ?: System.getenv("SIGNING_KEY_ALIAS")
+            val keystoreKeyPassword = localProps["signing.keyPassword"]?.toString()
+                ?: System.getenv("SIGNING_KEY_PASSWORD")
+
+            if (keystorePath != null) {
+                storeFile = file("${project.rootDir}/$keystorePath")
+            }
+            storePassword = keystorePassword
+            keyAlias = keystoreKeyAlias
+            keyPassword = keystoreKeyPassword
         }
 
         // We just use SIGNING_KEY_ALIAS here since it won't change

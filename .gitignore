@@ -43,6 +43,7 @@ render.experimental.xml
 # Keystore files
 *.jks
 *.keystore
+/protube/store_key.jks
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
