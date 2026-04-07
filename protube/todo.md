@@ -1,0 +1,3 @@
+- [x] app ki settings ko ek card ki surat ma deckna (Updated in assets/ytpro)
+- [x] github workflow gradle.yml ma retention 3 days add karna aur releases automate karna
+- [x] Production-ready update check system (GitHub API integrated for dynamic detection)

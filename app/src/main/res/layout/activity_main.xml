@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/homeRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|keyboard|navigation"
+    android:paddingTop="0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.google.android.material.navigationrail.NavigationRailView
+            android:id="@+id/nav_rail_view"
+            android:layout_width="@dimen/nav_rail_view_width"
+            android:layout_height="match_parent"
+            android:background="?attr/primaryGrayBackground"
+            android:descendantFocusability="afterDescendants"
+            app:itemIconTint="@color/item_select_color"
+            app:itemTextColor="@color/item_select_color"
+            app:itemRippleColor="?attr/colorControlHighlight"
+            app:headerLayout="@layout/rail_header"
+            app:labelVisibilityMode="unlabeled"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:menu="@menu/bottom_nav_menu"
+            app:menuGravity="center">
+
+            <include layout="@layout/rail_footer"/>
+
+        </com.google.android.material.navigationrail.NavigationRailView>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:defaultNavHost="true"
+            app:layout_constraintBottom_toTopOf="@+id/cast_mini_controller_holder"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/nav_rail_view"
+            app:layout_constraintTop_toTopOf="parent"
+            app:navGraph="@navigation/mobile_navigation" />
+
+        <LinearLayout
+            android:id="@+id/cast_mini_controller_holder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/banner_container"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/nav_rail_view"
+            tools:layout_height="100dp">
+
+            <fragment
+                android:id="@+id/cast_mini_controller"
+                class="com.lagradost.cloudstream3.ui.MyMiniControllerFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:castControlButtons="@array/cast_mini_controller_control_buttons"
+                app:customCastBackgroundColor="?attr/primaryGrayBackground"
+                tools:ignore="FragmentTagUsage" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@+id/nav_view_container"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/nav_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="?attr/primaryBlackBackground"
+            app:strokeWidth="0dp"
+            app:contentPadding="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent">
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/nav_view"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:background="@android:color/transparent"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:layout_gravity="center"
+                app:elevation="0dp"
+                app:labelVisibilityMode="unlabeled"
+                app:itemIconSize="20dp"
+                app:itemIconTint="@color/item_select_color"
+                app:itemRippleColor="?attr/colorControlHighlight"
+                app:menu="@menu/bottom_nav_menu" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
