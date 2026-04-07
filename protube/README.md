@@ -7,7 +7,6 @@
 
 
 <a href="https://www.jsdelivr.com/package/npm/ytpro?tab=stats" ><img alt="jsDelivr monthly hits badge" src="https://data.jsdelivr.com/v1/package/npm/ytpro/badge"></a>
-<img src=https://img.shields.io/github/downloads/maxrave-dev/SimpMusic/total?style=flat-square&color=blue&label=TOTAL%20DOWNLOADS >
 
 </div>
 
