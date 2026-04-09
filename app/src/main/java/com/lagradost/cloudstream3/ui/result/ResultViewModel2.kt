@@ -303,7 +303,11 @@ fun LoadResponse.toResultData(repo: APIRepository): ResultData {
             }
         ),
         yearText = txt(year?.toString()),
-        apiName = txt(apiName.replace("moviebox", "PluginStream", ignoreCase = true).replace("moveibox", "PluginStream", ignoreCase = true)),
+        apiName = txt(apiName.replace("moviebox", "PluginStream", ignoreCase = true).replace("moveibox", "MAX", ignoreCase = true)
+            .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+            .replace("castle", "PluginStream", ignoreCase = true)
+            .replace("castel", "PluginStream", ignoreCase = true)
+            .replace("caslte", "PluginStream", ignoreCase = true)),
         ratingText = score?.toStringNull(0.1, 10, 1, false, '.')
             ?.let { txt(R.string.rating_format, it) },
         contentRatingText = txt(contentRating),

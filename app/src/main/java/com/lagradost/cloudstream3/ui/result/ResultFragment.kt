@@ -281,7 +281,7 @@ object ResultFragment {
         val context = this.context ?: this.activity ?: return null
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(context)
         val url = arguments?.getString(URL_BUNDLE) ?: return null
-        val apiName = arguments?.getString(API_NAME_BUNDLE)?.replace("moviebox", "PluginStream", ignoreCase = true)?.replace("moveibox", "PluginStream", ignoreCase = true) ?: return null
+        val apiName = arguments?.getString(API_NAME_BUNDLE)?.replace("moviebox", "PluginStream", ignoreCase = true)?.replace("MAX", "PluginStream", ignoreCase = true) ?: return null
         val name = arguments?.getString(NAME_BUNDLE) ?: return null
         val showFillers =
             settingsManager.getBoolean(context.getString(R.string.show_fillers_key), false)

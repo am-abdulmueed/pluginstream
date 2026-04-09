@@ -106,7 +106,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         val errorProfilePic = errorProfilePics.random()
 
-        private val pinKeywords = listOf("castel", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox")
+        private val pinKeywords = listOf("castel","castle tv (use vlc)", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox")
         private fun isSmartPinned(apiName: String): Boolean {
             return pinKeywords.any { keyword -> apiName.contains(keyword, ignoreCase = true) }
         }
@@ -116,7 +116,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             if (apiName == noneApi.name) return "Select"
             return apiName.replace("moviebox", "Max", ignoreCase = true)
                 .replace("moveibox", "Max", ignoreCase = true)
-                .replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
+                .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
                 .replace("castle", "PluginStream", ignoreCase = true)
                 .replace("castel", "PluginStream", ignoreCase = true)
                 .replace("caslte", "PluginStream", ignoreCase = true)

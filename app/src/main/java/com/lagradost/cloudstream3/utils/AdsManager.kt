@@ -18,7 +18,7 @@ object AdsManager {
     private const val REWARDED_AD_PLACEMENT_ID = "Rewarded_Android"
     private const val BANNER_AD_PLACEMENT_ID = "Banner_Android"
     private const val INTERSTITIAL_AD_PLACEMENT_ID = "Interstitial_Android"
-    private const val TEST_MODE = false
+    private const val TEST_MODE = true
 
     private var bannerView: BannerView? = null
     private var pendingBannerRequest: (() -> Unit)? = null
@@ -35,7 +35,16 @@ object AdsManager {
                     loadBannerAd(activity, container)
                 }
             }
+            // Normal refresh interval
             handler.postDelayed(this, BANNER_REFRESH_INTERVAL)
+        }
+    }
+
+    private val bannerRetryRunnable = Runnable {
+        currentActivity?.let { activity ->
+            currentBannerContainer?.let { container ->
+                loadBannerAd(activity, container)
+            }
         }
     }
 
@@ -76,22 +85,42 @@ object AdsManager {
         loadingText: String,
         onAdFinished: (() -> Unit)? = null
     ) {
-        // First check if ad is already ready to show
-        // UnityAds.isReady is deprecated in newer SDKs, we use UnityAds.show directly or check state
-        // For simplicity and 100% attempt, we show dialog and try to load/show.
-
         val dialog = Dialog(activity, R.style.CustomDialog)
         val dialogBinding = DialogAdLoadingBinding.inflate(activity.layoutInflater)
         dialogBinding.loadingText.text = loadingText
         dialog.setContentView(dialogBinding.root)
         dialog.setCancelable(false)
+        
+        var isFinished = false
+        fun finish(callback: (() -> Unit)? = null) {
+            if (isFinished) return
+            isFinished = true
+            activity.runOnUiThread {
+                try {
+                    if (dialog.isShowing && !activity.isFinishing) {
+                        dialog.dismiss()
+                    }
+                } catch (e: Exception) {
+                    // Ignore dismiss errors
+                }
+                callback?.invoke()
+            }
+        }
+
         dialog.show()
+
+        // Safety timeout: 10 seconds max for the whole process
+        handler.postDelayed({
+            finish { onAdFinished?.invoke() }
+        }, 10000)
 
         var retryCount = 0
         val maxRetries = 3
 
         // Use a single recursive function to handle load/show logic
         fun processAd(shouldLoad: Boolean) {
+            if (isFinished) return
+            
             if (shouldLoad) {
                 UnityAds.load(placementId, object : IUnityAdsLoadListener {
                     override fun onUnityAdsAdLoaded(placementId: String?) {
@@ -100,21 +129,17 @@ object AdsManager {
 
                     override fun onUnityAdsFailedToLoad(placementId: String?, error: UnityAds.UnityAdsLoadError?, message: String?) {
                         retryCount++
-                        if (retryCount < maxRetries) {
+                        if (retryCount < maxRetries && !isFinished) {
                             handler.postDelayed({ processAd(true) }, 1000)
                         } else {
-                            activity.runOnUiThread {
-                                dialog.dismiss()
-                                onAdFinished?.invoke() // Fallback after 3 tries
-                            }
+                            finish { onAdFinished?.invoke() } // Fallback after 3 tries
                         }
                     }
                 })
             } else {
                 UnityAds.show(activity, placementId, object : IUnityAdsShowListener {
                     override fun onUnityAdsShowComplete(placementId: String?, state: UnityAds.UnityAdsShowCompletionState?) {
-                        activity.runOnUiThread {
-                            dialog.dismiss()
+                        finish {
                             onAdFinished?.invoke()
                             // Preload for next time
                             if (placementId == REWARDED_AD_PLACEMENT_ID) preloadRewardedAd() else preloadInterstitialAd()
@@ -122,8 +147,13 @@ object AdsManager {
                     }
 
                     override fun onUnityAdsShowFailure(placementId: String?, error: UnityAds.UnityAdsShowError?, message: String?) {
-                        // If show fails, try to load it
-                        processAd(true)
+                        // If show fails, try to load it, but check retry count
+                        retryCount++
+                        if (retryCount < maxRetries && !isFinished) {
+                            processAd(true)
+                        } else {
+                            finish { onAdFinished?.invoke() }
+                        }
                     }
 
                     override fun onUnityAdsShowStart(placementId: String?) {}
@@ -176,6 +206,9 @@ object AdsManager {
             bannerView = BannerView(activity, BANNER_AD_PLACEMENT_ID, UnityBannerSize.getDynamicSize(activity))
             val loadListener = object : BannerView.IListener {
                 override fun onBannerLoaded(bannerAdView: BannerView?) {
+                    // Success! Remove from retry queue if it was there
+                    handler.removeCallbacks(bannerRetryRunnable)
+                    
                     bannerContainer.removeAllViews()
                     val params = android.widget.FrameLayout.LayoutParams(
                         android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -185,7 +218,11 @@ object AdsManager {
                     bannerContainer.addView(bannerAdView, params)
                 }
                 override fun onBannerClick(bannerAdView: BannerView?) {}
-                override fun onBannerFailedToLoad(bannerAdView: BannerView?, errorInfo: BannerErrorInfo?) {}
+                override fun onBannerFailedToLoad(bannerAdView: BannerView?, errorInfo: BannerErrorInfo?) {
+                    // Fail! Schedule a faster retry (5 seconds)
+                    handler.removeCallbacks(bannerRetryRunnable)
+                    handler.postDelayed(bannerRetryRunnable, 5000)
+                }
                 override fun onBannerShown(bannerAdView: BannerView?) {}
                 override fun onBannerLeftApplication(bannerView: BannerView?) {}
             }
@@ -196,6 +233,7 @@ object AdsManager {
 
     fun destroyBannerAd() {
         handler.removeCallbacks(refreshRunnable)
+        handler.removeCallbacks(bannerRetryRunnable)
         bannerView?.destroy()
         bannerView = null
         currentActivity = null

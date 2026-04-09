@@ -178,7 +178,7 @@ class GeneratorPlayer : FullScreenPlayer() {
 
     private var interstitialAdJob: Job? = null
     private var lastAdShowTime: Long = 0
-    private val AD_INTERVAL_MS = 1 * 60 * 1000L // Temporary: 1 minute for testing (Original: 15 minutes)
+    private val AD_INTERVAL_MS = 1 * 60 * 1000L // Temporary: 1 minute for testing (Original: 12 minutes)
 
     private fun startInterstitialAdTimer() {
         interstitialAdJob?.cancel()
@@ -344,7 +344,13 @@ class GeneratorPlayer : FullScreenPlayer() {
                 override fun getCurrentContentText(player: Player): CharSequence? {
                     return when (val meta = currentMeta) {
                         is ResultEpisode -> {
-                            meta.name
+                            val apiName = meta.apiName.replace("moviebox", "Max", ignoreCase = true)
+                                .replace("moveibox", "Max", ignoreCase = true)
+                                .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+                                .replace("castle", "PluginStream", ignoreCase = true)
+                                .replace("castel", "PluginStream", ignoreCase = true)
+                                .replace("caslte", "PluginStream", ignoreCase = true)
+                            "${meta.name} - $apiName"
                         }
 
                         is ExtractorUri -> {
@@ -1803,7 +1809,7 @@ class GeneratorPlayer : FullScreenPlayer() {
 
         when (val meta = currentMeta) {
             is ResultEpisode -> {
-                headerName = meta.headerName.replace("moviebox", "PluginStream", ignoreCase = true).replace("moveibox", "PluginStream", ignoreCase = true)
+                headerName = meta.headerName.replace("moviebox", "MAX", ignoreCase = true).replace("moveibox", "MAX", ignoreCase = true)
                 subName = meta.name
                 episode = meta.episode
                 season = meta.season
@@ -1811,7 +1817,7 @@ class GeneratorPlayer : FullScreenPlayer() {
             }
 
             is ExtractorUri -> {
-                headerName = meta.headerName?.replace("moviebox", "PluginStream", ignoreCase = true)?.replace("moveibox", "PluginStream", ignoreCase = true)
+                headerName = meta.headerName?.replace("moviebox", "MAX", ignoreCase = true)?.replace("moveibox", "MAX", ignoreCase = true)
                 subName = meta.name
                 episode = meta.episode
                 season = meta.season
@@ -1866,7 +1872,7 @@ class GeneratorPlayer : FullScreenPlayer() {
     @SuppressLint("SetTextI18n")
     fun setPlayerDimen(widthHeight: Pair<Int, Int>?) {
         val resolution = widthHeight?.let { "${it.first}x${it.second}" }
-        val name = (currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name)?.replace("moviebox", "PluginStream", ignoreCase = true)?.replace("moveibox", "PluginStream", ignoreCase = true)
+        val name = (currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name)?.replace("moviebox", "MAX", ignoreCase = true)?.replace("moveibox", "MAX", ignoreCase = true)
         val title = getHeaderName()
 
         val result = listOfNotNull(
