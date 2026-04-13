@@ -14,7 +14,7 @@
     <string name="go_back_img_des">Wstecz</string>
     <string name="home_change_provider_img_des">Zmień źródło</string>
     <string name="preview_background_img_des">Pogląd tła</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">Główna</string>
     <string name="title_search">Szukaj</string>
     <string name="title_downloads">Pobrane</string>
@@ -385,13 +385,13 @@
     <string name="plugins_disabled" formatted="true">Wyłączono: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Nie pobrano: %d</string>
     <string name="plugins_updated">Zaaktualizowano %d rozszerzeń</string>
-    <string name="blank_repo_message">CloudStream nie ma domyślnie zainstalowanych żadnych witryn. Musisz zainstalować witryny z repozytoriów.
+    <string name="blank_repo_message">PluginStream nie ma domyślnie zainstalowanych żadnych witryn. Musisz zainstalować witryny z repozytoriów.
 \n
 \nDołącz do naszego Discorda lub poszukaj online.</string>
     <string name="view_public_repositories_button">Zobacz repozytoria społeczności</string>
     <string name="view_public_repositories_button_short">Publiczna lista</string>
     <string name="uppercase_all_subtitles">Wszystkie napisy wielką literą</string>
-    <string name="download_all_plugins_from_repo">Uwaga: CloudStream nie ponosi żadnej odpowiedzialności za korzystanie z rozszerzeń innych dostawców i nie zapewnia dla nich żadnego wsparcia!</string>
+    <string name="download_all_plugins_from_repo">Uwaga: PluginStream nie ponosi żadnej odpowiedzialności za korzystanie z rozszerzeń innych dostawców i nie zapewnia dla nich żadnego wsparcia!</string>
     <string name="single_plugin_disabled" formatted="true">%s (Wyłączone)</string>
     <string name="tracks">Ścieżki</string>
     <string name="audio_tracks">Ścieżki audio</string>
@@ -418,7 +418,7 @@
     <string name="history">Historia</string>
     <string name="clipboard_too_large">Za dużo tekstu. Nie można skopiować do schowka.</string>
     <string name="network_adress_example">https://example.com/example.mp4</string>
-    <string name="play_with_app_name">Odtwórz w CloudStream</string>
+    <string name="play_with_app_name">Odtwórz w PluginStream</string>
     <string name="skip_type_format" formatted="true">Pomiń %s</string>
     <string name="next_episode_time_hour_format" formatted="true">%1$dh %2$dm</string>
     <string name="yes">Tak</string>
@@ -585,10 +585,10 @@
     <string name="biometric_setting">Zablokuj za pomocą biometrii</string>
     <string name="password_pin_authentication_title">Uwierzytelnianie hasłem/kodem PIN</string>
     <string name="biometric_prompt_description">Po kilku nieudanych próbach monit zostanie zamknięty. Aby spróbować ponownie, po prostu uruchom ponownie aplikację.</string>
-    <string name="biometric_authentication_title">Odblokuj CloudStream</string>
+    <string name="biometric_authentication_title">Odblokuj PluginStream</string>
     <string name="biometric_unsupported">To urządzenie nie obsługuje uwierzytelniania biometrycznego</string>
     <string name="biometric_setting_summary">Odblokuj aplikację za pomocą odcisku palca, identyfikatora twarzy, kodu PIN, wzoru i hasła.</string>
-    <string name="biometric_warning">Kopia zapasowa Twoich danych CloudStream została teraz utworzona. Chociaż prawdopodobieństwo tego jest bardzo niskie, wszystkie urządzenia mogą zachowywać się inaczej. W rzadkich przypadkach, gdy dostęp do aplikacji zostanie zablokowany, należy całkowicie wyczyścić dane aplikacji i przywrócić je z kopii zapasowej. Bardzo nam przykro z powodu wszelkich niedogodności z tym związanych.</string>
+    <string name="biometric_warning">Kopia zapasowa Twoich danych PluginStream została teraz utworzona. Chociaż prawdopodobieństwo tego jest bardzo niskie, wszystkie urządzenia mogą zachowywać się inaczej. W rzadkich przypadkach, gdy dostęp do aplikacji zostanie zablokowany, należy całkowicie wyczyścić dane aplikacji i przywrócić je z kopii zapasowej. Bardzo nam przykro z powodu wszelkich niedogodności z tym związanych.</string>
     <string name="unfavorite">Usuń z ulubionych</string>
     <string name="resume_remaining" formatted="true">%s
 \npozostało</string>
@@ -598,19 +598,19 @@
     <string name="toast_copied">skopiowano!</string>
     <string name="clipboard_unknown_error">Błąd podczas kopiowania. Skopiuj logcat i skontaktuj się z pomocą techniczną aplikacji.</string>
     <string name="battery_dialog_title">Wyłącz optymalizację baterii</string>
-    <string name="app_info_intent_error">Nie można otworzyć informacji o aplikacji CloudStream.</string>
+    <string name="app_info_intent_error">Nie można otworzyć informacji o aplikacji PluginStream.</string>
     <string name="music_singlar">Muzyka</string>
     <string name="audio_book_singular">Audiobook</string>
     <string name="ok">OK</string>
     <string name="custom_media_singluar">Multimedia</string>
     <string name="app_unrestricted_toast">Użycie baterii przez aplikację jest już ustawione na nieograniczone</string>
-    <string name="battery_dialog_message">Aby zapewnić nieprzerwane pobieranie i powiadomienia o subskrybowanych programach, CloudStream potrzebuje pozwolenia na działanie w tle. Po naciśnięciu OK wyświetli się okno dialogowe. Naciśnij „Zezwól”.\n\nPamiętaj, że to pozwolenie nie oznacza, że CS3 będzie zużywać baterię. Będzie działać w tle tylko wtedy, gdy będzie to konieczne, na przykład podczas odbierania powiadomień lub pobierania filmów z oficjalnych rozszerzeń.</string>
+    <string name="battery_dialog_message">Aby zapewnić nieprzerwane pobieranie i powiadomienia o subskrybowanych programach, PluginStream potrzebuje pozwolenia na działanie w tle. Po naciśnięciu OK wyświetli się okno dialogowe. Naciśnij „Zezwól”.\n\nPamiętaj, że to pozwolenie nie oznacza, że CS3 będzie zużywać baterię. Będzie działać w tle tylko wtedy, gdy będzie to konieczne, na przykład podczas odbierania powiadomień lub pobierania filmów z oficjalnych rozszerzeń.</string>
     <string name="reset_btn">Resetuj</string>
     <string name="episode_upcoming_format" formatted="true">Nadchodzące w %s</string>
     <string name="next_season_episode_format" formatted="true">Odcinek %2$d sezonu %1$d wyjdzie za</string>
     <string name="player_settings_select_cast_device">Wybierz urządzenie do transmisji</string>
     <string name="episode_action_cast_mirror">Mirror transmisji</string>
-    <string name="cs3wiki">Wiki CloudStream</string>
+    <string name="cs3wiki">Wiki PluginStream</string>
     <string name="pref_category_security">Bezpieczeństwo</string>
     <string name="pref_category_accounts">Konta</string>
     <string name="auth_locally">Uwierzytelniaj lokalnie</string>
@@ -766,5 +766,4 @@
     </plurals>
     <string name="source_priority">Priorytet źródła</string>
     <string name="source_priority_help">Zdecyduj, jak mają być sortowane źródła wideo w odtwarzaczu</string>
-    <string name="show_player_metadata_overlay">Pokaż nakładkę metadanych odtwarzacza</string>
 </resources>

@@ -4,7 +4,7 @@
     <string name="player_speed_text_format">Hastighet (%.2fx)</string>
     <string name="new_update_format">Ny uppdatering hittad!
 \n%1$s -&gt; %2$s</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">Hem</string>
     <string name="title_search">Sök</string>
     <string name="title_downloads">Nerladdningar</string>
@@ -204,7 +204,7 @@
     <string name="app_dub_sub_episode_text_format">%1$s A%2$d</string>
     <string name="next_episode_time_hour_format" formatted="true">%1$dh %2$dm</string>
     <string name="next_episode_time_min_format" formatted="true">%dm</string>
-    <string name="play_with_app_name">Spela med CloudStream</string>
+    <string name="play_with_app_name">Spela med PluginStream</string>
     <string name="chromecast_subtitles_settings">Chromecast-undertexter</string>
     <string name="double_tap_to_pause_settings_des">Dubbeltryck i mitten för att pausa</string>
     <string name="restore_settings">Återställ data från backup</string>
@@ -421,7 +421,7 @@
     <string name="stream">Nätverksflöde</string>
     <string name="repository_name_hint">Databasens namn (valfritt)</string>
     <string name="batch_download_nothing_to_download_format" formatted="true">All %s har redan laddats ner</string>
-    <string name="download_all_plugins_from_repo">Varning: CloudStream tar inget ansvar för att använda tredjepartstillägg och ger inget stöd för dem!</string>
+    <string name="download_all_plugins_from_repo">Varning: PluginStream tar inget ansvar för att använda tredjepartstillägg och ger inget stöd för dem!</string>
     <string name="safe_mode_title">Felsäkert läge på</string>
     <string name="apply_on_restart">Starta om appen för att se ändringar.</string>
     <string name="player_settings_play_in_app">Intern spelare</string>
@@ -484,7 +484,7 @@
     <string name="view_public_repositories_button">Visa community databaser</string>
     <string name="skip_type_mixed_op">Blandad inledning</string>
     <string name="skip_type_format" formatted="true">Skippa %s</string>
-    <string name="blank_repo_message">CloudStream har inga webbplatser installerade som standard. Du måste installera webbplatser från arkiv.
+    <string name="blank_repo_message">PluginStream har inga webbplatser installerade som standard. Du måste installera webbplatser från arkiv.
 \n
 \nGå med i vår Discord eller sök online.</string>
     <string name="select_library">Välj bibliotek</string>
@@ -582,7 +582,7 @@
     <string name="biometric_setting">Lås med biometrik</string>
     <string name="password_pin_authentication_title">Lösenord/PIN autentisering</string>
     <string name="biometric_setting_summary">Lås upp appen med Fingerprint, Face ID, PIN, mönster eller lösenord.</string>
-    <string name="biometric_authentication_title">Lås upp CloudStream</string>
+    <string name="biometric_authentication_title">Lås upp PluginStream</string>
     <string name="biometric_unsupported">Biometrisk autentisering stöds inte på den här enheten</string>
     <string name="biometric_prompt_description">Efter några misslyckade försök stängs prompten. Starta bara om appen för att försöka igen.</string>
     <string name="favorite">Favorit</string>
@@ -591,14 +591,14 @@
 \nkvarstår</string>
     <string name="toast_copied">kopierad!</string>
     <string name="repo_copy_label">Lagringsnamn och URL</string>
-    <string name="battery_dialog_message">För att säkerställa oavbrutna nedladdningar och aviseringar för prenumererade tv-program behöver CloudStream tillstånd att köras i bakgrunden. Genom att trycka på OK kommer du få en förfrågningsdialogruta. Tryck då på \'Tillåt\'.\n\nObservera att denna behörighet inte betyder att CS3 kommer att tömma ditt batteri. Den fungerar bara i bakgrunden när det behövs, till exempel när du tar emot aviseringar eller laddar ner videor från officiella tillägg.</string>
-    <string name="biometric_warning">Din CloudStream-data har säkerhetskopierats nu. Även om möjligheten till detta är mycket liten, kan alla enheter bete sig olika. I det sällsynta fallet att du blir utelåst från att komma åt appen, rensa appdata helt och återställ från en säkerhetskopia. Vi ber om ursäkt för eventuella besvär som detta uppstår.</string>
+    <string name="battery_dialog_message">För att säkerställa oavbrutna nedladdningar och aviseringar för prenumererade tv-program behöver PluginStream tillstånd att köras i bakgrunden. Genom att trycka på OK kommer du få en förfrågningsdialogruta. Tryck då på \'Tillåt\'.\n\nObservera att denna behörighet inte betyder att CS3 kommer att tömma ditt batteri. Den fungerar bara i bakgrunden när det behövs, till exempel när du tar emot aviseringar eller laddar ner videor från officiella tillägg.</string>
+    <string name="biometric_warning">Din PluginStream-data har säkerhetskopierats nu. Även om möjligheten till detta är mycket liten, kan alla enheter bete sig olika. I det sällsynta fallet att du blir utelåst från att komma åt appen, rensa appdata helt och återställ från en säkerhetskopia. Vi ber om ursäkt för eventuella besvär som detta uppstår.</string>
     <string name="audio_book_singular">Ljudbok</string>
     <string name="clipboard_permission_error">Det gick inte att komma åt urklipp. Försök igen.</string>
     <string name="ok">OK</string>
     <string name="battery_dialog_title">Inaktivera batterioptimering</string>
     <string name="app_unrestricted_toast">Appens batterianvändning är redan inställd på obegränsad</string>
-    <string name="app_info_intent_error">Det gick inte att öppna CloudStreams appinformation.</string>
+    <string name="app_info_intent_error">Det gick inte att öppna PluginStreams appinformation.</string>
     <string name="music_singlar">Musik</string>
     <string name="reset_btn">Återställ</string>
     <string name="episode_upcoming_format" formatted="true">Kommer ut om %s</string>
@@ -607,7 +607,7 @@
     <string name="episode_action_cast_mirror">Cast mirror</string>
     <string name="next_season_episode_format" formatted="true">Säsong %1$d Avsnitt %2$d kommer att släppas om</string>
     <string name="player_settings_select_cast_device">Välj cast-enhet</string>
-    <string name="cs3wiki">CloudStream Wiki</string>
+    <string name="cs3wiki">PluginStream Wiki</string>
     <string name="pref_category_accounts">Konton</string>
     <string name="pref_category_security">Säkerhet</string>
     <string name="dismiss">Avfärda</string>
@@ -759,5 +759,4 @@
     <string name="all_subtitles_bold">Gör alla undertexter fetstilta</string>
     <string name="all_subtitles_italic">Gör alla undertexter kursivstila</string>
     <string name="background_radius">Bakgrundsradie</string>
-    <string name="show_player_metadata_overlay">Visa spelarens metadata överlägg</string>
 </resources>

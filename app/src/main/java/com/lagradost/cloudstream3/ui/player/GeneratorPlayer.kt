@@ -87,7 +87,6 @@ import com.lagradost.cloudstream3.ui.result.EpisodeAdapter
 import com.lagradost.cloudstream3.ui.result.FOCUS_SELF
 import com.lagradost.cloudstream3.ui.result.ResultEpisode
 import com.lagradost.cloudstream3.ui.result.ResultFragment
-import com.lagradost.cloudstream3.ui.result.ResultFragment.bindLogo
 import com.lagradost.cloudstream3.ui.result.ResultViewModel2
 import com.lagradost.cloudstream3.ui.result.SyncViewModel
 import com.lagradost.cloudstream3.ui.result.setLinearListLayout
@@ -99,13 +98,14 @@ import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
 import com.lagradost.cloudstream3.ui.subtitles.SUBTITLE_AUTO_SELECT_KEY
 import com.lagradost.cloudstream3.ui.subtitles.SubtitlesFragment
 import com.lagradost.cloudstream3.ui.subtitles.SubtitlesFragment.Companion.getAutoSelectLanguageTagIETF
-import com.lagradost.cloudstream3.utils.AppContextUtils.getShortSeasonText
+import com.lagradost.cloudstream3.utils.AdsManager
 import com.lagradost.cloudstream3.utils.AppContextUtils.html
 import com.lagradost.cloudstream3.utils.AppContextUtils.sortSubs
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.runOnMainThread
 import com.lagradost.cloudstream3.utils.DataStoreHelper
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getViewPos
+import com.lagradost.cloudstream3.utils.EpisodeSkip
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
@@ -123,7 +123,6 @@ import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.downloader.DownloadUtils.getImageBitmapFromUrl
 import com.lagradost.cloudstream3.utils.setText
 import com.lagradost.cloudstream3.utils.txt
-import com.lagradost.cloudstream3.utils.videoskip.VideoSkipStamp
 import com.lagradost.safefile.SafeFile
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -176,6 +175,40 @@ class GeneratorPlayer : FullScreenPlayer() {
 
     private var binding: FragmentPlayerBinding? = null
     private var allMeta: List<ResultEpisode>? = null
+
+    private var interstitialAdJob: Job? = null
+    private var lastAdShowTime: Long = 0
+    private val AD_INTERVAL_MS = 12 * 60 * 1000L // Temporary: 1 minute for testing (Original: 12 minutes)
+
+    private fun startInterstitialAdTimer() {
+        interstitialAdJob?.cancel()
+        interstitialAdJob = viewModel.viewModelScope.launch {
+            while (isActive) {
+                delay(1000) 
+                if (player.getIsPlaying()) {
+                    val currentTime = System.currentTimeMillis()
+                    if (lastAdShowTime == 0L) {
+                        lastAdShowTime = currentTime
+                    }
+
+                    if (currentTime - lastAdShowTime >= AD_INTERVAL_MS) {
+                        runOnMainThread {
+                            activity?.let { act ->
+                                val wasPlaying = player.getIsPlaying()
+                                if (wasPlaying) player.handleEvent(CSPlayerEvent.Pause)
+                                
+                                AdsManager.showInterstitialAd(act) {
+                                    lastAdShowTime = System.currentTimeMillis()
+                                    if (wasPlaying) player.handleEvent(CSPlayerEvent.Play)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun startLoading() {
         player.release()
         currentSelectedSubtitles = null
@@ -311,7 +344,13 @@ class GeneratorPlayer : FullScreenPlayer() {
                 override fun getCurrentContentText(player: Player): CharSequence? {
                     return when (val meta = currentMeta) {
                         is ResultEpisode -> {
-                            meta.name
+                            val apiName = meta.apiName.replace("moviebox", "Max", ignoreCase = true)
+                                .replace("moveibox", "Max", ignoreCase = true)
+                                .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+                                .replace("castle", "PluginStream", ignoreCase = true)
+                                .replace("castel", "PluginStream", ignoreCase = true)
+                                .replace("caslte", "PluginStream", ignoreCase = true)
+                            "${meta.name} - $apiName"
                         }
 
                         is ExtractorUri -> {
@@ -522,6 +561,7 @@ class GeneratorPlayer : FullScreenPlayer() {
             hasRequestedStamps = false
 
         loadExtractorJob(link.first)
+        startInterstitialAdTimer()
         // load player
         context?.let { ctx ->
             val (url, uri) = link
@@ -896,7 +936,6 @@ class GeneratorPlayer : FullScreenPlayer() {
         viewModel.addSubtitles(subtitleData.toSet())
 
         selectSourceDialog?.dismissSafe()
-        selectSourceDialog = null
 
         showToast(
             String.format(ctx.getString(R.string.player_loaded_subtitles), selectedSubtitle.name),
@@ -936,6 +975,10 @@ class GeneratorPlayer : FullScreenPlayer() {
                 addAndSelectSubtitles(subtitleData)
             }
         }
+
+    private var selectSourceDialog: Dialog? = null
+    // var selectTracksDialog: AlertDialog? = null
+
 
     /** Will toast both when an error is found and when a subtitle is selected,
      * so only use from a user click and not a background process */
@@ -1069,7 +1112,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                     loadFromOpenSubsFooter.setOnClickListener {
                         shouldDismiss = false
                         sourceDialog.dismissSafe(activity)
-                        selectSourceDialog = null
                         openOnlineSubPicker(it.context, currentLoadResponse) {
                             dismiss()
                         }
@@ -1090,7 +1132,6 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                         loadFromFirstSubsFooter.setOnClickListener {
                             sourceDialog.dismissSafe(activity)
-                            selectSourceDialog = null
                             showToast(R.string.loading)
                             addFirstSub(
                                 SubtitleSearch(
@@ -1266,7 +1307,6 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                 binding.cancelBtt.setOnClickListener {
                     sourceDialog.dismissSafe(activity)
-                    this.selectSourceDialog = null
                 }
 
                 fun setProfileName(profile: Int) {
@@ -1317,7 +1357,6 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                     shouldDismiss = false
                     sourceDialog.dismissSafe(activity)
-                    selectSourceDialog = null
 
                     val index = prefValues.indexOf(currentPrefMedia)
                     activity?.showDialog(
@@ -1356,7 +1395,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                         }
                     }
                     sourceDialog.dismissSafe(activity)
-                    selectSourceDialog = null
                 }
             }
         } catch (e: Exception) {
@@ -1380,7 +1418,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                 val binding: PlayerSelectTracksBinding =
                     PlayerSelectTracksBinding.inflate(LayoutInflater.from(ctx), null, false)
                 val trackDialog = Dialog(ctx, R.style.DialogFullscreenPlayer)
-                this.selectTrackDialog = trackDialog
                 trackDialog.setContentView(binding.root)
                 trackDialog.show()
 
@@ -1489,7 +1526,6 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                 binding.cancelBtt.setOnClickListener {
                     trackDialog.dismissSafe(activity)
-                    this.selectTrackDialog = null
                 }
 
                 binding.applyBtt.setOnClickListener {
@@ -1507,7 +1543,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                         player.setMaxVideoSize(width, height, currentVideo?.id)
                     }
                     trackDialog.dismissSafe(activity)
-                    this.selectTrackDialog = null
                 }
             }
         } catch (e: Exception) {
@@ -1553,69 +1588,55 @@ class GeneratorPlayer : FullScreenPlayer() {
             return
         }
         loadLink(links.first(), false)
-        showPlayerMetadata()
-    }
-
-    private fun showPlayerMetadata() {
-        val overlay = playerBinding?.playerMetadataScrim ?: return
-
-        val titleView = overlay.findViewById<TextView>(R.id.player_movie_title)
-        val logoView = overlay.findViewById<ImageView>(R.id.player_movie_logo)
-        val metaView = overlay.findViewById<TextView>(R.id.player_movie_meta)
-        val descView = overlay.findViewById<TextView>(R.id.player_movie_overview)
-
-        val load = viewModel.getLoadResponse() ?: return
-        val episode = currentMeta as? ResultEpisode
-        titleView.text = load.name
-
-        bindLogo(
-            url = load.logoUrl,
-            headers = load.posterHeaders,
-            titleView = titleView,
-            logoView = logoView
-        )
-
-        val meta = arrayOf(
-            load.tags?.takeIf { it.isNotEmpty() }?.joinToString(", "),
-            load.year?.toString(),
-            if (!load.type.isMovieType())
-                context?.getShortSeasonText(
-                    episode = episode?.episode,
-                    season = episode?.season
-                )
-            else null,
-            load.score?.let { "⭐ $it" }
-        ).filterNotNull()
-            .joinToString(" • ")
-
-        metaView.text = meta
-        metaView.isVisible = meta.isNotBlank()
-
-
-        val description = load.plot
-
-        if (!description.isNullOrBlank()) {
-            descView.isVisible = true
-            descView.text = description
-        } else {
-            descView.isVisible = false
-
-        }
     }
 
     override fun nextEpisode() {
         if (viewModel.hasNextEpisode() == true) {
-            isNextEpisode = true
-            player.release()
-            viewModel.loadLinksNext()
+            val act = activity
+            if (act != null) {
+                moviePlayCount++
+                if (moviePlayCount >= 3) {
+                    AdsManager.showRewardedAd(act) {
+                        moviePlayCount = 0
+                        isNextEpisode = true
+                        player.release()
+                        viewModel.loadLinksNext()
+                    }
+                } else {
+                    isNextEpisode = true
+                    player.release()
+                    viewModel.loadLinksNext()
+                }
+            } else {
+                isNextEpisode = true
+                player.release()
+                viewModel.loadLinksNext()
+            }
         }
     }
 
     override fun prevEpisode() {
         if (viewModel.hasPrevEpisode() == true) {
-            isNextEpisode = true
-            player.release()
-            viewModel.loadLinksPrev()
+            val act = activity
+            if (act != null) {
+                moviePlayCount++
+                if (moviePlayCount >= 3) {
+                    AdsManager.showRewardedAd(act) {
+                        moviePlayCount = 0
+                        isNextEpisode = true
+                        player.release()
+                        viewModel.loadLinksPrev()
+                    }
+                } else {
+                    isNextEpisode = true
+                    player.release()
+                    viewModel.loadLinksPrev()
+                }
+            } else {
+                isNextEpisode = true
+                player.release()
+                viewModel.loadLinksPrev()
+            }
         }
     }
 
@@ -1643,6 +1664,7 @@ class GeneratorPlayer : FullScreenPlayer() {
     override fun onDestroy() {
         ResultFragment.updateUI()
         currentVerifyLink?.cancel()
+        interstitialAdJob?.cancel()
         super.onDestroy()
     }
 
@@ -1804,7 +1826,7 @@ class GeneratorPlayer : FullScreenPlayer() {
 
         when (val meta = currentMeta) {
             is ResultEpisode -> {
-                headerName = meta.headerName
+                headerName = meta.headerName.replace("moviebox", "MAX", ignoreCase = true).replace("moveibox", "MAX", ignoreCase = true)
                 subName = meta.name
                 episode = meta.episode
                 season = meta.season
@@ -1812,7 +1834,7 @@ class GeneratorPlayer : FullScreenPlayer() {
             }
 
             is ExtractorUri -> {
-                headerName = meta.headerName
+                headerName = meta.headerName?.replace("moviebox", "MAX", ignoreCase = true)?.replace("moveibox", "MAX", ignoreCase = true)
                 subName = meta.name
                 episode = meta.episode
                 season = meta.season
@@ -1867,7 +1889,7 @@ class GeneratorPlayer : FullScreenPlayer() {
     @SuppressLint("SetTextI18n")
     fun setPlayerDimen(widthHeight: Pair<Int, Int>?) {
         val resolution = widthHeight?.let { "${it.first}x${it.second}" }
-        val name = currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name
+        val name = (currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name)?.replace("moviebox", "MAX", ignoreCase = true)?.replace("moveibox", "MAX", ignoreCase = true)
         val title = getHeaderName()
 
         val result = listOfNotNull(
@@ -2052,11 +2074,11 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
     }
 
-    override fun onTimestampSkipped(timestamp: VideoSkipStamp) {
+    override fun onTimestampSkipped(timestamp: EpisodeSkip.SkipStamp) {
         displayTimeStamp(false)
     }
 
-    override fun onTimestamp(timestamp: VideoSkipStamp?) {
+    override fun onTimestamp(timestamp: EpisodeSkip.SkipStamp?) {
         if (timestamp != null) {
             playerBinding?.skipChapterButton?.setText(timestamp.uiText)
             displayTimeStamp(true)
@@ -2083,10 +2105,29 @@ class GeneratorPlayer : FullScreenPlayer() {
                     false,
                     { episodeClick ->
                         if (episodeClick.action == ACTION_CLICK_DEFAULT) {
-                            isNextEpisode = false
-                            player.release()
-                            playerEpisodeOverlay.isGone = true
-                            episodeClick.position?.let { viewModel.loadThisEpisode(it) }
+                            val act = activity
+                            if (act != null) {
+                                moviePlayCount++
+                                if (moviePlayCount >= 3) {
+                                    AdsManager.showRewardedAd(act) {
+                                        moviePlayCount = 0
+                                        isNextEpisode = false
+                                        player.release()
+                                        playerEpisodeOverlay.isGone = true
+                                        episodeClick.position?.let { viewModel.loadThisEpisode(it) }
+                                    }
+                                } else {
+                                    isNextEpisode = false
+                                    player.release()
+                                    playerEpisodeOverlay.isGone = true
+                                    episodeClick.position?.let { viewModel.loadThisEpisode(it) }
+                                }
+                            } else {
+                                isNextEpisode = false
+                                player.release()
+                                playerEpisodeOverlay.isGone = true
+                                episodeClick.position?.let { viewModel.loadThisEpisode(it) }
+                            }
                         }
                     },
                     { downloadClickEvent ->

@@ -23,8 +23,8 @@
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">填充</string>
     <string name="duration_format" formatted="true">%d 分鐘</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">使用 CloudStream 播放</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">使用 PluginStream 播放</string>
     <string name="title_home">主畫面</string>
     <string name="title_search">搜尋</string>
     <string name="title_downloads">下載</string>
@@ -413,13 +413,13 @@
     <string name="plugins_disabled" formatted="true">已停用：%d</string>
     <string name="plugins_not_downloaded" formatted="true">未下載：%d</string>
     <string name="plugins_updated" formatted="true">已更新 %d 外掛程式</string>
-    <string name="blank_repo_message">CloudStream 預設沒有安裝網站。你需要從儲存庫安裝網站。
+    <string name="blank_repo_message">PluginStream 預設沒有安裝網站。你需要從儲存庫安裝網站。
 \n
 \n加入我們的 Discord 或在網路上搜尋。</string>
     <string name="view_public_repositories_button">查看</string>
     <string name="view_public_repositories_button_short">公開清單</string>
     <string name="uppercase_all_subtitles">字幕全大寫</string>
-    <string name="download_all_plugins_from_repo">警告：CloudStream 不對使用第三方擴充功能承擔任何責任，也不提供任何支援！</string>
+    <string name="download_all_plugins_from_repo">警告：PluginStream 不對使用第三方擴充功能承擔任何責任，也不提供任何支援！</string>
     <string name="single_plugin_disabled" formatted="true">%s （停用）</string>
     <string name="tracks">軌道</string>
     <string name="audio_tracks">音頻軌道</string>
@@ -593,7 +593,7 @@
     <string name="unfavorite">不喜歡</string>
     <string name="biometric_setting">使用生物辨識技術鎖定</string>
     <string name="app_unrestricted_toast">應用程式電池使用已設定為無限制</string>
-    <string name="biometric_authentication_title">解除鎖定 CloudStream</string>
+    <string name="biometric_authentication_title">解除鎖定 PluginStream</string>
     <string name="custom_media_singluar">媒體</string>
     <string name="reset_btn">重置</string>
     <string name="recommendations_tooltip">顯示推薦</string>
@@ -616,11 +616,11 @@
     <string name="biometric_prompt_description">多次嘗試失敗後，此提示將會關閉。只需重新啟動應用程式即可再次嘗試。</string>
     <string name="clipboard_permission_error">剪貼簿存取失敗，請再試一次。</string>
     <string name="clipboard_unknown_error">複製失敗，請複製 logcat 內容並聯繫應用程式支援者。</string>
-    <string name="app_info_intent_error">無法開啟 CloudStream 的應用程式資訊頁面。</string>
-    <string name="biometric_warning">您的 CloudStream 資料已完成備份。儘管可能性非常低，但因不同裝置的行為都有所不同，在極少數情況下，您可能會無法存取本應用程式。此時請完全清除本應用程式的資料，再使用已有的備份進行還原。若因此造成任何不便，我們深感抱歉。</string>
+    <string name="app_info_intent_error">無法開啟 PluginStream 的應用程式資訊頁面。</string>
+    <string name="biometric_warning">您的 PluginStream 資料已完成備份。儘管可能性非常低，但因不同裝置的行為都有所不同，在極少數情況下，您可能會無法存取本應用程式。此時請完全清除本應用程式的資料，再使用已有的備份進行還原。若因此造成任何不便，我們深感抱歉。</string>
     <string name="test_extensions_summary">此測試是供開發人員參考，而不是用以驗證任何擴充功能的正常運作與否。</string>
-    <string name="battery_dialog_message">為了確保已訂閱的電視節目的不間斷下載與通知，CloudStream 需要取得在背景執行的權限。若點選「確定」，將顯示「請求權限」，請選擇「允許」。\n\n請注意，取得此權限並不表示本程式會明顯增加電池用量，而是只在必要時在背景執行，例如取得通知或使用擴充功能下載影片。</string>
-    <string name="cs3wiki">CloudStream Wiki</string>
+    <string name="battery_dialog_message">為了確保已訂閱的電視節目的不間斷下載與通知，PluginStream 需要取得在背景執行的權限。若點選「確定」，將顯示「請求權限」，請選擇「允許」。\n\n請注意，取得此權限並不表示本程式會明顯增加電池用量，而是只在必要時在背景執行，例如取得通知或使用擴充功能下載影片。</string>
+    <string name="cs3wiki">PluginStream Wiki</string>
     <string name="biometric_unsupported">此裝置不支援生物特徵認證</string>
     <string name="device_pin_error_message">無法取得裝置 PIN 碼，請嘗試本機驗證</string>
     <string name="delete_plugin">刪除外掛程式</string>
@@ -763,5 +763,4 @@
     <string name="torrent_preferred_media">在「設定/影片來源/首選媒體」中啟用 Torrent下載</string>
     <string name="software_decoding_desc">軟體解碼使程式可以播放裝置不支援的影片，但可能導致播放高解析的影片時的延遲或不穩定。</string>
     <string name="volume_exceeded_100">音量已超過 100%</string>
-    <string name="show_player_metadata_overlay">顯示播放器元資料遮罩層</string>
 </resources>

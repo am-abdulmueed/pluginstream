@@ -62,7 +62,6 @@ object BackupUtils {
         AccountManager.ACCOUNT_TOKEN,
         AccountManager.ACCOUNT_IDS,
 
-        // TODO proper getter for string res keys to ensure that they are updated
         "biometric_key", // can lock down users if backup is shared on a incompatible device
         "nginx_user", // Nginx user key
 
@@ -104,10 +103,7 @@ object BackupUtils {
         // Prevent backups from automatically starting downloads
         KEY_RESUME_IN_QUEUE,
         KEY_RESUME_PACKAGES,
-        QUEUE_KEY,
-
-        // Prevent automatic plugin download after restoring backup
-        "auto_download_plugins_key2"
+        QUEUE_KEY
     )
 
     /** false if key should not be contained in backup */

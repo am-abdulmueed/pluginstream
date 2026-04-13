@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
+import androidx.appcompat.app.AlertDialog
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.APIHolder.apis
 import com.lagradost.cloudstream3.MainActivity.Companion.afterRepositoryLoadedEvent
 import com.lagradost.cloudstream3.R
@@ -14,8 +16,23 @@ import com.lagradost.cloudstream3.plugins.RepositoryManager.PREBUILT_REPOSITORIE
 import com.lagradost.cloudstream3.ui.BaseFragment
 import com.lagradost.cloudstream3.ui.settings.extensions.PluginsViewModel
 import com.lagradost.cloudstream3.ui.settings.extensions.RepoAdapter
+import com.lagradost.cloudstream3.ui.settings.extensions.RepositoryData
+import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import com.lagradost.cloudstream3.utils.Coroutines.main
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
+
+data class MasterRepo(
+    @JsonProperty("name") val name: String,
+    @JsonProperty("version") val version: Int,
+    @JsonProperty("last_updated") val last_updated: String,
+    @JsonProperty("repositories") val repositories: List<MasterRepoEntry>
+)
+
+data class MasterRepoEntry(
+    @JsonProperty("name") val name: String,
+    @JsonProperty("url") val url: String,
+    @JsonProperty("description") val description: String?
+)
 
 class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentSetupExtensionsBinding::inflate)
@@ -49,22 +66,42 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
 
     private fun setRepositories(success: Boolean = true) {
         main {
-            val repositories = RepositoryManager.getRepositories() + PREBUILT_REPOSITORIES
+            val ctx = context ?: return@main
+            val pluginstreamJson = try {
+                ctx.assets.open("pluginstream.json").bufferedReader().use { it.readText() }
+            } catch (e: Exception) {
+                null
+            }
+
+            val masterRepoRepos = pluginstreamJson?.let {
+                tryParseJson<MasterRepo>(it)?.repositories?.map { entry ->
+                    RepositoryData(null, entry.name, entry.url, entry.description)
+                }
+            } ?: emptyList()
+
+            val repositories = RepositoryManager.getRepositories() + PREBUILT_REPOSITORIES + masterRepoRepos
             val hasRepos = repositories.isNotEmpty()
             binding?.repoRecyclerView?.isVisible = hasRepos
             binding?.blankRepoScreen?.isVisible = !hasRepos
 
             if (hasRepos) {
-                binding?.repoRecyclerView?.adapter = RepoAdapter(true, {}, {
+                val repos = repositories.distinctBy { it.url }
+                binding?.repoRecyclerView?.adapter = RepoAdapter(true, { item ->
+                    val builder = AlertDialog.Builder(ctx)
+                    builder.setTitle(item.name)
+                    builder.setMessage(item.description ?: item.url)
+                    builder.setPositiveButton(R.string.dismiss) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    builder.show()
+                }, { item ->
+                    PluginsViewModel.downloadAll(activity, item.url, null)
+                }).apply { submitList(repos) }
+
+                repos.forEach {
                     PluginsViewModel.downloadAll(activity, it.url, null)
-                }).apply { submitList(repositories.toList()) }
+                }
             }
-//            else {
-//                list_repositories?.setOnClickListener {
-//                    // Open webview on tv if browser fails
-//                    openBrowser(PUBLIC_REPOSITORIES_LIST, isTvSettings(), this)
-//                }
-//            }
         }
     }
 
@@ -72,6 +109,13 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
         val isSetup = arguments?.getBoolean(SETUP_EXTENSION_BUNDLE_IS_SETUP) ?: false
 
         safe {
+            PluginsViewModel.downloadingRepos.observe(viewLifecycleOwner) {
+                binding.repoRecyclerView.adapter?.notifyDataSetChanged()
+            }
+            PluginsViewModel.downloadedRepos.observe(viewLifecycleOwner) {
+                binding.repoRecyclerView.adapter?.notifyDataSetChanged()
+            }
+
             setRepositories()
             binding.apply {
                 if (!isSetup) {

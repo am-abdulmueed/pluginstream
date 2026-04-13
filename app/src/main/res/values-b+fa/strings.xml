@@ -20,7 +20,7 @@
     <string name="show_title">عنوان منبع</string>
     <string name="logout">خروج</string>
     <string name="login">ورود</string>
-    <string name="none">هیچ‌کدام</string>
+    <string name="none">Select</string>
     <string name="title">عنوان</string>
     <string name="history">تاریخچه</string>
     <string name="search_poster_img_des">پوستر</string>
@@ -88,8 +88,8 @@
     <string name="preview_background_img_des">پیش‌نمایش پس‌زمینه</string>
     <string name="filler" formatted="true">فیلتر</string>
     <string name="duration_format" formatted="true">%d دقیقه</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">پخش با CloudStream</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">پخش با PluginStream</string>
     <string name="title_home">خانه</string>
     <string name="title_search">جست‌وجو</string>
     <string name="title_settings">تنظیمات</string>

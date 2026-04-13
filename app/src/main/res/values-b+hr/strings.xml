@@ -23,8 +23,8 @@
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Umetak</string>
     <string name="duration_format" formatted="true">%d min</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">Pokreni s CloudStreamom</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">Pokreni s PluginStreamom</string>
     <string name="title_home">Početna stranica</string>
     <string name="title_search">Traži</string>
     <string name="title_downloads">Preuzimanja</string>
@@ -319,7 +319,7 @@
     <string name="authenticated_user" formatted="true">%s ovjeren</string>
     <string name="authenticated_user_fail" formatted="true">Nije moguće prijaviti se na %s</string>
     <!-- ============ -->
-    <string name="none">Nijedan</string>
+    <string name="none">Select</string>
     <string name="normal">Normalno</string>
     <string name="all">Sve</string>
     <string name="max">Maks.</string>
@@ -411,13 +411,13 @@
     <string name="plugins_downloaded" formatted="true">Preuzeto: %d</string>
     <string name="plugins_disabled" formatted="true">Onemogućeno: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Nepreuzeto: %d</string>
-    <string name="blank_repo_message">CloudStream standardno nema instalirane web stranice. Stranice morate instalirati iz repozitorija.
+    <string name="blank_repo_message">PluginStreamstandardno nema instalirane web stranice. Stranice morate instalirati iz repozitorija.
 \n
 \nPridružite se našem Discordu ili tražite online.</string>
     <string name="view_public_repositories_button">Prikaži repozitorije zajednice</string>
     <string name="view_public_repositories_button_short">Javni popis</string>
     <string name="uppercase_all_subtitles">Koristi velika slova za sve titlove</string>
-    <string name="download_all_plugins_from_repo">Upozorenje: CloudStream ne preuzima odgovornost za korištenje proširenja trećih strana i ne pruža podršku za njih!</string>
+    <string name="download_all_plugins_from_repo">Upozorenje: PluginStreamne preuzima odgovornost za korištenje proširenja trećih strana i ne pruža podršku za njih!</string>
     <string name="single_plugin_disabled" formatted="true">%s (onemogućeno)</string>
     <string name="tracks">Zapisi</string>
     <string name="audio_tracks">Audio zapis</string>
@@ -608,7 +608,7 @@
     <string name="audio_book_singular">Audio knjiga</string>
     <string name="custom_media_singluar">Medij</string>
     <string name="app_unrestricted_toast">Korištenje baterije aplikacije već je postavljeno na neograničeno</string>
-    <string name="app_info_intent_error">Neuspjelo otvaranje podataka CloudStream aplikacije.</string>
+    <string name="app_info_intent_error">Neuspjelo otvaranje podataka PluginStreamaplikacije.</string>
     <string name="favorite">Favorit</string>
     <string name="unfavorite">Ukloni iz favorita</string>
     <string name="music_singlar">Glazba</string>
@@ -616,12 +616,12 @@
     <string name="biometric_setting_summary">Otključaj aplikaciju pomoću otiska prsta, ID-a lica, PIN-a, uzorka i lozinke.</string>
     <string name="episode_upcoming_format" formatted="true">Sljedeća u %s</string>
     <string name="clipboard_unknown_error">Pogreška pri kopiranju. Kopirajte zapisnik i kontaktirajte podršku aplikacije.</string>
-    <string name="battery_dialog_message">Da biste osigurali neprekinuta preuzimanja i obavijesti za pretplaćene TV emisije, CloudStream treba dopuštenje za rad u pozadini. Pritiskom na \"U redu\" prikazat će vam se dijaloški okvir s zahtjevom. Molimo vas da pritisnete \"Dopusti\".  \n\nNapominjemo da ovo dopuštenje ne znači da će CS3 trošiti vašu bateriju. Aplikacija će raditi u pozadini samo kada je to potrebno, primjerice prilikom primanja obavijesti ili preuzimanja videozapisa iz službenih proširenja.</string>
-    <string name="biometric_warning">Vaši CloudStream podaci su sada spremljeni u sigurnosnu kopiju. Iako je vjerojatnost mala, neki se uređaji mogu ponašati drugačije. Ako izgubite pristup aplikaciji, potpuno izbrišite podatke aplikacije i obnovite ih pomoću sigurnosne kopije. Ispričavamo se zbog mogućih neugodnosti.</string>
+    <string name="battery_dialog_message">Da biste osigurali neprekinuta preuzimanja i obavijesti za pretplaćene TV emisije, PluginStreamtreba dopuštenje za rad u pozadini. Pritiskom na \"U redu\" prikazat će vam se dijaloški okvir s zahtjevom. Molimo vas da pritisnete \"Dopusti\".  \n\nNapominjemo da ovo dopuštenje ne znači da će CS3 trošiti vašu bateriju. Aplikacija će raditi u pozadini samo kada je to potrebno, primjerice prilikom primanja obavijesti ili preuzimanja videozapisa iz službenih proširenja.</string>
+    <string name="biometric_warning">Vaši PluginStreampodaci su sada spremljeni u sigurnosnu kopiju. Iako je vjerojatnost mala, neki se uređaji mogu ponašati drugačije. Ako izgubite pristup aplikaciji, potpuno izbrišite podatke aplikacije i obnovite ih pomoću sigurnosne kopije. Ispričavamo se zbog mogućih neugodnosti.</string>
     <string name="next_season_episode_format" formatted="true">Sezona %1$d epizoda %2$d izlazi za</string>
     <string name="episode_action_cast_mirror">Cast duplikat</string>
     <string name="player_settings_select_cast_device">Odaberi uređaj za emitiranje</string>
-    <string name="cs3wiki">CloudStream Wiki</string>
+    <string name="cs3wiki">PluginStreamWiki</string>
     <string name="pref_category_accounts">Računi</string>
     <string name="pref_category_security">Sigurnost</string>
     <string name="auth_locally">Lokalna autentifikacija</string>

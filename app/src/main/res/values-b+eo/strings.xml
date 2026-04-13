@@ -63,7 +63,7 @@
     <string name="others">Aliaj</string>
     <string name="quality_blueray">Blu-radia</string>
     <string name="title">Titolo</string>
-    <string name="none">Nenio</string>
+    <string name="none">Select</string>
     <string name="logout">Adiaŭi</string>
     <string name="show_title">Titolo</string>
     <string name="video_source">Fonto</string>
@@ -86,7 +86,7 @@
     <string name="new_update_format" formatted="true">Nova ĝisdatigo trovita!
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Speciala epizodo</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="download_started">Elŝuto Komencite</string>
     <string name="reload_error">Reprovi konekton…</string>
     <string name="stream">Elsendfluo</string>
@@ -111,7 +111,7 @@
     <string name="error_loading_links_toast">Eraro okazis dum la Ŝarĝado de Ligiloj</string>
     <string name="type_dropped">Forlasita</string>
     <string name="duration_format" formatted="true">%d min</string>
-    <string name="play_with_app_name">Ludi per CloudStream</string>
+    <string name="play_with_app_name">Ludi per PluginStream</string>
     <string name="result_share">Kunhavigi</string>
     <string name="play_livestream_button">Ludi tuj-elsendfluon</string>
     <string name="download_paused">Elŝuto Paŭzite</string>
@@ -159,7 +159,7 @@
     <string name="search_provider_text_types">Serĉi uzante tipojn</string>
     <string name="subs_subtitle_languages">Subteksta Lingvo</string>
     <string name="action_open_watching">Pli da informoj</string>
-    <string name="action_open_play">@string/home_play</string>
+    <string name="action_open_play">\@string/home_play</string>
     <string name="torrent_plot">Priskribo</string>
     <string name="torrent_no_plot">Neniu Priskribo Trovita</string>
     <string name="player_size_settings_des">Forigi nigrajn borderaĵojn</string>

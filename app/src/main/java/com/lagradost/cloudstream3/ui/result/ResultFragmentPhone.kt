@@ -3,6 +3,7 @@ package com.lagradost.cloudstream3.ui.result
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
+import android.net.Uri
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Rect
@@ -286,17 +287,7 @@ open class ResultFragmentPhone : FullScreenPlayer() {
 
     private fun setUrl(url: String?) {
         if (url == null) {
-            binding?.resultOpenInBrowser?.isVisible = false
             return
-        }
-
-        val valid = url.startsWith("http")
-
-        binding?.resultOpenInBrowser?.apply {
-            isVisible = valid
-            setOnClickListener {
-                context?.openBrowser(url)
-            }
         }
 
         resultBinding?.resultReloadConnectionOpenInBrowser?.setOnClickListener {
@@ -941,18 +932,10 @@ open class ResultFragmentPhone : FullScreenPlayer() {
                         resultShare.setOnClickListener {
                             try {
                                 val i = Intent(Intent.ACTION_SEND)
-                                val nameBase64 =
-                                    base64Encode(d.apiName.toString().toByteArray(Charsets.UTF_8))
-                                val urlBase64 = base64Encode(d.url.toByteArray(Charsets.UTF_8))
-                                val encodedUri = URLEncoder.encode(
-                                    "$APP_STRING_SHARE:$nameBase64?$urlBase64",
-                                    "UTF-8"
-                                )
-                                val redirectUrl =
-                                    "https://recloudstream.github.io/csredirect?redirectto=$encodedUri"
                                 i.type = "text/plain"
+                                val shareMessage = "${d.title}\n\n${d.posterImage ?: ""}\n\nPluginStream free & fast movie streaming app and all OTT like Netflix, Prime, HBO, Disney, Hotstar and many more latest movies and TV series free watch without any cost\n\nDownload Link: https://pluginstream.pages.dev"
                                 i.putExtra(Intent.EXTRA_SUBJECT, d.title)
-                                i.putExtra(Intent.EXTRA_TEXT, redirectUrl)
+                                i.putExtra(Intent.EXTRA_TEXT, shareMessage)
                                 startActivity(Intent.createChooser(i, d.title))
                             } catch (e: Exception) {
                                 logError(e)
@@ -1390,7 +1373,6 @@ open class ResultFragmentPhone : FullScreenPlayer() {
                 resultBinding?.apply {
                     resultRecommendationsBtt.nextFocusDownId = nextFocusDown
                     resultSearch.nextFocusDownId = nextFocusDown
-                    resultOpenInBrowser.nextFocusDownId = nextFocusDown
                     resultShare.nextFocusDownId = nextFocusDown
                 }
             }

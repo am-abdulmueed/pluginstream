@@ -27,8 +27,8 @@
     <string name="new_update_format" formatted="true">New update found!\n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Filler</string>
     <string name="duration_format" formatted="true">%d min</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">Play with CloudStream</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">Play with PluginStream</string>
     <string name="title_home">Home</string>
     <string name="title_search">Search</string>
     <string name="title_downloads">Downloads</string>
@@ -183,6 +183,8 @@
     <string name="library">Library</string>
     <string name="category_account">Accounts and Security</string>
     <string name="category_updates">Updates and Backup</string>
+    <string name="about">About</string>
+    <string name="setup_language_subtext">Choose your preferred app language</string>
     <string name="settings_info">Info</string>
     <string name="advanced_search">Advanced Search</string>
     <string name="advanced_search_des">Gives you the search results separated by provider</string>
@@ -190,7 +192,6 @@
     <string name="search_suggestions_des">Show search suggestions while typing</string>
     <string name="clear_suggestions">Clear Suggestions</string>
     <string name="show_fillers_settings">Show filler episode for anime</string>
-    <string name="show_player_metadata_overlay">Show Player Metadata Overlay</string>
     <string name="show_trailers_settings">Show trailers</string>
     <string name="kitsu_settings">Show posters from Kitsu</string>
     <string name="show_cast_in_details">Show cast panel</string>
@@ -208,6 +209,9 @@
     <string name="apk_installer_settings">APK Installer</string>
     <string name="apk_installer_settings_des">Some devices do not support the new package installer. Try the legacy option if updates do not install.</string>
     <string name="github">Github</string>
+    <string name="instagram">Instagram</string>
+    <string name="share_plugin">Share App</string>
+    <string name="dev_website">Developer Website</string>
     <string name="lightnovel">Light novel app by the same devs</string>
     <string name="anim">Anime app by the same devs</string>
     <string name="discord">Join Discord</string>
@@ -375,7 +379,7 @@
     <string name="category_general">General</string>
     <string name="random_button_settings">Random Button</string>
     <string name="random_button_settings_desc">Show random button on Homepage and Library</string>
-    <string name="provider_lang_settings">Extension languages</string>
+    <string name="provider_lang_settings">Content languages</string>
     <string name="app_layout">App Layout</string>
     <string name="preferred_media_settings">Preferred media</string>
     <string name="enable_nsfw_on_providers">Enable NSFW on supported Extensions</string>
@@ -420,7 +424,7 @@
     <string name="authenticated_user_fail" formatted="true">Could not log in at %s</string>
     <!-- ============ -->
     <string name="disable">Disable</string>
-    <string name="none">None</string>
+    <string name="none">Select</string>
     <string name="normal">Normal</string>
     <string name="all">All</string>
     <string name="max">Max</string>
@@ -489,7 +493,7 @@
     <string name="network_adress_example">https://example.com/example.mp4</string>
     <string name="referer">Referer (optional)</string>
     <string name="next">Next</string>
-    <string name="provider_languages_tip">Watch videos in these languages</string>
+    <string name="provider_languages_tip">Which languages do you prefer? (Recommended: Select All)</string>
     <string name="previous">Previous</string>
     <string name="skip_setup">Skip setup</string>
     <string name="app_layout_subtext">Change the look of the app to suit your device</string>
@@ -515,18 +519,18 @@
     <string name="delete_repository_plugins">This will also delete all repository plugins</string>
     <string name="delete_repository">Delete repository</string>
     <string name="delete_plugin">Delete plugin</string>
-    <string name="setup_extensions_subtext">Download the list of sites you want to use</string>
+    <string name="setup_extensions_subtext">Please wait 15 seconds while we connect to the best providers.</string>
     <string name="plugins_downloaded" formatted="true">Downloaded: %d</string>
     <string name="plugins_disabled" formatted="true">Disabled: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Not downloaded: %d</string>
     <string name="plugins_updated" formatted="true">Updated %d plugins</string>
-    <string name="blank_repo_message">CloudStream has no sites installed by default. You need to install the sites from repositories.
+    <string name="blank_repo_message">PluginStream has no sites installed by default. You need to install the sites from repositories.
 \n
 \nJoin our Discord or search online.</string>
     <string name="view_public_repositories_button">View community repositories</string>
     <string name="view_public_repositories_button_short">Public list</string>
     <string name="uppercase_all_subtitles">Uppercase all subtitles</string>
-    <string name="download_all_plugins_from_repo">Warning: CloudStream does not take any responsibility for using third-party extensions and does not provide any support for them!</string>
+    <string name="download_all_plugins_from_repo">Warning: PluginStream does not take any responsibility for using third-party extensions and does not provide any support for them!</string>
     <string name="single_plugin_disabled" formatted="true">%s (Disabled)</string>
     <string name="tracks">Tracks</string>
     <string name="audio_tracks">Audio tracks</string>
@@ -560,7 +564,6 @@
     <string name="skip_type_mixed_ed">Mixed ending</string>
     <string name="skip_type_mixed_op">Mixed opening</string>
     <string name="skip_type_creddits">Credits</string>
-    <string name="skip_type_preview">Preview</string>
     <string name="skip_type_intro">Intro</string>
     <string name="clear_history">Clear history</string>
     <string name="history">History</string>
@@ -578,11 +581,11 @@
     <string name="open_downloaded_repo">Open repository</string>
     <string name="battery_dialog_title">Disable Battery optimization</string>
     <string name="battery_dialog_message">To ensure uninterrupted downloads and notifications for subscribed
-        TV shows, CloudStream needs permission to run in background. By pressing "OK", you\'ll be shown a request dialog.
-        Please press \'Allow\'.\n\nPlease note, this permission does not mean CS3 will drain your battery. It will only operate in the background when necessary, such as
+        TV shows, PluginStream needs permission to run in background. By pressing "OK", you\'ll be shown a request dialog.
+        Please press \'Allow\'.\n\nPlease note, this permission does not mean PluginStream will drain your battery. It will only operate in the background when necessary, such as
         when receiving notifications or downloading videos from official extensions.</string>
     <string name="app_unrestricted_toast">App battery usage is already set to unrestricted</string>
-    <string name="app_info_intent_error">Unable to open CloudStream\'s App info.</string>
+    <string name="app_info_intent_error">Unable to open PluginStream\'s App info.</string>
     <string name="update_notification_downloading">Downloading app update…</string>
     <string name="update_notification_installing">Installing app update…</string>
     <string name="update_notification_failed">Could not install the new version of the app</string>
@@ -685,15 +688,15 @@
     <string name="favorite">Favorite</string>
     <string name="unfavorite">Unfavorite</string>
     <!-- For Biometrics -->
-    <string name="biometric_authentication_title">Unlock CloudStream</string>
+    <string name="biometric_authentication_title">Unlock PluginStream</string>
     <string name="biometric_setting">Lock with Biometrics</string>
     <string name="password_pin_authentication_title">Password/PIN Authentication</string>
     <string name="biometric_unsupported">Biometric authentication is not supported on this device</string>
     <string name="biometric_setting_summary">Unlock the app with Fingerprint, Face ID, PIN, Pattern and Password.</string>
     <string name="biometric_prompt_description">After a few failed attempts, the prompt will close. Simply restart the app to try again.</string>
-    <string name="biometric_warning">Your CloudStream data has been backed up now. Although the possibility of this is very low, all devices can behave differently. In the rare case, that you get locked out from accessing the app, clear the app data completely and restore from a backup. We are very sorry for any inconvenience arising from this.</string>
+    <string name="biometric_warning">Your PluginStream data has been backed up now. Although the possibility of this is very low, all devices can behave differently. In the rare case, that you get locked out from accessing the app, clear the app data completely and restore from a backup. We are very sorry for any inconvenience arising from this.</string>
     <string name="reset_btn">Reset</string>
-    <string name="cs3wiki">CloudStream Wiki</string>
+    <string name="cs3wiki">PluginStream Wiki</string>
     <string name="device_pin_url_message">Visit <b>%s</b> on your smartphone or computer and enter the above code</string>
     <string name="device_pin_error_message">Can\'t get the device PIN code, try local authentication</string>
     <string name="device_pin_expired_message">PIN code is now expired !</string>
@@ -781,6 +784,4 @@
         <item quantity="one">%d download queued</item>
         <item quantity="other">%d downloads queued</item>
     </plurals>
-    <string name="player_is_live">Live</string>
-
 </resources>

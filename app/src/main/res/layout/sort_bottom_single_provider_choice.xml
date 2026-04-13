@@ -1,22 +1,41 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-     >
-    <TextView
-        android:id="@+id/text1"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/CheckLabel"
-        android:layout_gravity="center"
-        tools:text="hello" />
-    <ImageView
-        android:id="@+id/pinicon"
-        android:layout_width="50dp"
-        android:layout_height="24dp"
-        android:layout_gravity="end|center_vertical"
-        android:src="@drawable/pin_ic"
-        android:visibility="gone"
-        tools:visibility="visible"
-        tools:ignore="RtlHardcoded" />
-</FrameLayout>
+        android:layout_height="56dp"
+        android:background="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/text1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/google_sans"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="56dp"
+            android:textColor="?attr/textColor"
+            android:textSize="16sp"
+            tools:text="Provider Name" />
+
+        <ImageView
+            android:id="@+id/pinicon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/pin_ic"
+            android:visibility="gone"
+            app:tint="?attr/textColor"
+            tools:visibility="visible" />
+    </FrameLayout>
+</com.google.android.material.card.MaterialCardView>

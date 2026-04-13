@@ -15,8 +15,8 @@
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">စစ်ထုတ်မှု</string>
     <string name="duration_format" formatted="true">%d မိနစ်</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">CloudStream ဖြင့်ကြည့်ရန်</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">PluginStream ဖြင့်ကြည့်ရန်</string>
     <string name="title_home">ပင်မ</string>
     <string name="title_search">ရှာရန်</string>
     <string name="search_hint">ရှာရန်…</string>
@@ -342,7 +342,7 @@
     <string name="apk_installer_legacy">သမားရိုးကျ</string>
     <string name="apk_installer_package_installer">ထည့်သွင်းသူ</string>
     <string name="delayed_update_notice">ထွက်ချိန်တွင် အက်ပ်ကို အပ်ဒိတ်လုပ်ပါမည်</string>
-    <string name="blank_repo_message">CloudStream တွင် မူရင်းအတိုင်း ထည့်သွင်းထားသည့်ဆိုက်များ မရှိပါ။ ရီပိုစစ်ထရီများ မှ ဆိုဒ် များကို ထည့်သွင်းရန်လိုအပ်သည်။
+    <string name="blank_repo_message">PluginStream တွင် မူရင်းအတိုင်း ထည့်သွင်းထားသည့်ဆိုက်များ မရှိပါ။ ရီပိုစစ်ထရီများ မှ ဆိုဒ် များကို ထည့်သွင်းရန်လိုအပ်သည်။
 \n
 \nSky UK Limited မှ ဦးနှောက်မဲ့ DMCA ကို ဖယ်ရှားလိုက်ခြင်းကြောင့် 🤮 ကျွန်ုပ်တို့သည် ရီပိုစစ်ထရီဆိုဒ်ကို အက်ပ်တွင် ချိတ်ဆက်၍မရပါ။
 \n
@@ -437,7 +437,7 @@
     <string name="player_load_subtitles_online">အင်တာနက်မှ တင်သွင်းမည်</string>
     <string name="actor_background">နောက်ခံ</string>
     <string name="authenticated_user_fail" formatted="true">အကောင့်မဝင်ရောက်နိုင်ပါ %s</string>
-    <string name="none">ဘာမျှ</string>
+    <string name="none">Select</string>
     <string name="min">အနည်းဆုံး</string>
     <string name="subtitles_outline">အနားကွပ်</string>
     <string name="home_random">ကျပန်း</string>

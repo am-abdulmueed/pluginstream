@@ -33,6 +33,7 @@ import com.lagradost.cloudstream3.mvvm.Resource
 import com.lagradost.cloudstream3.mvvm.debugAssert
 import com.lagradost.cloudstream3.mvvm.debugException
 import com.lagradost.cloudstream3.mvvm.launchSafe
+import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.mvvm.logError
 import com.lagradost.cloudstream3.mvvm.safe
 import com.lagradost.cloudstream3.mvvm.safeApiCall
@@ -45,6 +46,7 @@ import com.lagradost.cloudstream3.syncproviders.providers.Kitsu
 import com.lagradost.cloudstream3.ui.APIRepository
 import com.lagradost.cloudstream3.ui.WatchType
 import com.lagradost.cloudstream3.utils.downloader.DownloadQueueManager
+import com.lagradost.cloudstream3.utils.AdsManager
 import com.lagradost.cloudstream3.ui.player.GeneratorPlayer
 import com.lagradost.cloudstream3.ui.player.IGenerator
 import com.lagradost.cloudstream3.ui.player.LOADTYPE_ALL
@@ -301,7 +303,11 @@ fun LoadResponse.toResultData(repo: APIRepository): ResultData {
             }
         ),
         yearText = txt(year?.toString()),
-        apiName = txt(apiName),
+        apiName = txt(apiName.replace("moviebox", "PluginStream", ignoreCase = true).replace("moveibox", "MAX", ignoreCase = true)
+            .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+            .replace("castle", "PluginStream", ignoreCase = true)
+            .replace("castel", "PluginStream", ignoreCase = true)
+            .replace("caslte", "PluginStream", ignoreCase = true)),
         ratingText = score?.toStringNull(0.1, 10, 1, false, '.')
             ?.let { txt(R.string.rating_format, it) },
         contentRatingText = txt(contentRating),
@@ -1443,44 +1449,60 @@ class ResultViewModel2 : ViewModel() {
 
             ACTION_DOWNLOAD_EPISODE -> {
                 val response = currentResponse ?: return
-                DownloadQueueManager.addToQueue(
-                    DownloadObjects.DownloadQueueItem(
-                        click.data,
-                        response.isMovie(),
-                        response.name,
-                        response.type,
-                        response.posterUrl,
-                        response.apiName,
-                        response.getId(),
-                        response.url,
-                    ).toWrapper()
-                )
+                activity?.let { act ->
+                    AdsManager.loadAndShowAdWithRetry(
+                        act,
+                        loadingText = "Please wait, watch a short ad & download",
+                        onAdFinished = {
+                            DownloadQueueManager.addToQueue(
+                                DownloadObjects.DownloadQueueItem(
+                                    click.data,
+                                    response.isMovie(),
+                                    response.name,
+                                    response.type,
+                                    response.posterUrl,
+                                    response.apiName,
+                                    response.getId(),
+                                    response.url,
+                                ).toWrapper()
+                            )
+                        }
+                    )
+                }
             }
 
             ACTION_DOWNLOAD_MIRROR -> {
                 val response = currentResponse ?: return
-                acquireSingleLink(
-                    click.data,
-                    LOADTYPE_INAPP_DOWNLOAD,
-                    txt(R.string.episode_action_download_mirror)
-                ) { (result, index) ->
-                    DownloadQueueManager.addToQueue(
-                        DownloadObjects.DownloadQueueItem(
-                            click.data,
-                            response.isMovie(),
-                            response.name,
-                            response.type,
-                            response.posterUrl,
-                            response.apiName,
-                            response.getId(),
-                            response.url,
-                            listOf(result.links[index]),
-                            result.subs,
-                        ).toWrapper()
-                    )
-                    showToast(
-                        R.string.download_started,
-                        Toast.LENGTH_SHORT
+                activity?.let { act ->
+                    AdsManager.loadAndShowAdWithRetry(
+                        act,
+                        loadingText = "Please wait, watch a short ad & download",
+                        onAdFinished = {
+                            acquireSingleLink(
+                                click.data,
+                                LOADTYPE_INAPP_DOWNLOAD,
+                                txt(R.string.episode_action_download_mirror)
+                            ) { (result, index) ->
+                                DownloadQueueManager.addToQueue(
+                                    DownloadObjects.DownloadQueueItem(
+                                        click.data,
+                                        response.isMovie(),
+                                        response.name,
+                                        response.type,
+                                        response.posterUrl,
+                                        response.apiName,
+                                        response.getId(),
+                                        response.url,
+                                        listOf(result.links[index]),
+                                        result.subs,
+                                    ).toWrapper()
+                                )
+                                showToast(
+                                    R.string.download_started,
+                                    Toast.LENGTH_SHORT
+                                )
+                            }
+                        }
                     )
                 }
             }
@@ -1518,28 +1540,50 @@ class ResultViewModel2 : ViewModel() {
             ACTION_PLAY_EPISODE_IN_PLAYER -> {
                 val list = HashMap<String, String>(currentResponse?.syncData ?: emptyMap())
 
-                generator?.also {
-                    it.getAll() // I know kinda shit to iterate all, but it is 100% sure to work
-                        ?.indexOfFirst { value -> value is ResultEpisode && value.id == click.data.id }
-                        ?.let { index ->
-                            if (index >= 0)
-                                it.goto(index)
+                fun playInternal() {
+                    generator?.also {
+                        it.getAll() // I know kinda shit to iterate all, but it is 100% sure to work
+                            ?.indexOfFirst { value -> value is ResultEpisode && value.id == click.data.id }
+                            ?.let { index ->
+                                if (index >= 0)
+                                    it.goto(index)
+                            }
+                    }
+                    if (currentResponse?.type == TvType.CustomMedia) {
+                        viewModelScope.launchSafe {
+                            generator?.generateLinks(
+                                clearCache = true,
+                                LOADTYPE_ALL,
+                                callback = {},
+                                subtitleCallback = {})
                         }
-                }
-                if (currentResponse?.type == TvType.CustomMedia) {
-                    generator?.generateLinks(
-                        clearCache = true,
-                        LOADTYPE_ALL,
-                        callback = {},
-                        subtitleCallback = {})
-                } else {
-                    activity?.navigate(
-                        R.id.global_to_navigation_player,
-                        GeneratorPlayer.newInstance(
-                            generator ?: return, list
+                    } else {
+                        activity?.navigate(
+                            R.id.global_to_navigation_player,
+                            GeneratorPlayer.newInstance(
+                                generator ?: return, list
+                            )
                         )
-                    )
+                    }
                 }
+
+                activity?.let { act ->
+                    val currentCount = DataStoreHelper.moviePlayCount
+                    val nextCount = currentCount + 1
+                    DataStoreHelper.moviePlayCount = nextCount
+
+                    if (nextCount % 5 == 0) {
+                        AdsManager.loadAndShowAdWithRetry(
+                            act,
+                            loadingText = "Please wait, watch a short ad & continue",
+                            onAdFinished = {
+                                playInternal()
+                            }
+                        )
+                    } else {
+                        playInternal()
+                    }
+                } ?: playInternal()
             }
 
             ACTION_MARK_AS_WATCHED -> {

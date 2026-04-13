@@ -10,7 +10,7 @@
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">סינון</string>
     <string name="duration_format" formatted="true">%d דקות</string>
-    <string name="app_name">קלאודסטרים</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">בית</string>
     <string name="title_search">חיפוש</string>
     <string name="title_downloads">הורדות</string>
@@ -70,7 +70,7 @@
     <string name="sort_clear">נקה</string>
     <string name="sort_save">לשמור</string>
     <string name="app_dub_sub_episode_text_format" formatted="true">%1$s פרק %2$d</string>
-    <string name="play_with_app_name">נגן עם קלאודסטרים</string>
+    <string name="play_with_app_name">נגן עם PluginStream</string>
     <string name="next_episode">פרק הבא</string>
     <string name="loading">טוען…</string>
     <string name="type_watching">צופה</string>
@@ -123,7 +123,7 @@
     <string name="logout">התנתק</string>
     <string name="login">התחברות</string>
     <string name="show_title">כותרת</string>
-    <string name="none">אין</string>
+    <string name="none">Select</string>
     <string name="all">הכל</string>
     <string name="title">כותרת</string>
     <string name="update_started">העדכון התחיל</string>

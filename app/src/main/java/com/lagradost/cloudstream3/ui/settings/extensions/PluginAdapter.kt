@@ -36,6 +36,7 @@ import kotlin.math.pow
 data class PluginViewData(
     val plugin: Plugin,
     val isDownloaded: Boolean,
+    val isDownloading: Boolean = false,
 )
 
 class RepositoryViewHolderState(view: ViewBinding) : ViewHolderState<Any>(view) {
@@ -75,18 +76,26 @@ class PluginAdapter(
 
         val metadata = item.plugin.second
         val disabled = metadata.status == PROVIDER_STATUS_DOWN
-        val name = metadata.name.removeSuffix("Provider")
+        val originalName = metadata.name.removeSuffix("Provider")
+        val name = originalName.replace("moviebox", "Max", ignoreCase = true)
+            .replace("moveibox", "Max", ignoreCase = true)
+            .replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
+            .replace("castle", "PluginStream", ignoreCase = true)
+            .replace("castel", "PluginStream", ignoreCase = true)
+            .replace("caslte", "PluginStream", ignoreCase = true)
         val alpha = if (disabled) 0.6f else 1f
         val isLocal = !item.plugin.second.url.startsWith("http")
         binding.mainText.alpha = alpha
         binding.subText.alpha = alpha
 
         val drawableInt = if (item.isDownloaded)
-            R.drawable.ic_baseline_delete_outline_24
+            R.drawable.ic_baseline_check_24
         else R.drawable.netflix_download
 
         binding.nsfwMarker.isVisible = metadata.tvTypes?.contains(TvType.NSFW.name) ?: false
         binding.actionButton.setImageResource(drawableInt)
+        binding.actionButton.isVisible = !item.isDownloading
+        binding.actionProgress.isVisible = item.isDownloading
 
         binding.actionButton.setOnClickListener {
             iconClickCallback.invoke(item.plugin)

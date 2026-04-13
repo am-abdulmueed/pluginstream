@@ -16,6 +16,7 @@ import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.mvvm.logError
 import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setSystemBarsPadding
+import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.txt
 
 /**
@@ -269,6 +270,10 @@ abstract class BasePreferenceFragmentCompat() : PreferenceFragmentCompat() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setSystemBarsPadding()
+        listView?.apply {
+            setPadding(0, 8.toPx, 0, 16.toPx)
+            clipToPadding = false
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

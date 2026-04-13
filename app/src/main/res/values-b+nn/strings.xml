@@ -11,7 +11,7 @@
     <string name="next_episode">Neste episode</string>
     <string name="episode_poster_img_des">Episodeminiatyrbilete</string>
     <string name="home_next_random_img_des">Neste tilfeldig</string>
-    <string name="play_with_app_name">Spel av med CloudStream</string>
+    <string name="play_with_app_name">Spel av med PluginStream</string>
     <string name="filler" formatted="true">Fyllstoff</string>
     <string name="preview_background_img_des">Forhandsvis bakgrunnsbilete</string>
     <string name="rated_format" formatted="true">Vurdert: %.1f</string>
@@ -168,7 +168,7 @@
     <string name="home_more_info">Meir informasjon</string>
     <string name="sort_close">Lukk</string>
     <string name="player_speed_text_format" formatted="true">Avspelinghastigheit (%.2fx)</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="next_episode_time_min_format" formatted="true">%dm</string>
     <string name="updates_settings_des">Sjå etter nye oppdateringar automatisk ved oppstart</string>
     <string name="discord">Bli med i Discord</string>

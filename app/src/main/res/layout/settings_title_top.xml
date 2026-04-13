@@ -17,6 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/primaryBlackBackground"
+        android:paddingTop="8dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:targetApi="n" />
         <!-- list_container is actually defined by the support library, but lint doesn't know that it exists before API 24. -->

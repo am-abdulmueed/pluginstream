@@ -20,8 +20,8 @@
 \n%1$s -&gt; %2$s</string>
     <string formatted="true" name="filler">Шаблон</string>
     <string formatted="true" name="duration_format">%d мин</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">Пусни с CloudStream</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">Пусни с PluginStream</string>
     <string name="title_home">Начало</string>
     <string name="title_search">Търсене</string>
     <string name="title_downloads">Изтегляния</string>
@@ -312,7 +312,7 @@
     <string name="sync_total_episodes_some" formatted="true">/%d</string>
     <string formatted="true" name="authenticated_user">%s удостоверен</string>
     <string formatted="true" name="authenticated_user_fail">Не можах да вляза в %s</string>
-    <string name="none">Нито един</string>
+    <string name="none">Select</string>
     <string name="normal">Нормално</string>
     <string name="all">Всичко</string>
     <string name="max">Макс</string>
@@ -405,13 +405,13 @@
     <string formatted="true" name="plugins_disabled">Деактивирано: %d</string>
     <string formatted="true" name="plugins_not_downloaded">Не е изтеглено: %d</string>
     <string formatted="true" name="plugins_updated">Актуализирани %d плъгини</string>
-    <string name="blank_repo_message">CloudStream няма инсталирани сайтове по подразбиране. Трябва да инсталирате сайтовете от хранилища.
+    <string name="blank_repo_message">PluginStream няма инсталирани сайтове по подразбиране. Трябва да инсталирате сайтовете от хранилища.
 \n
 \nПрисъединете се към нашия Дискорд или потърсете онлайн.</string>
     <string name="view_public_repositories_button">Вижте хранилищата на общността</string>
     <string name="view_public_repositories_button_short">Публичен списък</string>
     <string name="uppercase_all_subtitles">Всички субтитри с главни букви</string>
-    <string name="download_all_plugins_from_repo">Предупреждение: CloudStream не носи отговорност за използването на трети страни разширения и не предоставя поддръжка за тях!</string>
+    <string name="download_all_plugins_from_repo">Предупреждение: PluginStream не носи отговорност за използването на трети страни разширения и не предоставя поддръжка за тях!</string>
     <string name="single_plugin_disabled" formatted="true">%s (Деактивиран)</string>
     <string name="tracks">Потоци</string>
     <string name="audio_tracks">Аудио потоци</string>
@@ -652,7 +652,7 @@
     <string name="open_downloaded_repo">Отвори хранилище</string>
     <string name="reset_btn">Нулиране</string>
     <string name="device_pin_expired_message">PIN кодът е изтекъл !</string>
-    <string name="cs3wiki">CloudStream Уики</string>
+    <string name="cs3wiki">PluginStream Уики</string>
     <string name="password_pin_authentication_title">Удостоверяване с парола/PIN</string>
     <string name="custom_media_singluar">Медия</string>
     <string name="audio_book_singular">Аудиокнига</string>
@@ -660,15 +660,15 @@
     <string name="biometric_setting_summary">Отключете приложението с отпечатък, Face ID, PIN, шаблон или парола.</string>
     <string name="delete_plugin">Изтриване на плъгин</string>
     <string name="biometric_prompt_description">След няколко неуспешни опита, прозорецът ще се затвори. Просто рестартирайте приложението, за да опитате отново.</string>
-    <string name="biometric_warning">Вашите данни от CloudStream бяха архивирани. Въпреки че възможността за това е много малка, всички устройства могат да се държат по различен начин. В редките случаи, когато бъдете блокирани от достъпа до приложението, изчистете напълно данните на приложението и възстановете от архив. Извиняваме се за всяко неудобство, което може да възникне от това.</string>
+    <string name="biometric_warning">Вашите данни от PluginStream бяха архивирани. Въпреки че възможността за това е много малка, всички устройства могат да се държат по различен начин. В редките случаи, когато бъдете блокирани от достъпа до приложението, изчистете напълно данните на приложението и възстановете от архив. Извиняваме се за всяко неудобство, което може да възникне от това.</string>
     <string name="device_pin_error_message">Не може да се получи PIN кода на устройството, опитайте локално удостоверяване</string>
     <string name="torrent_info">Това видео е торент, което означава, че вашата видео дейност може да бъде проследена.\nУверете се, че разбирате принципите на торентирането, преди да продължите.</string>
     <string name="pref_category_security">Сигурност</string>
     <string name="ok">Добре</string>
     <string name="app_unrestricted_toast">Използването на батерия от приложението вече е настроено като неограничено</string>
-    <string name="app_info_intent_error">Не може да се отвори информацията за приложението CloudStream.</string>
+    <string name="app_info_intent_error">Не може да се отвори информацията за приложението PluginStream.</string>
     <string name="battery_dialog_title">Изключи оптимизация на батерията</string>
-    <string name="biometric_authentication_title">Отключи CloudStream</string>
+    <string name="biometric_authentication_title">Отключи PluginStream</string>
     <string name="resume_remaining" formatted="true">%s\nоставащи</string>
     <string name="clipboard_permission_error">Грешка при достъп до клипборда, моля опитайте отново.</string>
     <string name="speech_recognition_unavailable">Разпознаването на реч не е налично</string>
@@ -684,7 +684,7 @@
     <string name="player_settings_select_cast_device">Изберете устройство за излъчване</string>
     <string name="music_singlar">Музика</string>
     <string name="favorite">Любим</string>
-    <string name="battery_dialog_message">За да гарантираме непрекъснати изтегляния и известия за абонирани телевизионни шоута, CloudStream се нуждае от разрешение да работи в фонов режим. Като натиснете ДОБРЕ, ще видите диалогов прозорец с искане. Моля, натиснете \"Позволи\".\n\nМоля, имайте предвид, че това разрешение не означава, че CS3 ще изтощава батерията ви. То ще работи във фонов режим само когато е необходимо, като например при получаване на известия или изтегляне на видеоклипове от официални разширения.</string>
+    <string name="battery_dialog_message">За да гарантираме непрекъснати изтегляния и известия за абонирани телевизионни шоута, PluginStream се нуждае от разрешение да работи в фонов режим. Като натиснете ДОБРЕ, ще видите диалогов прозорец с искане. Моля, натиснете \"Позволи\".\n\nМоля, имайте предвид, че това разрешение не означава, че CS3 ще изтощава батерията ви. То ще работи във фонов режим само когато е необходимо, като например при получаване на известия или изтегляне на видеоклипове от официални разширения.</string>
     <string name="qr_image">Изображение на QR код</string>
     <string name="unfavorite">Премахни от любими</string>
     <string name="download_parallel_settings_des">Колко различни елемента могат да бъдат изтеглени паралелно</string>

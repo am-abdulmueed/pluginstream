@@ -109,7 +109,7 @@
     <string name="home_next_random_img_des">அடுத்து ஏதாவது</string>
     <string name="browser">உலாவி</string>
     <string name="duration_format" formatted="true">%d நிமி</string>
-    <string name="play_with_app_name">CloudStream-உடன் இயக்கு</string>
+    <string name="play_with_app_name">PluginStream-உடன் இயக்கு</string>
     <string name="new_update_format" formatted="true">புதிய புதுப்பிப்பு உள்ளது\n%1$s-&gt;%2$s</string>
     <string name="filler" formatted="true">நிரப்பி</string>
     <string name="search_poster_img_des">போச்டர்</string>
@@ -133,7 +133,7 @@
     <string name="category_account">கணக்குகள் மற்றும் பாதுகாப்பு</string>
     <string name="hls_playlist">எச்.எல்.எச் பிளேலிச்ட்</string>
     <string name="skip_type_mixed_ed">கலப்பு முடிவு</string>
-    <string name="app_name">கிளவுட்ச்ட்ரீம்</string>
+    <string name="app_name">PluginStream</string>
     <string name="benene_count_text_none">பெனின்கள் எதுவும் கொடுக்கப்படவில்லை</string>
     <string name="eigengraumode_settings">பிளேபேக் விரைவு</string>
     <string name="swipe_to_seek_settings">தேட ச்வைப்</string>
@@ -286,7 +286,7 @@
     <string name="no_repository_found_error">களஞ்சியம் கிடைக்கவில்லை, முகவரி ஐ சரிபார்த்து VPN ஐ முயற்சிக்கவும்</string>
     <string name="batch_download">தொகுதி பதிவிறக்கம்</string>
     <string name="plugin_singular">சொருகு</string>
-    <string name="download_all_plugins_from_repo">எச்சரிக்கை: மூன்றாம் தரப்பு நீட்டிப்புகளைப் பயன்படுத்துவதற்கு CloudStream எந்தப் பொறுப்பையும் ஏற்காது, அவற்றிற்கு எந்த ஆதரவையும் வழங்காது!</string>
+    <string name="download_all_plugins_from_repo">எச்சரிக்கை: மூன்றாம் தரப்பு நீட்டிப்புகளைப் பயன்படுத்துவதற்கு PluginStream எந்தப் பொறுப்பையும் ஏற்காது, அவற்றிற்கு எந்த ஆதரவையும் வழங்காது!</string>
     <string name="extension_language">மொழி</string>
     <string name="revert">திரும்பவும்</string>
     <string name="subscription_deleted">%s இலிருந்து குழுவிலகப்பட்டது</string>

@@ -21,6 +21,7 @@ import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
 import com.lagradost.cloudstream3.ui.settings.Globals.TV
 import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
 import com.lagradost.cloudstream3.utils.AppContextUtils.openBrowser
+import com.lagradost.cloudstream3.utils.AdsManager
 import com.lagradost.cloudstream3.utils.AppDebug
 import com.lagradost.cloudstream3.utils.Coroutines.runOnMainThread
 import com.lagradost.cloudstream3.utils.DataStore.getKey
@@ -29,6 +30,8 @@ import com.lagradost.cloudstream3.utils.DataStore.removeKey
 import com.lagradost.cloudstream3.utils.DataStore.removeKeys
 import com.lagradost.cloudstream3.utils.DataStore.setKey
 import com.lagradost.cloudstream3.utils.ImageLoader.buildImageLoader
+import com.lagradost.cloudstream3.utils.FirebaseHelper
+import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileNotFoundException
@@ -67,6 +70,7 @@ class ExceptionHandler(
     }
 }
 
+@Prerelease
 class CloudStreamApp : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
@@ -84,11 +88,19 @@ class CloudStreamApp : Application(), SingletonImageLoader.Factory {
         }
 
         AppDebug.isDebug = BuildConfig.DEBUG
+        AdsManager.initialize(this)
+
+        if (BuildConfig.USE_FIREBASE) {
+            FirebaseHelper.initialize(this)
+            FirebaseHelper.logEvent(FirebaseAnalytics.Event.APP_OPEN)
+        }
     }
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
         context = base
+        // This can be removed without deprecation after next stable
+        AcraApplication.context = context
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader {

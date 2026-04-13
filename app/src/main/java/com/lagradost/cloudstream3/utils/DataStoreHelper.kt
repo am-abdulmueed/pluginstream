@@ -148,6 +148,8 @@ object DataStoreHelper {
             _resultsSortingMode = value.ordinal
         }
 
+    var moviePlayCount: Int by UserPreferenceDelegate("movie_play_count", 0)
+
     data class Account(
         @JsonProperty("keyIndex")
         val keyIndex: Int,

@@ -19,8 +19,8 @@
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">फिलर</string>
     <string name="duration_format" formatted="true">%d मिनेट</string>
-    <string name="app_name">क्लाउडस्ट्रीम</string>
-    <string name="play_with_app_name">क्लाउडस्ट्रीममा प्ले गर्नुहोस्</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">PluginStreamमा प्ले गर्नुहोस्</string>
     <string name="title_home">होम्</string>
     <string name="title_search">खोजी</string>
     <string name="title_downloads">डाउनलोडस</string>

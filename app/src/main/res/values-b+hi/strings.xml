@@ -151,8 +151,8 @@
     <string name="search_hint_site" formatted="true">%s पर खोजें…</string>
     <string name="search_hint">खोजें…</string>
     <string name="duration_format" formatted="true">%d मिनट</string>
-    <string name="app_name">क्लाउडस्ट्रीम</string>
-    <string name="play_with_app_name">क्लाउडस्ट्रीम के साथ चलाएं</string>
+    <string name="app_name">प्लगइनस्ट्रीम</string>
+    <string name="play_with_app_name">प्लगइनस्ट्रीम के साथ चलाएं</string>
     <string name="duplicate_message_multiple" formatted="true">आपकी लाइब्रेरी में संभावित डुप्लिकेट आइटम पाए गए हैं:
 \n
 \n%s
@@ -418,8 +418,4 @@
     <string name="added_sync_format" formatted="true">जोड़ा गया %s</string>
     <string name="upload_sync">Sync</string>
     <string name="sync_score">रेटेड</string>
-    <string name="download_queue">कतार डाउनलोड करें</string>
-    <string name="queue_empty_message">फिलहाल कोई डाउनलोड कतार में नहीं है।</string>
-    <string name="extra_brightness_settings">अतिरिक्त चमक</string>
-    <string name="extra_brightness_settings_des">डिस्प्ले की चमक 100% से अधिक होने पर ब्राइटनेस फ़िल्टर चालू करें</string>
 </resources>

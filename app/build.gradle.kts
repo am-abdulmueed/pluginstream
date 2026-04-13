@@ -9,54 +9,29 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlin.android)
+    id("com.google.gms.google-services") version "4.4.4"
 }
 
 val javaTarget = JvmTarget.fromTarget(libs.versions.jvmTarget.get())
 
-abstract class GenerateGitHashTask : DefaultTask() {
+fun getGitCommitHash(): String {
+    return try {
+        val headFile = file("${project.rootDir}/.git/HEAD")
 
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val headFile: RegularFileProperty
-
-    @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val headsDir: DirectoryProperty
-
-    @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
-
-    @TaskAction
-    fun generate() {
-        val head = headFile.get().asFile
-
-        val hash = try {
-            if (head.exists()) {
-                // Read the commit hash from .git/HEAD
-                val headContent = head.readText().trim()
-                if (headContent.startsWith("ref:")) {
-                    val refPath = headContent.substring(5) // e.g., refs/heads/main
-                    val commitFile = File(head.parentFile, refPath)
-                    if (commitFile.exists()) commitFile.readText().trim() else ""
-                } else headContent // If it's a detached HEAD (commit hash directly)
-            } else "" // If .git/HEAD doesn't exist
-        } catch (_: Throwable) {
-            "" // Just set to an empty string if any exception occurs
-        }.take(7) // Get the short commit hash
-
-        val outFile = outputDir.file("git-hash.txt").get().asFile
-        outFile.parentFile.mkdirs()
-        outFile.writeText(hash)
+        // Read the commit hash from .git/HEAD
+        if (headFile.exists()) {
+            val headContent = headFile.readText().trim()
+            if (headContent.startsWith("ref:")) {
+                val refPath = headContent.substring(5) // e.g., refs/heads/main
+                val commitFile = file("${project.rootDir}/.git/$refPath")
+                if (commitFile.exists()) commitFile.readText().trim() else ""
+            } else headContent // If it's a detached HEAD (commit hash directly)
+        } else {
+            "" // If .git/HEAD doesn't exist
+        }.take(7) // Return the short commit hash
+    } catch (_: Throwable) {
+        "" // Just return an empty string if any exception occurs
     }
-}
-
-val generateGitHash = tasks.register<GenerateGitHashTask>("generateGitHash") {
-    val gitDir = layout.projectDirectory.dir("../.git")
-
-    headFile.set(gitDir.file("HEAD"))
-    headsDir.set(gitDir.dir("refs/heads"))
-
-    outputDir.set(layout.buildDirectory.dir("generated/git"))
 }
 
 android {
@@ -65,24 +40,31 @@ android {
         unitTests.isReturnDefaultValues = true
     }
 
-    // Looks like google likes to add metadata only they can read https://gitlab.com/IzzyOnDroid/repo/-/work_items/491
-    dependenciesInfo {
-        // Disables dependency metadata when building APKs.
-        includeInApk = false
-        // Disables dependency metadata when building Android App Bundles.
-        includeInBundle = false
-    }
-
-    androidComponents {
-        onVariants { variant ->
-            variant.sources.assets?.addGeneratedSourceDirectory(
-                generateGitHash,
-                GenerateGitHashTask::outputDir
-            )
-        }
+    viewBinding {
+        enable = true
     }
 
     signingConfigs {
+        create("release") {
+            // Reads signing credentials from local.properties (never committed to GitHub)
+            val localProps = gradleLocalProperties(rootDir, project.providers)
+            val keystorePath = localProps["signing.storeFile"]?.toString()
+                ?: System.getenv("SIGNING_STORE_FILE")
+            val keystorePassword = localProps["signing.storePassword"]?.toString()
+                ?: System.getenv("SIGNING_STORE_PASSWORD")
+            val keystoreKeyAlias = localProps["signing.keyAlias"]?.toString()
+                ?: System.getenv("SIGNING_KEY_ALIAS")
+            val keystoreKeyPassword = localProps["signing.keyPassword"]?.toString()
+                ?: System.getenv("SIGNING_KEY_PASSWORD")
+
+            if (keystorePath != null) {
+                storeFile = file("${project.rootDir}/$keystorePath")
+            }
+            storePassword = keystorePassword
+            keyAlias = keystoreKeyAlias
+            keyPassword = keystoreKeyPassword
+        }
+
         // We just use SIGNING_KEY_ALIAS here since it won't change
         // so won't kill the configuration cache.
         if (System.getenv("SIGNING_KEY_ALIAS") != null) {
@@ -101,11 +83,13 @@ android {
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.lagradost.cloudstream3"
+        applicationId = "com.betapix.pluginstream"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 68
-        versionName = "4.7.0"
+        versionName = "5.0.0"
+
+        resValue("string", "commit_hash", getGitCommitHash())
 
         manifestPlaceholders["target_sdk_version"] = libs.versions.targetSdk.get()
 
@@ -127,11 +111,16 @@ android {
             "SIMKL_CLIENT_SECRET",
             "\"" + (System.getenv("SIMKL_CLIENT_SECRET") ?: localProperties["simkl.secret"]) + "\""
         )
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField(
+            "Boolean",
+            "USE_FIREBASE",
+            "true"
+        )
     }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isDebuggable = false
             isMinifyEnabled = false
             isShrinkResources = false
@@ -175,11 +164,11 @@ android {
     }
 
     java {
-        // Use Java 17 toolchain even if a higher JDK runs the build.
+	    // Use Java 17 toolchain even if a higher JDK runs the build.
         // We still use Java 8 for now which higher JDKs have deprecated.
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(libs.versions.jdkToolchain.get()))
-        }
+	    toolchain {
+		    languageVersion.set(JavaLanguageVersion.of(libs.versions.jdkToolchain.get()))
+    	}
     }
 
     lint {
@@ -189,7 +178,7 @@ android {
 
     buildFeatures {
         buildConfig = true
-        viewBinding = true
+        resValues = true
     }
 
     packaging {
@@ -204,6 +193,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":protube"))
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.json)
@@ -234,6 +224,13 @@ dependencies {
 
     // FFmpeg Decoding
     implementation(libs.bundles.nextlib)
+
+    // Unity Ads
+    implementation("com.unity3d.ads:unity-ads:4.9.2")
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
+    implementation("com.google.firebase:firebase-analytics")
 
     // PlayBack
     implementation(libs.colorpicker) // Subtitle Color Picker

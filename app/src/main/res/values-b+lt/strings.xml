@@ -129,7 +129,7 @@
     <string name="action_remove_watching">Pašalinti</string>
     <string name="action_open_watching">Daugiau informacijos</string>
     <string name="type_on_hold">Sustabdyta</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="home_play">Paleisti</string>
     <string name="livestreams">Gyvos transliacijos</string>
     <string name="apk_installer_settings">APK įrašymas</string>
@@ -139,7 +139,7 @@
     <string name="app_language">Programos kalba</string>
     <string name="sort_close">Uždaryti</string>
     <string name="action_add_to_bookmarks">Nustatyti žiūrėjimo statusą</string>
-    <string name="play_with_app_name">Paleisti su CloudStream</string>
+    <string name="play_with_app_name">Paleisti su PluginStream</string>
     <string name="subs_subtitle_elevation">Subtitrų iškėlimas</string>
     <string name="episodes">Serijos</string>
     <string name="cast_format" formatted="true">Skleisti: %s</string>

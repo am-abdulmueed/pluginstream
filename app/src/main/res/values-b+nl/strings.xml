@@ -23,8 +23,8 @@
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Filler</string>
     <string name="duration_format" formatted="true">%d min</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">Afspelen met CloudStream</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">Afspelen met PluginStream</string>
     <string name="title_home">Home</string>
     <string name="title_search">Zoeken</string>
     <string name="title_downloads">Downloads</string>
@@ -309,7 +309,7 @@
     <string name="authenticated_user" formatted="true">%s geverifieerd</string>
     <string name="authenticated_user_fail" formatted="true">Kon niet inloggen op %s</string>
     <!-- ============ -->
-    <string name="none">Geen</string>
+    <string name="none">Select</string>
     <string name="normal">normaal</string>
     <string name="all">Allemaal</string>
     <string name="max">Max</string>
@@ -520,7 +520,7 @@
     <string name="delete_repository">Wis repository</string>
     <string name="subscription_deleted">Uitgeschreven bij %s</string>
     <string name="revert">Terugkeren</string>
-    <string name="blank_repo_message">CloudStream heeft standaard geen sites geïnstalleerd. U moet de sites uit repositories installeren.
+    <string name="blank_repo_message">PluginStream heeft standaard geen sites geïnstalleerd. U moet de sites uit repositories installeren.
 \n
 \nVanwege een hersenloze DMCA verwijdering door Sky UK Limited 🤮 kunnen we de repository site niet linken in de app.
 \n
@@ -636,7 +636,7 @@
     <string name="open_downloaded_repo">Open repository</string>
     <string name="battery_dialog_title">Batterij-optimalisatie uitschakelen</string>
     <string name="app_unrestricted_toast">Batterijgebruik van app is reeds ingesteld als onbegrensd</string>
-    <string name="app_info_intent_error">Niet in staat Cloudstreams App-info te openen.</string>
+    <string name="app_info_intent_error">Niet in staat PluginStreams App-info te openen.</string>
     <string name="sort_episodes_number_asc">Aflevering (Oplopend)</string>
     <string name="sort_episodes_number_desc">Aflevering (Aflopend)</string>
     <string name="sort_episodes_rating_high_low">Beoordeling (Hoogste)</string>
@@ -654,7 +654,7 @@
     <string name="password_pin_authentication_title">Wachtwoord/PIN-authenticatie</string>
     <string name="biometric_unsupported">Biometrische authenticatie is niet ondersteund op dit apparaat</string>
     <string name="biometric_prompt_description">Na enige mislukte pogingen zal de prompt sluiten. Herstart de app om het opnieuw te proberen.</string>
-    <string name="cs3wiki">CloudStream Wiki</string>
+    <string name="cs3wiki">PluginStream Wiki</string>
     <string name="device_pin_url_message">Ga naar <b>%s</b> op je smartphone of computer en voeren de bovenstaande code in</string>
     <string name="device_pin_expired_message">PIN-code is nu verlopen!</string>
     <string name="device_pin_counter_text">Code verloopt in %1$dm %2$ds</string>
@@ -677,7 +677,7 @@
     <string name="test_extensions_summary">Deze test is alleen bedoeld voor ontwikkelaars en bevestigt noch ontkent de werking van een extensie.</string>
     <string name="auth_locally">Lokale authenticatie</string>
     <string name="video_info">Media info</string>
-    <string name="download_all_plugins_from_repo">Waarschuwing: Cloudstream is niet verandwoordelijk voor het gebruik van extensies van derden en biedt hier ook geen ondersteuning voor!</string>
+    <string name="download_all_plugins_from_repo">Waarschuwing: PluginStream is niet verandwoordelijk voor het gebruik van extensies van derden en biedt hier ook geen ondersteuning voor!</string>
     <string name="player_settings_select_cast_device">Cast apparaat selecteren</string>
     <string name="clipboard_permission_error">Fout bij toegang tot het Klembord, Probeer het opnieuw.</string>
     <string name="clipboard_unknown_error">Fout bij het kopiëren. Kopieer alsjeblieft de logcat en neem contact op met de app-ondersteuning.</string>

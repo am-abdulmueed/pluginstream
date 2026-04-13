@@ -5,7 +5,7 @@
     <string name="rated_format" formatted="true">Оценето: %.1f</string>
     <string name="new_update_format" formatted="true">Пронајдена нова верзија!\n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Филтер</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">Дома</string>
     <string name="title_search">Барај</string>
     <string name="title_downloads">Преземања</string>
@@ -192,7 +192,7 @@
     <string name="switch_account">Промени корисничка сметка</string>
     <string name="add_account">Додади корисничка сметка</string>
     <!-- ============ -->
-    <string name="none">Ништо</string>
+    <string name="none">Select</string>
     <string name="normal">Нормално</string>
     <string name="all">Сите</string>
     <string name="max">Максимум</string>
@@ -245,7 +245,7 @@
     <string name="quality_tc">TC</string>
     <string name="subscription_new">Претплатен на %s</string>
     <string name="pref_category_subtitles">Преводи</string>
-    <string name="download_all_plugins_from_repo">Предупредување: CloudStream 3 не презема никаква одговорност за користење на екстензии од трети страни и не обезбедува никаква поддршка за нив!</string>
+    <string name="download_all_plugins_from_repo">Предупредување: PluginStream 3 не презема никаква одговорност за користење на екстензии од трети страни и не обезбедува никаква поддршка за нив!</string>
     <string name="backup_failed">Недостасуваат дозволи за складирање. Обиди се повторно.</string>
     <string name="sort_save">Зачувај</string>
     <string name="player_load_subtitles">Вчитај од датотека</string>
@@ -399,7 +399,7 @@
     <string name="documentaries_singular">Документарец</string>
     <string name="stream">Мрежен проток</string>
     <string name="duration_format" formatted="true">%d мин</string>
-    <string name="play_with_app_name">Играј со CloudStream</string>
+    <string name="play_with_app_name">Играј со PluginStream</string>
     <string name="play_trailer_button">Пушти трејлер</string>
     <string name="chromecast_subtitles_settings_des">Поставки за преводи на Chromecast</string>
     <string name="title">Наслов</string>
@@ -465,7 +465,7 @@
     <string name="plugin_downloaded">Приклучокот е преземен</string>
     <string name="plugin_load_fail" formatted="true">Не може да се вчита %s</string>
     <string name="setup_extensions_subtext">Преземи ја листата на сајтови што сакаш да ги користиш</string>
-    <string name="blank_repo_message">CloudStream нема стандардно инсталирани приклучоци. Треба сам да инсталираш приклучоци.\n\nПридружи се на нашиот Discord и дознај повеќе или барај онлајн.</string>
+    <string name="blank_repo_message">PluginStream нема стандардно инсталирани приклучоци. Треба сам да инсталираш приклучоци.\n\nПридружи се на нашиот Discord и дознај повеќе или барај онлајн.</string>
     <string name="tracks">Видео резолуција и аудио јазик</string>
     <string name="safe_mode_description">Сите екстензии беа исклучени поради пад за да ти помогне да ја пронајдеш причината што предизвикува проблем.</string>
     <string name="extension_rating" formatted="true">Оцена: %s</string>
@@ -574,22 +574,22 @@
     <string name="speed_setting_summary">Додава опција за брзина во плеерот</string>
     <string name="episode_action_cast_mirror">Cast mirror</string>
     <string name="test_extensions_summary">Овој тест е наменет само за програмери и не ја потврдува или негира работата на која било екстензија.</string>
-    <string name="app_info_intent_error">Не може да се отворат информациите за апликацијата CloudStream.</string>
+    <string name="app_info_intent_error">Не може да се отворат информациите за апликацијата PluginStream.</string>
     <string name="password_pin_authentication_title">Лозинка/ПИН автентикација</string>
     <string name="biometric_setting_summary">Отклучи ја апликацијата со отпечаток од прст, ID на лице, PIN, шема и лозинка.</string>
-    <string name="biometric_warning">Сега е направена резервна копија на твоите податоци на CloudStream. Иако можноста за ова е многу мала, сите уреди можат да се однесуваат поинаку. Во ретки случаи, кога ќе се изгубиш пристап до апликацијата, целосно исчисти ги податоците на апликацијата и врати ги од резервната копија. Многу ни е жал за какви било непријатности што произлегуваат од ова.</string>
+    <string name="biometric_warning">Сега е направена резервна копија на твоите податоци на PluginStream. Иако можноста за ова е многу мала, сите уреди можат да се однесуваат поинаку. Во ретки случаи, кога ќе се изгубиш пристап до апликацијата, целосно исчисти ги податоците на апликацијата и врати ги од резервната копија. Многу ни е жал за какви било непријатности што произлегуваат од ова.</string>
     <string name="reset_btn">Ресетирај</string>
     <string name="next_season_episode_format" formatted="true">Сезона %1$d Епизода %2$d ќе биде објавена за</string>
     <string name="player_settings_select_cast_device">Одбери уред да кастираш</string>
     <string name="battery_dialog_title">Оневозможи оптимизација на батерија</string>
-    <string name="biometric_authentication_title">Отклучи CloudStream</string>
+    <string name="biometric_authentication_title">Отклучи PluginStream</string>
     <string name="biometric_unsupported">Биометриската автентикација не е поддржана на овој уред</string>
     <string name="biometric_prompt_description">По неколку неуспешни обиди, известувањето ќе се затвори. Едноставно вклучи ја апликацијата повторно за да се обидеш повторно.</string>
     <string name="custom_media_singluar">Медиуми</string>
     <string name="episode_upcoming_format" formatted="true">Претстои во %s</string>
     <string name="resume_remaining" formatted="true">%s
 \nпреостанати</string>
-    <string name="battery_dialog_message">За да се обезбедат непрекинати преземања и известувања за претплатените ТВ серии, CloudStream треба дозвола за работа во позадина. Со притискање на „ОК“, ќе ви биде прикажан дијалог за барање дозвола. Ве молиме, притиснете „Дозволи“.\n\nИмајте предвид дека оваа дозвола не значи дека CS3 ќе ја троши вашата батерија. Ќе работи во позадина само кога е потребно, како на пример при примање известувања или преземање видеа од официјални екстензии.</string>
+    <string name="battery_dialog_message">За да се обезбедат непрекинати преземања и известувања за претплатените ТВ серии, PluginStream треба дозвола за работа во позадина. Со притискање на „ОК“, ќе ви биде прикажан дијалог за барање дозвола. Ве молиме, притиснете „Дозволи“.\n\nИмајте предвид дека оваа дозвола не значи дека CS3 ќе ја троши вашата батерија. Ќе работи во позадина само кога е потребно, како на пример при примање известувања или преземање видеа од официјални екстензии.</string>
     <string name="clipboard_permission_error">Грешка при пристапот до таблата со исечоци, обиди се повторно.</string>
     <string name="clipboard_unknown_error">Грешка при копирање, молам копирај го логот и контактирај ја поддршката на апликацијата.</string>
     <string name="audio_book_singular">Аудио книга</string>
@@ -630,7 +630,7 @@
     <string name="delete_message_multiple" formatted="true">Дали си сигурен дека сакаш трајно да ги избришеш следните ставки?\n\n%s</string>
     <string name="delete_plugin">Избриши го приклучокот</string>
     <string name="device_pin_error_message">Не може да се добие PIN-кодот на уредот, обиди се со локална автентикација</string>
-    <string name="cs3wiki">CloudStream Wiki</string>
+    <string name="cs3wiki">PluginStream Wiki</string>
     <string name="delete_message_series_episodes" formatted="true">Дали си сигурен дека сакаш трајно да ги избришеш следните епизоди во %1$s?\n\n%2$s</string>
     <string name="device_pin_counter_text">Кодот истекува за %1$d минута/и и %2$d секунда/и</string>
     <string name="audio_singluar">Аудио</string>

@@ -117,18 +117,32 @@
         app:srcCompat="@drawable/ic_baseline_tune_24"
         tools:visibility="visible" />
 
-    <ImageView
-        android:id="@+id/action_button"
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|end"
-        android:layout_marginStart="10dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:contentDescription="@string/download"
-        android:focusable="true"
-        android:nextFocusLeft="@id/repository_item_root"
-        android:padding="12dp"
-        tools:src="@drawable/ic_baseline_add_24" />
+        android:layout_gravity="center_vertical|end">
+
+        <ImageView
+            android:id="@+id/action_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/outline_drawable"
+            android:clickable="true"
+            android:contentDescription="@string/download"
+            android:focusable="true"
+            android:nextFocusLeft="@id/action_settings"
+            android:padding="12dp"
+            tools:src="@drawable/ic_baseline_add_24" />
+
+        <ProgressBar
+            android:id="@+id/action_progress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </FrameLayout>
 
 </LinearLayout>

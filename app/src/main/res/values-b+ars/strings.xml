@@ -19,7 +19,7 @@
     <string name="go_back_img_des">اذهب للخالف</string>
     <string name="preview_background_img_des">معاينة الخلفية</string>
     <string name="player_speed_text_format" formatted="true">سرعة(%.2fx)</string>
-    <string name="play_with_app_name">فتح مع كلاودستريم</string>
+    <string name="play_with_app_name">فتح مع PluginStream</string>
     <string name="title_home">الصفحة الاساسية</string>
     <string name="search_hint_site" formatted="true">...%sابحث</string>
     <string name="no_data">لايوجد بيانات</string>
@@ -39,7 +39,7 @@
 \n%1$s -&gt; %2$s</string>
     <string name="rated_format" formatted="true">%.1f:قدر</string>
     <string name="duration_format" formatted="true">%dاقل</string>
-    <string name="app_name">كلاودستريم</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_search">بحث</string>
     <string name="title_downloads">التحميلات</string>
     <string name="title_settings">اعدادات</string>

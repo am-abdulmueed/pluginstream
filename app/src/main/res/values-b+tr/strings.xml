@@ -23,8 +23,8 @@
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Dolgu</string>
     <string name="duration_format" formatted="true">%d dakika</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">CloudStream ile oynat</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">PluginStream ile oynat</string>
     <string name="title_home">Ana sayfa</string>
     <string name="title_search">Ara</string>
     <string name="title_downloads">İndirilenler</string>
@@ -412,11 +412,13 @@
     <string name="plugins_disabled" formatted="true">Devre dışı: %d</string>
     <string name="plugins_not_downloaded" formatted="true">İndirilmeyen: %d</string>
     <string name="plugins_updated" formatted="true">%d eklentiler güncellendi</string>
-    <string name="blank_repo_message">CloudStream, varsayılan olarak hiçbir site ile gelmez. Siteleri depolardan kurmanız gerekir. \n \nDiscord\'umuza katılın veya internet üzerinden arama yapın.</string>
+    <string name="blank_repo_message">PluginStream, varsayılan olarak hiçbir site ile gelmez. Siteleri depolardan kurmanız gerekir.
+\n
+\nDiscord\'umuza katılın veya çevrimiçi arama yapın.</string>
     <string name="view_public_repositories_button">Topluluk depolarını görüntüle</string>
     <string name="view_public_repositories_button_short">Herkese açık liste</string>
     <string name="uppercase_all_subtitles">Tüm altyazılar büyük harf</string>
-    <string name="download_all_plugins_from_repo">Uyarı: CloudStream 3.taraf uzantıların kullanımı için herhangi bir sorumluluk kabul etmez ve bunlar için herhangi bir destek sağlamaz!</string>
+    <string name="download_all_plugins_from_repo">Uyarı: PluginStream 3, üçüncü taraf uzantıların kullanımı için herhangi bir sorumluluk kabul etmez ve bunlar için herhangi bir destek sağlamaz!</string>
     <string name="single_plugin_disabled" formatted="true">%s (Devre dışı)</string>
     <string name="tracks">Parçalar</string>
     <string name="audio_tracks">Ses parçaları</string>
@@ -469,7 +471,7 @@
     <string name="update_notification_downloading">Uygulama güncellemesi indiriliyor…</string>
     <string name="update_notification_failed">Uygulamanın yeni sürümü kurulamadı</string>
     <string name="clear_history">Geçmişi temizle</string>
-    <string name="apk_installer_package_installer">Paket Kurucu</string>
+    <string name="apk_installer_package_installer">PaketKurucu</string>
     <string name="apk_installer_legacy">Eski</string>
     <string name="pref_category_gestures">Hareketler</string>
     <string name="all_languages_preference">Tüm Diller</string>
@@ -570,7 +572,7 @@
     <string name="action_remove_from_favorites">Favorilerden çıkar</string>
     <string name="select_an_account">Hesap Seç</string>
     <string name="disable">Devre dışı bırak</string>
-    <string name="no_repository_found_error">Depo bulunamadı, bağlantı adresini kontrol edin veya VPN ile deneyin</string>
+    <string name="no_repository_found_error">Depo bulunamadı, bağlantı adresini kontrol edin ve VPN deneyin</string>
     <string name="already_voted">Zaten oyladınız</string>
     <string name="no_plugins_found_error">Depoda eklenti bulunamadı</string>
     <string name="duplicate_message_single" formatted="true">Görünüşe göre potansiyel bir kopya kütüphanenizde zaten bulunuyor: \'%s\'
@@ -590,13 +592,13 @@
     <string name="test_extensions">Tüm uzantıları test et</string>
     <string name="test_extensions_summary">Bu test geliştiriciler içindir ve herhangi bir uzantının çalışmasını doğrulamaz veya reddetmez.</string>
     <string name="subscribe_tooltip">Yeni bölüm bildirimi</string>
-    <string name="biometric_authentication_title">CloudStream kilidini aç</string>
+    <string name="biometric_authentication_title">PluginStream kilidini aç</string>
     <string name="biometric_setting">Biyometri ile kilitle</string>
     <string name="password_pin_authentication_title">Şifre/PIN Kimlik Doğrulama</string>
     <string name="biometric_unsupported">Biyometrik kimlik doğrulama bu cihazda desteklenmiyor</string>
     <string name="biometric_setting_summary">Parmak İzi, Yüz Kimliği, PIN, Desen ve Parola ile uygulamanın kilidini açın.</string>
     <string name="biometric_prompt_description">Birkaç başarısız denemeden sonra istem kapanacaktır. Tekrar denemek için uygulamayı yeniden başlatmanız yeterlidir.</string>
-    <string name="biometric_warning">CloudStream verileriniz artık yedeklenmiştir. Bunun olasılığı çok düşük olsa da tüm cihazlar farklı davranabilir. Nadiren de olsa uygulamaya erişiminizin kilitlenmesi durumunda, uygulama verilerini tamamen temizleyin ve bir yedekten geri yükleyin. Bu durumdan kaynaklanan rahatsızlıklardan dolayı çok üzgünüz.</string>
+    <string name="biometric_warning">PluginStream verileriniz artık yedeklenmiştir. Bunun olasılığı çok düşük olsa da tüm cihazlar farklı davranabilir. Nadiren de olsa uygulamaya erişiminizin kilitlenmesi durumunda, uygulama verilerini tamamen temizleyin ve bir yedekten geri yükleyin. Bu durumdan kaynaklanan rahatsızlıklardan dolayı çok üzgünüz.</string>
     <string name="favorite">Favori</string>
     <string name="unfavorite">Favorilerden kaldır</string>
     <string name="resume_remaining" formatted="true">%s \nkaldı</string>
@@ -606,18 +608,18 @@
     <string name="clipboard_unknown_error">Kopyalama hatası. Lütfen logcat\'i kopyalayın ve uygulama desteğiyle iletişime geçin.</string>
     <string name="ok">Tamam</string>
     <string name="battery_dialog_title">Pil optimizasyonunu devre dışı bırak</string>
-    <string name="app_info_intent_error">CloudStream\'in Uygulama bilgileri açılamıyor.</string>
+    <string name="app_info_intent_error">PluginStream\'in Uygulama bilgileri açılamıyor.</string>
     <string name="music_singlar">Müzik</string>
     <string name="audio_book_singular">Sesli Kitap</string>
     <string name="custom_media_singluar">Medya</string>
-    <string name="battery_dialog_message">Abone olunan TV programları için kesintisiz indirme ve bildirimler sağlamak için CloudStream\'in arka planda çalışma iznine ihtiyacı var. Tamam\'a basarak bir istek iletişim kutusu göreceksiniz. Lütfen \'İzin Ver\'e basın.\n\nLütfen unutmayın, bu izin CS3’ün pilinizi tüketeceği anlamına gelmez. Yalnızca gerektiğinde, örneğin bildirim alırken veya resmi uzantılardan video indirirken arka planda çalışır.</string>
+    <string name="battery_dialog_message">Abone olunan TV programları için kesintisiz indirme ve bildirimler sağlamak için PluginStream\'in arka planda çalışma iznine ihtiyacı var. Tamam\'a basarak bir istek iletişim kutusu göreceksiniz. Lütfen \'İzin Ver\'e basın.\n\nLütfen unutmayın, bu izin CS3’ün pilinizi tüketeceği anlamına gelmez. Yalnızca gerektiğinde, örneğin bildirim alırken veya resmi uzantılardan video indirirken arka planda çalışır.</string>
     <string name="app_unrestricted_toast">Uygulama pil kullanımı zaten sınırsız olarak ayarlanmış</string>
     <string name="reset_btn">Sıfırla</string>
     <string name="episode_upcoming_format" formatted="true">%s içinde yaklaşıyor</string>
     <string name="next_season_episode_format" formatted="true">%1$d. Sezon %2$d. Bölüm şu tarihte yayınlanacak</string>
     <string name="player_settings_select_cast_device">Yansıtılacak cihaz seç</string>
     <string name="episode_action_cast_mirror">Ekran yansıtma</string>
-    <string name="cs3wiki">CloudStream bilgi</string>
+    <string name="cs3wiki">PluginStream bilgi</string>
     <string name="pref_category_security">Güvenlik</string>
     <string name="pref_category_accounts">Hesaplar</string>
     <string name="auth_locally">Yerel Olarak Doğrula</string>
@@ -722,7 +724,7 @@
     <string name="edit_profile_image_error_empty">URL bulunamadı</string>
     <string name="edit_profile_image_error_invalid">Geçersiz Bağlantı veya Görsel</string>
     <string name="edit_profile_image_success">Görsel Başarıyla Güncellendi</string>
-    <string name="episode_action_play_mirror">Şu kaynaktan oynat</string>"
+    <string name="episode_action_play_mirror">Ekranda oynat</string>"
     <string name="action_mark_watched_up_to_this_episode">Bu bölüme kadar izlenmiş olarak işaretle</string>
     <string name="action_remove_mark_watched_up_to_this_episode">Bu bölümü izlenmemiş olarak işaretle</string>
     <string name="action_reload">Yeniden yükle</string>
@@ -769,5 +771,4 @@
     </plurals>
     <string name="source_priority">Öncelikli kaynak</string>
     <string name="source_priority_help">Oynatıcıda video kaynaklarının nasıl sıralanacağını belirleyin</string>
-    <string name="show_player_metadata_overlay">Meta Verileri Katmanını Göster</string>
 </resources>

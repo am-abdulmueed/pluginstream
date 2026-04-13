@@ -21,8 +21,8 @@
     <string name="new_update_format" formatted="true">Nova atualização encontrada!
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Preenchimento</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">Assistir com o CloudStream</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">Assistir com o PluginStream</string>
     <string name="title_home">Início</string>
     <string name="title_search">Pesquisar</string>
     <string name="title_downloads">Downloads</string>
@@ -364,13 +364,13 @@
     <string name="plugins_downloaded" formatted="true">Transferido: %d</string>
     <string name="plugins_disabled" formatted="true">Desativado: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Não transferido: %d</string>
-    <string name="blank_repo_message">O CloudStream não tem sites instalados por padrão. É necessário instalar os sites a partir de repositórios.
+    <string name="blank_repo_message">O PluginStream não tem sites instalados por padrão. É necessário instalar os sites a partir de repositórios.
 \n
 \nJunte-se ao nosso Discord ou pesquise online.</string>
     <string name="view_public_repositories_button">Ver repositórios da comunidade</string>
     <string name="view_public_repositories_button_short">Lista pública</string>
     <string name="uppercase_all_subtitles">Todas as legendas em maiúsculas</string>
-    <string name="download_all_plugins_from_repo">Aviso: O CloudStream 3 não se responsabiliza pelo uso de extensões de terceiros e não fornece qualquer suporte às mesmas!</string>
+    <string name="download_all_plugins_from_repo">Aviso: O PluginStream 3 não se responsabiliza pelo uso de extensões de terceiros e não fornece qualquer suporte às mesmas!</string>
     <string name="single_plugin_disabled" formatted="true">%s (Desativado)</string>
     <string name="apk_installer_settings">Instalador APK</string>
     <string name="duration_format" formatted="true">%d min</string>
@@ -588,20 +588,20 @@
 \nrestante</string>
     <string name="clipboard_permission_error">Erro ao aceder à área de transferência, tente novamente.</string>
     <string name="clipboard_unknown_error">Erro ao copiar, copie o logcat e contacte o suporte da aplicação.</string>
-    <string name="biometric_authentication_title">Desbloquear o CloudStream</string>
+    <string name="biometric_authentication_title">Desbloquear o PluginStream</string>
     <string name="password_pin_authentication_title">Autenticação por palavra-passe/PIN</string>
     <string name="biometric_unsupported">A autenticação biométrica não é suportada neste dispositivo</string>
     <string name="biometric_setting_summary">Desbloqueie a aplicação com impressão digital, ID facial, PIN, padrão e palavra-passe.</string>
     <string name="biometric_prompt_description">Após algumas tentativas falhadas, a janela irá fechar. Reinicie a aplicação para tentar outra vez.</string>
-    <string name="biometric_warning">Os dados do seu CloudStream já foram copiados. Embora a possibilidade de isto acontecer ser muito baixa, todos os dispositivos podem comportar-se de forma diferente. No caso raro de ficar impedido de aceder à aplicação, limpe completamente os dados da aplicação e restaure a partir de uma cópia de segurança. Lamentamos qualquer incómodo causado por esta situação.</string>
+    <string name="biometric_warning">Os dados do seu PluginStream já foram copiados. Embora a possibilidade de isto acontecer ser muito baixa, todos os dispositivos podem comportar-se de forma diferente. No caso raro de ficar impedido de aceder à aplicação, limpe completamente os dados da aplicação e restaure a partir de uma cópia de segurança. Lamentamos qualquer incómodo causado por esta situação.</string>
     <string name="ok">OK</string>
     <string name="app_unrestricted_toast">A utilização da bateria da aplicação já está definida como sem restrições</string>
-    <string name="app_info_intent_error">Não é possível abrir a informação da aplicação CloudStream.</string>
+    <string name="app_info_intent_error">Não é possível abrir a informação da aplicação PluginStream.</string>
     <string name="music_singlar">Música</string>
     <string name="audio_book_singular">Livro Aúdio</string>
     <string name="custom_media_singluar">Multimédia</string>
     <string name="battery_dialog_title">Desativar a otimização da bateria</string>
-    <string name="battery_dialog_message">Para garantir descarregamentos ininterruptos e notificações de programas de TV subscritos, o CloudStream precisa de permissão para ser executado em segundo plano. Ao premir OK, será mostrado um diálogo. Prima \"Permitir\".\n\nTenha em atenção que esta permissão não significa que o CS3 irá esgotar a sua bateria. Este só funcionará em segundo plano quando necessário, como ao receber notificações ou baixar vídeos de extensões oficiais.</string>
+    <string name="battery_dialog_message">Para garantir descarregamentos ininterruptos e notificações de programas de TV subscritos, o PluginStream precisa de permissão para ser executado em segundo plano. Ao premir OK, será mostrado um diálogo. Prima \"Permitir\".\n\nTenha em atenção que esta permissão não significa que o CS3 irá esgotar a sua bateria. Este só funcionará em segundo plano quando necessário, como ao receber notificações ou baixar vídeos de extensões oficiais.</string>
     <string name="reset_btn">Reiniciar</string>
     <string name="next_season_episode_format" formatted="true">Temporada %1$d Episódio %2$d será lançado em</string>
     <string name="player_settings_select_cast_device">Escolha o dispositivo</string>
@@ -642,7 +642,7 @@
     <string name="device_pin_counter_text">O código expira em %1$dm %2$ds</string>
     <string name="sort_release_date_new">Data de Lançamento (Novo para Antigo)</string>
     <string name="sort_release_date_old">Data de Lançamento (Antigo para Novo)</string>
-    <string name="cs3wiki">Wiki do CloudStream</string>
+    <string name="cs3wiki">Wiki do PluginStream</string>
     <string name="device_pin_expired_message">O código PIN está agora expirado !</string>
     <string name="no_subtitles_loaded">Ainda sem legendadas carregadas</string>
     <string name="open_downloaded_repo">Abrir repositório</string>

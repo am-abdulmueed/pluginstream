@@ -5,7 +5,7 @@
     <string name="rated_format" formatted="true">റേറ്റിംഗ്: %.1f</string>
     <string name="new_update_format" formatted="true">പുതിയ അപ്ഡേറ്റ്!
 \n%1$s -&gt; %2$s</string>
-    <string name="app_name">ക്ലൗഡ് സ്ട്രീം</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">ഹോം</string>
     <string name="title_search">തിരയുക</string>
     <string name="title_downloads">ഡൗൺലോഡ്സ്</string>
@@ -172,7 +172,7 @@
     <string name="play_livestream_button">ലൈവ് സ്ട്രീം പ്ലേ ചെയ്യുക</string>
     <string name="filler" formatted="true">ഫില്ലർ</string>
     <string name="duration_format" formatted="true">%d മിനിറ്റ്</string>
-    <string name="play_with_app_name">ക്ലൗഡ് സ്ട്രീം ഉപയോഗിച്ച് പ്രവർത്തിപ്പിക്കുക</string>
+    <string name="play_with_app_name">PluginStream ഉപയോഗിച്ച് പ്രവർത്തിപ്പിക്കുക</string>
     <string name="home_next_random_img_des">അടുത്ത ക്രമരഹിതമായ</string>
     <string name="episode_poster_img_des">എപ്പിസോഡ് പോസ്റ്റർ</string>
     <string name="update_started">അപ്ഡേറ്റ് ആരംഭിച്ചു</string>
@@ -192,7 +192,7 @@
     <string name="subs_import_text" formatted="true">%s ൽ ഫോൻ്റ്‌സ് വെച്ചു കൊണ്ട് ഇംപോർട്ട് ചെയ്യുക</string>
     <string name="safe_mode_description">പ്രശ്‌നമുണ്ടാക്കുന്ന ഒന്ന് കണ്ടെത്താൻ നിങ്ങളെ സഹായിക്കുന്നതിന് ഒരു ക്രാഷ് കാരണം എല്ലാ വിപുലീകരണങ്ങളും ഓഫാക്കി.</string>
     <string name="view_public_repositories_button_short">പൊതു പട്ടിക</string>
-    <string name="blank_repo_message">CloudStream-ന് സ്ഥിരസ്ഥിതിയായി സൈറ്റുകളൊന്നും ഇൻസ്റ്റാൾ ചെയ്തിട്ടില്ല. നിങ്ങൾ റിപ്പോസിറ്ററികളിൽ നിന്ന് സൈറ്റുകൾ ഇൻസ്റ്റാൾ ചെയ്യേണ്ടതുണ്ട്.
+    <string name="blank_repo_message">PluginStream-ന് സ്ഥിരസ്ഥിതിയായി സൈറ്റുകളൊന്നും ഇൻസ്റ്റാൾ ചെയ്തിട്ടില്ല. നിങ്ങൾ റിപ്പോസിറ്ററികളിൽ നിന്ന് സൈറ്റുകൾ ഇൻസ്റ്റാൾ ചെയ്യേണ്ടതുണ്ട്.
 \n
 \nഞങ്ങളുടെ ഡിസ്കോർഡിൽ ചേരുക അല്ലെങ്കിൽ ഓൺലൈനിൽ തിരയുക.</string>
     <string name="sort_copy">പകർത്തുക</string>

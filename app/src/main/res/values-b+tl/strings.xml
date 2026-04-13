@@ -17,7 +17,7 @@
     <string name="rated_format" formatted="true">Rated: %.1f</string>
     <string name="new_update_format" formatted="true">Bagong update!
 \n%1$s -&gt; %2$s</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">Home</string>
     <string name="title_search">Maghanap</string>
     <string name="title_downloads">Mga Downloads</string>
@@ -207,7 +207,7 @@
     <string name="duration_format" formatted="true">%d min</string>
     <string name="next_episode_time_day_format" formatted="true">%1$dd, %2$dh:%3$dm</string>
     <string name="next_episode_time_hour_format" formatted="true">%1$dh : %2$dm</string>
-    <string name="play_with_app_name">I-play gamit ang CloudStream</string>
+    <string name="play_with_app_name">I-play gamit ang PluginStream</string>
     <string name="type_re_watching">Pinapanuod Uli</string>
     <string name="play_livestream_button">Panuorin ang Livestream</string>
     <string name="action_add_to_bookmarks">I-set ang Status</string>

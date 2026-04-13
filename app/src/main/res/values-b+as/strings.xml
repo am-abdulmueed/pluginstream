@@ -94,7 +94,7 @@
     <string name="qualities">গুণসমূহ</string>
     <string name="duplicate_add">যোগ কৰক</string>
     <string name="duplicate_replace">প্ৰতিস্থাপন কৰক</string>
-    <string name="biometric_authentication_title">CloudStream আনলক কৰক</string>
+    <string name="biometric_authentication_title">PluginStream আনলক কৰক</string>
     <string name="biometric_setting">বায়\'মেট্ৰিক্সৰ সৈতে লক কৰক</string>
     <string name="password_pin_authentication_title">পাছৱাৰ্ড/পিন প্ৰমাণীকৰণ</string>
     <string name="music_singlar">সংগীত</string>
@@ -111,7 +111,7 @@
     <string name="player_speed_text_format" formatted="true">গতি (%.2fx)</string>
     <string name="next_episode">পৰৱৰ্তী এপিচ\'ড</string>
     <string name="duration_format" formatted="true">%d মিনিট</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">ঘৰ</string>
     <string name="no_data">তথ্য নাই</string>
     <string name="episode_more_options_des">অধিক বিকল্পসমূহ</string>
@@ -376,7 +376,7 @@
     <string name="add_account">একাউন্ট যোগ কৰক</string>
     <string name="create_account">একাউন্ট সৃষ্টি কৰক</string>
     <string name="add_sync">ট্ৰেকিং যোগ কৰক</string>
-    <string name="none">একো নহয়</string>
+    <string name="none">Select</string>
     <string name="normal">সাধাৰণ</string>
     <string name="added_sync_format" formatted="true">%s যোগ কৰা হৈছে</string>
     <string name="upload_sync">সিঙ্ক</string>
@@ -456,12 +456,12 @@
     <string name="plugins_updated" formatted="true">%d প্লাগইন আপডেট কৰা হ\'ল</string>
     <string name="plugins_disabled" formatted="true">নিষ্ক্ৰিয় কৰা: %d</string>
     <string name="plugins_not_downloaded" formatted="true">ডাউনলোড কৰা নহয়: %d</string>
-    <string name="blank_repo_message">CloudStreamত কোনো চাইট ডিফল্টভাৱে ইনষ্টল হোৱা নাই। আপুনিয়ে ৰিপ\'জিট\'ৰিবোৰৰ পৰা চাইটসমূহ ইনষ্টল কৰিব লাগিব।
+    <string name="blank_repo_message">PluginStreamত কোনো চাইট ডিফল্টভাৱে ইনষ্টল হোৱা নাই। আপুনিয়ে ৰিপ\'জিট\'ৰিবোৰৰ পৰা চাইটসমূহ ইনষ্টল কৰিব লাগিব।
 \n
 \nআমাৰ Discordত যোগদান কৰক বা অনলাইন বিচাৰক।</string>
     <string name="view_public_repositories_button">সম্প্ৰদায়ৰ ৰিপ\'জিট\'ৰিসমূহ চাওক</string>
     <string name="uppercase_all_subtitles">সকলো চাবটাইটল মুকলি আখৰত</string>
-    <string name="download_all_plugins_from_repo">সতর্কতা: CloudStream 3 কোৱা নাই যে তৃতীয় পক্ষৰ বৃদ্ধিসমূহ ব্যৱহাৰ কৰিবলৈ আপুনি সম্পূৰ্ণ দায়িত্ব ল\'ব আৰু কোনো সহায় নাপাব!</string>
+    <string name="download_all_plugins_from_repo">সতর্কতা: PluginStream কোৱা নাই যে তৃতীয় পক্ষৰ বৃদ্ধিসমূহ ব্যৱহাৰ কৰিবলৈ আপুনি সম্পূৰ্ণ দায়িত্ব ল\'ব আৰু কোনো সহায় নাপাব!</string>
     <string name="single_plugin_disabled" formatted="true">%s (নিষ্ক্ৰিয়)</string>
     <string name="tracks">ট্ৰেকসমূহ</string>
     <string name="audio_tracks">অ\'ডিঅ\' ট্ৰেকসমূহ</string>
@@ -507,7 +507,7 @@
     <string name="confirm_exit_dialog">আপুনি নিশ্চিত যে আপুনি বাহিৰ হ\'ব বিচাৰে?</string>
     <string name="app_unrestricted_toast">এপ্‌ৰ বেটাৰী ব্যৱহাৰ ইতিমধ্যে অবাধত সজোৱা হৈছে</string>
     <string name="battery_dialog_message">ক্লাউডষ্ট্ৰিমক পটভূমিত চলাবলৈ অনুমতিৰ প্ৰয়োজন যাতে চাবস্ক্ৰাইব কৰা টিভি শ্ব\'সমূহৰ বাবে নিৰৱচ্ছিন্ন ডাউনলোড আৰু জাননীসমূহ নিশ্চিত কৰিব পাৰি। এটা অনুৰোধ সংলাপ প্ৰদৰ্শন কৰিবলে ঠিক আছে টিপক। তাৰ পিছত, \'Allow\' টিপক।\n\nঅনুগ্ৰহ কৰি মন কৰক, এই অনুমতিৰ অৰ্থ এইটো নহয় যে CS3 এ আপোনাৰ বেটাৰী শেষ কৰিব। ই কেৱল প্ৰয়োজনৰ সময়তহে পটভূমিত কাম কৰিব, যেনে জাননী লাভ কৰাৰ সময়ত বা অফিচিয়েল এক্সটেনচনৰ পৰা ভিডিঅ’ ডাউনলোড কৰাৰ সময়ত।</string>
-    <string name="app_info_intent_error">CloudStream-ৰ App Info খুলিব পৰা নগ\'ল।</string>
+    <string name="app_info_intent_error">PluginStream-ৰ App Info খুলিব পৰা নগ\'ল।</string>
     <string name="update_notification_failed">এপ্‌ৰ নতুন সংস্কৰণ স্থাপন কৰিব পৰা নগ\'ল</string>
     <string name="update_notification_downloading">এপ্‌ আপডেট ডাউনলোড কৰি আছে…</string>
     <string name="update_notification_installing">এপ্‌ আপডেট স্থাপন কৰি আছে…</string>
@@ -584,14 +584,14 @@
     <string name="biometric_setting_summary">আঙুলি চিহ্ন, মুখৰ আইডি, পিন, পেটাৰ্ণ আৰু পাছৱাৰ্ডৰ সৈতে এপ্লিকেচন আনলক কৰক।</string>
     <string name="favorite">প্ৰিয়</string>
     <string name="biometric_prompt_description">কেইবাটাও ভুল চেষ্টা কৰাৰ পিছত, প্ৰম্প্ট বন্ধ হ\'ব। পুনৰ চেষ্টা কৰিবলৈ মাত্ৰ এপ্পটো পুনৰ আৰম্ভ কৰক।</string>
-    <string name="biometric_warning">আপোনাৰ CloudStream ডেটা এতিয়া সংৰক্ষণ কৰা হৈছে। এইৰ সম্ভাৱনা অত্যন্ত কম, কিন্তু সকলো ডিভাইচৰ ব্যৱহাৰ ভিন্ন হ\'ব পাৰে। যদি এপ্লিকেচনটোত প্রবেশ কৰিব নোৱাৰা অৱস্থাত পৰাৰ কম সম্ভাৱনাৰ ঘটনা ঘটে, তেন্তে সম্পূৰ্ণভাবে এপ্প ডেটা মচি দিয়ক আৰু সংৰক্ষণৰ পৰা পুনৰুদ্ধাৰ কৰক। কোনো অশান্তিৰ বাবে আমাৰ দুখিত হওক।</string>
+    <string name="biometric_warning">আপোনাৰ PluginStream ডেটা এতিয়া সংৰক্ষণ কৰা হৈছে। এইৰ সম্ভাৱনা অত্যন্ত কম, কিন্তু সকলো ডিভাইচৰ ব্যৱহাৰ ভিন্ন হ\'ব পাৰে। যদি এপ্লিকেচনটোত প্রবেশ কৰিব নোৱাৰা অৱস্থাত পৰাৰ কম সম্ভাৱনাৰ ঘটনা ঘটে, তেন্তে সম্পূৰ্ণভাবে এপ্প ডেটা মচি দিয়ক আৰু সংৰক্ষণৰ পৰা পুনৰুদ্ধাৰ কৰক। কোনো অশান্তিৰ বাবে আমাৰ দুখিত হওক।</string>
     <string name="download">ডাউনলোড</string>
     <string name="updates_settings_des">এপ্‌ আৰম্ভণিৰ পিছত নতুন আপডেটৰ সন্ধান কৰক।</string>
     <string name="anim">একেই ডেভেলপাৰৰ দ্বাৰা এনিম এপ্‌</string>
     <string name="new_update_format" formatted="true">নতুন আপডেট পোৱা গ’ল!
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">ফিলাৰ</string>
-    <string name="play_with_app_name">CloudStreamৰে প্লে কৰক</string>
+    <string name="play_with_app_name">PluginStreamৰে প্লে কৰক</string>
     <string name="title_search">সন্ধান</string>
     <string name="title_downloads">ডাউনলোড</string>
     <string name="result_tags">শ্ৰেণীসমূহ</string>
@@ -629,7 +629,7 @@
     <string name="pref_category_accounts">একাউণ্টসমূহ</string>
     <string name="qr_image">কিউ আৰ কোডৰ ছবি</string>
     <string name="delete_plugin">প্লাগইন ডিলিট কৰক</string>
-    <string name="cs3wiki">CloudStream ৱিকি</string>
+    <string name="cs3wiki">PluginStream ৱিকি</string>
     <string name="pref_category_security">সুৰক্ষা</string>
     <string name="device_pin_url_message">আপোনাৰ স্মাৰ্টফোন বা কম্পিউটাৰত <b>%s</b> লগ কৰক আৰু ওপৰৰ ক\'ডটো প্ৰৱিষ্ট কৰক</string>
     <string name="device_pin_error_message">ডিভাইচ পিন ক\'ড পোৱা নাই, স্থানীয় প্ৰমাণীকৰণ চেষ্টা কৰক</string>

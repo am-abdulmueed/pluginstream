@@ -1,63 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/setup_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="?attr/primaryBlackBackground"
+    android:padding="16dp">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="24dp"
         android:gravity="center"
-        android:text="@string/app_layout"
-        android:textSize="18sp" />
+        android:orientation="vertical">
 
-    <TextView
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/baseline_grid_view_24"
+            app:tint="?attr/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/google_sans"
+            android:gravity="center"
+            android:text="@string/app_layout"
+            android:textColor="?attr/textColor"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/app_layout_subtext"
+            android:textColor="?attr/grayTextColor"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/app_layout_subtext">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="2dp"
+        app:strokeWidth="0dp"
+        app:cardBackgroundColor="?attr/primaryGrayBackground">
 
-    </TextView>
-
-    <ListView
-        android:id="@+id/listview1"
-        android:layout_width="match_parent"
-
-        android:layout_height="match_parent"
-        android:layout_rowWeight="1"
-        android:layout_marginBottom="60dp"
-        android:nextFocusLeft="@id/apply_btt"
-        android:nextFocusRight="@id/cancel_btt"
-        android:paddingTop="10dp"
-        android:requiresFadingEdge="vertical"
-        tools:listitem="@layout/sort_bottom_single_choice" />
+        <ListView
+            android:id="@+id/listview1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"
+            android:padding="8dp"
+            android:requiresFadingEdge="vertical"
+            tools:listitem="@layout/sort_bottom_single_choice" />
+    </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
         android:id="@+id/apply_btt_holder"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_gravity="bottom"
-        android:layout_marginTop="-60dp"
-        android:gravity="bottom|end"
-        android:orientation="horizontal">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/next_btt"
-            style="@style/WhiteButton"
-            android:layout_width="wrap_content"
-            android:layout_gravity="center_vertical|end"
-            android:text="@string/setup_done" />
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/prev_btt"
             style="@style/BlackButton"
-            android:layout_width="wrap_content"
-            android:layout_gravity="center_vertical|end"
-            android:text="@string/previous" />
-    </LinearLayout>
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/google_sans"
+            android:text="@string/previous"
+            android:textAllCaps="false"
+            app:cornerRadius="28dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/next_btt"
+            style="@style/WhiteButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/google_sans"
+            android:text="@string/setup_done"
+            android:textAllCaps="false"
+            app:cornerRadius="28dp" />
+    </LinearLayout>
 
 </LinearLayout>

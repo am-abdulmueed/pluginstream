@@ -18,7 +18,7 @@
     <string name="new_update_format" formatted="true">Pembaruan ditemukan!\n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Filler</string>
     <string name="duration_format" formatted="true">%d mnt</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">Beranda</string>
     <string name="title_search">Cari</string>
     <string name="title_downloads">Unduhan</string>
@@ -282,7 +282,7 @@
     <string name="authenticated_user" formatted="true">%s terautentikasi</string>
     <string name="authenticated_user_fail" formatted="true">Gagal masuk ke %s</string>
     <!-- ============ -->
-    <string name="none">Tidak Ada</string>
+    <string name="none">Select</string>
     <string name="normal">Normal</string>
     <string name="all">Semua</string>
     <string name="max">Maks</string>
@@ -374,7 +374,7 @@
     <string name="pref_category_app_updates">Perbarui aplikasi</string>
     <string name="pref_category_backup">Cadangkan</string>
     <string name="pref_category_extensions">Ekstensi</string>
-    <string name="play_with_app_name">Putar di CloudStream</string>
+    <string name="play_with_app_name">Putar di PluginStream</string>
     <string name="pref_filter_search_quality">Sembunyikan kualitas video terpilih di pencarian</string>
     <string name="season_format">%1$s %2$d%3$s</string>
     <string name="livestreams">Siaran langsung</string>
@@ -390,7 +390,7 @@
     <string name="plugins_updated" formatted="true">%d plugin diperbarui</string>
     <string name="view_public_repositories_button">Lihat repositori komunitas</string>
     <string name="view_public_repositories_button_short">Daftar publik</string>
-    <string name="blank_repo_message">CloudStream tidak memiliki situs yang terinstal secara default. Anda perlu menginstal situs-situs dari repositori.
+    <string name="blank_repo_message">PluginStreamtidak memiliki situs yang terinstal secara default. Anda perlu menginstal situs-situs dari repositori.
 \n
 \nBergabunglah dengan Discord kami atau cari secara online.</string>
     <string name="repository_url_hint">URL Repositori atau Kode Pendek</string>
@@ -410,7 +410,7 @@
     <string name="uppercase_all_subtitles">Gunakan huruf besar untuk semua subtitel</string>
     <string name="plugins_downloaded" formatted="true">Terunduh: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Tidak terunduh: %d</string>
-    <string name="download_all_plugins_from_repo">Peringatan: CloudStream 3 tidak bertanggung jawab atas penggunaan ekstensi pihak ketiga dan tidak menyediakan dukungan apa pun untuk ekstensi tersebut!</string>
+    <string name="download_all_plugins_from_repo">Peringatan: pluginstream tidak bertanggung jawab atas penggunaan ekstensi pihak ketiga dan tidak menyediakan dukungan apa pun untuk ekstensi tersebut!</string>
     <string name="safe_mode_title">Mode aman aktif</string>
     <string name="single_plugin_disabled" formatted="true">%s (Tidak aktif)</string>
     <string name="tracks">Trek</string>
@@ -586,7 +586,7 @@
     <string name="subscribe_tooltip">Notifikasi episode baru</string>
     <string name="recommendations_tooltip">Tampilkan rekomendasi</string>
     <string name="test_extensions">Tes semua ekstensi</string>
-    <string name="biometric_warning">Data CloudStream Anda telah dicadangkan. Meskipun peluang terjadinya kasus ini sangat kecil dan jarang terjadi, tetapi semua perangkat berperilaku berbeda. Jika Anda ada dalam situasi terburuk, misalnya gagal untuk mengakses aplikasi, segera hapus data aplikasi sepenuhnya dan pulihkan data cadangan. Kami mohon maaf atas segala ketidaknyamanan yang mungkin ditimbulkan.</string>
+    <string name="biometric_warning">Data PluginStreamAnda telah dicadangkan. Meskipun peluang terjadinya kasus ini sangat kecil dan jarang terjadi, tetapi semua perangkat berperilaku berbeda. Jika Anda ada dalam situasi terburuk, misalnya gagal untuk mengakses aplikasi, segera hapus data aplikasi sepenuhnya dan pulihkan data cadangan. Kami mohon maaf atas segala ketidaknyamanan yang mungkin ditimbulkan.</string>
     <string name="password_pin_authentication_title">Otentikasi Kata Sandi/PIN</string>
     <string name="biometric_unsupported">Otentikasi biometrik tidak didukung di perangkat ini</string>
     <string name="biometric_setting_summary">Buka kunci aplikasi dengan Sidik Jari, Face ID, PIN, Pola, dan Kata Sandi.</string>
@@ -608,13 +608,13 @@
     <string name="music_singlar">Musik</string>
     <string name="audio_book_singular">Buku Audio</string>
     <string name="custom_media_singluar">Media</string>
-    <string name="battery_dialog_message">Untuk memastikan unduhan dan pemberitahuan tanpa gangguan untuk acara TV berlangganan, CloudStream memerlukan izin untuk berjalan di latar belakang. Dengan menekan OK, Anda akan diperlihatkan dialog permintaan. Silakan tekan ‘Izinkan’.\n\nHarap dicatat, izin ini tidak berarti CS3 akan menguras baterai Anda. Aplikasi ini hanya akan beroperasi di latar belakang jika diperlukan, misalnya saat menerima notifikasi atau mengunduh video dari ekstensi resmi.</string>
+    <string name="battery_dialog_message">Untuk memastikan unduhan dan pemberitahuan tanpa gangguan untuk acara TV berlangganan, PluginStreammemerlukan izin untuk berjalan di latar belakang. Dengan menekan OK, Anda akan diperlihatkan dialog permintaan. Silakan tekan ‘Izinkan’.\n\nHarap dicatat, izin ini tidak berarti CS3 akan menguras baterai Anda. Aplikasi ini hanya akan beroperasi di latar belakang jika diperlukan, misalnya saat menerima notifikasi atau mengunduh video dari ekstensi resmi.</string>
     <string name="reset_btn">Mengatur ulang</string>
     <string name="next_season_episode_format" formatted="true">Musim %1$d Episode %2$d akan dirilis pada</string>
     <string name="episode_upcoming_format" formatted="true">Akan datang di %s</string>
     <string name="episode_action_cast_mirror">Cermin Cast</string>
     <string name="player_settings_select_cast_device">Pilih perangkat cast</string>
-    <string name="cs3wiki">CloudStream Wiki</string>
+    <string name="cs3wiki">PluginStreamWiki</string>
     <string name="pref_category_security">Keamanan</string>
     <string name="pref_category_accounts">Akun</string>
     <string name="test_warning">Hati hati</string>
@@ -764,5 +764,4 @@
     <string name="cancel_all">Batalkan semua</string>
     <string name="download_episode_range">Apakah kamu ingin mengunduh episode %s?</string>
     <string name="cancel_queue_message">Apakah kamu ingin membatalkan semua unduhan dalam antrean?</string>
-    <string name="show_player_metadata_overlay">Tampilkan overlay metadata pemutar</string>
 </resources>

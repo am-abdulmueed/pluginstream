@@ -17,8 +17,8 @@
     <string name="next_episode_time_day_format" formatted="true">%1$d دن %2$d گھنٹے %3$d منٹ</string>
     <string name="next_episode_time_hour_format" formatted="true">%1$d گھنٹے %2$d منٹ</string>
     <string name="next_episode_time_min_format" formatted="true">%d منٹ</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">CloudStream کے ساتھ چلائیں</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">PluginStream کے ساتھ چلائیں</string>
     <string name="title_home">ہوم</string>
     <string name="title_search">تلاش کریں</string>
     <string name="title_downloads">ڈاؤن لوڈ</string>
@@ -388,7 +388,7 @@
     <string name="subtitles_remove_bloat">سب ٹائٹلز سے بلوٹ کو ہٹا دیں</string>
     <string name="subtitles_filter_lang">ترجیحی میڈیا زبان کے لحاظ سے فلٹر کریں</string>
     <string name="referer">حوالہ دینے والا (مرضی پر)</string>
-    <string name="provider_languages_tip">ان زبانوں میں ویڈیوز دیکھیں</string>
+    <string name="provider_languages_tip">ان زبانوں کا انتخاب کریں جن میں آپ فلمیں اور شوز دیکھنا چاہتے ہیں</string>
     <string name="skip_setup">سیٹ اپ کو چھوڑ دیں</string>
     <string name="setup_done">ہو گیا</string>
     <string name="extensions">ایکسٹینشنز</string>
@@ -504,7 +504,7 @@
     <string name="subtitles_remove_captions">سب ٹائٹلز سے بند کیپشنز کو ہٹا دیں</string>
     <string name="app_layout_subtext">اپنے آلے کے مطابق ایپ کی شکل تبدیل کریں</string>
     <string name="next">اگلے</string>
-    <string name="blank_repo_message">CloudStream میں بذریعہ ڈیفالٹ کوئی سائٹ انسٹال نہیں ہے۔ آپ کو ریپوزٹری سے سائٹس انسٹال کرنے کی ضرورت ہے۔
+    <string name="blank_repo_message">PluginStream میں بذریعہ ڈیفالٹ کوئی سائٹ انسٹال نہیں ہے۔ آپ کو ریپوزٹری سے سائٹس انسٹال کرنے کی ضرورت ہے۔
 \n
 \nہمارے Discord میں شامل ہوں یا آن لائن تلاش کریں۔</string>
     <string name="safe_mode_description">تمام ایکسٹینشنز کریش کی وجہ سے آف کر دی گئیں تاکہ آپ کو پریشانی کا باعث تلاش کرنے میں مدد مل سکے۔</string>
@@ -580,7 +580,7 @@
 \nباقی</string>
     <string name="clipboard_permission_error">کلپ بورڈ تک رسائی میں خرابی، براہ کرم دوبارہ کوشش کریں۔</string>
     <string name="clipboard_unknown_error">کاپی کرنے میں خرابی، براہ کرم logcat کاپی کریں اور ایپ سپورٹ سے رابطہ کریں۔</string>
-    <string name="battery_dialog_message">سبسکرائب شدہ ٹی وی شوز کے لیے بلاتعطل ڈاؤن لوڈز اور اطلاعات کو یقینی بنانے کے لیے، CloudStream کو پس منظر میں چلنے کی اجازت درکار ہے۔ OK دبانے سے، آپ کو App info پر بھیج دیا جائے گا۔ وہاں اسکرول کریں 𝘼𝙥𝙥 𝙗𝙖𝙩𝙩𝙚𝙧𝙮 𝙪𝙨𝙖𝙜𝙚 اور battery usage کو 𝙐𝙣𝙧𝙚𝙨𝙩𝙧𝙞𝙘𝙩𝙚𝙙 کردیں، اس اجازت کا مطلب یہ نہیں ہے کہ CS3 آپ کی بیٹری ختم کردے گا۔ یہ صرف ضرورت پڑنے پر پس منظر میں کام کرے گا، جیسے کہ جب اطلاعات موصول ہوں یا آفیشل ایکسٹینشنز سے ویڈیوز ڈاؤن لوڈ کریں۔ اگر آپ منسوخ کرنے کا انتخاب کرتے ہیں، تو آپ اس ترتیب کو بعد میں 𝙂𝙚𝙣𝙚𝙧𝙖𝙡 𝙎𝙚𝙩𝙩𝙞𝙣𝙜𝙨 میں ایڈجسٹ کر سکتے ہیں۔</string>
+    <string name="battery_dialog_message">سبسکرائب شدہ ٹی وی شوز کے لیے بلاتعطل ڈاؤن لوڈز اور اطلاعات کو یقینی بنانے کے لیے، PluginStream کو پس منظر میں چلنے کی اجازت درکار ہے۔ OK دبانے سے، آپ کو App info پر بھیج دیا جائے گا۔ وہاں اسکرول کریں 𝘼𝙥𝙥 𝙗𝙖𝙩𝙩𝙚𝙧𝙮 𝙪𝙨𝙖𝙜𝙚 اور battery usage کو 𝙐𝙣𝙧𝙚𝙨𝙩𝙧𝙞𝙘𝙩𝙚𝙙 کردیں، اس اجازت کا مطلب یہ نہیں ہے کہ CS3 آپ کی بیٹری ختم کردے گا۔ یہ صرف ضرورت پڑنے پر پس منظر میں کام کرے گا، جیسے کہ جب اطلاعات موصول ہوں یا آفیشل ایکسٹینشنز سے ویڈیوز ڈاؤن لوڈ کریں۔ اگر آپ منسوخ کرنے کا انتخاب کرتے ہیں، تو آپ اس ترتیب کو بعد میں 𝙂𝙚𝙣𝙚𝙧𝙖𝙡 𝙎𝙚𝙩𝙩𝙞𝙣𝙜𝙨 میں ایڈجسٹ کر سکتے ہیں۔</string>
     <string name="biometric_setting_summary">فنگر پرنٹ، فیس آئی ڈی، PIN، پیٹرن یا پاس ورڈ سے اپپ کو انلاک کریں.</string>
     <string name="biometric_prompt_description">یہ اسکرین متعدد ناکام کوششوں کی وجہ سے بند کر دی گئی تھی۔ براہ کرم ایپ کو ریسٹارٹ کریں۔</string>
     <string name="subscribe_tooltip">نئی قسط کی اطلاع</string>
@@ -594,16 +594,16 @@
     <string name="music_singlar">موسیقی</string>
     <string name="audio_book_singular">آڈیو بک</string>
     <string name="custom_media_singluar">میڈیا</string>
-    <string name="biometric_authentication_title">انلاک CloudStream</string>
+    <string name="biometric_authentication_title">انلاک PluginStream</string>
     <string name="biometric_setting">بایومیٹرکس کے ساتھ لاک کریں</string>
     <string name="biometric_unsupported">بایومیٹرک تصدیق اس ڈیوائس پر سپپورٹڈ نہیں ہے</string>
     <string name="password_pin_authentication_title">پاس ورڈ/PIN سے تصدیق</string>
-    <string name="app_info_intent_error">CloudStream\'s App info کھولنے میں مشکلات.</string>
+    <string name="app_info_intent_error">PluginStream\'s App info کھولنے میں مشکلات.</string>
     <string name="unfavorite">ناپسندیدہ کریں</string>
     <string name="reset_btn">ری سیٹ کریں</string>
     <string name="result_search_tooltip">دیگر ایکسٹینشنز میں تلاش کریں</string>
     <string name="recommendations_tooltip">سفارشات دکھائیں</string>
-    <string name="biometric_warning">آپ کے CloudStream ڈیٹا کا اب بیک اپ لیا گیا ہے۔ اگرچہ اس کا امکان بہت کم ہے، لیکن مختلف ڈیوائس مختلف طریقے سے کام کر سکتے ہیں۔ اگر آپ ایپ تک رسائی حاصل کرنے سے قاصر ہیں تو، ایپ کا ڈیٹا مکمل طور پر صاف کریں اور بیک اپ سے بحال کریں۔ اس سے ہونے والی کسی بھی تکلیف کے لیے ہم بہت معذرت خواہ ہیں۔</string>
+    <string name="biometric_warning">آپ کے PluginStream ڈیٹا کا اب بیک اپ لیا گیا ہے۔ اگرچہ اس کا امکان بہت کم ہے، لیکن مختلف ڈیوائس مختلف طریقے سے کام کر سکتے ہیں۔ اگر آپ ایپ تک رسائی حاصل کرنے سے قاصر ہیں تو، ایپ کا ڈیٹا مکمل طور پر صاف کریں اور بیک اپ سے بحال کریں۔ اس سے ہونے والی کسی بھی تکلیف کے لیے ہم بہت معذرت خواہ ہیں۔</string>
     <string name="next_season_episode_format" formatted="true">سیزن %1$d کی قسط %2$d جاری ہوگی</string>
     <string name="play_from_beginning_img_des">شروع سےپلے کریں</string>
     <string name="speech_recognition_unavailable">کلام شناسی دستیاب نہیں</string>

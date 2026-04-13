@@ -24,8 +24,8 @@
     <string name="new_update_format" formatted="true">Знойдзена новае абнаўленне!\n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Запаўняльнік</string>
     <string name="duration_format" formatted="true">%d хвіл</string>
-    <string name="app_name">CloudStream</string>
-    <string name="play_with_app_name">Прайграць праз CloudStream</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">Прайграць праз PluginStream</string>
     <string name="title_home">Дамашняя</string>
     <string name="title_search">Пошук</string>
     <string name="title_downloads">Спампоўкі</string>
@@ -174,11 +174,11 @@
     <string name="settings_info">Звесткі</string>
     <string name="advanced_search">Пашыраны пошук</string>
     <string name="advanced_search_des">Паказвае пошукавыя вынікі, падзеленыя па пастаўшчыкам</string>
-    <string name="show_fillers_settings">Паказваць серыі-запаўняльнікі для анімэ</string>
+    <string name="show_fillers_settings">Паказваць серыі-запаўнялнікі для анімэ</string>
     <string name="show_trailers_settings">Паказваць трэйлеры</string>
     <string name="kitsu_settings">Паказваць плакаты з Kitsu</string>
     <string name="pref_filter_search_quality">Схаваць выбраную якасць відэа з вынікаў пошуку</string>
-    <string name="automatic_plugin_updates">Аўтаматычнае абнаўленне ўбудоў</string>
+    <string name="automatic_plugin_updates">Аўтаматычнае абнаўленне пашырэнняў</string>
     <string name="automatic_plugin_download">Аўтаматычная спампоўка ўбудоў</string>
     <string name="apk_installer_settings_des">Некаторыя прылады не падтрымліваюць новы ўсталёўшчык пакетаў. Калі абнаўленні не ўсталёўваюцца, паспрабуйце ранейшую версію.</string>
     <string name="github">Github</string>
@@ -500,11 +500,11 @@
     <string name="plugins_disabled" formatted="true">Выключана: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Не спампавана: %d</string>
     <string name="plugins_updated" formatted="true">Абноўлена %d плагіна(ў)</string>
-    <string name="blank_repo_message">Прадвызначана на CloudStream няма ўсталяваных вэб-сайтаў. Вам трэба ўсталяваць вэб-сайты з рэпазіторыяў. \n \nДалучыцеся да нашага сервера Discord або пашукайце ў сетцы.</string>
+    <string name="blank_repo_message">Прадвызначана на PluginStream няма ўсталяваных вэб-сайтаў. Вам трэба ўсталяваць вэб-сайты з рэпазіторыяў. \n \nДалучыцеся да нашага сервера Discord або пашукайце ў сетцы.</string>
     <string name="view_public_repositories_button">Праглядзець рэпазіторыі ад супольнасці</string>
     <string name="view_public_repositories_button_short">Публічны спіс</string>
     <string name="uppercase_all_subtitles">Усе субцітры верхнім рэгістрам</string>
-    <string name="download_all_plugins_from_repo">Увага: CloudStream не нясе адказнасці за выкарыстанне старонніх пашырэнняў і не пастаўляе для іх ніякай падтрымцы!</string>
+    <string name="download_all_plugins_from_repo">Увага: PluginStream не нясе адказнасці за выкарыстанне старонніх пашырэнняў і не пастаўляе для іх ніякай падтрымцы!</string>
     <string name="single_plugin_disabled" formatted="true">%s (выключана)</string>
     <string name="tracks">Трэкі</string>
     <string name="audio_tracks">Аўдыятрэкі</string>
@@ -554,9 +554,9 @@
     <string name="dismiss">Адхіліць</string>
     <string name="open_downloaded_repo">Адкрыць рэпазіторый</string>
     <string name="battery_dialog_title">Выключыць аптымізацыю батарэі</string>
-    <string name="battery_dialog_message">Каб забяспечыць бесперапынныя спампоўкі і апавяшчэнні аб тэлеперадачах, на якія вы падпісаны, CloudStream патрэбны дазвол на выкананне ў фонавым рэжыме. Па націсканні «ОК», вам пакажацца дыялогавае акно. Націсніце «Дазволіць».\n\nЗвярніце ўвагу — гэта не значыць, што CS3 будзе садзіць вашу батарэю. Праграма будзе працаваць у фоне толькі калі патрэбна, напрыклад пры атрыманні апавяшчэнняў або спампоўванні відэа з афіцыйных пашырэнняў.</string>
+    <string name="battery_dialog_message">Каб забяспечыць бесперапынныя спампоўкі і апавяшчэнні аб тэлеперадачах, на якія вы падпісаны, PluginStream патрэбны дазвол на выкананне ў фонавым рэжыме. Па націсканні «ОК», вам пакажацца дыялогавае акно. Націсніце «Дазволіць».\n\nЗвярніце ўвагу — гэта не значыць, што CS3 будзе садзіць вашу батарэю. Праграма будзе працаваць у фоне толькі калі патрэбна, напрыклад пры атрыманні апавяшчэнняў або спампоўванні відэа з афіцыйных пашырэнняў.</string>
     <string name="app_unrestricted_toast">Выкарыстанне батарэі ўжо выстаўлена як неабмежаванае</string>
-    <string name="app_info_intent_error">Не ўдалося адкрыць звесткі пра праграму CloudStream.</string>
+    <string name="app_info_intent_error">Не ўдалося адкрыць звесткі пра праграму PluginStream.</string>
     <string name="update_notification_downloading">Спампоўванне абнаўлення праграмы…</string>
     <string name="update_notification_installing">Усталяванне абнаўлення праграмы…</string>
     <string name="update_notification_failed">Не ўдалося ўсталяваць новую версію праграмы</string>
@@ -637,15 +637,15 @@
     <string name="auto_rotate_video">Аўтапаварот</string>
     <string name="favorite">Дадаць у абраныя</string>
     <string name="unfavorite">Выдаліць з абранага</string>
-    <string name="biometric_authentication_title">Разблакіруйце CloudStream</string>
+    <string name="biometric_authentication_title">Разблакіруйце PluginStream</string>
     <string name="biometric_setting">Блакіроўка біяметрыяй</string>
     <string name="password_pin_authentication_title">Праверка сапраўднасці паролем/PIN-кодам</string>
     <string name="biometric_unsupported">Праверка сапраўднасці біяметрыяй не падтрымліваецца на гэтай прыладзе</string>
     <string name="biometric_setting_summary">Разблакіруйце праграму адбіткам пальца, Face ID, PIN-кодам, узорам разблакіроўкі або паролем.</string>
     <string name="biometric_prompt_description">Праз некалькі няўдалых спроб акно з запытам закрыецца. Проста перазапусціце праграму, каб паўтарыць спробу.</string>
-    <string name="biometric_warning">Вашы даныя CloudStream былі зарэзерваваныя. Нягледзячы на тое, што магчымасць вельмі маленькая, усе прылады могуць паводзіць сябе па-рознаму. У рэдкасным выпадку, калі вы страціце доступ да праграмы, поўнасцю ачысціце даныя і аднавіце іх праз рэзервовую копію. Выбачайце за любую нязручнасць, якая можа з гэтага атрымацца.</string>
+    <string name="biometric_warning">Вашы даныя PluginStream былі зарэзерваваныя. Нягледзячы на тое, што магчымасць вельмі маленькая, усе прылады могуць паводзіць сябе па-рознаму. У рэдкасным выпадку, калі вы страціце доступ да праграмы, поўнасцю ачысціце даныя і аднавіце іх праз рэзервовую копію. Выбачайце за любую нязручнасць, якая можа з гэтага атрымацца.</string>
     <string name="reset_btn">Скінуць</string>
-    <string name="cs3wiki">CloudStream-Вікі</string>
+    <string name="cs3wiki">PluginStream-Вікі</string>
     <string name="device_pin_url_message">Наведайце <b>%s</b> на вашым смартфоне або камп\'ютары і ўвядзіце код вышэй</string>
     <string name="device_pin_error_message">Не ўдалося атрымаць PIN-код прылады, паспрабуйце лакальную праверку сапраўднасці</string>
     <string name="device_pin_expired_message">PIN-код састарэў!</string>
@@ -735,5 +735,4 @@
         <item quantity="many">%d спампоўванняў у чарзе</item>
         <item quantity="other">%d спампоўванняў у чарзе</item>
     </plurals>
-    <string name="show_player_metadata_overlay">Паказваць накладанне з метаданымі ў прайгравальніку</string>
 </resources>

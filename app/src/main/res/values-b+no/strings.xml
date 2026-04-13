@@ -14,7 +14,7 @@
     <string name="rated_format" formatted="true">Vurdert: %.1f</string>
     <string name="new_update_format" formatted="true">Ny oppdatering funnet!
 \n%1$s -&gt; %2$s</string>
-    <string name="app_name">CloudStream</string>
+    <string name="app_name">PluginStream</string>
     <string name="title_home">Hjem</string>
     <string name="title_search">Søk</string>
     <string name="title_downloads">Nedlastinger</string>
@@ -197,7 +197,7 @@
     <string name="sort_clear">Tøm</string>
     <string name="category_account">Kontoer</string>
     <string name="app_dub_sub_episode_text_format" formatted="true">%1$s Ep %2$d</string>
-    <string name="play_with_app_name">Spill med CloudStream</string>
+    <string name="play_with_app_name">Spill med PluginStream</string>
     <string name="sort_copy">Kopier</string>
     <string name="next_episode_format" formatted="true">Episode %d vil bli sluppet om</string>
     <string name="next_episode_time_hour_format" formatted="true">%1$dt %2$dm</string>
@@ -373,7 +373,7 @@
     <string name="error_invalid_url">Ugyldig nettadresse</string>
     <string name="batch_download">Knippe-nedlasting</string>
     <string name="delete_repository">Slett pakkebrønn</string>
-    <string name="blank_repo_message">CloudStream har ingen sider installert som forvalg. Du må installere sidene fra pakkebrønner.
+    <string name="blank_repo_message">PluginStream har ingen sider installert som forvalg. Du må installere sidene fra pakkebrønner.
 \n
 \nSom følge av en hjernedød DMCA-forespørsel fra Sky UK Limited 🤮 kan vi ikke lenke til pakkebrønnssiden i programmet.
 \n

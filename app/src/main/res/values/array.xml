@@ -308,7 +308,7 @@
         <item>Gray</item>
         <item>Amoled</item>
         <item>Flashbang</item>
-        <item>System</item>
+        <!-- <item>System</item> -->
         <item>Material You</item>
         <item>Dracula</item>
         <item>Lavender Dreams</item>
@@ -319,7 +319,7 @@
         <item>Black</item>
         <item>Amoled</item>
         <item>Light</item>
-        <item>System</item>
+        <!-- <item>System</item> -->
         <item>Monet</item>
         <item>Dracula</item>
         <item>Lavender</item>

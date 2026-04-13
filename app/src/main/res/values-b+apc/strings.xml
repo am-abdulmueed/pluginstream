@@ -141,7 +141,7 @@
     <string name="category_updates">التجديدات وال نسخات الاحتياطية</string>
     <string name="pref_filter_search_quality">خبي هيدي الجودات من نتايج التنبيش</string>
     <string name="type_on_hold">موقف موقتًا</string>
-    <string name="app_name">كلود ستريم</string>
+    <string name="app_name">PluginStream</string>
     <string name="player_size_settings_des">شيل الأسود من الأطراف</string>
     <string name="season_short">ج</string>
     <string name="apk_installer_settings">طريقة تجديد الآپ</string>
@@ -151,7 +151,7 @@
     <string name="app_language">لغة الآپ</string>
     <string name="show_trailers_settings">فرجي المقاطع الدعائية</string>
     <string name="test_passed">نجح</string>
-    <string name="play_with_app_name">مَشّي بـ\"كلود ستريم\"</string>
+    <string name="play_with_app_name">Play with PluginStream</string>
     <string name="subs_subtitle_elevation">إرتفاع الترجمة</string>
     <string name="search_provider_text_types">عوزو الأنواع ل تنبّشو</string>
     <string name="episodes">حلقات</string>
@@ -426,7 +426,7 @@
     <string name="sort_updated_new">تجَدَد (من الجديد للقديم)</string>
     <string name="quality_tc">TC</string>
     <string name="min">الحد الأدنى</string>
-    <string name="none">ولا شي</string>
+    <string name="none">Select</string>
     <string name="duplicate_replace_all">ستبدلوّن كلن</string>
     <string name="downloaded_file">الملفات المنزلة</string>
     <string name="wifi">واي فاي</string>

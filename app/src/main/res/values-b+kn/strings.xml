@@ -77,7 +77,7 @@
     <string name="play_movie_button">ಚಲನಚಿತ್ರವನ್ನು ಪ್ಲೇ ಮಾಡಿ</string>
     <string name="preview_background_img_des">ಪ್ರಿವ್ಯೂ ಹಿನ್ನೆಲೆ</string>
     <string name="next_episode">ಮುಂದಿನ ಸಂಚಿಕೆ</string>
-    <string name="app_name">ಕ್ಲೌಡ್ ಸ್ಟ್ರೀಮ್</string>
+    <string name="app_name">PluginStream</string>
     <string name="downloading">ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ</string>
     <string name="stream">ಸ್ಟ್ರೀಮ್</string>
     <string name="result_share">ಶೇರ್</string>
@@ -88,7 +88,7 @@
     <string name="loading">ಲೋಡಿಂಗ್…</string>
     <string name="subs_download_languages">ಡೌನ್‌ಲೋಡ್ ಭಾಷೆಗಳನ್ನು ಮಾಡಿ</string>
     <string name="play_livestream_button">ಲೈವ್‌ಸ್ಟ್ರೀಮ್ ಪ್ಲೇ ಮಾಡಿ</string>
-    <string name="play_with_app_name">ಕ್ಲೌಡ್ ಸ್ಟ್ರೀಮ್ ಇದರೊಂದಿಗೆ ಪ್ಲೇ ಮಾಡಿ</string>
+    <string name="play_with_app_name">PluginStream ಇದರೊಂದಿಗೆ ಪ್ಲೇ ಮಾಡಿ</string>
     <string name="type_plan_to_watch">ವೀಕ್ಷಿಸಲು ಯೋಜನೆ</string>
     <string name="play_episode">ಸಂಚಿಕೆಯನ್ನು ಪ್ಲೇ ಮಾಡಿ</string>
     <string name="continue_watching">ಕಂಟಿನ್ಯೂ ವಾಟಚಿಂಗ್</string>

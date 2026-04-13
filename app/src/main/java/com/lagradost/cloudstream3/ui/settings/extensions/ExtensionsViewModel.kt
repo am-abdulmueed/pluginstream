@@ -19,9 +19,10 @@ import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 data class RepositoryData(
     @JsonProperty("iconUrl") val iconUrl: String?,
     @JsonProperty("name") val name: String,
-    @JsonProperty("url") val url: String
+    @JsonProperty("url") val url: String,
+    @JsonProperty("description") val description: String? = null
 ){
-    constructor(name: String,url: String):this(null,name,url)
+    constructor(name: String,url: String):this(null,name,url, null)
 }
 
 const val REPOSITORIES_KEY = "REPOSITORIES_KEY"

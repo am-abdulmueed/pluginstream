@@ -106,6 +106,22 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         val errorProfilePic = errorProfilePics.random()
 
+        private val pinKeywords = listOf("castel","castle tv (use vlc)", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox")
+        private fun isSmartPinned(apiName: String): Boolean {
+            return pinKeywords.any { keyword -> apiName.contains(keyword, ignoreCase = true) }
+        }
+
+        fun getDisplayApiName(apiName: String?): String? {
+            if (apiName == null) return null
+            if (apiName == noneApi.name) return "Select"
+            return apiName.replace("moviebox", "Max", ignoreCase = true)
+                .replace("moveibox", "Max", ignoreCase = true)
+                .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+                .replace("castle", "PluginStream", ignoreCase = true)
+                .replace("castel", "PluginStream", ignoreCase = true)
+                .replace("caslte", "PluginStream", ignoreCase = true)
+        }
+
         //fun Activity.loadHomepageList(
         //    item: HomePageList,
         //    deleteCallback: (() -> Unit)? = null,
@@ -424,10 +440,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                             .inflate(R.layout.sort_bottom_single_provider_choice, parent, false)
                         val titleText = view.findViewById<TextView>(R.id.text1)
                         val pinIcon = view.findViewById<ImageView>(R.id.pinicon)
+                        val api = currentValidApis[position]
                         val name = getItem(position)
                         titleText?.text = name
                         val isPinned =
-                            pinnedphashset.contains(currentValidApis[position].name)
+                            pinnedphashset.contains(api.name) || isSmartPinned(api.name)
                         pinIcon.visibility = if (isPinned) View.VISIBLE else View.GONE
                         return view
                     }
@@ -467,14 +484,26 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
                     val remainingApis = sortedApis.filterNot { pinnedphashset.contains(it.name) }
 
+                    val pluginStreamApis = remainingApis.filter { it.name.contains("castle", ignoreCase = true) || it.name.contains("caslte", ignoreCase = true) || it.name.contains("castel", ignoreCase = true) }
+                    val maxApis = remainingApis.filter { it.name.contains("moviebox", ignoreCase = true) || it.name.contains("moveibox", ignoreCase = true) }
+                    val otherSmartPinnedApis = remainingApis.filter { isSmartPinned(it.name) && !pluginStreamApis.contains(it) && !maxApis.contains(it) }
+                        .sortedBy { api -> pinKeywords.indexOfFirst { api.name.contains(it, ignoreCase = true) } }
+                    val actualRemainingApis = remainingApis.filterNot { isSmartPinned(it.name) || pluginStreamApis.contains(it) || maxApis.contains(it) }
+
                     currentValidApis = mutableListOf<MainAPI>().apply {
                         addAll(validAPIs.take(2))
+                        addAll(pluginStreamApis)
+                        addAll(otherSmartPinnedApis)
+                        addAll(maxApis)
                         addAll(pinnedApis)
-                        addAll(remainingApis)
+                        addAll(actualRemainingApis)
                     }
 
                     val names =
-                        currentValidApis.map { if (isMultiLang) "${getFlagFromIso(it.lang)?.plus(" ") ?: ""}${it.name}" else it.name }
+                        currentValidApis.map {
+                            val displayName = getDisplayApiName(it.name) ?: it.name
+                            if (isMultiLang) "${getFlagFromIso(it.lang)?.plus(" ") ?: ""}$displayName" else displayName
+                        }
                     val index = currentValidApis.map { it.name }.indexOf(currentApiName)
                     listView?.setItemChecked(index, true)
                     arrayAdapter.addAll(names)
@@ -735,9 +764,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         observe(homeViewModel.apiName) { apiName ->
             currentApiName = apiName
+            val displayApiName = getDisplayApiName(apiName) ?: apiName
             binding.apply {
-                homeApiFab.text = apiName
-                homeChangeApi.text = apiName
+                homeApiFab.text = displayApiName
+                homeChangeApi.text = displayApiName
                 homePreviewReloadProvider.isGone = (apiName == noneApi.name)
                 homePreviewSearchButton.isGone = (apiName == noneApi.name)
             }

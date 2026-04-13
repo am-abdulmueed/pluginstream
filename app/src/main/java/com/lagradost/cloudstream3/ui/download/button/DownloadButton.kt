@@ -6,8 +6,10 @@ import android.util.AttributeSet
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
+import com.lagradost.cloudstream3.CloudStreamApp.Companion.getActivity
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.ui.download.DownloadClickEvent
+import com.lagradost.cloudstream3.utils.AdsManager
 import com.lagradost.cloudstream3.utils.downloader.DownloadObjects
 
 class DownloadButton(context: Context, attributeSet: AttributeSet) :
@@ -40,12 +42,12 @@ class DownloadButton(context: Context, attributeSet: AttributeSet) :
         textView: TextView?,
         callback: (DownloadClickEvent) -> Unit
     ) {
-        this.setDefaultClickListener(
-            this.findViewById<MaterialButton>(R.id.download_movie_button),
-            textView,
-            card,
-            callback
-        )
+        this.findViewById<MaterialButton>(R.id.download_movie_button)?.setOnClickListener {
+            val activity = context.getActivity() ?: return@setOnClickListener
+            AdsManager.showRewardedAd(activity) {
+                callback.invoke(DownloadClickEvent(it.id, card))
+            }
+        }
     }
 
     @SuppressLint("SetTextI18n")

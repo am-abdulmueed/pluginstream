@@ -40,7 +40,6 @@
     <string name="autoplay_next_key">autoplay_next_key</string>
     <string name="display_sub_key">display_sub_key</string>
     <string name="show_fillers_key">show_fillers_key</string>
-    <string name="show_player_metadata_key">show_player_metadata_key</string>
     <string name="show_trailers_key">show_trailers_key</string>
     <string name="show_kitsu_posters_key">show_kitsu_posters_key</string>
     <string name="show_cast_in_details_key">show_cast_in_details_key</string>
@@ -52,7 +51,7 @@
     <string name="download_parallel_key">download_parallel_key</string>
     <string name="download_concurrent_key">download_concurrent_key</string>
     <string name="download_path_key_visual">download_path_key_visual</string>
-    <string name="app_name_download_path">Cloudstream</string>
+    <string name="app_name_download_path">PluginStream</string>
     <string name="app_layout_key">app_layout_key</string>
     <string name="primary_color_key">primary_color_key</string>
     <string name="restore_key">restore_key</string>
@@ -93,6 +92,7 @@
     <string name="software_decoding_key">software_decoding_key2</string>
     <string name="manual_update_plugins_key">manual_update_plugins</string>
     <string name="legal_notice_key">legal_notice_key</string>
+    <string name="share_plugin_key">share_plugin_key</string>
     <string name="speedup_key">speedup_key</string>
     <string name="anilist_key">anilist_key</string>
     <string name="simkl_key">simkl_key</string>

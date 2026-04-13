@@ -1,5 +1,7 @@
 package com.lagradost.cloudstream3.ui.settings
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -27,7 +29,6 @@ import com.lagradost.cloudstream3.ui.settings.Globals.TV
 import com.lagradost.cloudstream3.ui.settings.Globals.isLandscape
 import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
 import com.lagradost.cloudstream3.utils.DataStoreHelper
-import com.lagradost.cloudstream3.utils.GitInfo.currentCommitHash
 import com.lagradost.cloudstream3.utils.ImageLoader.loadImage
 import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
@@ -241,6 +242,58 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 }
             }
 
+            settingsGithub.setOnClickListener {
+                try {
+                    val i = Intent(Intent.ACTION_VIEW)
+                    i.data = Uri.parse("https://github.com/am-abdulmueed")
+                    startActivity(i)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            settingsInstagram.setOnClickListener {
+                try {
+                    val i = Intent(Intent.ACTION_VIEW)
+                    i.data = Uri.parse("https://instagram.com/a.b.d.u.l.m.u.e.e.d")
+                    startActivity(i)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            settingsDevWebsite.setOnClickListener {
+                try {
+                    val i = Intent(Intent.ACTION_VIEW)
+                    i.data = Uri.parse("https://am-abdulmueed.vercel.app")
+                    startActivity(i)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            settingsShare.setOnClickListener {
+                try {
+                    val i = Intent(Intent.ACTION_SEND)
+                    i.type = "text/plain"
+                    i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_plugin))
+                    i.putExtra(
+                        Intent.EXTRA_TEXT,
+                        "watch free unlimited movie witout any subscription 100% free watch\nhttps://pluginstream.pages.dev"
+                    )
+                    startActivity(Intent.createChooser(i, getString(R.string.share_plugin)))
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            if (isLayout(TV)) {
+                listOf(settingsGithub, settingsInstagram, settingsDevWebsite, settingsShare).forEach {
+                    it.isFocusable = true
+                    it.isFocusableInTouchMode = true
+                }
+            }
+
             // Default focus on TV
             if (isLayout(TV)) {
                 settingsGeneral.requestFocus()
@@ -248,7 +301,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         }
 
         val appVersion = BuildConfig.VERSION_NAME
-        val commitHash = activity?.currentCommitHash() ?: ""
+        val commitInfo = getString(R.string.commit_hash)
         val buildTimestamp = SimpleDateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG,
             Locale.getDefault()
         ).apply { timeZone = TimeZone.getTimeZone("UTC")
@@ -256,9 +309,8 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
 
         binding.appVersion.text = appVersion
         binding.buildDate.text = buildTimestamp
-        binding.commitHash.text = commitHash
         binding.appVersionInfo.setOnLongClickListener {
-            clipboardHelper(txt(R.string.extension_version), "$appVersion $commitHash $buildTimestamp")
+            clipboardHelper(txt(R.string.extension_version), "$appVersion $commitInfo $buildTimestamp")
             true
         }
     }

@@ -26,7 +26,6 @@ import com.lagradost.cloudstream3.CloudStreamApp.Companion.getKey
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.removeKey
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.setKey
 import com.lagradost.cloudstream3.CommonActivity.showToast
-import com.lagradost.cloudstream3.InternalAPI
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainAPI.Companion.settingsForProvider
 import com.lagradost.cloudstream3.MainActivity.Companion.afterPluginsLoadedEvent
@@ -260,8 +259,12 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName")
-    @InternalAPI
+    @Suppress("FunctionName", "DEPRECATION_ERROR")
+    @Deprecated(
+        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
+        replaceWith = ReplaceWith("loadPlugin"),
+        level = DeprecationLevel.ERROR
+    )
     @Throws
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_updateAllOnlinePluginsAndLoadThem(activity: Activity) {
         assertNonRecursiveCallstack()
@@ -337,8 +340,12 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName")
-    @InternalAPI
+    @Suppress("FunctionName", "DEPRECATION_ERROR")
+    @Deprecated(
+        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
+        replaceWith = ReplaceWith("loadPlugin"),
+        level = DeprecationLevel.ERROR
+    )
     @Throws
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_downloadNotExistingPluginsAndLoad(
         activity: Activity,
@@ -447,8 +454,12 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName")
-    @InternalAPI
+    @Suppress("FunctionName", "DEPRECATION_ERROR")
+    @Deprecated(
+        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
+        replaceWith = ReplaceWith("loadPlugin"),
+        level = DeprecationLevel.ERROR
+    )
     @Throws
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins(context: Context) {
         assertNonRecursiveCallstack()
@@ -469,9 +480,13 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName")
-    @InternalAPI
+    @Suppress("FunctionName", "DEPRECATION_ERROR")
     @Throws
+    @Deprecated(
+        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
+        replaceWith = ReplaceWith("loadPlugin"),
+        level = DeprecationLevel.ERROR
+    )
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_hotReloadAllLocalPlugins(activity: FragmentActivity?) {
         assertNonRecursiveCallstack()
 
@@ -490,8 +505,12 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName")
-    @InternalAPI
+    @Suppress("FunctionName", "DEPRECATION_ERROR")
+    @Deprecated(
+        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
+        replaceWith = ReplaceWith("loadPlugin"),
+        level = DeprecationLevel.ERROR
+    )
     @Throws
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_loadAllLocalPlugins(context: Context, forceReload: Boolean) {
         assertNonRecursiveCallstack()
@@ -795,9 +814,13 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName")
-    @InternalAPI
+    @Suppress("FunctionName", "DEPRECATION_ERROR")
     @Throws
+    @Deprecated(
+        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
+        replaceWith = ReplaceWith("loadPlugin"),
+        level = DeprecationLevel.ERROR
+    )
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_manuallyReloadAndUpdatePlugins(activity: Activity) {
         assertNonRecursiveCallstack()
 

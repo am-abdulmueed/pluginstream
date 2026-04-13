@@ -448,6 +448,11 @@
         <item name="android:colorAccent">@color/colorPrimaryLavender</item>
     </style>
 
+    <style name="CustomDialog" parent="android:Theme.Material.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
     <style name="customRatingBar" parent="@style/Widget.AppCompat.RatingBar">
 
         <item name="android:progressDrawable">@drawable/abc_ratingbar_indicator_material</item>
@@ -645,10 +650,13 @@
 
     <style name="SettingsItem">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">50dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">72dp</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:paddingStart">20dp</item>
         <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
         <item name="android:selectAllOnFocus">true</item>
         <item name="android:background">?attr/focusBackground</item>
         <item name="android:textColor">?attr/textColor</item>

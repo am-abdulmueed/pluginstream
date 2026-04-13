@@ -125,7 +125,7 @@ open class ParentItemAdapter(
                 nextLeft = startFocus,
                 nextRight = endFocus,
             )
-            homeChildMoreInfo.text = info.name
+            homeChildMoreInfo.text = HomeFragment.getDisplayApiName(info.name)
 
             homeChildRecyclerview.addOnScrollListener(object :
                 RecyclerView.OnScrollListener() {

@@ -125,6 +125,7 @@ import com.lagradost.cloudstream3.ui.settings.Globals.updateTv
 import com.lagradost.cloudstream3.ui.settings.SettingsGeneral
 import com.lagradost.cloudstream3.ui.setup.HAS_DONE_SETUP_KEY
 import com.lagradost.cloudstream3.ui.setup.SetupFragmentExtensions
+import com.lagradost.cloudstream3.utils.AdsManager
 import com.lagradost.cloudstream3.utils.ApkInstaller
 import com.lagradost.cloudstream3.utils.AppContextUtils.getApiDubstatusSettings
 import com.lagradost.cloudstream3.utils.AppContextUtils.html
@@ -176,6 +177,7 @@ import com.lagradost.cloudstream3.utils.USER_PROVIDER_API
 import com.lagradost.cloudstream3.utils.USER_SELECTED_HOMEPAGE_API
 import com.lagradost.cloudstream3.utils.setText
 import com.lagradost.cloudstream3.utils.setTextHtml
+import com.lagradost.cloudstream3.utils.FirebaseHelper
 import com.lagradost.cloudstream3.utils.txt
 import com.lagradost.safefile.SafeFile
 import kotlinx.coroutines.sync.Mutex
@@ -270,10 +272,14 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
          */
         val reloadAccountEvent = Event<Boolean>()
 
+        const val LAST_INSTAGRAM_DIALOG_SHOW_TIME = "last_instagram_dialog_show_time"
+        const val INSTAGRAM_ALREADY_FOLLOWED = "instagram_already_followed"
+
         /**
          * @return true if the str has launched an app task (be it successful or not)
          * @param isWebview does not handle providers and opening download page if true. Can still add repos and login.
          * */
+        @Suppress("DEPRECATION_ERROR")
         fun handleAppIntentUrl(
             activity: FragmentActivity?,
             str: String?,
@@ -500,6 +506,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_search,
             R.id.navigation_library,
             R.id.navigation_downloads,
+            R.id.navigation_protube,
             R.id.navigation_settings,
             R.id.navigation_download_child,
             R.id.navigation_download_queue,
@@ -631,6 +638,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         super.onResume()
         afterPluginsLoadedEvent += ::onAllPluginsLoaded
         setActivityInstance(this)
+        if (BuildConfig.USE_FIREBASE) {
+            FirebaseHelper.logScreenView("MainActivity", "MainActivity")
+            FirebaseHelper.logEvent("session_start")
+        }
         try {
             if (isCastApiAvailable()) {
                 mSessionManager?.addSessionManagerListener(mSessionManagerListener)
@@ -642,6 +653,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     override fun onPause() {
         super.onPause()
+
+        if (BuildConfig.USE_FIREBASE) {
+            FirebaseHelper.logEvent("session_end")
+        }
 
         // Start any delayed updates
         if (ApkInstaller.delayedInstaller?.startInstallation() == true) {
@@ -701,6 +716,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     }
 
     override fun onDestroy() {
+        AdsManager.destroyBannerAd()
         filesToDelete.forEach { path ->
             val result = File(path).deleteRecursively()
             if (result) {
@@ -757,6 +773,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_search -> R.id.main_search
             R.id.navigation_library -> R.id.main_search
             R.id.navigation_downloads -> R.id.download_appbar
+            R.id.navigation_protube -> R.id.web
             else -> null
         }
         if (targetView != null && isLayout(TV or EMULATOR)) {
@@ -1168,6 +1185,68 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
     }
 
+    private fun showInstagramFollowDialog() {
+        val alreadyFollowed = getKey(INSTAGRAM_ALREADY_FOLLOWED, false) ?: false
+        val lastShowTime = getKey<Long>(LAST_INSTAGRAM_DIALOG_SHOW_TIME) ?: 0L
+        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
+        val currentTime = System.currentTimeMillis()
+
+        // Show only if setup is done and not already followed
+        if (!hasDoneSetup || alreadyFollowed) return
+
+        // Show only if it's a new day (at least 24 hours passed) or first time (lastShowTime == 0)
+        val oneDayMillis = 24 * 60 * 60 * 1000
+        if (lastShowTime != 0L && currentTime - lastShowTime < oneDayMillis) return
+
+        val dialog = Dialog(this, R.style.DialogHalfFullscreen)
+        val dialogView = layoutInflater.inflate(R.layout.instagram_follow_dialog, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val followButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.follow_button)
+        val dismissButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.dismiss_button)
+        val alreadyFollowedCheckbox = dialogView.findViewById<CheckBox>(R.id.already_followed_checkbox)
+
+        dismissButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // Only show checkbox if it's NOT the first time (lastShowTime != 0)
+        if (lastShowTime != 0L) {
+            alreadyFollowedCheckbox.isVisible = true
+        }
+
+        alreadyFollowedCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                followButton.text = "DISMISS"
+            } else {
+                followButton.text = "FOLLOW NOW"
+            }
+        }
+
+        followButton.setOnClickListener {
+            if (alreadyFollowedCheckbox.isChecked) {
+                setKey(INSTAGRAM_ALREADY_FOLLOWED, true)
+                dialog.dismiss()
+            } else {
+                // Open Instagram URL
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, "https://instagram.com/a.b.d.u.l.m.u.e.e.d".toUri())
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+                dialog.dismiss()
+            }
+        }
+
+        // Update last show time
+        setKey(LAST_INSTAGRAM_DIALOG_SHOW_TIME, currentTime)
+
+        dialog.show()
+    }
+
+    @Suppress("DEPRECATION_ERROR")
     override fun onCreate(savedInstanceState: Bundle?) {
         app.initClient(this)
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
@@ -1656,7 +1735,20 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, bundle: Bundle? ->
             // Intercept search and add a query
-            updateNavBar(navDestination)
+            if (navDestination.id == R.id.navigation_setup_language || navDestination.id == R.id.navigation_setup_extensions || navDestination.id == R.id.navigation_setup_provider_languages || navDestination.id == R.id.navigation_setup_media || navDestination.id == R.id.navigation_setup_layout) {
+                binding?.bannerContainer?.visibility = View.GONE
+                binding?.navView?.visibility = View.GONE
+                binding?.navRailView?.visibility = View.GONE
+            } else {
+                binding?.bannerContainer?.visibility = View.VISIBLE
+                if (isLayout(PHONE)) {
+                    binding?.navView?.visibility = View.VISIBLE
+                    binding?.navRailView?.visibility = View.GONE
+                } else {
+                    binding?.navView?.visibility = View.GONE
+                    binding?.navRailView?.visibility = View.VISIBLE
+                }
+            }
             if (navDestination.matchDestination(R.id.navigation_search) && !nextSearchQuery.isNullOrBlank()) {
                 bundle?.apply {
                     this.putString(SearchFragment.SEARCH_QUERY, nextSearchQuery)
@@ -1667,6 +1759,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 attachBackPressedCallback("MainActivity") {
                     showConfirmExitDialog(settingsManager)
                 }
+                showInstagramFollowDialog()
             } else detachBackPressedCallback("MainActivity")
         }
 
@@ -2036,7 +2129,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
         
         // Start the download queue
-        DownloadQueueManager.init(this)
+        binding?.bannerContainer?.let {
+             AdsManager.initBannerAd(this, it)
+         }
     }
 
     /** Biometric stuff **/

@@ -23,8 +23,8 @@
 \n%1$s -&gt; %2$s</string>
     <string name="filler" formatted="true">Filler</string>
     <string name="duration_format" formatted="true">%d min</string>
-    <!-- <string name="app_name">CloudStream</string> -->
-    <string name="play_with_app_name">Riproduci con CloudStream</string>
+    <string name="app_name">PluginStream</string>
+    <string name="play_with_app_name">Riproduci con PluginStream</string>
     <string name="title_home">Home</string>
     <string name="title_search">Cerca</string>
     <string name="title_downloads">Scaricati</string>
@@ -319,7 +319,7 @@
     <string name="authenticated_user" formatted="true">%s autenticato</string>
     <string name="authenticated_user_fail" formatted="true">Impossibile effettuare l\'accesso a %s</string>
     <!-- ============ -->
-    <string name="none">Nessuno</string>
+    <string name="none">Select</string>
     <string name="normal">Normale</string>
     <string name="all">Tutto</string>
     <string name="max">Max</string>
@@ -412,13 +412,13 @@
     <string name="plugins_disabled" formatted="true">Disabilitato: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Non scaricato: %d</string>
     <string name="plugins_updated" formatted="true">Aggiornati %d plugin</string>
-    <string name="blank_repo_message">CloudStream non ha siti installati per impostazione predefinita. È necessario installare i siti dai repository.
+    <string name="blank_repo_message">PluginStreamnon ha siti installati per impostazione predefinita. È necessario installare i siti dai repository.
 \n
 \nUnisciti al nostro Discord o cerca online.</string>
     <string name="view_public_repositories_button">Visualizza i repository della comunità</string>
     <string name="view_public_repositories_button_short">Lista pubblica</string>
     <string name="uppercase_all_subtitles">Tutti i sottotitoli in maiuscolo</string>
-    <string name="download_all_plugins_from_repo">Attenzione: CloudStream non si assume alcuna responsabilità per l\'utilizzo di estensioni di terze parti e non fornisce alcun supporto per esse!</string>
+    <string name="download_all_plugins_from_repo">Attenzione: PluginStream non si assume alcuna responsabilità per l\'utilizzo di estensioni di terze parti e non fornisce alcun supporto per esse!</string>
     <string name="single_plugin_disabled" formatted="true">%s (Disabilitato)</string>
     <string name="tracks">Tracce</string>
     <string name="audio_tracks">Traccia audio</string>
@@ -453,7 +453,6 @@
     <string name="history">Cronologia</string>
     <string name="enable_skip_op_from_database_des">Mostra popup di salto per apertura/fine</string>
     <string name="clipboard_too_large">Testo troppo lungo. Impossibile salvare negli appunti.</string>
-    <string name="app_name">CloudStream</string>
     <string name="automatic_plugin_download">Scarica automaticamente i plugins</string>
     <string name="update_notification_failed">Impossibile installare la nuova versione dell\'app</string>
     <string name="episode_sync_settings">Aggiorna progresso di visione</string>
@@ -620,7 +619,7 @@
     <string name="battery_dialog_title">Disabilita ottimizzazione della batteria</string>
     <string name="app_info_intent_error">Impossibile aprire le informazioni sull\'app CloudStream.</string>
     <string name="custom_media_singluar">Media</string>
-    <string name="battery_dialog_message">Per garantire download e notifiche ininterrotti per le serie TV a cui si è abbonati, CloudStream necessita dell\'autorizzazione per funzionare in background. Premendo OK, verrà mostrata una finestra di dialogo di richiesta. Premi \"Consenti\".\n\nNota che questa autorizzazione non significa che CS3 scaricherà la batteria. Funzionerà in background solo quando necessario, ad esempio quando si ricevono notifiche o si scaricano video da estensioni ufficiali.</string>
+    <string name="battery_dialog_message">Per garantire download e notifiche ininterrotti per le serie TV a cui si è abbonati, PluginStreamnecessita dell\'autorizzazione per funzionare in background. Premendo OK, verrà mostrata una finestra di dialogo di richiesta. Premi \"Consenti\".\n\nNota che questa autorizzazione non significa che CS3 scaricherà la batteria. Funzionerà in background solo quando necessario, ad esempio quando si ricevono notifiche o si scaricano video da estensioni ufficiali.</string>
     <string name="app_unrestricted_toast">L\'utilizzo della batteria dell\'app è già impostato su \"Senza restrizioni\"</string>
     <string name="music_singlar">Musica</string>
     <string name="audio_book_singular">Audiolibro</string>
@@ -783,5 +782,4 @@
     </plurals>
     <string name="source_priority">Priorità sorgente</string>
     <string name="source_priority_help">Decidi come le sorgenti video devono essere ordinate nel lettore</string>
-    <string name="show_player_metadata_overlay">Mostra sovrapposizione metadati lettore</string>
 </resources>

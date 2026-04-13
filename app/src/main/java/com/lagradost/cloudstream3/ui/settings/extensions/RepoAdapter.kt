@@ -2,6 +2,7 @@ package com.lagradost.cloudstream3.ui.settings.extensions
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.RepositoryItemBinding
 import com.lagradost.cloudstream3.databinding.RepositoryItemTvBinding
@@ -15,6 +16,7 @@ import com.lagradost.cloudstream3.utils.ImageLoader.loadImage
 import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
 import com.lagradost.cloudstream3.utils.getImageFromDrawable
 import com.lagradost.cloudstream3.utils.txt
+import androidx.core.content.ContextCompat
 
 class RepoAdapter(
     val isSetup: Boolean,
@@ -37,6 +39,49 @@ class RepoAdapter(
             false
         )
         return ViewHolderState(layout)
+    }
+
+    private fun bindAction(
+        isPrebuilt: Boolean,
+        drawable: Int,
+        binding: Any, // Binding
+        item: RepositoryData,
+    ) {
+        val actionButton = when (binding) {
+            is RepositoryItemTvBinding -> binding.actionButton
+            is RepositoryItemBinding -> binding.actionButton
+            else -> return
+        }
+        val actionProgress = when (binding) {
+            is RepositoryItemTvBinding -> binding.actionProgress
+            is RepositoryItemBinding -> binding.actionProgress
+            else -> return
+        }
+        val context = actionButton.context
+        val isDownloading = PluginsViewModel.currentDownloadingRepos.contains(item.url)
+        val isDownloaded = PluginsViewModel.currentDownloadedRepos.contains(item.url)
+
+        if (isDownloaded && isSetup) {
+            actionButton.setImageResource(R.drawable.ic_baseline_check_24)
+            actionButton.setColorFilter(
+                ContextCompat.getColor(context, R.color.colorAccent),
+                android.graphics.PorterDuff.Mode.SRC_IN
+            )
+            actionButton.isVisible = true
+            actionProgress.isVisible = false
+        } else if (isDownloading) {
+            actionButton.isVisible = false
+            actionProgress.isVisible = true
+        } else {
+            actionButton.clearColorFilter()
+            if (!isPrebuilt || isSetup) {
+                actionButton.setImageResource(drawable)
+                actionButton.isVisible = true
+            } else {
+                actionButton.isVisible = false
+            }
+            actionProgress.isVisible = false
+        }
     }
 
     override fun onClearView(holder: ViewHolderState<Any>) {
@@ -63,10 +108,18 @@ class RepoAdapter(
                         imageClickCallback(item)
                     }
 
+                    bindAction(isPrebuilt, drawable, this, item)
+
                     repositoryItemRoot.setOnClickListener {
                         clickCallback(item)
                     }
-                    mainText.text = item.name
+                    val originalName = item.name ?: ""
+                    mainText.text = originalName.replace("moviebox", "Max", ignoreCase = true)
+                        .replace("moveibox", "Max", ignoreCase = true)
+                        .replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
+                        .replace("castle", "PluginStream", ignoreCase = true)
+                        .replace("castel", "PluginStream", ignoreCase = true)
+                        .replace("caslte", "PluginStream", ignoreCase = true)
                     subText.text = item.url
                     if (!item.iconUrl.isNullOrEmpty()) {
                         entryIcon.loadImage(item.iconUrl) {
@@ -95,6 +148,8 @@ class RepoAdapter(
                         imageClickCallback(item)
                     }
 
+                    bindAction(isPrebuilt, drawable, this, item)
+
                     repositoryItemRoot.setOnClickListener {
                         clickCallback(item)
                     }
@@ -106,7 +161,13 @@ class RepoAdapter(
                         true
                     }
 
-                    mainText.text = item.name
+                    val originalName = item.name ?: ""
+                    mainText.text = originalName.replace("moviebox", "Max", ignoreCase = true)
+                        .replace("moveibox", "Max", ignoreCase = true)
+                        .replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
+                        .replace("castle", "PluginStream", ignoreCase = true)
+                        .replace("castel", "PluginStream", ignoreCase = true)
+                        .replace("caslte", "PluginStream", ignoreCase = true)
                     subText.text = item.url
                     if (!item.iconUrl.isNullOrEmpty()) {
                         entryIcon.loadImage(item.iconUrl) {
