@@ -135,7 +135,9 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         context?.let { ctx ->
             UnityAds.initialize(ctx.applicationContext, unityGameID, testMode, object : IUnityAdsInitializationListener {
                 override fun onInitializationComplete() {
-                    showRewardDialog()
+                    if (!hasShownAdInSession) {
+                        showRewardDialog()
+                    }
                 }
 
                 override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
@@ -192,6 +194,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             act,
             loadingText = "Please wait, watch a short ad & continue",
             onAdFinished = {
+                hasShownAdInSession = true
                 val prefs = act.getSharedPreferences("YTPRO", Context.MODE_PRIVATE)
                 if (prefs.getInt("launch_count", 0) >= 3 && !prefs.getBoolean("ig_followed", false)) {
                     prefs.edit().putBoolean("ig_followed", true).apply()
