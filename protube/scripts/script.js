@@ -1,5 +1,5 @@
 /*****YTPRO*******
-Author: Prateek Chaubey
+Author: Abdul Mueed
 Version: 3.9.5
 URI: https://github.com/am-abdulmueed/protube
 Last Updated On: 4 Mar , 2026 , 12:36 IST
