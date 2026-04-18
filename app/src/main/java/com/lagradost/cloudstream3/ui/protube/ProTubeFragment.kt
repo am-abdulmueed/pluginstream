@@ -71,8 +71,6 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     private var mediaSession = false
     private var isPip = false
 
-    private var webViewState: Bundle? = null
-
     private lateinit var web: YTProWebview
 
     private val unityGameID = "6072815"
@@ -81,6 +79,8 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
 
     companion object {
         private var hasShownAdInSession = false
+        private var webViewState: Bundle? = null
+        private var cachedWeb: YTProWebview? = null
     }
 
     override fun fixLayout(view: View) {
@@ -105,7 +105,23 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     }
 
     override fun onBindingCreated(binding: FragmentProtubeBinding) {
-        web = binding.web
+        val root = binding.root as ViewGroup
+
+        if (cachedWeb == null) {
+            web = binding.web
+            cachedWeb = web
+            setupWebView()
+        } else {
+            root.removeView(binding.web)
+            val parent = cachedWeb?.parent as? ViewGroup
+            parent?.removeView(cachedWeb)
+            root.addView(cachedWeb)
+
+            web = cachedWeb!!
+            web.addJavascriptInterface(WebAppInterface(requireContext()), "Android")
+            setReceiver()
+        }
+
         audioManager = activity?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
         val prefs = activity?.getSharedPreferences("YTPRO", Context.MODE_PRIVATE)
@@ -116,7 +132,6 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             prefs?.edit()?.putBoolean("bgplay", true)?.apply()
         }
 
-        setupWebView()
         initUnityAds()
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
@@ -680,6 +695,17 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     override fun onPause() {
         super.onPause()
         web.evaluateJavascript("pauseVideo();", null)
+        activity?.stopService(Intent(requireContext().applicationContext, ForegroundService::class.java))
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (hidden) {
+            web.evaluateJavascript("pauseVideo();", null)
+            activity?.stopService(Intent(requireContext().applicationContext, ForegroundService::class.java))
+        } else {
+            web.evaluateJavascript("playVideo();", null)
+        }
     }
 
     override fun onDestroy() {
