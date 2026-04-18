@@ -1,7 +1,7 @@
 # 🎬 PluginStream Max - Ultimate Multi-Source Entertainment Hub
 
 <p align="center">
-  <a href="https://pluginstream.pages.dev">
+  <a href="https://github.com/am-abdulmueed/pluginstream/releases/latest/download/pluginstream.apk">
     <img src="https://img.shields.io/badge/DOWNLOAD-APK_NOW-blue?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" height="40">
   </a>
 </p>
@@ -10,6 +10,19 @@
   <img src="https://img.shields.io/badge/Version-5.0.0-green?style=flat-square&logo=github" />
   <img src="https://img.shields.io/badge/Platform-Android-orange?style=flat-square&logo=android" />
   <img src="https://img.shields.io/badge/Security-0%2F95%20Clean-brightgreen?style=flat-square&logo=virustotal" />
+</p>
+
+<p align="center">
+  <a href="#!"><img src="https://img.shields.io/github/v/release/am-abdulmueed/pluginstream?style=flat-square&color=blue" alt="Release"></a> 
+  <a href="#!"><img src="https://img.shields.io/github/downloads/maxrave-dev/SimpMusic/total?style=flat-square&color=green" alt="Downloads"></a>
+</p>
+
+<p align="center">
+  <a href="#!"><img src="https://trendshift.io/api/badge/repositories/13482" alt="Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+</p>
+
+<p align="center">
+  <a href="#!"><img src="https://api.producthunt.com/widgets/embed-image/v1/product_rating.svg?product_id=903836&theme=dark" alt="Product Rating" style="width: 242px; height: 108px;" width="242" height="108" /></a>
 </p>
 
 **PluginStream Max** is a high-performance, lightweight Android application designed to aggregate premium streaming platforms into a single interface. It uses a sophisticated **Plugin & Extension architecture** to provide ad-free access to movies, series, and live TV.
