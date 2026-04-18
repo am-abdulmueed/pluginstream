@@ -81,6 +81,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         private var hasShownAdInSession = false
         private var webViewState: Bundle? = null
         private var cachedWeb: YTProWebview? = null
+        private var lastKnownPosition: Long = 0
     }
 
     override fun fixLayout(view: View) {
@@ -120,6 +121,10 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             web = cachedWeb!!
             web.addJavascriptInterface(WebAppInterface(requireContext()), "Android")
             setReceiver()
+
+            if (lastKnownPosition > 0) {
+                web.evaluateJavascript("seekTo($lastKnownPosition);", null)
+            }
         }
 
         audioManager = activity?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
@@ -483,6 +488,11 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         }
 
         @JavascriptInterface
+        fun savePosition(ct: Long) {
+            lastKnownPosition = ct
+        }
+
+        @JavascriptInterface
         fun gohome(x: String) {
             val startMain = Intent(Intent.ACTION_MAIN)
             startMain.addCategory(Intent.CATEGORY_HOME)
@@ -531,6 +541,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             duration = dura
             isPlaying = true
             mediaSession = true
+            lastKnownPosition = 0 // Reset on new video start
 
             val intent = Intent(requireContext().applicationContext, ForegroundService::class.java).apply {
                 putExtra("icon", icon)
@@ -565,12 +576,14 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         fun bgStop() {
             isPlaying = false
             mediaSession = false
+            lastKnownPosition = 0
             activity?.stopService(Intent(requireContext().applicationContext, ForegroundService::class.java))
         }
 
         @JavascriptInterface
         fun bgPause(ct: Long) {
             isPlaying = false
+            lastKnownPosition = ct
             requireContext().applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
                 putExtra("icon", icon)
                 putExtra("title", title)
@@ -584,6 +597,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         @JavascriptInterface
         fun bgPlay(ct: Long) {
             isPlaying = true
+            lastKnownPosition = ct
             requireContext().applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
                 putExtra("icon", icon)
                 putExtra("title", title)
@@ -597,6 +611,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         @JavascriptInterface
         fun bgBuffer(ct: Long) {
             isPlaying = true
+            lastKnownPosition = ct
             requireContext().applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
                 putExtra("icon", icon)
                 putExtra("title", title)
@@ -694,6 +709,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
 
     override fun onPause() {
         super.onPause()
+        web.evaluateJavascript("if(document.getElementsByClassName('video-stream')[0]) Android.savePosition(document.getElementsByClassName('video-stream')[0].currentTime * 1000);", null)
         web.evaluateJavascript("pauseVideo();", null)
         activity?.stopService(Intent(requireContext().applicationContext, ForegroundService::class.java))
     }
@@ -701,6 +717,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         if (hidden) {
+            web.evaluateJavascript("if(document.getElementsByClassName('video-stream')[0]) Android.savePosition(document.getElementsByClassName('video-stream')[0].currentTime * 1000);", null)
             web.evaluateJavascript("pauseVideo();", null)
             activity?.stopService(Intent(requireContext().applicationContext, ForegroundService::class.java))
         } else {
