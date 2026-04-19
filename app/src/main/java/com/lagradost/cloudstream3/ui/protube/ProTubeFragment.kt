@@ -71,8 +71,6 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     private var mediaSession = false
     private var isPip = false
 
-    private var webViewState: Bundle? = null
-
     private lateinit var web: YTProWebview
 
     private val unityGameID = "6072815"
@@ -80,7 +78,9 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     private val testMode = false
 
     companion object {
-        private var hasShownAdInSession = false
+        private var webViewState: Bundle? = null
+        private var cachedWeb: YTProWebview? = null
+        private var lastKnownPosition: Long = 0
     }
 
     override fun fixLayout(view: View) {
@@ -105,7 +105,29 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     }
 
     override fun onBindingCreated(binding: FragmentProtubeBinding) {
-        web = binding.web
+        val root = binding.root as ViewGroup
+
+        if (cachedWeb == null) {
+            web = binding.web
+            cachedWeb = web
+            setupWebView()
+        } else {
+            root.removeView(binding.web)
+            val parent = cachedWeb?.parent as? ViewGroup
+            parent?.removeView(cachedWeb)
+            root.addView(cachedWeb)
+
+            web = cachedWeb!!
+            context?.let { ctx ->
+                web.addJavascriptInterface(WebAppInterface(ctx), "Android")
+            }
+            setReceiver()
+
+            if (lastKnownPosition > 0) {
+                web.evaluateJavascript("seekTo($lastKnownPosition);", null)
+            }
+        }
+
         audioManager = activity?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
         val prefs = activity?.getSharedPreferences("YTPRO", Context.MODE_PRIVATE)
@@ -116,7 +138,6 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             prefs?.edit()?.putBoolean("bgplay", true)?.apply()
         }
 
-        setupWebView()
         initUnityAds()
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
@@ -135,9 +156,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         context?.let { ctx ->
             UnityAds.initialize(ctx.applicationContext, unityGameID, testMode, object : IUnityAdsInitializationListener {
                 override fun onInitializationComplete() {
-                    if (!hasShownAdInSession) {
-                        showRewardDialog()
-                    }
+                    // Disabled: showRewardDialog()
                 }
 
                 override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
@@ -147,16 +166,17 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     }
 
     private fun showRewardDialog() {
-        main {
-            val dialog = Dialog(requireContext(), ProTubeR.style.CustomDialog)
-            val dialogView = layoutInflater.inflate(ProTubeR.layout.dialog_reward_ad, null)
-            dialog.setContentView(dialogView)
-            dialog.setCancelable(false)
+        context?.let { ctx ->
+            main {
+                val dialog = Dialog(ctx, ProTubeR.style.CustomDialog)
+                val dialogView = layoutInflater.inflate(ProTubeR.layout.dialog_reward_ad, null)
+                dialog.setContentView(dialogView)
+                dialog.setCancelable(false)
 
             val dialogIcon = dialogView.findViewById<ImageView>(ProTubeR.id.dialog_icon)
             if (Build.VERSION.SDK_INT >= 28) {
                 try {
-                    val source = ImageDecoder.createSource(resources, ProTubeR.drawable.ytpro)
+                    val source = ImageDecoder.createSource(ctx.resources, ProTubeR.drawable.ytpro)
                     val drawable = ImageDecoder.decodeDrawable(source)
                     dialogIcon.setImageDrawable(drawable)
                     if (drawable is AnimatedImageDrawable) {
@@ -179,12 +199,13 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             if (window != null) {
                 val lp = WindowManager.LayoutParams()
                 lp.copyFrom(window.attributes)
-                lp.width = (resources.displayMetrics.widthPixels * 0.9).toInt()
+                lp.width = (ctx.resources.displayMetrics.widthPixels * 0.9).toInt()
                 lp.height = WindowManager.LayoutParams.WRAP_CONTENT
                 window.attributes = lp
             }
 
             dialog.show()
+            }
         }
     }
 
@@ -194,7 +215,6 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             act,
             loadingText = "Please wait, watch a short ad & continue",
             onAdFinished = {
-                hasShownAdInSession = true
                 val prefs = act.getSharedPreferences("YTPRO", Context.MODE_PRIVATE)
                 if (prefs.getInt("launch_count", 0) >= 3 && !prefs.getBoolean("ig_followed", false)) {
                     prefs.edit().putBoolean("ig_followed", true).apply()
@@ -205,11 +225,12 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     }
 
     private fun showInstagramFollowDialog() {
-        main {
-            val dialog = Dialog(requireContext(), ProTubeR.style.CustomDialog)
-            val dialogView = layoutInflater.inflate(ProTubeR.layout.dialog_follow_instagram, null)
-            dialog.setContentView(dialogView)
-            dialog.setCancelable(true)
+        context?.let { ctx ->
+            main {
+                val dialog = Dialog(ctx, ProTubeR.style.CustomDialog)
+                val dialogView = layoutInflater.inflate(ProTubeR.layout.dialog_follow_instagram, null)
+                dialog.setContentView(dialogView)
+                dialog.setCancelable(true)
 
             val btnFollow = dialogView.findViewById<Button>(ProTubeR.id.btn_follow_ig)
             btnFollow.setOnClickListener {
@@ -223,16 +244,17 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             if (window != null) {
                 val lp = WindowManager.LayoutParams()
                 lp.copyFrom(window.attributes)
-                lp.width = (resources.displayMetrics.widthPixels * 0.9).toInt()
+                lp.width = (ctx.resources.displayMetrics.widthPixels * 0.9).toInt()
                 lp.height = WindowManager.LayoutParams.WRAP_CONTENT
                 window.attributes = lp
             }
             dialog.show()
+            }
         }
     }
 
     private fun openInstagram() {
-        val handle = "a.b.d.u.l.m.u.e.e.d"
+        val handle = "pluginstream"
         val uri = Uri.parse("http://instagram.com/_u/$handle")
         val intent = Intent(Intent.ACTION_VIEW, uri)
         intent.setPackage("com.instagram.android")
@@ -261,7 +283,9 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             web.loadUrl("https://m.youtube.com/")
         }
         
-        web.addJavascriptInterface(WebAppInterface(requireContext()), "Android")
+        context?.let { ctx ->
+            web.addJavascriptInterface(WebAppInterface(ctx), "Android")
+        }
         web.webChromeClient = CustomWebClient()
         web.setLayerType(View.LAYER_TYPE_HARDWARE, null)
 
@@ -285,7 +309,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
                         }
 
                         if (assetPath != null) {
-                            val inputStream: InputStream = requireContext().assets.open(assetPath)
+                            val inputStream: InputStream = context?.assets?.open(assetPath) ?: return null
                             var mimeType = "application/javascript"
                             if (assetPath.endsWith(".js") || assetPath == "ytpro") {
                                 mimeType = "application/javascript"
@@ -338,7 +362,9 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
                 if (url != null && !url.contains("youtube.com/watch") && !url.contains("youtube.com/shorts") && isPlaying) {
                     isPlaying = false
                     mediaSession = false
-                    activity?.stopService(Intent(requireContext().applicationContext, ForegroundService::class.java))
+                    context?.let { ctx ->
+                        activity?.stopService(Intent(ctx.applicationContext, ForegroundService::class.java))
+                    }
                 }
 
                 super.onPageFinished(view, url)
@@ -379,7 +405,13 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         private var mOriginalSystemUiVisibility = 0
 
         override fun getDefaultVideoPoster(): Bitmap? {
-            return BitmapFactory.decodeResource(resources, 2130837573)
+            return context?.let { ctx ->
+                try {
+                    BitmapFactory.decodeResource(ctx.resources, 2130837573)
+                } catch (e: Exception) {
+                    null
+                }
+            }
         }
 
         override fun onShowCustomView(paramView: View?, viewCallback: CustomViewCallback?) {
@@ -429,17 +461,19 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
 
         override fun onPermissionRequest(request: PermissionRequest?) {
             if (Build.VERSION.SDK_INT > 22 && request?.origin?.toString()?.contains("youtube.com") == true) {
-                if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED) {
+                val ctx = context
+                if (ctx != null && ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_DENIED) {
                     requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 101)
                 } else {
-                    request.grant(request.resources)
+                    request?.grant(request.resources)
                 }
             }
         }
     }
 
     private fun downloadFile(filename: String, url: String, mtype: String) {
-        if (Build.VERSION.SDK_INT > 22 && Build.VERSION.SDK_INT < Build.VERSION_CODES.R && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+        val ctx = context ?: return
+        if (Build.VERSION.SDK_INT > 22 && Build.VERSION.SDK_INT < Build.VERSION_CODES.R && ContextCompat.checkSelfPermission(ctx, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
             showToast(ProTubeR.string.grant_storage)
             requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 102)
         }
@@ -464,7 +498,12 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     inner class WebAppInterface(val mContext: Context) {
         @JavascriptInterface
         fun showToast(txt: String) {
-            Toast.makeText(requireContext().applicationContext, txt, Toast.LENGTH_SHORT).show()
+            Toast.makeText(mContext.applicationContext, txt, Toast.LENGTH_SHORT).show()
+        }
+
+        @JavascriptInterface
+        fun savePosition(ct: Long) {
+            lastKnownPosition = ct
         }
 
         @JavascriptInterface
@@ -493,9 +532,9 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
 
         @JavascriptInterface
         fun getInfo(): String {
-            val manager = requireContext().applicationContext.packageManager
+            val manager = mContext.applicationContext.packageManager
             return try {
-                val info = manager.getPackageInfo(requireContext().applicationContext.packageName, 0)
+                val info = manager.getPackageInfo(mContext.applicationContext.packageName, 0)
                 info.versionName ?: "1.0"
             } catch (e: PackageManager.NameNotFoundException) {
                 "1.0"
@@ -504,7 +543,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
 
         @JavascriptInterface
         fun setBgPlay(bgplay: Boolean) {
-            val prefs = requireContext().getSharedPreferences("YTPRO", Context.MODE_PRIVATE)
+            val prefs = mContext.getSharedPreferences("YTPRO", Context.MODE_PRIVATE)
             prefs.edit().putBoolean("bgplay", bgplay).apply()
         }
 
@@ -516,8 +555,9 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             duration = dura
             isPlaying = true
             mediaSession = true
+            lastKnownPosition = 0 // Reset on new video start
 
-            val intent = Intent(requireContext().applicationContext, ForegroundService::class.java).apply {
+            val intent = Intent(mContext.applicationContext, ForegroundService::class.java).apply {
                 putExtra("icon", icon)
                 putExtra("title", title)
                 putExtra("subtitle", subtitle)
@@ -536,7 +576,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             duration = dura
             isPlaying = true
 
-            requireContext().applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
+            mContext.applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
                 putExtra("icon", icon)
                 putExtra("title", title)
                 putExtra("subtitle", subtitle)
@@ -550,13 +590,15 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         fun bgStop() {
             isPlaying = false
             mediaSession = false
-            activity?.stopService(Intent(requireContext().applicationContext, ForegroundService::class.java))
+            lastKnownPosition = 0
+            activity?.stopService(Intent(mContext.applicationContext, ForegroundService::class.java))
         }
 
         @JavascriptInterface
         fun bgPause(ct: Long) {
             isPlaying = false
-            requireContext().applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
+            lastKnownPosition = ct
+            mContext.applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
                 putExtra("icon", icon)
                 putExtra("title", title)
                 putExtra("subtitle", subtitle)
@@ -569,7 +611,8 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         @JavascriptInterface
         fun bgPlay(ct: Long) {
             isPlaying = true
-            requireContext().applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
+            lastKnownPosition = ct
+            mContext.applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
                 putExtra("icon", icon)
                 putExtra("title", title)
                 putExtra("subtitle", subtitle)
@@ -582,7 +625,8 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         @JavascriptInterface
         fun bgBuffer(ct: Long) {
             isPlaying = true
-            requireContext().applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
+            lastKnownPosition = ct
+            mContext.applicationContext.sendBroadcast(Intent("UPDATE_NOTIFICATION").apply {
                 putExtra("icon", icon)
                 putExtra("title", title)
                 putExtra("subtitle", subtitle)
@@ -630,7 +674,7 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         @JavascriptInterface
         fun getBrightness(): Float {
             return try {
-                val sysBrightness = Settings.System.getInt(requireContext().contentResolver, Settings.System.SCREEN_BRIGHTNESS)
+                val sysBrightness = Settings.System.getInt(mContext.contentResolver, Settings.System.SCREEN_BRIGHTNESS)
                 (sysBrightness / 255f) * 100f
             } catch (e: Exception) {
                 50f
@@ -679,12 +723,31 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
 
     override fun onPause() {
         super.onPause()
+        web.evaluateJavascript("if(document.getElementsByClassName('video-stream')[0]) Android.savePosition(document.getElementsByClassName('video-stream')[0].currentTime * 1000);", null)
         web.evaluateJavascript("pauseVideo();", null)
+        context?.let { ctx ->
+            activity?.stopService(Intent(ctx.applicationContext, ForegroundService::class.java))
+        }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (hidden) {
+            web.evaluateJavascript("if(document.getElementsByClassName('video-stream')[0]) Android.savePosition(document.getElementsByClassName('video-stream')[0].currentTime * 1000);", null)
+            web.evaluateJavascript("pauseVideo();", null)
+            context?.let { ctx ->
+                activity?.stopService(Intent(ctx.applicationContext, ForegroundService::class.java))
+            }
+        } else {
+            web.evaluateJavascript("playVideo();", null)
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        activity?.stopService(Intent(requireContext().applicationContext, ForegroundService::class.java))
+        context?.let { ctx ->
+            activity?.stopService(Intent(ctx.applicationContext, ForegroundService::class.java))
+        }
         broadcastReceiver?.let { activity?.unregisterReceiver(it) }
     }
 }

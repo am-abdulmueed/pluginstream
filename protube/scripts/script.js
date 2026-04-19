@@ -1,5 +1,5 @@
 /*****YTPRO*******
-Author: Prateek Chaubey
+Author: Abdul Mueed
 Version: 3.9.5
 URI: https://github.com/am-abdulmueed/protube
 Last Updated On: 4 Mar , 2026 , 12:36 IST
@@ -784,7 +784,7 @@ ${localStorage.getItem("prompt")}
 <div class="credit" >
 <z style="margin-right:6px">Designed by </z>
 
-<a href="#" style="text-decoration:none; color:inherit; font-weight:bold;" onclick="Android.oplink('https://instagram.com/a.b.d.u.l.m.u.e.e.d');">Abdul Mueed</a>
+<a href="#" style="text-decoration:none; color:inherit; font-weight:bold;" onclick="Android.oplink('https://instagram.com/pluginstream');">Abdul Mueed</a>
 </div>
 `;
 

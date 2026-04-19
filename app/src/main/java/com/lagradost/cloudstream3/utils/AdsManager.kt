@@ -20,6 +20,7 @@ object AdsManager {
     private const val BANNER_AD_PLACEMENT_ID = "Banner_Android"
     private const val INTERSTITIAL_AD_PLACEMENT_ID = "Interstitial_Android"
     private const val TEST_MODE = false
+    private const val ENABLE_ADS = false
 
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private const val BANNER_REFRESH_INTERVAL = 20 * 1000L // Reduced to 20 seconds for more impressions
@@ -49,6 +50,7 @@ object AdsManager {
     }
 
     fun initialize(context: Context) {
+        if (!ENABLE_ADS) return
         if (UnityAds.isInitialized) {
             preloadRewardedAd()
             preloadInterstitialAd()
@@ -72,7 +74,7 @@ object AdsManager {
     }
 
     private fun preloadRewardedAd() {
-        if (!UnityAds.isInitialized) return
+        if (!ENABLE_ADS || !UnityAds.isInitialized) return
         UnityAds.load(REWARDED_AD_PLACEMENT_ID, object : IUnityAdsLoadListener {
             override fun onUnityAdsAdLoaded(placementId: String?) {
                 // Ad loaded successfully
@@ -80,7 +82,7 @@ object AdsManager {
             override fun onUnityAdsFailedToLoad(placementId: String?, error: UnityAds.UnityAdsLoadError?, message: String?) {
                 // Fail! Retry after 5 seconds to ensure we have an ad ready
                 // Only retry if still initialized to avoid leaks/crashes
-                if (UnityAds.isInitialized) {
+                if (ENABLE_ADS && UnityAds.isInitialized) {
                     handler.removeCallbacksAndMessages(REWARDED_AD_PLACEMENT_ID)
                     handler.postDelayed({ preloadRewardedAd() }, REWARDED_AD_PLACEMENT_ID, PRELOAD_RETRY_INTERVAL)
                 }
@@ -89,14 +91,14 @@ object AdsManager {
     }
 
     private fun preloadInterstitialAd() {
-        if (!UnityAds.isInitialized) return
+        if (!ENABLE_ADS || !UnityAds.isInitialized) return
         UnityAds.load(INTERSTITIAL_AD_PLACEMENT_ID, object : IUnityAdsLoadListener {
             override fun onUnityAdsAdLoaded(placementId: String?) {
                 // Ad loaded successfully
             }
             override fun onUnityAdsFailedToLoad(placementId: String?, error: UnityAds.UnityAdsLoadError?, message: String?) {
                 // Fail! Retry after 5 seconds to ensure we have an ad ready
-                if (UnityAds.isInitialized) {
+                if (ENABLE_ADS && UnityAds.isInitialized) {
                     handler.removeCallbacksAndMessages(INTERSTITIAL_AD_PLACEMENT_ID)
                     handler.postDelayed({ preloadInterstitialAd() }, INTERSTITIAL_AD_PLACEMENT_ID, PRELOAD_RETRY_INTERVAL)
                 }
@@ -110,6 +112,10 @@ object AdsManager {
         loadingText: String,
         onAdFinished: (() -> Unit)? = null
     ) {
+        if (!ENABLE_ADS) {
+            onAdFinished?.invoke()
+            return
+        }
         val dialog = Dialog(activity, R.style.CustomDialog)
         val dialogBinding = DialogAdLoadingBinding.inflate(activity.layoutInflater)
         dialogBinding.loadingText.text = loadingText
@@ -218,6 +224,7 @@ object AdsManager {
     }
 
     fun initBannerAd(activity: Activity, bannerContainer: android.view.ViewGroup) {
+        if (!ENABLE_ADS) return
         if (!UnityAds.isInitialized) {
             pendingBannerRequest = {
                 activity.runOnUiThread {
@@ -235,7 +242,7 @@ object AdsManager {
     }
 
     private fun loadBannerAd(activity: Activity, bannerContainer: android.view.ViewGroup) {
-        if (isBannerLoading) return
+        if (!ENABLE_ADS || isBannerLoading) return
         isBannerLoading = true
 
         if (bannerView == null) {
@@ -247,26 +254,32 @@ object AdsManager {
                     // Success! Remove from retry queue if it was there
                     handler.removeCallbacks(bannerRetryRunnable)
                     
-                    bannerContainer.removeAllViews()
-                    val params = android.widget.FrameLayout.LayoutParams(
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                        android.view.Gravity.CENTER_HORIZONTAL or android.view.Gravity.BOTTOM
-                    )
-                    bannerContainer.addView(bannerAdView, params)
+                    if (currentBannerContainer != null && bannerView != null) {
+                        currentBannerContainer?.removeAllViews()
+                        currentBannerContainer?.addView(bannerView)
+                        currentBannerContainer?.visibility = android.view.View.VISIBLE
+                    }
                 }
-                override fun onBannerClick(bannerAdView: BannerView?) {}
+
                 override fun onBannerFailedToLoad(bannerAdView: BannerView?, errorInfo: BannerErrorInfo?) {
                     isBannerLoading = false
-                    // Fail! Schedule a faster retry (3 seconds as requested)
-                    handler.removeCallbacks(bannerRetryRunnable)
-                    handler.postDelayed(bannerRetryRunnable, BANNER_RETRY_INTERVAL)
+                    // Hide the container on failure
+                    currentBannerContainer?.visibility = android.view.View.GONE
+                    
+                    // Retry logic: Only retry if the container is still active and we're not already waiting
+                    if (currentBannerContainer != null && UnityAds.isInitialized) {
+                        handler.removeCallbacks(bannerRetryRunnable)
+                        handler.postDelayed(bannerRetryRunnable, BANNER_RETRY_INTERVAL)
+                    }
                 }
+
+                override fun onBannerClick(bannerAdView: BannerView?) {}
                 override fun onBannerShown(bannerAdView: BannerView?) {}
-                override fun onBannerLeftApplication(bannerView: BannerView?) {}
+                override fun onBannerLeftApplication(bannerAdView: BannerView?) {}
             }
             bannerView?.listener = loadListener
         }
+        
         bannerView?.load()
     }
 

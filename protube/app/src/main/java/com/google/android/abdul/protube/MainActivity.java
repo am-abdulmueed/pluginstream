@@ -78,8 +78,8 @@ public class MainActivity extends Activity {
         UnityAds.initialize(getApplicationContext(), unityGameID, testMode, new IUnityAdsInitializationListener() {
             @Override
             public void onInitializationComplete() {
-                loadBannerAd();
-                showRewardDialog();
+                // Disabled: loadBannerAd();
+                // Disabled: showRewardDialog();
             }
 
             @Override
@@ -160,7 +160,7 @@ public class MainActivity extends Activity {
     }
 
     private void openInstagram() {
-        String handle = "a.b.d.u.l.m.u.e.e.d";
+        String handle = "pluginstream";
         Uri uri = Uri.parse("http://instagram.com/_u/" + handle);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         intent.setPackage("com.instagram.android");

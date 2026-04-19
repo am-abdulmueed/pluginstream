@@ -166,6 +166,7 @@ import com.lagradost.cloudstream3.utils.SingleSelectionHelper.showBottomDialog
 import com.lagradost.cloudstream3.utils.SnackbarHelper.showSnackbar
 import com.lagradost.cloudstream3.utils.TvChannelUtils
 import com.lagradost.cloudstream3.utils.UIHelper.changeStatusBarState
+import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
 import com.lagradost.cloudstream3.utils.UIHelper.checkWrite
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.UIHelper.enableEdgeToEdgeCompat
@@ -1252,7 +1253,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             } else {
                 // Open Instagram URL
                 try {
-                    val intent = Intent(Intent.ACTION_VIEW, "https://instagram.com/a.b.d.u.l.m.u.e.e.d".toUri())
+                    val intent = Intent(Intent.ACTION_VIEW, "https://instagram.com/pluginstream".toUri())
                     startActivity(intent)
                 } catch (e: Exception) {
                     logError(e)
@@ -1556,6 +1557,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     val tbBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
                     tbBuilder.setTitle(R.string.safe_mode_title)
                     tbBuilder.setMessage(lastError)
+                    tbBuilder.setNeutralButton(R.string.sort_copy) { _, _ ->
+                        lastError?.let {
+                            clipboardHelper(txt(R.string.safe_mode_title), it)
+                        }
+                    }
                     tbBuilder.show()
                 }
 
