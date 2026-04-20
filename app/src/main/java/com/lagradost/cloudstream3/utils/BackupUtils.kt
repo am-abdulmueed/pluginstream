@@ -204,7 +204,7 @@ object BackupUtils {
             }
 
             val date = SimpleDateFormat("yyyy_MM_dd_HH_mm", Locale.getDefault()).format(Date(currentTimeMillis()))
-            val displayName = "CS3_Backup_${date}"
+            val displayName = "PluginStream_Backup_${date}"
             val backupFile = getBackup(context)
             val stream = setupBackupStream(context, displayName)
 
