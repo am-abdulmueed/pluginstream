@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?attr/primaryBlackBackground"
+    android:padding="24dp">
+
+    <!-- Header -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="More Options"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="?attr/textColor"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Library Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLibrary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Library"
+        android:textSize="18sp"
+        android:padding="16dp"
+        android:gravity="start|center_vertical"
+        app:icon="@drawable/library_icon_selector"
+        app:iconSize="24dp"
+        app:iconTint="?attr/textColor"
+        android:layout_marginBottom="12dp"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    <!-- Downloads Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDownloads"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Downloads"
+        android:textSize="18sp"
+        android:padding="16dp"
+        android:gravity="start|center_vertical"
+        app:icon="@drawable/netflix_download"
+        app:iconSize="24dp"
+        app:iconTint="?attr/textColor"
+        android:layout_marginBottom="12dp"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    <!-- Settings Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSettings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Settings"
+        android:textSize="18sp"
+        android:padding="16dp"
+        android:gravity="start|center_vertical"
+        app:icon="@drawable/settings_icon_selector"
+        app:iconSize="24dp"
+        app:iconTint="?attr/textColor"
+        android:layout_marginBottom="12dp"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+</LinearLayout>

@@ -365,6 +365,15 @@
             app:popExitAnim="@anim/exit_anim" />
     </fragment>
     <fragment
+        android:id="@+id/navigation_offers"
+        android:name="com.lagradost.cloudstream3.ui.offers.OffersFragment"
+        android:label="@string/title_offers"
+        app:enterAnim="@anim/enter_anim"
+        app:exitAnim="@anim/exit_anim"
+        app:popEnterAnim="@anim/enter_anim"
+        app:popExitAnim="@anim/exit_anim"
+        tools:layout="@layout/fragment_offers" />
+    <fragment
         android:id="@+id/navigation_settings"
         android:name="com.lagradost.cloudstream3.ui.settings.SettingsFragment"
         android:layout_height="match_parent"

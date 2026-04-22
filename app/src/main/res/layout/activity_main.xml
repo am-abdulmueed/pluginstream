@@ -107,5 +107,16 @@
                 app:menu="@menu/bottom_nav_menu" />
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Floating More Menu -->
+        <include
+            layout="@layout/floating_more_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintBottom_toTopOf="@+id/nav_view_container"
+            app:layout_constraintEnd_toEndOf="@+id/nav_view_container"
+            app:layout_constraintStart_toStartOf="@+id/nav_view_container"
+            app:layout_constraintHorizontal_bias="0.91" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

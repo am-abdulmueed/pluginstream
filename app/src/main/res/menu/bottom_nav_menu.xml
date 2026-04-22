@@ -9,19 +9,15 @@
             android:icon="@drawable/search_icon"
             android:title="@string/title_search" />
         <item
-            android:id="@+id/navigation_library"
-            android:icon="@drawable/library_icon_selector"
-            android:title="@string/library" />
-        <item
-            android:id="@+id/navigation_downloads"
-            android:icon="@drawable/netflix_download"
-            android:title="@string/title_downloads" />
+            android:id="@+id/navigation_offers"
+            android:icon="@drawable/ic_offers"
+            android:title="@string/title_offers" />
         <item
             android:id="@+id/navigation_protube"
             android:icon="@drawable/ic_youtube_selector"
             android:title="YouTube" />
         <item
-            android:id="@+id/navigation_settings"
-            android:icon="@drawable/settings_icon_selector"
-            android:title="@string/title_settings" />
+            android:id="@+id/navigation_more"
+            android:icon="@drawable/ic_more_menu"
+            android:title="" />
 </menu>

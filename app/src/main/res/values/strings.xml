@@ -31,6 +31,7 @@
     <string name="play_with_app_name">Play with PluginStream</string>
     <string name="title_home">Home</string>
     <string name="title_search">Search</string>
+    <string name="title_offers">Offers</string>
     <string name="title_downloads">Downloads</string>
     <string name="download_queue">Download queue</string>
     <string name="title_settings">Settings</string>

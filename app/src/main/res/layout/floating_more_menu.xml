@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/floatingMenuContainer"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:visibility="gone"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- Downloads Icon -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabDownloads"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="Downloads"
+        android:src="@drawable/netflix_download"
+        android:backgroundTint="?attr/primaryBlackBackground"
+        app:tint="?attr/textColor"
+        app:borderWidth="0dp"
+        app:elevation="8dp"
+        app:fabSize="mini" />
+
+    <!-- Library Icon -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabLibrary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="Library"
+        android:src="@drawable/library_icon_selector"
+        android:backgroundTint="?attr/primaryBlackBackground"
+        app:tint="?attr/textColor"
+        app:borderWidth="0dp"
+        app:elevation="8dp"
+        app:fabSize="mini" />
+
+    <!-- Settings Icon -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="Settings"
+        android:src="@drawable/settings_icon_selector"
+        android:backgroundTint="?attr/primaryBlackBackground"
+        app:tint="?attr/textColor"
+        app:borderWidth="0dp"
+        app:elevation="8dp"
+        app:fabSize="mini" />
+
+</LinearLayout>

@@ -197,12 +197,18 @@ import kotlin.system.exitProcess
 import com.lagradost.cloudstream3.utils.downloader.DownloadQueueManager
 
 class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCallback {
+    private var navController: NavController? = null
+    
     companion object {
         var activityResultLauncher: ActivityResultLauncher<Intent>? = null
 
         const val TAG = "MAINACT"
         const val ANIMATED_OUTLINE: Boolean = false
         var lastError: String? = null
+
+        // Floating menu state
+        var isFloatingMenuVisible = false
+            private set
 
         /** Update lastError variable based on error file, to check if app crashed.
          * Can be called multiple times without changing the lastError variable changing.
@@ -486,6 +492,142 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         onDialogDismissedEvent.invoke(dialogId)
     }
 
+    // Floating menu functions
+    private fun setupFloatingMenu() {
+        val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
+        val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
+        val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
+        val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
+
+        // FAB click handlers
+        fabLibrary?.setOnClickListener {
+            hideFloatingMenu()
+            val navOptions = NavOptions.Builder()
+                .setLaunchSingleTop(true)
+                .setRestoreState(true)
+                .setEnterAnim(R.anim.enter_anim)
+                .setExitAnim(R.anim.exit_anim)
+                .setPopEnterAnim(R.anim.pop_enter)
+                .setPopExitAnim(R.anim.pop_exit)
+                .setPopUpTo(
+                    navController?.graph?.findStartDestination()?.id ?: R.id.navigation_home,
+                    inclusive = true,
+                    saveState = true
+                )
+                .build()
+            navController?.navigate(R.id.navigation_library, null, navOptions)
+        }
+
+        fabDownloads?.setOnClickListener {
+            hideFloatingMenu()
+            val navOptions = NavOptions.Builder()
+                .setLaunchSingleTop(true)
+                .setRestoreState(true)
+                .setEnterAnim(R.anim.enter_anim)
+                .setExitAnim(R.anim.exit_anim)
+                .setPopEnterAnim(R.anim.pop_enter)
+                .setPopExitAnim(R.anim.pop_exit)
+                .setPopUpTo(
+                    navController?.graph?.findStartDestination()?.id ?: R.id.navigation_home,
+                    inclusive = true,
+                    saveState = true
+                )
+                .build()
+            navController?.navigate(R.id.navigation_downloads, null, navOptions)
+        }
+
+        fabSettings?.setOnClickListener {
+            hideFloatingMenu()
+            val navOptions = NavOptions.Builder()
+                .setLaunchSingleTop(true)
+                .setRestoreState(true)
+                .setEnterAnim(R.anim.enter_anim)
+                .setExitAnim(R.anim.exit_anim)
+                .setPopEnterAnim(R.anim.pop_enter)
+                .setPopExitAnim(R.anim.pop_exit)
+                .setPopUpTo(
+                    navController?.graph?.findStartDestination()?.id ?: R.id.navigation_home,
+                    inclusive = true,
+                    saveState = true
+                )
+                .build()
+            navController?.navigate(R.id.navigation_settings, null, navOptions)
+        }
+    }
+
+    private fun showFloatingMenu() {
+        val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
+        val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
+        val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
+        val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
+
+        floatingContainer?.visibility = View.VISIBLE
+        isFloatingMenuVisible = true
+
+        // Animate FABs appearing
+        val fabs = listOf(fabSettings, fabLibrary, fabDownloads)
+        fabs.forEachIndexed { index, fab ->
+            fab?.apply {
+                translationY = 100f
+                alpha = 0f
+                animate()
+                    .translationY(0f)
+                    .alpha(1f)
+                    .setStartDelay(index * 50L)
+                    .setDuration(200)
+                    .start()
+            }
+        }
+
+        // Change More icon to X
+        updateMoreIconToShow(isShowing = true)
+    }
+
+    private fun hideFloatingMenu() {
+        val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
+        val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
+        val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
+        val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
+
+        // Animate FABs disappearing
+        val fabs = listOf(fabDownloads, fabLibrary, fabSettings)
+        fabs.forEachIndexed { index, fab ->
+            fab?.apply {
+                animate()
+                    .translationY(100f)
+                    .alpha(0f)
+                    .setStartDelay(index * 30L)
+                    .setDuration(150)
+                    .withEndAction {
+                        if (index == fabs.size - 1) {
+                            floatingContainer?.visibility = View.GONE
+                            isFloatingMenuVisible = false
+                            // Change X icon back to More
+                            updateMoreIconToShow(isShowing = false)
+                        }
+                    }
+                    .start()
+            }
+        }
+    }
+
+    private fun updateMoreIconToShow(isShowing: Boolean) {
+        binding?.apply {
+            val moreMenuItem = navView?.menu?.findItem(R.id.navigation_more)
+            val moreRailItem = navRailView?.menu?.findItem(R.id.navigation_more)
+            
+            if (isShowing) {
+                // Show X icon
+                moreMenuItem?.setIcon(R.drawable.ic_close_x)
+                moreRailItem?.setIcon(R.drawable.ic_close_x)
+            } else {
+                // Show hamburger icon
+                moreMenuItem?.setIcon(R.drawable.ic_more_menu)
+                moreRailItem?.setIcon(R.drawable.ic_more_menu)
+            }
+        }
+    }
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         updateLocale() // android fucks me by chaining lang when rotating the phone
@@ -517,9 +659,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val isNavVisible = listOf(
             R.id.navigation_home,
             R.id.navigation_search,
+            R.id.navigation_offers,
+            R.id.navigation_protube,
             R.id.navigation_library,
             R.id.navigation_downloads,
-            R.id.navigation_protube,
             R.id.navigation_settings,
             R.id.navigation_download_child,
             R.id.navigation_download_queue,
@@ -588,8 +731,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
              */
             when (destination.id) {
                 in listOf(R.id.navigation_downloads, R.id.navigation_download_child, R.id.navigation_download_queue) -> {
-                    navRailView.menu.findItem(R.id.navigation_downloads).isChecked = true
-                    navView.menu.findItem(R.id.navigation_downloads).isChecked = true
+                    navRailView.menu.findItem(R.id.navigation_downloads)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_downloads)?.isChecked = true
                 }
 
                 in listOf(
@@ -606,8 +749,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     R.id.navigation_settings_plugins,
                     R.id.navigation_test_providers
                 ) -> {
-                    navRailView.menu.findItem(R.id.navigation_settings).isChecked = true
-                    navView.menu.findItem(R.id.navigation_settings).isChecked = true
+                    navRailView.menu.findItem(R.id.navigation_settings)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_settings)?.isChecked = true
                 }
             }
         }
@@ -775,7 +918,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val destinationId = item.itemId
 
         // Check if we are already at the selected destination
-        if (navController.currentDestination?.id == destinationId) return false
+        if (navController?.currentDestination?.id == destinationId) return false
 
         // Make all nav buttons focus on this specific view when nextFocusRightId
         val targetView = when (destinationId) {
@@ -816,7 +959,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         if (item.order and Menu.CATEGORY_SECONDARY == 0) {
             builder.setPopUpTo(
                 navController.graph.findStartDestination().id,
-                inclusive = false,
+                inclusive = true,
                 saveState = true
             )
         }
@@ -1428,6 +1571,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             null
         }
 
+        // Setup floating menu
+        setupFloatingMenu()
+
         binding?.apply {
             // Apply insets to the container for floating bottom nav
             ViewCompat.setOnApplyWindowInsetsListener(navViewContainer) { view, windowInsets ->
@@ -1827,9 +1973,33 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         CommonActivity.init(this)
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
+        navController = navHostFragment.navController
 
-        navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, bundle: Bundle? ->
+        // Handle More button click to toggle floating menu
+        binding?.navView?.menu?.findItem(R.id.navigation_more)?.setOnMenuItemClickListener {
+            if (isFloatingMenuVisible) {
+                hideFloatingMenu()
+            } else {
+                showFloatingMenu()
+            }
+            true
+        }
+
+        binding?.navRailView?.menu?.findItem(R.id.navigation_more)?.setOnMenuItemClickListener {
+            if (isFloatingMenuVisible) {
+                hideFloatingMenu()
+            } else {
+                showFloatingMenu()
+            }
+            true
+        }
+
+        navController?.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, bundle: Bundle? ->
+            // Hide floating menu when navigating to any destination
+            if (isFloatingMenuVisible) {
+                hideFloatingMenu()
+            }
+
             updateNavBar(navDestination)
             // Intercept search and add a query
             if (navDestination.id == R.id.navigation_setup_language || navDestination.id == R.id.navigation_setup_extensions || navDestination.id == R.id.navigation_setup_provider_languages || navDestination.id == R.id.navigation_setup_media || navDestination.id == R.id.navigation_setup_layout) {
@@ -1868,12 +2038,14 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         binding?.navView?.apply {
             itemRippleColor = rippleColor
             itemActiveIndicatorColor = rippleColor
-            setupWithNavController(navController)
+            navController?.let { setupWithNavController(it) }
             setOnItemSelectedListener { item ->
-                onNavDestinationSelected(
-                    item,
-                    navController
-                )
+                navController?.let {
+                    onNavDestinationSelected(
+                        item,
+                        it
+                    )
+                } ?: false
             }
 
         }
@@ -1890,7 +2062,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 itemRippleColor = rippleColorTransparent
                 itemActiveIndicatorColor = rippleColor
             }
-            setupWithNavController(navController)
+            navController?.let { setupWithNavController(it) }
             /*if (isLayout(TV or EMULATOR)) {
                 background?.alpha = 200
             } else {
@@ -1898,10 +2070,12 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }*/
 
             setOnItemSelectedListener { item ->
-                onNavDestinationSelected(
-                    item,
-                    navController
-                )
+                navController?.let {
+                    onNavDestinationSelected(
+                        item,
+                        it
+                    )
+                } ?: false
             }
 
 
@@ -2187,13 +2361,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         try {
             if (getKey(HAS_DONE_SETUP_KEY, false) != true) {
-                navController.navigate(R.id.navigation_setup_language)
+                navController?.navigate(R.id.navigation_setup_language)
                 // If no plugins bring up extensions screen
             } else if (PluginManager.getPluginsOnline().isEmpty()
                 && PluginManager.getPluginsLocal().isEmpty()
 //                && PREBUILT_REPOSITORIES.isNotEmpty()
             ) {
-                navController.navigate(
+                navController?.navigate(
                     R.id.navigation_setup_extensions,
                     SetupFragmentExtensions.newInstance(false)
                 )
