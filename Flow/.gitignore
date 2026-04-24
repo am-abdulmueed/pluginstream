@@ -1,0 +1,30 @@
+
+local.properties
+*.iml
+.gradle
+.idea
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+takeout
+/notes
+/legacy
+algo.md
+newpipe-dev
+# Signing keystore - NEVER COMMIT THIS FILE!
+release.keystore
+generate_key.ps1
+generate_key.bat
+flow-website
+svglogo
+metro*
+release.ps1
+release.bat
+build_result.md
+LibreTube-master
+# Secrets and Local configuration
+local.properties
+*.keystore
+*.jks
+key.properties

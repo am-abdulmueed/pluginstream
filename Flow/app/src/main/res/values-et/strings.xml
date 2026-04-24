@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stats">Statistika</string>
+    <string name="library">Meediakogu</string>
+    <string name="library_section_header">Sinu sisu</string>
+    <string name="library_history_label">Ajalugu</string>
+    <string name="library_playlists_label">Esitusloendid</string>
+    <string name="library_music_playlists_label">Muusika esitusloendid</string>
+    <string name="library_music_playlists_subtitle">Sinu muusiakogud</string>
+</resources>

@@ -1,0 +1,205 @@
+name: Android CI/CD
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # Explicit Gradle cache on top of setup-java's built-in cache.
+      # Caches the build-cache directory so incremental tasks are skipped.
+      - name: Cache Gradle build cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches/build-cache-*
+          key: gradle-build-cache-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', '**/libs.versions.toml', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-build-cache-${{ runner.os }}-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Decode Keystore
+        run: echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
+
+      # Build all variants in a single Gradle invocation so tasks share the
+      # configuration phase, classpath resolution and incremental build cache.
+      # --parallel  — lets Gradle run independent subproject tasks concurrently.
+      # --build-cache — reuses outputs from previous runs stored above.
+      # --no-daemon  — avoids daemon startup overhead inside the ephemeral runner.
+      - name: Build all APKs
+        run: >
+          ./gradlew assembleGithubRelease assembleGithubNightly assembleFossRelease
+          --parallel --build-cache --no-daemon --stacktrace
+        env:
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow-release-apk
+          path: app/build/outputs/apk/github/release/app-github-release.apk
+          retention-days: 14
+
+      - name: Upload Nightly APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow-nightly-apk
+          path: app/build/outputs/apk/github/nightly/app-github-nightly.apk
+          retention-days: 14
+
+      - name: Upload FOSS Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow-foss-release-apk
+          path: app/build/outputs/apk/foss/release/app-foss-release.apk
+          retention-days: 14
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Download pre-built APKs from the build job — no recompilation needed.
+      - name: Download Release APK
+        uses: actions/download-artifact@v4
+        with:
+          name: flow-release-apk
+          path: dist/
+
+      - name: Download Nightly APK
+        uses: actions/download-artifact@v4
+        with:
+          name: flow-nightly-apk
+          path: dist/
+
+      - name: Download FOSS Release APK
+        uses: actions/download-artifact@v4
+        with:
+          name: flow-foss-release-apk
+          path: dist/
+
+      - name: Rename APKs for release
+        run: |
+          mv dist/app-github-release.apk dist/flow.apk
+          mv dist/app-github-nightly.apk dist/flow-nightly.apk
+          mv dist/app-foss-release.apk dist/flow-foss.apk
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: Flow ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            >### IMPORTANT: BUILD FLAVORS
+            >The app now offers 2 build flavors: 
+            > - Default Github flavor with apk update checks when new release is available.
+            > - FOSS flavor without update checks for IzzyOnDroid and F-Droid submission.
+            
+            ### NEW FEATURES
+            - New Audio focus toggle to continue playing videos while on a call #175 #177
+            - Add new copy video link at time stamps button #178
+            - Add new direct video link copy button #178
+            - Pinch-to-zoom gesture #184
+            - Swipe up to enter fullscreen in the video player #183
+            - Add new disable home feed toggle #195
+            - Add new related video card style toggle #191
+            - Add new voice search for videos #203
+            - Add new toggle to enable search icon from bottom nav #201
+            - Add new custom app icon picker #169
+            - Add new country search for trending country settings picker #208
+            - Add new save public playlist to library for music and videos
+            - Add new manual sponsor skip button #215
+            - Add voice stabilizer toggle to player settings menu #217
+            - Add new category screen toggle #218
+
+            ### IMPROVEMENTS
+            - FlowNeuroEngine modularization
+            - Smarter Discovery Query Generation
+            - Improved content tokenization - Domain based
+            - Tuned engine learning rates
+            - Engine and content stability
+            - Add new learning from tags contexts
+            - Improved filtering on marked content #173
+            - Hide related video when marked in the video player screen #172
+            - Add shorts deduplication in the subs screen shorts shelf #138 #162
+            - Optimized shorts loading speeds
+            - Video quick actions menu
+            - Remove warmup connections and increase subs check to 6 hrs instead of 30 min #185
+            - Menu options redesign
+            - Add video card press and hold to open quick actions
+            - Increase video title to 2 lines #197
+            - Move SponsorBlock contribution settings to player settings screen #193
+            - Add load more feature for comments #204
+            - Add channel screen position caching #196
+            - Search screen filters and layout improvements #206
+            - Add 144p and 240p to default download settings #209
+            - Update custom download path selection to use SAF folder picker #210
+            - Add video tags to description
+            - Add upcoming badge for videos that are about to premier #216
+            - Improve music player scroll and drag handling
+            - Add notifications customization to video player and subscription screens #219
+            - Notifications screen UI improvements
+            - Download settings screen UI improvements
+            - Improve video player error message display
+
+            ### FIXES AND STABILITY
+            - Keyboard Focus and pop up
+            - Fix shorts quality preferences #170
+            - Fix missing audio tracks #171
+            - Fix orientation when re-entering video player #179
+            - Fix continue watching mini-player #167
+            - Fix seek to preview box shape #179
+            - Fix video timestamps #192
+            - Fix video delete issues #95
+            - Fix share button issues #176
+            - Fix video and gestures for RTL #187 #188
+            - Fix comment sheet collapsing when scrolling #189
+            - Fix Download settings to properly use chosen download path preferences #211
+            - Fix shorts metadata and download sizes
+            - Fix crash on radio button click in music search screen            
+            
+            ### 📋 System Requirements
+            - Android 5.0 (API 21) or higher
+            - Minimum 2GB RAM recommended
+
+          generate_release_notes: true
+          files: |
+            dist/flow.apk
+            dist/flow-nightly.apk
+            dist/flow-foss.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
