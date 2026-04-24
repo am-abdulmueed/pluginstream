@@ -87,7 +87,7 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 68
-        versionName = "5.0.0"
+        versionName = "4.9.1"
 
         resValue("string", "commit_hash", getGitCommitHash())
 
@@ -213,6 +213,9 @@ dependencies {
     // Design & UI
     implementation(libs.preference.ktx)
     implementation(libs.material)
+    implementation(libs.swiperefreshlayout)
+    implementation(libs.markwon.core)
+    implementation(libs.markwon.linkify)
     implementation(libs.constraintlayout)
 
     // Coil Image Loading

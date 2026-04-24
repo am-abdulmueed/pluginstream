@@ -495,11 +495,30 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     // Floating menu functions
     private fun setupFloatingMenu() {
         val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
+        val fabOffers = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabOffers)
         val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
         val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
         val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
 
         // FAB click handlers
+        fabOffers?.setOnClickListener {
+            hideFloatingMenu()
+            val navOptions = NavOptions.Builder()
+                .setLaunchSingleTop(true)
+                .setRestoreState(true)
+                .setEnterAnim(R.anim.enter_anim)
+                .setExitAnim(R.anim.exit_anim)
+                .setPopEnterAnim(R.anim.pop_enter)
+                .setPopExitAnim(R.anim.pop_exit)
+                .setPopUpTo(
+                    navController?.graph?.findStartDestination()?.id ?: R.id.navigation_home,
+                    inclusive = true,
+                    saveState = true
+                )
+                .build()
+            navController?.navigate(R.id.navigation_offers, null, navOptions)
+        }
+
         fabLibrary?.setOnClickListener {
             hideFloatingMenu()
             val navOptions = NavOptions.Builder()
@@ -557,6 +576,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     private fun showFloatingMenu() {
         val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
+        val fabOffers = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabOffers)
         val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
         val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
         val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
@@ -565,7 +585,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         isFloatingMenuVisible = true
 
         // Animate FABs appearing
-        val fabs = listOf(fabSettings, fabLibrary, fabDownloads)
+        val fabs = listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
         fabs.forEachIndexed { index, fab ->
             fab?.apply {
                 translationY = 100f
@@ -585,12 +605,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     private fun hideFloatingMenu() {
         val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
+        val fabOffers = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabOffers)
         val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
         val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
         val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
 
         // Animate FABs disappearing
-        val fabs = listOf(fabDownloads, fabLibrary, fabSettings)
+        val fabs = listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
         fabs.forEachIndexed { index, fab ->
             fab?.apply {
                 animate()
@@ -659,6 +680,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val isNavVisible = listOf(
             R.id.navigation_home,
             R.id.navigation_search,
+            R.id.navigation_game,
             R.id.navigation_offers,
             R.id.navigation_protube,
             R.id.navigation_library,

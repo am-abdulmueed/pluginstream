@@ -9,9 +9,9 @@
             android:icon="@drawable/search_icon"
             android:title="@string/title_search" />
         <item
-            android:id="@+id/navigation_offers"
-            android:icon="@drawable/ic_offers"
-            android:title="@string/title_offers" />
+            android:id="@+id/navigation_game"
+            android:icon="@drawable/ic_game"
+            android:title="Game" />
         <item
             android:id="@+id/navigation_protube"
             android:icon="@drawable/ic_youtube_selector"

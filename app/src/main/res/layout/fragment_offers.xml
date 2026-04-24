@@ -1,32 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
     android:background="?attr/primaryBlackBackground">
 
-    <TextView
+    <!-- Loading State -->
+    <ProgressBar
+        android:id="@+id/offersProgressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="🎁"
-        android:textSize="64sp"
-        android:layout_marginBottom="16dp" />
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Offers"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="?attr/textColor"
-        android:layout_marginBottom="8dp" />
+    <!-- Error State -->
+    <LinearLayout
+        android:id="@+id/offersErrorLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="No offers available yet"
-        android:textSize="16sp"
-        android:textColor="?attr/grayTextColor" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚠️"
+            android:textSize="64sp"
+            android:layout_marginBottom="16dp" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/offersErrorText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Failed to load offers"
+            android:textSize="18sp"
+            android:textColor="?attr/textColor"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/offersRetryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Retry"
+            android:backgroundTint="?attr/colorPrimary" />
+    </LinearLayout>
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/offersEmptyLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎁"
+            android:textSize="64sp"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No offers available"
+            android:textSize="18sp"
+            android:textColor="?attr/textColor" />
+    </LinearLayout>
+
+    <!-- Offers List -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/offersSwipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/offersRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="8dp" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

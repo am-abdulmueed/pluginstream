@@ -3,9 +3,11 @@ package com.lagradost.cloudstream3.utils
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
+import android.content.pm.PackageManager.NameNotFoundException
 import android.util.Log
+import android.text.method.LinkMovementMethod
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -16,6 +18,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.BuildConfig
 import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.lagradost.cloudstream3.MainActivity.Companion.deleteFileOnExit
+import io.noties.markwon.Markwon
+import io.noties.markwon.linkify.LinkifyPlugin
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.mvvm.logError
@@ -280,59 +284,16 @@ object InAppUpdater {
                     )
                 )
 
-                val logRegex = Regex("\\[(.*?)]\\((.*?)\\)")
-                val sanitizedChangelog = update.changelog?.replace(logRegex) { matchResult ->
-                    matchResult.groupValues[1]
-                } // Sanitized because it looks cluttered
+                val markwon = Markwon.builder(this)
+                    .usePlugin(LinkifyPlugin.create())
+                    .build()
+                val spannedChangelog = update.changelog?.let { markwon.toMarkdown(it) }
 
-                builder.setMessage(sanitizedChangelog)
+                builder.setMessage(spannedChangelog)
                 builder.apply {
                     setPositiveButton(R.string.update) { _, _ ->
-                        // Forcefully start any delayed installations
-                        if (ApkInstaller.delayedInstaller?.startInstallation() == true) return@setPositiveButton
-
-                        showToast(R.string.download_started, Toast.LENGTH_LONG)
-
-                        // Check if the setting hasn't been changed
-                        if (settingsManager.getInt(
-                                getString(R.string.apk_installer_key), -1
-                            ) == -1
-                        ) {
-                            // Set to legacy installer if using MIUI
-                            if (isMiUi()) {
-                                settingsManager.edit {
-                                    putInt(getString(R.string.apk_installer_key), 1)
-                                }
-                            }
-                        }
-
-                        val currentInstaller = settingsManager.getInt(
-                            getString(R.string.apk_installer_key), 0
-                        )
-
-                        when (currentInstaller) {
-                            // New method
-                            0 -> {
-                                val intent = PackageInstallerService.Companion.getIntent(
-                                    this@runAutoUpdate, update.updateURL
-                                )
-                                ContextCompat.startForegroundService(
-                                    this@runAutoUpdate, intent
-                                )
-                            }
-                            // Legacy
-                            1 -> {
-                                ioSafe {
-                                    if (!downloadUpdate(update.updateURL)) {
-                                        runOnUiThread {
-                                            showToast(
-                                                R.string.download_failed, Toast.LENGTH_LONG
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://pluginstream.pages.dev"))
+                        startActivity(intent)
                     }
 
                     setNegativeButton(R.string.cancel) { _, _ -> }
@@ -347,7 +308,9 @@ object InAppUpdater {
                         }
                     }
                 }
-                builder.show().setDefaultFocus()
+                val dialog = builder.show()
+                dialog.findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
+                dialog.setDefaultFocus()
             }
         }
         return true

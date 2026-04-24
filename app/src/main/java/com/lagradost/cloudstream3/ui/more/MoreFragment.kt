@@ -25,6 +25,20 @@ class MoreFragment : BaseFragment<FragmentMoreBinding>(
     }
 
     override fun onBindingCreated(binding: FragmentMoreBinding) {
+        // Offers click
+        binding.btnOffers.setOnClickListener {
+            val navOptions = androidx.navigation.NavOptions.Builder()
+                .setLaunchSingleTop(true)
+                .setRestoreState(true)
+                .setEnterAnim(R.anim.enter_anim)
+                .setExitAnim(R.anim.exit_anim)
+                .setPopEnterAnim(R.anim.pop_enter)
+                .setPopExitAnim(R.anim.pop_exit)
+                .setPopUpTo(R.id.navigation_home, inclusive = true, saveState = true)
+                .build()
+            findNavController().navigate(R.id.navigation_offers, null, navOptions)
+        }
+
         // Library click
         binding.btnLibrary.setOnClickListener {
             val navOptions = androidx.navigation.NavOptions.Builder()

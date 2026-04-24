@@ -17,6 +17,21 @@
         android:textColor="?attr/textColor"
         android:layout_marginBottom="32dp" />
 
+    <!-- Offers Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOffers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Offers"
+        android:textSize="18sp"
+        android:padding="16dp"
+        android:gravity="start|center_vertical"
+        app:icon="@drawable/ic_offers"
+        app:iconSize="24dp"
+        app:iconTint="?attr/textColor"
+        android:layout_marginBottom="12dp"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
+
     <!-- Library Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLibrary"
