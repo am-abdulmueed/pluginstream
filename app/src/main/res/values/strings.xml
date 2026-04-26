@@ -786,4 +786,8 @@
         <item quantity="one">%d download queued</item>
         <item quantity="other">%d downloads queued</item>
     </plurals>
+    <string name="game_icon">Game Icon</string>
+    <string name="games">Games</string>
+    <string name="search_games">Search games...</string>
+    <string name="contact_developer">Contact Developer</string>
 </resources>

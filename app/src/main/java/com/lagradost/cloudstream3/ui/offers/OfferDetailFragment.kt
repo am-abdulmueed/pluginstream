@@ -93,6 +93,11 @@ class OfferDetailFragment : BaseFragment<FragmentOfferDetailBinding>(
         binding.detailInstallButton.setOnClickListener {
             openOfferLink(offer.link)
         }
+        
+        // Share button click - share offer with friends
+        binding.detailShareButton.setOnClickListener {
+            shareOffer(offer)
+        }
 
         // Set country info
         if (!offer.countries.isNullOrEmpty()) {
@@ -140,7 +145,91 @@ class OfferDetailFragment : BaseFragment<FragmentOfferDetailBinding>(
             e.printStackTrace()
         }
     }
-
+    
+    /**
+     * Share offer with friends
+     * Format: Icon + Name + Supported Devices + Description + Link
+     */
+    private fun shareOffer(offer: CpaOffer) {
+        try {
+            // Build share message
+            val shareMessage = buildShareMessage(offer)
+            
+            // Create share intent
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, "Check out this offer: ${offer.title}")
+                putExtra(Intent.EXTRA_TEXT, shareMessage)
+            }
+            
+            // Show share chooser
+            val chooserTitle = "Share Offer via"
+            startActivity(Intent.createChooser(shareIntent, chooserTitle))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
+    /**
+     * Build complete share message with all offer details
+     */
+    private fun buildShareMessage(offer: CpaOffer): String {
+        val imageUrl = arguments?.getString(OFFER_IMAGE_KEY)
+        
+        // Build the message
+        val message = buildString {
+            // Offer Name/Title
+            appendLine("🎁 *${offer.title}*")
+            appendLine()
+            
+            // Supported Devices
+            if (!offer.device.isNullOrEmpty()) {
+                val deviceIcon = when (offer.device.lowercase()) {
+                    "android" -> "🤖"
+                    "ios" -> "🍎"
+                    "desktop" -> "💻"
+                    "mobile" -> "📱"
+                    else -> "📲"
+                }
+                val deviceName = when (offer.device.lowercase()) {
+                    "android" -> "Android"
+                    "ios" -> "iOS (iPhone/iPad)"
+                    "desktop" -> "Desktop"
+                    "mobile" -> "Mobile"
+                    else -> offer.device
+                }
+                appendLine("$deviceIcon *Supported Device:* $deviceName")
+                appendLine()
+            }
+            
+            // Countries
+            if (!offer.countries.isNullOrEmpty()) {
+                val firstCountry = offer.countries.first()
+                val countryFlag = getCountryFlag(firstCountry)
+                val countryName = getCountryName(firstCountry)
+                appendLine("$countryFlag *Available in:* $countryName")
+                appendLine()
+            }
+            
+            // Description
+            appendLine("📝 *Description:*")
+            appendLine(offer.description ?: "Complete this offer to earn reward.")
+            appendLine()
+            
+            // Offer Link
+            appendLine("🔗 *Get this offer:*")
+            appendLine(offer.link)
+            appendLine()
+            
+            // App promo
+            appendLine("──────────────")
+            appendLine("📲 Download from PluginStream Max")
+            appendLine("🌐 https://pluginstream.pages.dev")
+        }
+        
+        return message
+    }
+    
     private fun getCountryFlag(countryCode: String): String {
         val codePoints = countryCode
             .uppercase()

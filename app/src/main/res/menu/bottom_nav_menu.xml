@@ -10,8 +10,8 @@
             android:title="@string/title_search" />
         <item
             android:id="@+id/navigation_game"
-            android:icon="@drawable/ic_game"
-            android:title="Game" />
+            android:icon="@drawable/ic_game_selector"
+            android:title="@string/games" />
         <item
             android:id="@+id/navigation_protube"
             android:icon="@drawable/ic_youtube_selector"

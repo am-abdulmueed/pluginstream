@@ -51,6 +51,22 @@
             app:cornerRadius="12dp"
             android:layout_marginBottom="8dp" />
 
+        <!-- Share Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/detailShareButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Share Offer"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingVertical="12dp"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_outline_share_24"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/textColor"
+            android:layout_marginBottom="8dp"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
         <!-- Refresh Notice -->
         <LinearLayout
             android:layout_width="match_parent"

@@ -372,7 +372,34 @@
         app:exitAnim="@anim/exit_anim"
         app:popEnterAnim="@anim/pop_enter"
         app:popExitAnim="@anim/pop_exit"
-        tools:layout="@layout/fragment_game" />
+        tools:layout="@layout/fragment_game">
+        <action
+            android:id="@+id/action_game_to_game_player"
+            app:destination="@id/navigation_game_player"
+            app:enterAnim="@anim/enter_anim"
+            app:exitAnim="@anim/exit_anim"
+            app:popEnterAnim="@anim/pop_enter"
+            app:popExitAnim="@anim/pop_exit" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_game_player"
+        android:name="com.lagradost.cloudstream3.ui.game.GamePlayerFragment"
+        android:label="Game Player"
+        app:enterAnim="@anim/enter_anim"
+        app:exitAnim="@anim/exit_anim"
+        app:popEnterAnim="@anim/pop_enter"
+        app:popExitAnim="@anim/pop_exit"
+        tools:layout="@layout/fragment_game_player">
+        <argument
+            android:name="game_url"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="game_title"
+            android:defaultValue="Game"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_offers"

@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services") version "4.4.4"
 }
 
@@ -179,6 +180,11 @@ android {
     buildFeatures {
         buildConfig = true
         resValues = true
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.10"
     }
 
     packaging {
@@ -217,6 +223,19 @@ dependencies {
     implementation(libs.markwon.core)
     implementation(libs.markwon.linkify)
     implementation(libs.constraintlayout)
+
+    // Compose
+    implementation(platform("androidx.compose:compose-bom:2024.04.00")) // Use a recent stable version
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.activity:activity-compose")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Coil Image Loading
     implementation(libs.bundles.coil)

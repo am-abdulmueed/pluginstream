@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import com.lagradost.cloudstream3.ui.theme.CloudStreamComposeTheme
 import androidx.annotation.StringRes
 import androidx.core.view.children
 import androidx.core.view.updateLayoutParams
@@ -36,6 +38,12 @@ import com.lagradost.cloudstream3.utils.UIHelper.navigate
 import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.getImageFromDrawable
 import com.lagradost.cloudstream3.utils.txt
+import com.lagradost.cloudstream3.ui.dialog.ContactDeveloperDialog
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.rememberModalBottomSheetState
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -183,6 +191,8 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             activity?.navigate(id, Bundle())
         }
 
+        val showContactDialogState = mutableStateOf(false)
+
         /** used to debug leaks
         showToast(activity,"${VideoDownloadManager.downloadStatusEvent.size} :
         ${VideoDownloadManager.downloadProgressEvent.size}") **/
@@ -282,6 +292,33 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 }
             }
 
+            settingsEmail.setOnClickListener {
+                showContactDialogState.value = true
+            }
+
+            // Set up ComposeView for ContactDeveloperDialog
+            binding.composeViewContactDialog.apply {
+                visibility = if (showContactDialogState.value) View.VISIBLE else View.GONE
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                @OptIn(ExperimentalMaterial3Api::class)
+                setContent {
+                    CloudStreamComposeTheme {
+                        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                        val scope = rememberCoroutineScope()
+
+                        ContactDeveloperDialog(
+                            showDialog = showContactDialogState.value,
+                            onDismiss = {
+                                showContactDialogState.value = false
+                                binding.composeViewContactDialog.visibility = View.GONE
+                            },
+                            sheetState = sheetState,
+                            scope = scope
+                        )
+                    }
+                }
+            }
+
             settingsShare.setOnClickListener {
                 try {
                     val i = Intent(Intent.ACTION_SEND)
@@ -298,7 +335,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             }
 
             if (isLayout(TV)) {
-                listOf(settingsGithub, settingsTelegram, settingsInstagram, settingsDevWebsite, settingsShare).forEach {
+                listOf(settingsGithub, settingsTelegram, settingsInstagram, settingsDevWebsite, settingsEmail, settingsShare).forEach {
                     it.isFocusable = true
                     it.isFocusableInTouchMode = true
                 }
