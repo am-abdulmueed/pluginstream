@@ -22,7 +22,7 @@ import io.github.aedev.flow.ui.FlowApp
 import io.github.aedev.flow.ui.theme.FlowTheme
 import io.github.aedev.flow.ui.theme.ThemeMode
 import io.github.aedev.flow.ui.theme.CustomThemeColors
-import io.github.aedev.flow.updater.ApkUpdateHelper
+// import io.github.aedev.flow.updater.ApkUpdateHelper // Disabled - using as module
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -106,10 +106,10 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
 
         
-        // Check for updates (only in release builds, only in github flavor)
-        if (!BuildConfig.DEBUG && BuildConfig.UPDATER_ENABLED) {
-            checkForUpdates(dataManager)
-        }
+        // Check for updates - Disabled (using as module in PluginStream)
+        // if (!BuildConfig.DEBUG && BuildConfig.UPDATER_ENABLED) {
+        //     checkForUpdates(dataManager)
+        // }
 
         setContent {
             val scope = rememberCoroutineScope()
@@ -141,19 +141,19 @@ class MainActivity : ComponentActivity() {
 
             var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
             
-            // Check for updates ONCE on launch — skip debug/foss builds, enforce 24h cooldown
-            LaunchedEffect(Unit) {
-                if (BuildConfig.DEBUG || !BuildConfig.UPDATER_ENABLED) return@LaunchedEffect
-                val lastCheck = dataManager.lastUpdateCheck.first()
-                val currentTime = System.currentTimeMillis()
-                if (currentTime - lastCheck < 24 * 60 * 60 * 1000L) return@LaunchedEffect
+            // Check for updates ONCE on launch - Disabled (using as module)
+            // LaunchedEffect(Unit) {
+            //     if (BuildConfig.DEBUG || !BuildConfig.UPDATER_ENABLED) return@LaunchedEffect
+            //     val lastCheck = dataManager.lastUpdateCheck.first()
+            //     val currentTime = System.currentTimeMillis()
+            //     if (currentTime - lastCheck < 24 * 60 * 60 * 1000L) return@LaunchedEffect
 
-                val info = UpdateManager.checkForUpdate(BuildConfig.VERSION_NAME)
-                dataManager.setLastUpdateCheck(currentTime)
-                if (info != null && info.isNewer) {
-                    updateInfo = info
-                }
-            }
+            //     val info = UpdateManager.checkForUpdate(BuildConfig.VERSION_NAME)
+            //     dataManager.setLastUpdateCheck(currentTime)
+            //     if (info != null && info.isNewer) {
+            //         updateInfo = info
+            //     }
+            // }
 
             // Load theme preference and keep it reactive
             LaunchedEffect(Unit) {
@@ -174,27 +174,27 @@ class MainActivity : ComponentActivity() {
             }
 
             FlowTheme(themeMode = themeMode, customThemeColors = customThemeColors) {
-                // Show Dialog Overlay if update exists (github flavor only)
-                if (BuildConfig.UPDATER_ENABLED && updateInfo != null) {
-                    UpdateDialog(
-                        updateInfo = updateInfo!!,
-                        onDismiss = { updateInfo = null },
-                        onUpdate = {
-                            UpdateManager.triggerDownload(context, updateInfo!!.downloadUrl)
-                            updateInfo = null
-                        }
-                    )
-                }
+                // Show Dialog Overlay if update exists - Disabled (using as module)
+                // if (BuildConfig.UPDATER_ENABLED && updateInfo != null) {
+                //     UpdateDialog(
+                //         updateInfo = updateInfo!!,
+                //         onDismiss = { updateInfo = null },
+                //         onUpdate = {
+                //             UpdateManager.triggerDownload(context, updateInfo!!.downloadUrl)
+                //             updateInfo = null
+                //         }
+                //     )
+                // }
 
-                // Handle update from notification (github flavor only)
-                if (BuildConfig.UPDATER_ENABLED) {
-                    val pendingUpdate by this@MainActivity.pendingUpdateInfo
-                    LaunchedEffect(pendingUpdate) {
-                        if (pendingUpdate != null) {
-                            updateInfo = pendingUpdate
-                        }
-                    }
-                }
+                // Handle update from notification - Disabled (using as module)
+                // if (BuildConfig.UPDATER_ENABLED) {
+                //     val pendingUpdate by this@MainActivity.pendingUpdateInfo
+                //     LaunchedEffect(pendingUpdate) {
+                //         if (pendingUpdate != null) {
+                //             updateInfo = pendingUpdate
+                //         }
+                //     }
+                // }
 
                 // Request notification permission for Android 13+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -415,7 +415,7 @@ class MainActivity : ComponentActivity() {
                                     .setTitle("Update Available")
                                     .setMessage("A new version of Flow is available ($latestTag). Download the latest APK?")
                                     .setPositiveButton("Download") { _, _ ->
-                                        ApkUpdateHelper.requestDownload(this@MainActivity, "https://github.com/A-EDev/Flow/releases/latest")
+                                        // ApkUpdateHelper.requestDownload(this@MainActivity, "https://github.com/A-EDev/Flow/releases/latest") // Disabled
                                     }
                                     .setNegativeButton("Later", null)
                                     .show()

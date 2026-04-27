@@ -85,9 +85,8 @@ class FlowApplication : Application(), ImageLoaderFactory {
         SubscriptionCheckWorker.schedulePeriodicCheck(this, intervalMinutes = savedIntervalMinutes.toLong())
         
         // Schedule periodic update checks (every 12 hours) — github flavor only
-        if (BuildConfig.UPDATER_ENABLED) {
-            io.github.aedev.flow.notification.UpdateCheckWorker.schedulePeriodicCheck(this)
-        }
+        // Updater disabled - using as module in PluginStream
+        // io.github.aedev.flow.notification.UpdateCheckWorker.schedulePeriodicCheck(this)
         
         Log.d(TAG, "Workers scheduled successfully")
 

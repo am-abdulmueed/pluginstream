@@ -287,10 +287,8 @@ fun NavGraphBuilder.flowAppGraph(
             onNavigateToContentSettings = { navController.navigate("settings/content") },
             onNavigateToBufferSettings = { navController.navigate("settings/buffer") },
             onNavigateToSearchHistory = { navController.navigate("settings/search_history") },
-            onNavigateToAbout = { navController.navigate("settings/about") },
             onNavigateToUserPreferences = { navController.navigate("settings/user_preferences") },
             onNavigateToNotifications = { navController.navigate("settings/notifications") },
-            onNavigateToAppIconPicker = { navController.navigate("settings/app_icon") },
             onNavigateToDiagnostics = { navController.navigate("settings/diagnostics") },
             onNavigateToAutoBackup = { navController.navigate("settings/auto_backup") },
             onNavigateToExport = { navController.navigate("settings/export") },
@@ -393,15 +391,6 @@ fun NavGraphBuilder.flowAppGraph(
         )
     }
 
-    composable("settings/about") {
-        currentRoute.value = "settings/about"
-        showBottomNav.value = false
-        io.github.aedev.flow.ui.screens.settings.AboutScreen(
-            onNavigateBack = { navController.popBackStack() },
-            onNavigateToDonations = { navController.navigate("donations") }
-        )
-    }
-
     composable("settings/appearance") {
         currentRoute.value = "settings/appearance"
         showBottomNav.value = false
@@ -434,14 +423,6 @@ fun NavGraphBuilder.flowAppGraph(
         currentRoute.value = "settings/notifications"
         showBottomNav.value = false
         io.github.aedev.flow.ui.screens.settings.NotificationSettingsScreen(
-            onNavigateBack = { navController.popBackStack() }
-        )
-    }
-
-    composable("settings/app_icon") {
-        currentRoute.value = "settings/app_icon"
-        showBottomNav.value = false
-        io.github.aedev.flow.ui.screens.settings.AppIconPickerScreen(
             onNavigateBack = { navController.popBackStack() }
         )
     }

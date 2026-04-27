@@ -127,19 +127,21 @@ fun NotificationSettingsScreen(
                         checked = notifReminders,
                         onCheckedChange = { coroutineScope.launch { prefs.setNotifRemindersEnabled(it) } }
                     )
-                    if (BuildConfig.UPDATER_ENABLED) {
-                        HorizontalDivider(
-                            Modifier.padding(start = 56.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        )
-                        SettingsSwitchItem(
-                            icon = Icons.Outlined.Update,
-                            title = stringResource(R.string.notif_type_updates),
-                            subtitle = stringResource(R.string.notif_type_updates_subtitle),
-                            checked = notifUpdates,
-                            onCheckedChange = { coroutineScope.launch { prefs.setNotifUpdatesEnabled(it) } }
-                        )
-                    }
+                    // Update notifications disabled - using as module
+                    // if (BuildConfig.UPDATER_ENABLED) {
+                    //     HorizontalDivider(
+                    //         Modifier.padding(start = 56.dp),
+                    //         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    //     )
+                    //     SettingsSwitchItem(
+                    //         icon = Icons.Outlined.Update,
+                    //         title = stringResource(R.string.notif_type_updates),
+                    //         subtitle = stringResource(R.string.notif_type_updates_subtitle),
+                    //         checked = notifUpdates,
+                    //         onCheckedChange = { coroutineScope.launch { prefs.setNotifUpdatesEnabled(it) } }
+                    //     )
+                    // }
+                    
                     HorizontalDivider(
                         Modifier.padding(start = 56.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)

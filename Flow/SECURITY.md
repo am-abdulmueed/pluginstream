@@ -15,8 +15,7 @@ We take the security of Flow seriously. If you believe you have found a security
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please send an email to flow
-am.abdulmueed3@gmail.com.
+Instead, please send an email to flow.aedev@gmail.com.
 
 Please include the following information in your report:
 

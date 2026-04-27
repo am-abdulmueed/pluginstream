@@ -1,7 +1,78 @@
 ﻿{
     "title":  "Optimized Games List",
-    "total_count":  1452,
+    "total_count":  1457,
     "hits":  [
+                 {
+                     "title":  "Obby: Extreme Cart Ride",
+                     "gameURL":  "https://playgama.com/export/game/obby-extreme-cart-ride?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "skill",
+                                    "platform",
+                                    "car-racing",
+                                    "obby",
+                                    "physics"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/084b1d60-446e-4582-a638-bfa2e1e6f600/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/31e8f1e1-93af-4da8-0ac8-2d0b400e1300/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Dogs vs Aliens",
+                     "gameURL":  "https://playgama.com/export/game/dogs-vs-aliens?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "adventure",
+                                    "pve",
+                                    "survival",
+                                    "dog"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/4105a504-75b6-4260-ffc7-a9545752a100/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/fa25211e-ef52-4e60-5259-34bc10733300/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Prison Architect: Cage Break Tycoon",
+                     "gameURL":  "https://playgama.com/export/game/prison-architect-cage-break-tycoon?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "simulation",
+                                    "tycoon",
+                                    "management",
+                                    "idle"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/194f8b33-7d7a-4eb1-114a-914fb47e7600/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/2f736f79-bd88-4ea3-2abf-ed3cdd448b00/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Battleships Pirates",
+                     "gameURL":  "https://playgama.com/export/game/battleships-pirates?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "battleship",
+                                    "logic"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/7b93825e-65ab-4b51-1c0c-99fbcdf04400/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/f6e7ec3b-4cf9-45bc-6827-cb5a27000900/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Cat Block Puzzle",
+                     "gameURL":  "https://playgama.com/export/game/cat-block-puzzle?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "logic",
+                                    "blocks"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/e14dac2a-7057-42ce-0eab-f399cd148500/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/4f35330f-6bd9-434a-05d0-394c6f55e000/enlarged"
+                                }
+                 },
                  {
                      "title":  "Obby Rainbow Tower",
                      "gameURL":  "https://playgama.com/export/game/obby-rainbow-tower?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
@@ -17,7 +88,7 @@
                                 }
                  },
                  {
-                     "title":  "Rush Run: Need to Pee - Toilet Dash Runner Game",
+                     "title":  "Rush Run: Need to Pee â€“ Toilet Dash Runner Game",
                      "gameURL":  "https://playgama.com/export/game/rush-run-need-to-pee--toilet-dash-runner-game?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
                      "genres":  [
                                     "skill",
@@ -3420,7 +3491,7 @@
                                 }
                  },
                  {
-                     "title":  "Jixora - Jigsaw Solitaire Puzzle",
+                     "title":  "Jixora â€“ Jigsaw Solitaire Puzzle",
                      "gameURL":  "https://playgama.com/export/game/jixora-jigsaw-solitaire-puzzle?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
                      "genres":  [
                                     "puzzle",
@@ -6595,7 +6666,7 @@
                                 ],
                      "images":  {
                                     "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/c66a8233-eb23-4b8b-3f30-081128438000/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/4852b0db-9ae4-41a8-6e95-020476c59300/enlarged"
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/cb0bf59c-496f-4c43-631f-c94bf79b6500/enlarged"
                                 }
                  },
                  {
@@ -9081,8 +9152,8 @@
                                     "mobile"
                                 ],
                      "images":  {
-                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/e99e05cc-d0f1-4d96-5cb8-80e1f6322400/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/ed7dd1cf-7604-4433-0594-682dcbc1ab00/enlarged"
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/7f2f19db-a212-44ea-82de-0e1099b5da00/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/c292ef89-9b56-4726-e34c-98a44b2d4600/enlarged"
                                 }
                  },
                  {
@@ -18861,7 +18932,7 @@
                                 }
                  },
                  {
-                     "title":  "TetraDice-Merge \u0026 Blast Blocks",
+                     "title":  "TetraDiceâ€“Merge \u0026 Blast Blocks",
                      "gameURL":  "https://playgama.com/export/game/tetradicemerge--blast-blocks?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
                      "genres":  [
                                     "puzzle",
@@ -21861,7 +21932,7 @@
                                 }
                  },
                  {
-                     "title":  "Build levels - earn money!",
+                     "title":  "Build levels â€“ earn money!",
                      "gameURL":  "https://playgama.com/export/game/build-levels-earn-money?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
                      "genres":  [
                                     "cards",

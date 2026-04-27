@@ -40,18 +40,7 @@ android {
         }
     }
 
-    flavorDimensions += "version"
-    productFlavors {
-        create("github") {
-            dimension = "version"
-            isDefault = true
-            buildConfigField("Boolean", "UPDATER_ENABLED", "true")
-        }
-        create("foss") {
-            dimension = "version"
-            buildConfigField("Boolean", "UPDATER_ENABLED", "false")
-        }
-    }
+
 
     buildFeatures {
         buildConfig = true
@@ -89,21 +78,6 @@ android {
             isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false
-        }
-        // Nightly: release-level performance + debug signing so it's easy to
-        // sideload. Fixes the laggy-nightly issue reported in #66.
-        create("nightly") {
-            initWith(getByName("release"))
-            applicationIdSuffix = ".nightly"
-            versionNameSuffix = "-nightly"
-            isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android.txt"),
-                "proguard-rules.pro"
-            )
-            signingConfig = signingConfigs.getByName("debug")
         }
         release {
             isDebuggable = false
@@ -243,7 +217,6 @@ dependencies {
     implementation(libs.rxandroid)
 
     implementation(libs.androidx.work.runtime.ktx)
-    "githubImplementation"(libs.apkupdater)
     implementation(libs.androidx.multidex)
 
     implementation(libs.brotli) 

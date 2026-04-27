@@ -1,5 +1,10 @@
 @echo off
 TITLE Game JSON Optimizer
-:: Ye command aapki .ps1 file ko automatically run karegi
-powershell.exe -ExecutionPolicy Bypass -File "%~dp0OptimizeGames.ps1"
+
+:: Folder mein switch karein
+cd /d "%~dp0"
+
+:: Sahi file name yahan likhein
+powershell.exe -ExecutionPolicy Bypass -File "UpdateGameList.ps1"
+
 pause

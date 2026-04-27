@@ -76,10 +76,8 @@ fun SettingsScreen(
     onNavigateToContentSettings: () -> Unit,
     onNavigateToBufferSettings: () -> Unit,
     onNavigateToSearchHistory: () -> Unit,
-    onNavigateToAbout: () -> Unit,
     onNavigateToUserPreferences: () -> Unit,
     onNavigateToNotifications: () -> Unit,
-    onNavigateToAppIconPicker: () -> Unit,
     onNavigateToDiagnostics: () -> Unit,
     onNavigateToAutoBackup: () -> Unit,
     onNavigateToExport: () -> Unit,
@@ -148,66 +146,67 @@ fun SettingsScreen(
     }
     BackHandler(enabled = isSearchActive) { isSearchActive = false; searchQuery = "" }
 
+    // Check for updates - Disabled (using as module)
     val onCheckForUpdatesClick: () -> Unit = {
-        if (BuildConfig.UPDATER_ENABLED && !isCheckingUpdate) {
-            isCheckingUpdate = true
-            coroutineScope.launch(Dispatchers.IO) {
-                try {
-                    val client = OkHttpClient()
-                    val request = Request.Builder()
-                        .url("https://api.github.com/repos/A-EDev/Flow/releases/latest")
-                        .header("Accept", "application/vnd.github.v3+json")
-                        .build()
-                    val response = client.newCall(request).execute()
-                    withContext(Dispatchers.Main) {
-                        isCheckingUpdate = false
-                        if (response.isSuccessful) {
-                            val body = response.body?.string()
-                            if (body != null) {
-                                val json = JsonParser.parseString(body).asJsonObject
-                                val latestTag = json.get("tag_name").asString
-                                val cleanLatest = latestTag.removePrefix("v")
-                                val cleanCurrent = BuildConfig.VERSION_NAME.removePrefix("v")
-                                val latestParts = cleanLatest.split(".").mapNotNull { it.toIntOrNull() }
-                                val currentParts = cleanCurrent.split(".").mapNotNull { it.toIntOrNull() }
-                                var isNewer = false
-                                val size = maxOf(latestParts.size, currentParts.size)
-                                for (i in 0 until size) {
-                                    val l = latestParts.getOrNull(i) ?: 0
-                                    val c = currentParts.getOrNull(i) ?: 0
-                                    if (l > c) { isNewer = true; break }
-                                    if (l < c) break
-                                }
-                                if (isNewer) {
-                                    updateAvailableTag = latestTag
-                                } else {
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        context.getString(io.github.aedev.flow.R.string.flow_is_up_to_date),
-                                        android.widget.Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
-                        } else {
-                            android.widget.Toast.makeText(
-                                context,
-                                context.getString(io.github.aedev.flow.R.string.update_check_failed),
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        isCheckingUpdate = false
-                        android.widget.Toast.makeText(
-                            context,
-                            context.getString(io.github.aedev.flow.R.string.update_check_failed),
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
-        }
+        // if (BuildConfig.UPDATER_ENABLED && !isCheckingUpdate) {
+        //     isCheckingUpdate = true
+        //     coroutineScope.launch(Dispatchers.IO) {
+        //         try {
+        //             val client = OkHttpClient()
+        //             val request = Request.Builder()
+        //                 .url("https://api.github.com/repos/A-EDev/Flow/releases/latest")
+        //                 .header("Accept", "application/vnd.github.v3+json")
+        //                 .build()
+        //             val response = client.newCall(request).execute()
+        //             withContext(Dispatchers.Main) {
+        //                 isCheckingUpdate = false
+        //                 if (response.isSuccessful) {
+        //                     val body = response.body?.string()
+        //                     if (body != null) {
+        //                         val json = JsonParser.parseString(body).asJsonObject
+        //                         val latestTag = json.get("tag_name").asString
+        //                         val cleanLatest = latestTag.removePrefix("v")
+        //                         val cleanCurrent = BuildConfig.VERSION_NAME.removePrefix("v")
+        //                         val latestParts = cleanLatest.split(".").mapNotNull { it.toIntOrNull() }
+        //                         val currentParts = cleanCurrent.split(".").mapNotNull { it.toIntOrNull() }
+        //                         var isNewer = false
+        //                         val size = maxOf(latestParts.size, currentParts.size)
+        //                         for (i in 0 until size) {
+        //                             val l = latestParts.getOrNull(i) ?: 0
+        //                             val c = currentParts.getOrNull(i) ?: 0
+        //                             if (l > c) { isNewer = true; break }
+        //                             if (l < c) break
+        //                         }
+        //                         if (isNewer) {
+        //                             updateAvailableTag = latestTag
+        //                         } else {
+        //                             android.widget.Toast.makeText(
+        //                                 context,
+        //                                 context.getString(io.github.aedev.flow.R.string.flow_is_up_to_date),
+        //                                 android.widget.Toast.LENGTH_SHORT
+        //                             ).show()
+        //                         }
+        //                     }
+        //                 } else {
+        //                     android.widget.Toast.makeText(
+        //                         context,
+        //                         context.getString(io.github.aedev.flow.R.string.update_check_failed),
+        //                         android.widget.Toast.LENGTH_SHORT
+        //                     ).show()
+        //                 }
+        //             }
+        //         } catch (e: Exception) {
+        //             withContext(Dispatchers.Main) {
+        //                 isCheckingUpdate = false
+        //                 android.widget.Toast.makeText(
+        //                     context,
+        //                     context.getString(io.github.aedev.flow.R.string.update_check_failed),
+        //                     android.widget.Toast.LENGTH_SHORT
+        //                 ).show()
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     // Section label strings for the search index
@@ -221,7 +220,7 @@ fun SettingsScreen(
     val allSettingsEntries = listOf(
         SettingSearchEntry(Icons.Outlined.Psychology, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.flow_control_center), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.neural_interest_map_subtitle), secFlowEngine, onNavigateToPersonality),
         SettingSearchEntry(Icons.Outlined.Palette, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_theme), "", secAppearance, onNavigateToAppearance),
-        SettingSearchEntry(Icons.Outlined.AppShortcut, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon_subtitle), secAppearance, onNavigateToAppIconPicker),
+
         SettingSearchEntry(Icons.Outlined.Tune, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_appearance), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_appearance_subtitle), secAppearance, onNavigateToPlayerAppearance),
         SettingSearchEntry(Icons.Outlined.GridView, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_display), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_display_subtitle), secAppearance, onNavigateToContentSettings),
         SettingSearchEntry(Icons.Outlined.FilterAlt, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_prefs), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_prefs_subtitle), secContentPlayback, onNavigateToUserPreferences),
@@ -238,12 +237,10 @@ fun SettingsScreen(
         SettingSearchEntry(Icons.Outlined.FileUpload, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_export_data), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_export_data_subtitle), secDataManagement, onNavigateToExport),
         SettingSearchEntry(Icons.Outlined.FileDownload, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_import_data), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_import_data_subtitle), secDataManagement, onNavigateToImport),
         SettingSearchEntry(Icons.Outlined.Schedule, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.auto_backup_title), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.auto_backup_subtitle), secDataManagement, onNavigateToAutoBackup),
-        SettingSearchEntry(Icons.Outlined.Info, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_about_flow), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_about_flow_subtitle), secAbout, onNavigateToAbout),
+
         SettingSearchEntry(Icons.Outlined.BugReport, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics_subtitle), secAbout, onNavigateToDiagnostics),
         SettingSearchEntry(Icons.Outlined.VolunteerActivism, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support_subtitle), secAbout, onNavigateToDonations)
-    ) + if (BuildConfig.UPDATER_ENABLED) listOf(
-        SettingSearchEntry(Icons.Outlined.Update, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates_subtitle), secAbout, onCheckForUpdatesClick)
-    ) else emptyList()
+    )
     val filteredEntries = if (searchQuery.isBlank()) emptyList() else allSettingsEntries.filter { entry ->
         entry.title.contains(searchQuery, ignoreCase = true) ||
         entry.subtitle.contains(searchQuery, ignoreCase = true) ||
@@ -650,13 +647,7 @@ item {
                         onClick = onNavigateToAppearance
                     )
                     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    SettingsItem(
-                        icon = Icons.Outlined.AppShortcut,
-                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon),
-                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon_subtitle),
-                        onClick = onNavigateToAppIconPicker
-                    )
-                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+
                     SettingsItem(
                         icon = Icons.Outlined.Tune,
                         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_appearance),
@@ -804,13 +795,7 @@ item {
             item { SectionHeader(text = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_about)) }
             item {
                 SettingsGroup {
-                    SettingsItem(
-                        icon = Icons.Outlined.Info,
-                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_about_flow),
-                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_about_flow_subtitle),
-                        onClick = onNavigateToAbout
-                    )
-                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+
                     SettingsItem(
                         icon = Icons.Outlined.BugReport,
                         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics),
@@ -818,18 +803,19 @@ item {
                         onClick = onNavigateToDiagnostics
                     )
                     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    if (BuildConfig.UPDATER_ENABLED) {
-                        SettingsItem(
-                            icon = if (isCheckingUpdate) Icons.Outlined.Sync else Icons.Outlined.Update,
-                            title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates),
-                            subtitle = if (isCheckingUpdate)
-                                androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.checking_for_updates)
-                            else
-                                androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates_subtitle),
-                            onClick = onCheckForUpdatesClick
-                        )
-                        HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    }
+                    // Update check disabled - using as module
+                    // if (BuildConfig.UPDATER_ENABLED) {
+                    //     SettingsItem(
+                    //         icon = if (isCheckingUpdate) Icons.Outlined.Sync else Icons.Outlined.Update,
+                    //         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates),
+                    //         subtitle = if (isCheckingUpdate)
+                    //             androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.checking_for_updates)
+                    //         else
+                    //             androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates_subtitle),
+                    //         onClick = onCheckForUpdatesClick
+                    //     )
+                    //     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    // }
                     SettingsItem(
                         icon = Icons.Outlined.VolunteerActivism,
                         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support),
@@ -921,37 +907,37 @@ item {
         )
     }
 
-    // Update Available Dialog (github flavor only)
-    if (BuildConfig.UPDATER_ENABLED) {
-        val tag = updateAvailableTag
-        if (tag != null) {
-            AlertDialog(
-                onDismissRequest = { updateAvailableTag = null },
-                icon = { Icon(Icons.Outlined.Update, null, tint = MaterialTheme.colorScheme.primary) },
-                title = { Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.new_update_available), fontWeight = FontWeight.Bold) },
-                text = {
-                    Text(
-                        androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.update_available_template, tag),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                confirmButton = {
-                    Button(onClick = {
-                        updateAvailableTag = null
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/A-EDev/Flow/releases/latest"))
-                        context.startActivity(intent)
-                    }) {
-                        Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.download))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { updateAvailableTag = null }) {
-                        Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.cancel))
-                    }
-                }
-            )
-        }
-    }
+    // Update Available Dialog - Disabled (using as module)
+    // if (BuildConfig.UPDATER_ENABLED) {
+    //     val tag = updateAvailableTag
+    //     if (tag != null) {
+    //         AlertDialog(
+    //             onDismissRequest = { updateAvailableTag = null },
+    //             icon = { Icon(Icons.Outlined.Update, null, tint = MaterialTheme.colorScheme.primary) },
+    //             title = { Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.new_update_available), fontWeight = FontWeight.Bold) },
+    //             text = {
+    //                 Text(
+    //                     androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.update_available_template, tag),
+    //                     style = MaterialTheme.typography.bodyMedium
+    //                 )
+    //             },
+    //             confirmButton = {
+    //                 Button(onClick = {
+    //                     updateAvailableTag = null
+    //                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/A-EDev/Flow/releases/latest"))
+    //                     context.startActivity(intent)
+    //                 }) {
+    //                     Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.download))
+    //                 }
+    //             },
+    //             dismissButton = {
+    //                 TextButton(onClick = { updateAvailableTag = null }) {
+    //                     Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.cancel))
+    //                 }
+    //             }
+    //         )
+    //     }
+    // }
 
     // Region Selection Dialog
     if (showRegionDialog) {
