@@ -126,6 +126,7 @@
     </style>
 
     <style name="AmoledMode">
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="primaryGrayBackground">@color/black</item>
         <item name="primaryBlackBackground">@color/black</item>
         <item name="iconGrayBackground">@color/primaryBlackBackground</item>
@@ -170,6 +171,7 @@
     </style>
 
     <style name="LightMode">
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="primaryGrayBackground">@color/lightPrimaryGrayBackground</item>
         <item name="primaryBlackBackground">@color/lightBitDarkerGrayBackground</item>
         <item name="iconGrayBackground">@color/lightGrayBackground</item>
@@ -184,6 +186,7 @@
     </style>
 
     <style name="DraculaMode">
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="primaryGrayBackground">@color/DraculaPrimaryGrayBackground</item>
         <item name="primaryBlackBackground">@color/DraculaBitDarkerGrayBackground</item>
         <item name="iconGrayBackground">@color/DraculaGrayBackground</item>
@@ -197,6 +200,7 @@
 
 
     <style name="SilentBlueMode">
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="primaryGrayBackground">@color/SilentBluePrimaryGrayBackground</item>
         <item name="primaryBlackBackground">@color/SilentBlueBitDarkerGrayBackground</item>
         <item name="iconGrayBackground">@color/SilentBlueGrayBackground</item>
@@ -209,6 +213,7 @@
     </style>
 
     <style name="LavenderMode">
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="primaryGrayBackground">@color/LavenderPrimaryGrayBackground</item>
         <item name="primaryBlackBackground">@color/LavenderBitDarkerGrayBackground</item>
         <item name="iconGrayBackground">@color/LavenderGrayBackground</item>

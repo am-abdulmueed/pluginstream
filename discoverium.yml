@@ -3,6 +3,6 @@ app:
   authors: recloudstream
   category: entertainment
   description: Android app for streaming and downloading media.
-  icon: https://raw.githubusercontent.com/recloudstream/cloudstream/refs/heads/master/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+  icon: https://raw.githubusercontent.com/am-abdulmueed/pluginstream/refs/heads/main/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp
   releases:
-    url: https://github.com/recloudstream/cloudstream/releases
+    url: https://github.com/am-abdulmueed/pluginstream/releases

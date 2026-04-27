@@ -9,7 +9,9 @@ import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.graphics.PorterDuff
 import android.os.Bundle
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
@@ -2056,18 +2058,73 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             .build()*/
 
         val rippleColor = ColorStateList.valueOf(getResourceColor(R.attr.colorPrimary, 0.1f))
+        val navIconColor = ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf(-android.R.attr.state_checked)
+            ),
+            intArrayOf(
+                getResourceColor(R.attr.textColor).let { if (it == 0) getResourceColor(android.R.attr.textColorPrimary) else it },
+                getResourceColor(R.attr.textColor, 0.6f).let { if (it == 0) getResourceColor(android.R.attr.textColorSecondary, 0.6f) else it }
+            )
+        )
+
+        fun updateNavIconTint(view: View?) {
+            val navView = view as? com.google.android.material.navigation.NavigationBarView ?: return
+            navView.apply {
+                itemIconTintList = null // Clear global tint
+                val menu = menu
+                for (i in 0 until menu.size()) {
+                    val item = menu.getItem(i)
+                    val itemView = findViewById<View>(item.itemId)
+                    
+                    // All icons follow theme and standard behavior
+                    item.iconTintList = navIconColor
+                    itemView?.let { v ->
+                        val iconView = v.findViewById<ImageView>(com.google.android.material.R.id.navigation_bar_item_icon_view)
+                        val indicator = v.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_active_indicator_view)
+                        
+                        // Theme adaptive colors
+                        val context = v.context
+                        val typedValue = android.util.TypedValue()
+                        context.theme.resolveAttribute(R.attr.textColor, typedValue, true)
+                        val textColor = typedValue.data
+                        context.theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
+                        val primaryColor = typedValue.data
+
+                        // Reset animations/scaling for all icons
+                        iconView?.scaleX = 1.0f
+                        iconView?.scaleY = 1.0f
+                        v.translationY = 0f
+
+                        if (item.isChecked) {
+                            indicator?.visibility = View.VISIBLE
+                            indicator?.alpha = 1f
+                            iconView?.setColorFilter(primaryColor)
+                        } else {
+                            // Only hide indicator if it's not checked
+                            indicator?.alpha = 0f
+                            iconView?.setColorFilter(textColor)
+                        }
+                    }
+                }
+            }
+        }
 
         binding?.navView?.apply {
             itemRippleColor = rippleColor
             itemActiveIndicatorColor = rippleColor
             navController?.let { setupWithNavController(it) }
+            updateNavIconTint(this)
             setOnItemSelectedListener { item ->
-                navController?.let {
+                val handled = navController?.let {
                     onNavDestinationSelected(
                         item,
                         it
                     )
                 } ?: false
+                if (handled) updateNavIconTint(this)
+                handled
             }
 
         }
@@ -2085,19 +2142,17 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 itemActiveIndicatorColor = rippleColor
             }
             navController?.let { setupWithNavController(it) }
-            /*if (isLayout(TV or EMULATOR)) {
-                background?.alpha = 200
-            } else {
-                background?.alpha = 255
-            }*/
-
+            updateNavIconTint(this)
+            
             setOnItemSelectedListener { item ->
-                navController?.let {
+                val handled = navController?.let {
                     onNavDestinationSelected(
                         item,
                         it
                     )
                 } ?: false
+                if (handled) updateNavIconTint(this)
+                handled
             }
 
 

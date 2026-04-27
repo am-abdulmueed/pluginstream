@@ -85,6 +85,7 @@
             android:fontFamily="@font/google_sans"
             android:text="@string/skip_setup"
             android:textAllCaps="false"
+            android:visibility="gone"
             app:cornerRadius="28dp" />
 
         <com.google.android.material.button.MaterialButton

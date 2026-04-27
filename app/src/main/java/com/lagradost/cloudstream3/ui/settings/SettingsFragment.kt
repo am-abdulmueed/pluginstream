@@ -294,6 +294,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
 
             settingsEmail.setOnClickListener {
                 showContactDialogState.value = true
+                binding.composeViewContactDialog.visibility = View.VISIBLE
             }
 
             // Set up ComposeView for ContactDeveloperDialog
@@ -303,7 +304,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 @OptIn(ExperimentalMaterial3Api::class)
                 setContent {
                     CloudStreamComposeTheme {
-                        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
                         val scope = rememberCoroutineScope()
 
                         ContactDeveloperDialog(

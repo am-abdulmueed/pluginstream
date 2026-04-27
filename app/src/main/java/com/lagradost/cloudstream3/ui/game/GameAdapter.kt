@@ -4,9 +4,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
-import coil3.request.crossfade
+import coil3.request.error
 import coil3.request.placeholder
 import coil3.size.Scale
 import com.lagradost.cloudstream3.R
@@ -58,23 +59,18 @@ class GameAdapter(
         
         when (holder) {
             is GameViewHolder.NormalViewHolder -> {
-                // Normal icon (448x448) - square aspect ratio
-                val size = holder.itemView.width
-                holder.imageView.layoutParams.height = size
+                // Normal icon (448x448) - square aspect ratio set in XML
                 holder.imageView.load(game.images.icon) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_game)
-                    scale(Scale.FILL)
+                    placeholder(R.drawable.ic_game_placeholder)
+                    error(R.drawable.ic_game_placeholder)
                 }
                 holder.itemView.setOnClickListener { onGameClick(game) }
             }
             is GameViewHolder.LargeViewHolder -> {
-                // Large poster (448x252) - wide aspect ratio (16:9)
-                holder.imageView.layoutParams.height = (holder.itemView.width * 0.56).toInt()
+                // Large poster (448x252) - wide aspect ratio (16:9) set in XML
                 holder.imageView.load(game.images.poster) {
-                    crossfade(true)
-                    placeholder(R.drawable.ic_game)
-                    scale(Scale.FILL)
+                    placeholder(R.drawable.ic_game_placeholder)
+                    error(R.drawable.ic_game_placeholder)
                 }
                 holder.itemView.setOnClickListener { onGameClick(game) }
             }
@@ -84,8 +80,21 @@ class GameAdapter(
     override fun getItemCount(): Int = games.size
 
     fun updateList(newGames: List<GameModel>) {
+        val diffCallback = object : DiffUtil.Callback() {
+            override fun getOldListSize(): Int = games.size
+            override fun getNewListSize(): Int = newGames.size
+
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return games[oldItemPosition].gameURL == newGames[newItemPosition].gameURL
+            }
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return games[oldItemPosition] == newGames[newItemPosition]
+            }
+        }
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
         games = newGames
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
     companion object {

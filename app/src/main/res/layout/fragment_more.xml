@@ -28,7 +28,7 @@
         android:gravity="start|center_vertical"
         app:icon="@drawable/ic_offers"
         app:iconSize="24dp"
-        app:iconTint="?attr/textColor"
+        app:iconTint="?attr/colorPrimary"
         android:layout_marginBottom="12dp"
         style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -43,7 +43,7 @@
         android:gravity="start|center_vertical"
         app:icon="@drawable/library_icon_selector"
         app:iconSize="24dp"
-        app:iconTint="?attr/textColor"
+        app:iconTint="?attr/colorPrimary"
         android:layout_marginBottom="12dp"
         style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -58,7 +58,7 @@
         android:gravity="start|center_vertical"
         app:icon="@drawable/netflix_download"
         app:iconSize="24dp"
-        app:iconTint="?attr/textColor"
+        app:iconTint="?attr/colorPrimary"
         android:layout_marginBottom="12dp"
         style="@style/Widget.Material3.Button.OutlinedButton" />
 
@@ -73,7 +73,7 @@
         android:gravity="start|center_vertical"
         app:icon="@drawable/settings_icon_selector"
         app:iconSize="24dp"
-        app:iconTint="?attr/textColor"
+        app:iconTint="?attr/colorPrimary"
         android:layout_marginBottom="12dp"
         style="@style/Widget.Material3.Button.OutlinedButton" />
 

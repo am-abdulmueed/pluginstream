@@ -295,7 +295,7 @@
                     android:text="@string/dev_website" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Email / Contact Developer -->
+            <!-- Email / Get in Touch -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

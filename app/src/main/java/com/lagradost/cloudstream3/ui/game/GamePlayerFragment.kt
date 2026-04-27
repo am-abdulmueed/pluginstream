@@ -104,6 +104,44 @@ class GamePlayerFragment : Fragment() {
 
         // Enable all permissions from iframe allow attributes
         webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
+                val url = request?.url?.toString() ?: return false
+                
+                // Handle mailto links
+                if (url.startsWith("mailto:")) {
+                    try {
+                        val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO, android.net.Uri.parse(url))
+                        startActivity(intent)
+                        return true
+                    } catch (e: Exception) {
+                        return false
+                    }
+                }
+
+                // If the URL is not the same as the game URL domain, open it in external browser
+                // We check if it's a "http" or "https" link first
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    val gameUri = android.net.Uri.parse(gameUrl)
+                    val currentUri = request.url
+                    
+                    // If domains don't match, it's likely an external link/ad
+                    if (gameUri.host != currentUri.host) {
+                        try {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, currentUri)
+                            startActivity(intent)
+                            return true // Handled by external browser
+                        } catch (e: Exception) {
+                            // Fallback if no browser can handle it
+                            return false
+                        }
+                    }
+                }
+                return false // Load in WebView
+            }
+
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 progressBar.visibility = View.VISIBLE

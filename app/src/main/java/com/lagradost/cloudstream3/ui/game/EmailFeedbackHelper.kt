@@ -18,7 +18,7 @@ object EmailFeedbackHelper {
         val options = arrayOf("📝 Request Feature / Suggestion", "🐛 Report a Bug / Issue")
         
         android.app.AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert)
-            .setTitle("Contact Developer")
+            .setTitle("Get in Touch")
             .setMessage("What would you like to do?")
             .setItems(options) { _, which ->
                 when (which) {

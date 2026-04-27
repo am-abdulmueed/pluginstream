@@ -11,7 +11,8 @@
         <item
             android:id="@+id/navigation_game"
             android:icon="@drawable/ic_game_selector"
-            android:title="@string/games" />
+            android:title="@string/games"
+            android:iconTint="@null" />
         <item
             android:id="@+id/navigation_protube"
             android:icon="@drawable/ic_youtube_selector"
@@ -19,5 +20,5 @@
         <item
             android:id="@+id/navigation_more"
             android:icon="@drawable/ic_more_menu"
-            android:title="" />
+            android:title="@string/title_more" />
 </menu>
