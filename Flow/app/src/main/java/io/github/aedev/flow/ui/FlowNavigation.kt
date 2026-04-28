@@ -276,7 +276,6 @@ fun NavGraphBuilder.flowAppGraph(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToAppearance = { navController.navigate("settings/appearance") },
             onNavigateToPlayerAppearance = { navController.navigate("settings/player_appearance") },
-            onNavigateToDonations = { navController.navigate("donations") },
             onNavigateToPersonality = { navController.navigate("personality") },
             onNavigateToDownloads = { navController.navigate("settings/downloads") },
             onNavigateToTimeManagement = { navController.navigate("settings/time_management") },
@@ -289,13 +288,11 @@ fun NavGraphBuilder.flowAppGraph(
             onNavigateToSearchHistory = { navController.navigate("settings/search_history") },
             onNavigateToUserPreferences = { navController.navigate("settings/user_preferences") },
             onNavigateToNotifications = { navController.navigate("settings/notifications") },
-            onNavigateToDiagnostics = { navController.navigate("settings/diagnostics") },
             onNavigateToAutoBackup = { navController.navigate("settings/auto_backup") },
             onNavigateToExport = { navController.navigate("settings/export") },
             onNavigateToSponsorBlockSettings = { navController.navigate("settings/sponsorblock") }
         )
     }
-
     composable("settings/auto_backup") {
         currentRoute.value = "settings/auto_backup"
         showBottomNav.value = false

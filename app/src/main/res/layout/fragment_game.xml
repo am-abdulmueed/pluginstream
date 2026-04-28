@@ -120,25 +120,4 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <!-- Welcome NexGama Overlay (Stays on top) -->
-    <LinearLayout
-        android:id="@+id/welcome_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/primaryBlackBackground"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="100dp">
-
-        <ImageView
-            android:id="@+id/welcome_icon"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_game"
-            android:contentDescription="@null" />
-    </LinearLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

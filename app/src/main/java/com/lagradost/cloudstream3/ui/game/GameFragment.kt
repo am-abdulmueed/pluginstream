@@ -2,8 +2,6 @@ package com.lagradost.cloudstream3.ui.game
 
 import android.content.Context
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
@@ -46,45 +44,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         val emptyTextView = binding.emptyTextView
         val gamesRecyclerView = binding.gamesRecyclerView
         val shimmerLayout = binding.shimmerLayout
-        val welcomeOverlay = binding.welcomeOverlay
-        val welcomeIcon = binding.welcomeIcon
         val btnOffers = binding.btnGoToOffers
-
-        // 1. Welcome NexGama Overlay Logic (Shows only once per app session)
-        if (!hasShownSplashThisSession) {
-            hasShownSplashThisSession = true
-            welcomeOverlay.visibility = View.VISIBLE
-            welcomeOverlay.alpha = 1f
-            // Animate Icon pop-up
-            welcomeIcon.scaleX = 0.5f
-            welcomeIcon.scaleY = 0.5f
-            welcomeIcon.animate()
-                .scaleX(1.1f)
-                .scaleY(1.1f)
-                .setDuration(400)
-                .withEndAction {
-                    welcomeIcon.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start()
-                }
-                .start()
-
-            // Auto-hide after 1 second
-            Handler(Looper.getMainLooper()).postDelayed({
-                welcomeOverlay.animate()
-                    .alpha(0f)
-                    .setDuration(300)
-                    .withEndAction {
-                        welcomeOverlay.visibility = View.GONE
-                    }
-                    .start()
-            }, 1000)
-        } else {
-            welcomeOverlay.visibility = View.GONE
-        }
-
-        // 2. Offers Icon Click
-        btnOffers.setOnClickListener {
-            findNavController().navigate(R.id.navigation_offers)
-        }
 
         // Setup RecyclerView with GridLayoutManager (2 columns for mobile)
         val spanCount = 2
@@ -111,6 +71,11 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         }
         gamesRecyclerView.adapter = gameAdapter
 
+        // 1. Offers Icon Click
+        btnOffers.setOnClickListener {
+            findNavController().navigate(R.id.navigation_offers)
+        }
+
         // Observe ViewModel data
         viewModel.allGames.observe(viewLifecycleOwner) { games ->
             if (games.isNotEmpty()) {
@@ -119,11 +84,31 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
                 gamesRecyclerView.visibility = View.VISIBLE
                 gameAdapter?.updateList(games)
                 emptyTextView.visibility = View.GONE
+                
+                // Restore scroll position after data is loaded
+                if (viewModel.scrollPosition > 0) {
+                    gamesRecyclerView.scrollToPosition(viewModel.scrollPosition)
+                    // Optionally use post to ensure layout is complete
+                    gamesRecyclerView.post {
+                        (gamesRecyclerView.layoutManager as? GridLayoutManager)?.scrollToPositionWithOffset(viewModel.scrollPosition, 0)
+                    }
+                }
             } else if (viewModel.isLoading.value == false) {
                 emptyTextView.visibility = View.VISIBLE
                 emptyTextView.text = "No games available"
             }
         }
+
+        // Save scroll position when scrolling
+        gamesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val layoutManager = recyclerView.layoutManager as? GridLayoutManager
+                val position = layoutManager?.findFirstVisibleItemPosition() ?: 0
+                if (position >= 0) {
+                    viewModel.scrollPosition = position
+                }
+            }
+        })
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {
@@ -154,9 +139,5 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
 
         // Fetch games only if needed
         viewModel.fetchGamesIfNeeded(requireContext())
-    }
-
-    companion object {
-        private var hasShownSplashThisSession = false
     }
 }

@@ -65,7 +65,6 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAppearance: () -> Unit,
     onNavigateToPlayerAppearance: () -> Unit,
-    onNavigateToDonations: () -> Unit,
     onNavigateToPersonality: () -> Unit,
     onNavigateToDownloads: () -> Unit,
     onNavigateToTimeManagement: () -> Unit,
@@ -78,7 +77,6 @@ fun SettingsScreen(
     onNavigateToSearchHistory: () -> Unit,
     onNavigateToUserPreferences: () -> Unit,
     onNavigateToNotifications: () -> Unit,
-    onNavigateToDiagnostics: () -> Unit,
     onNavigateToAutoBackup: () -> Unit,
     onNavigateToExport: () -> Unit,
     onNavigateToSponsorBlockSettings: () -> Unit,
@@ -215,7 +213,6 @@ fun SettingsScreen(
     val secContentPlayback = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_content_playback)
     val secNotifications = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_notifications)
     val secDataManagement = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_data_management)
-    val secAbout = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_about)
 
     val allSettingsEntries = listOf(
         SettingSearchEntry(Icons.Outlined.Psychology, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.flow_control_center), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.neural_interest_map_subtitle), secFlowEngine, onNavigateToPersonality),
@@ -238,8 +235,7 @@ fun SettingsScreen(
         SettingSearchEntry(Icons.Outlined.FileDownload, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_import_data), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_import_data_subtitle), secDataManagement, onNavigateToImport),
         SettingSearchEntry(Icons.Outlined.Schedule, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.auto_backup_title), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.auto_backup_subtitle), secDataManagement, onNavigateToAutoBackup),
 
-        SettingSearchEntry(Icons.Outlined.BugReport, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics_subtitle), secAbout, onNavigateToDiagnostics),
-        SettingSearchEntry(Icons.Outlined.VolunteerActivism, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support_subtitle), secAbout, onNavigateToDonations)
+
     )
     val filteredEntries = if (searchQuery.isBlank()) emptyList() else allSettingsEntries.filter { entry ->
         entry.title.contains(searchQuery, ignoreCase = true) ||
@@ -789,41 +785,7 @@ item {
                 }
             }
             
-            // =================================================
-            // ABOUT
-            // =================================================
-            item { SectionHeader(text = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_about)) }
-            item {
-                SettingsGroup {
 
-                    SettingsItem(
-                        icon = Icons.Outlined.BugReport,
-                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics),
-                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics_subtitle),
-                        onClick = onNavigateToDiagnostics
-                    )
-                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    // Update check disabled - using as module
-                    // if (BuildConfig.UPDATER_ENABLED) {
-                    //     SettingsItem(
-                    //         icon = if (isCheckingUpdate) Icons.Outlined.Sync else Icons.Outlined.Update,
-                    //         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates),
-                    //         subtitle = if (isCheckingUpdate)
-                    //             androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.checking_for_updates)
-                    //         else
-                    //             androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates_subtitle),
-                    //         onClick = onCheckForUpdatesClick
-                    //     )
-                    //     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    // }
-                    SettingsItem(
-                        icon = Icons.Outlined.VolunteerActivism,
-                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support),
-                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support_subtitle),
-                        onClick = onNavigateToDonations
-                    )
-                }
-            }
         }
         }
     }

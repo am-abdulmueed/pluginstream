@@ -18,6 +18,7 @@ class GameViewModel : ViewModel() {
     val error: LiveData<String?> = _error
 
     private var isDataLoaded = false
+    var scrollPosition: Int = 0
 
     fun fetchGamesIfNeeded(context: Context) {
         if (isDataLoaded) return
