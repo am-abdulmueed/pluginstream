@@ -18,5 +18,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "CloudStream"
-include(":app", ":library", ":docs", ":protube")
-project(":protube").projectDir = file("protube/app")
+include(":app", ":library", ":docs")

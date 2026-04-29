@@ -954,7 +954,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_search -> R.id.main_search
             R.id.navigation_library -> R.id.main_search
             R.id.navigation_downloads -> R.id.download_appbar
-            R.id.navigation_protube -> R.id.web
             else -> null
         }
         if (targetView != null && isLayout(TV or EMULATOR)) {

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.lagradost.cloudstream3.mvvm.Resource
 import com.lagradost.cloudstream3.ui.offers.model.CpaOffer
+import com.lagradost.cloudstream3.ui.offers.model.DynamicOffersConfig
 import com.lagradost.cloudstream3.ui.offers.model.OffersResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,8 +35,7 @@ class OffersViewModel : ViewModel() {
 
     companion object {
         private const val TAG = "OffersViewModel"
-        private const val API_URL = "https://www.cpalead.com/api/offers"
-        private const val PUBLISHER_ID = "3277747" // Replace with actual publisher ID
+        private const val GITHUB_CONFIG_URL = "https://cdn.jsdelivr.net/gh/am-abdulmueed/cpalead@main/offers.json"
     }
 
     fun fetchOffers(context: Context) {
@@ -43,16 +43,32 @@ class OffersViewModel : ViewModel() {
             _offers.postValue(Resource.Loading())
 
             try {
-                val url = "$API_URL?id=$PUBLISHER_ID" +
-                        "&country=user" +
-                        "&device=user" +
-                        "&fields=id,title,description,conversion,device,link,amount,offer_rank,payout_currency,payout_type,countries,creatives,payouts_per_country" +
-                        "&limit=5000"
+                // 1. Fetch dynamic URL from GitHub
+                Log.d(TAG, "Fetching dynamic config from: $GITHUB_CONFIG_URL")
+                val configRequest = Request.Builder()
+                    .url(GITHUB_CONFIG_URL)
+                    .get()
+                    .build()
 
-                Log.d(TAG, "Fetching offers from: $url")
+                val configResponse = withContext(Dispatchers.IO) {
+                    client.newCall(configRequest).execute()
+                }
 
+                val dynamicUrl = configResponse.use { response ->
+                    if (!response.isSuccessful) {
+                        Log.e(TAG, "Failed to fetch config: ${response.code}")
+                        throw Exception("Failed to fetch dynamic configuration")
+                    }
+                    val body = response.body?.string() ?: throw Exception("Empty config response")
+                    val config = mapper.readValue(body, DynamicOffersConfig::class.java)
+                    config.offerUrl
+                }
+
+                Log.d(TAG, "Using dynamic offers URL: $dynamicUrl")
+
+                // 2. Fetch offers using the dynamic URL
                 val request = Request.Builder()
-                    .url(url)
+                    .url(dynamicUrl)
                     .get()
                     .build()
 

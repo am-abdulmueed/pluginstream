@@ -3,6 +3,13 @@ package com.lagradost.cloudstream3.ui.offers.model
 import com.fasterxml.jackson.annotation.JsonProperty
 
 /**
+ * Dynamic Config for Offers Link from GitHub
+ */
+data class DynamicOffersConfig(
+    @JsonProperty("offer") val offerUrl: String
+)
+
+/**
  * CPAlead Offers API Response
  */
 data class OffersResponse(
