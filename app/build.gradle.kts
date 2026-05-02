@@ -199,6 +199,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":protube"))
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.json)

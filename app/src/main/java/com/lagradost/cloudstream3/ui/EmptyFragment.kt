@@ -11,7 +11,5 @@ class EmptyFragment : BaseFragment<FragmentEmptyBinding>(
     }
 
     override fun onBindingCreated(binding: FragmentEmptyBinding) {
-        // Deliberate crash for testing purposes
-        throw RuntimeException("Test crash: Protube tab opened!")
     }
 }

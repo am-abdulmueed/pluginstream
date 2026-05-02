@@ -309,12 +309,13 @@
 
     <fragment
         android:id="@+id/navigation_protube"
-        android:name="com.lagradost.cloudstream3.ui.EmptyFragment"
+        android:name="com.lagradost.cloudstream3.ui.protube.ProTubeFragment"
         android:label="YouTube"
         app:enterAnim="@anim/enter_anim"
         app:exitAnim="@anim/exit_anim"
         app:popEnterAnim="@anim/enter_anim"
-        app:popExitAnim="@anim/exit_anim" />
+        app:popExitAnim="@anim/exit_anim"
+        tools:layout="@layout/fragment_protube" />
 
     <fragment
         android:id="@+id/navigation_search"

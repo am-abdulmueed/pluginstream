@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 :: List of commits
-set commits=2eb63d
+set commits=4393192
 
 :: Counter for numbering files
 set /a count=1
@@ -17,7 +17,7 @@ for %%a in (%commits%) do (
    echo -------------------------------------------------- > !filename!
    echo COMMIT ID: %%a >> !filename!
    echo -------------------------------------------------- >> !filename!
-   curl -s -L https://github.com/recloudstream/cloudstream/commit/%%a.diff >> !filename!
+   curl -s -L https://github.com/am-abdulmueed/PluginStream/commit/%%a.diff >> !filename!
 
    :: Reset message variable
    set msg=
