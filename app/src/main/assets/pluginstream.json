@@ -1,112 +1,117 @@
 {
-  "name": "PluginStream Master Repo",
+  "name": "CloudStream Repositories Master List",
   "version": 1,
-  "last_updated": "2026-03-27",
+  "last_updated": "2026-05-02",
   "repositories": [
     {
-      "name": "PluginStream",
+      "name": "CloudStream",
       "url": "https://raw.githubusercontent.com/recloudstream/extensions/master/repo.json",
-      "description": "Netflix, Prime, HBO, DisneyPlus, YouTube, Twitch, and daily motion content seamlessly."
+      "description": "Official repository - Dailymotion, Invidious (YouTube), Twitch and more."
     },
     {
-      "name": "Mega All-in-One",
-      "url": "https://raw.githubusercontent.com/self-similarity/MegaRepo/builds/repo.json",
-      "description": "Master bundle: Automatically installs all top-tier extensions at once."
-    },
-    {
-      "name": "Desi Cinema",
+      "name": "Phisher Repo",
       "url": "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json",
-      "description": "Best for Indian content: JioCinema, Zee5, and SonyLIV movie clones."
+      "description": "Huge Indian/Hindi + English repository (AllMovieLand, HiAnime, YTS, MovieBox, etc.)"
     },
     {
-      "name": "Bollywood Central",
-      "url": "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json",
-      "description": "Top Hindi portals: VegaMovies, Bollyflix, and NetflixMirror for latest hits."
-    },
-    {
-      "name": "MENA & Sports",
+      "name": "CSX",
       "url": "https://raw.githubusercontent.com/SaurabhKaperwan/CSX/builds/CS.json",
-      "description": "Arabic giants: Shahid4u, Akwam, Mycima, and beIN Sports coverage."
+      "description": "Hindi & English content (Bollyflix, CineStream, Moviesmod, VegaMovies etc.)"
     },
     {
-      "name": "Indo Anime",
+      "name": "3arabi",
+      "url": "https://raw.githubusercontent.com/Abodabodd/re-3arabi/refs/heads/main/repo.json",
+      "description": "Arabic repository (CimaClub, Akwam, Mycima, Shahid, Anime etc.)"
+    },
+    {
+      "name": "IndoStream",
       "url": "https://raw.githubusercontent.com/TeKuma25/IndoStream/builds/repo.json",
-      "description": "Indonesian favorites: Otakudesu, LayarKaca21, and Samehadaku anime."
+      "description": "Indonesian repository (Anoboy, Kuronime, Samehadaku, NontonAnime etc.)"
     },
     {
-      "name": "Global Mix",
-      "url": "https://raw.githubusercontent.com/duro92/ExtCloud/main/repo.json",
-      "description": "Worldwide streaming: Sflix, SoraStream, and international TV series."
-    },
-    {
-      "name": "CloudX Local",
+      "name": "CloudX",
       "url": "https://raw.githubusercontent.com/Asm0d3usX/CloudX/builds/repo.json",
-      "description": "Regional Indo: Focus on local Indonesian drama and soap operas."
+      "description": "Indonesian repository (LayarKaca, Samehadaku, Pencurimovie etc.)"
     },
     {
-      "name": "Italian IPTV",
+      "name": "doGior",
       "url": "https://raw.githubusercontent.com/doGior/doGiorsHadEnough/refs/heads/builds/repo.json",
-      "description": "Italy Special: Sky Italia clones, RaiPlay, and Torrentio sports links."
+      "description": "Italian repository (StreamingCommunity, AnimeWorld, CalcioStreaming etc.)"
     },
     {
-      "name": "Max",
+      "name": "CNC Verse",
       "url": "https://raw.githubusercontent.com/NivinCNC/CNCVerse-Cloud-Stream-Extension/refs/heads/builds/CNC.json",
-      "description": "Asian & Global: Bilibili, HDO Box, Max, and Tamilian hits."
+      "description": "Multi-language (Tamil, Hindi, English) - DoFlix, Tamilian, MovieBox etc."
     },
     {
-      "name": "Karma Sports",
+      "name": "Italia In Streaming",
+      "url": "https://pastebin.com/raw/qndZtL6D",
+      "description": "Italian repository (AnimeSaturn, StreamingCommunity, CB01 etc.)"
+    },
+    {
+      "name": "CS Karma",
       "url": "https://raw.githubusercontent.com/Kraptor123/cs-Karma/refs/heads/master/repo.json",
-      "description": "Live Action: F1 TV, Football live, and Turkish Super Lig streams."
+      "description": "Multi content (Sports, Anime, Movies, Cricket etc.)"
     },
     {
-      "name": "Ukraine Direct",
+      "name": "UK Extensions",
       "url": "https://codeberg.org/CakesTwix/cloudstream-extensions-uk/raw/branch/master/repo.json",
-      "description": "Local Ukraine: MEGOGO style providers and Ukrainian dubbed anime."
+      "description": "Ukrainian providers repository"
     },
     {
-      "name": "Italian Cinema",
+      "name": "Italian Provider",
       "url": "https://raw.githubusercontent.com/Gian-Fr/ItalianProvider/builds/repo.json",
-      "description": "Italian Classics: Altadefinizione and local cinema streaming sites."
+      "description": "Italian providers (Altadefinizione, GuardaSerie)"
     },
     {
-      "name": "BDIX Portal",
+      "name": "Redowan",
       "url": "https://raw.githubusercontent.com/redowan99/Redowan-CloudStream/master/repo.json",
-      "description": "Bangladesh Special: High-speed BDIX FTP servers and Bioscope live."
+      "description": "Bangladeshi / BDix repositories"
     },
     {
-      "name": "Turkish Drama",
+      "name": "Kraptor",
       "url": "https://raw.githubusercontent.com/Kraptor123/cs-kraptor/refs/heads/master/repo.json",
-      "description": "Diziler World: Massive collection of Turkish soaps and Kanal D content."
+      "description": "Large Turkish repository (Dizi, Film, Anime etc.)"
     },
     {
-      "name": "German TV",
+      "name": "German Providers",
       "url": "https://raw.githubusercontent.com/Bnyro/GermanProviders/refs/heads/master/repo.json",
-      "description": "DE Stream: German public TV (ARD, ZDF, Arte) and Filmpalast."
+      "description": "German providers repository"
     },
     {
-      "name": "Archive Vault",
+      "name": "Luna712",
       "url": "https://raw.githubusercontent.com/Luna712/Luna712-CloudStream-Extensions/28885d17ceb7f24782b732b6056085c14c1fd027/repo.json",
-      "description": "Retro & Rare: Internet Archive movies and Dailymotion classics."
+      "description": "Dailymotion + Internet Archive"
     },
     {
-      "name": "Brazil Luxe",
+      "name": "Saimuel Repo",
       "url": "https://raw.githubusercontent.com/saimuelbr/saimuelrepo/refs/heads/main/builds/repo.json",
-      "description": "Portuguese Hits: PobreFlix, NetCine, and Globoplay style plugins."
+      "description": "Portuguese/Spanish (PobreFlix, AnimesCloud, Doramas etc.)"
     },
     {
-      "name": "OTT Connect",
+      "name": "CuxPlug",
       "url": "https://raw.githubusercontent.com/ycngmn/CuxPlug/refs/heads/main/repo.json",
-      "description": "Multi-Platform: Global access to Disney+, Hulu, and Amazon Prime content."
+      "description": "International (AnimeLuxe, AnimeSama, FrenchStream, Watch32 etc.)"
     },
     {
-      "name": "Vietnam Sync",
+      "name": "Vietnamese",
       "url": "https://gitlab.com/tearrs/cloudstream-vietnamese/-/raw/main/repo.json",
-      "description": "Vietnam Live: IPTV channels and cross-device watch history sync."
+      "description": "Vietnamese repository"
     },
     {
-      "name": "Liet Portuguese",
+      "name": "Pitipitii",
+      "url": "https://raw.githubusercontent.com/sarapcanagii/Pitipitii/master/repo.json",
+      "description": "NeonSpor"
+    },
+    {
+      "name": "LietRepo",
       "url": "https://raw.githubusercontent.com/lawlietbr/lietrepo/refs/heads/main/builds/repo.json",
-      "description": "Anime PT: Brazilian Portuguese anime and movie community providers."
+      "description": "Brazilian/Portuguese (AnimeFire, Goyabu, PobreFlix etc.)"
+    },
+    {
+      "name": "KingLucius Xtream",
+      "url": "https://pastebin.com/raw/Cd2g2tfz",
+      "description": "Xtream IPTV plugin (requires Xtream codes)"
     }
   ]
 }
