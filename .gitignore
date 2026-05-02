@@ -229,3 +229,4 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/kotlin,java,android,androidstudio,visualstudiocode
 
 todo.md
+lint.txt
