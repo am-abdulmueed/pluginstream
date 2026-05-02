@@ -1696,6 +1696,10 @@ object VideoDownloadManager {
         companion object {
             private fun displayNotification(context: Context, id: Int, notification: Notification) {
                 safe {
+                    if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED
+                    ) return@safe
+
                     NotificationManagerCompat.from(context)
                         .notify(DOWNLOAD_NOTIFICATION_TAG, id, notification)
                 }

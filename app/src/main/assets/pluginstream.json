@@ -69,11 +69,6 @@
       "description": "Italian Classics: Altadefinizione and local cinema streaming sites."
     },
     {
-      "name": "Premium Mirror",
-      "url": "https://raw.githubusercontent.com/Sushan64/NetMirror-Extension/refs/heads/builds/Netflix.json",
-      "description": "OTT Hub: Direct mirrors for Netflix, Disney+ Hotstar, and Prime Video."
-    },
-    {
       "name": "BDIX Portal",
       "url": "https://raw.githubusercontent.com/redowan99/Redowan-CloudStream/master/repo.json",
       "description": "Bangladesh Special: High-speed BDIX FTP servers and Bioscope live."

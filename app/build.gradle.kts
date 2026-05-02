@@ -59,7 +59,7 @@ android {
                 ?: System.getenv("SIGNING_KEY_PASSWORD")
 
             if (keystorePath != null) {
-                storeFile = file("${project.rootDir}/$keystorePath")
+                storeFile = file(keystorePath)
             }
             storePassword = keystorePassword
             keyAlias = keystoreKeyAlias
@@ -283,7 +283,7 @@ dependencies {
     // Downloading & Networking
     implementation(libs.work.runtime.ktx)
     implementation(libs.nicehttp) // HTTP Lib
-
+    
     implementation(project(":library"))
 }
 

@@ -154,6 +154,7 @@ class PluginsViewModel : ViewModel() {
                     val res = PluginManager.downloadPlugin(
                         activity,
                         metadata.url,
+                        metadata.fileHash,
                         metadata.internalName,
                         repo,
                         metadata.status != PROVIDER_STATUS_DOWN
@@ -213,6 +214,7 @@ class PluginsViewModel : ViewModel() {
             val res = PluginManager.downloadPlugin(
                 activity,
                 metadata.url,
+                metadata.fileHash,
                 metadata.internalName,
                 repo,
                 isEnabled

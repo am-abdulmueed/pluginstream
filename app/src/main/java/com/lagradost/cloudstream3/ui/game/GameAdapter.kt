@@ -10,11 +10,16 @@ import coil3.load
 import coil3.request.error
 import coil3.request.placeholder
 import coil3.size.Scale
+import coil3.size.Size
 import com.lagradost.cloudstream3.R
 
 class GameAdapter(
     private val onGameClick: (GameModel) -> Unit
 ) : RecyclerView.Adapter<GameAdapter.GameViewHolder>() {
+
+    init {
+        setHasStableIds(true)
+    }
 
     private var games: List<GameModel> = emptyList()
     
@@ -59,18 +64,20 @@ class GameAdapter(
         
         when (holder) {
             is GameViewHolder.NormalViewHolder -> {
-                // Normal icon (448x448) - square aspect ratio set in XML
                 holder.imageView.load(game.images.icon) {
                     placeholder(R.drawable.ic_game_placeholder)
                     error(R.drawable.ic_game_placeholder)
+                    scale(Scale.FILL)
+                    size(Size.ORIGINAL)
                 }
                 holder.itemView.setOnClickListener { onGameClick(game) }
             }
             is GameViewHolder.LargeViewHolder -> {
-                // Large poster (448x252) - wide aspect ratio (16:9) set in XML
                 holder.imageView.load(game.images.poster) {
                     placeholder(R.drawable.ic_game_placeholder)
                     error(R.drawable.ic_game_placeholder)
+                    scale(Scale.FILL)
+                    size(Size.ORIGINAL)
                 }
                 holder.itemView.setOnClickListener { onGameClick(game) }
             }
@@ -78,6 +85,10 @@ class GameAdapter(
     }
 
     override fun getItemCount(): Int = games.size
+
+    override fun getItemId(position: Int): Long {
+        return games[position].gameURL.hashCode().toLong()
+    }
 
     fun updateList(newGames: List<GameModel>) {
         val diffCallback = object : DiffUtil.Callback() {

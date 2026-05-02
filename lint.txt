@@ -1,0 +1,35 @@
+
+E:\Projects\IN_BUILD\PluginStream>gradlew.bat lint
+Calculating task graph as no cached configuration is available for tasks: lint
+                                                        <========-----> 67% EXECUTING [2m 9s]
+> Configure project :app
+No prerelease signing config!
+
+> Task :app:compilePrereleaseDebugKotlin
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:643:39 Unnecessary safe call on a non-null receiver of type 'BottomNavigationView'.
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:644:43 Unnecessary safe call on a non-null receiver of type 'NavigationRailView'.
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:949:26 Unnecessary safe call on a non-null receiver of type 'NavController'.
+
+> Task :app:lintReportPrereleaseDebug
+Wrote HTML report to file:///E:/Projects/IN_BUILD/PluginStream/app/build/reports/lint-results-prereleaseDebug.html
+
+[Incubating] Problems report is available at: file:///E:/Projects/IN_BUILD/PluginStream/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+> Task :app:compilePrereleaseDebugKotlin
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:643:39 Unnecessary safe call on a non-null receiver of type 'BottomNavigationView'.ase refer to https://docs.gradle.or
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:644:43 Unnecessary safe call on a non-null receiver of type 'NavigationRailView'. 11m 20s
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:949:26 Unnecessary safe call on a non-null receiver of type 'NavController'._BUILD\PluginStream>gradlew.bat assembleDe
+bug --warning-mode all
+> Task :app:compileStableDebugKotlin
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:643:39 Unnecessary safe call on a non-null receiver of type 'BottomNavigationView'.
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:644:43 Unnecessary safe call on a non-null receiver of type 'NavigationRailView'.
+w: file:///E:/Projects/IN_BUILD/PluginStream/app/src/main/java/com/lagradost/cloudstream3/MainActivity.kt:949:26 Unnecessary safe call on a non-null receiver of type 'NavController'.
+
+BUILD SUCCESSFUL in 3m 8s
+95 actionable tasks: 28 executed, 6 from cache, 61 up-to-date
+Configuration cache entry reused.
+E:\Projects\IN_BUILD\PluginStream>
+E:\Projects\IN_BUILD\PluginStream>
+E:\Projects\IN_BUILD\PluginStream> 

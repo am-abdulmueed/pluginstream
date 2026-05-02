@@ -21,6 +21,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -196,6 +197,9 @@ import java.nio.charset.Charset
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.system.exitProcess
+import com.lagradost.cloudstream3.ui.dialog.EMAIL_ADDRESS
+import com.lagradost.cloudstream3.ui.dialog.sendEmailIntent
+import com.lagradost.cloudstream3.utils.AppDiagnostics
 import com.lagradost.cloudstream3.utils.downloader.DownloadQueueManager
 
 class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCallback {
@@ -1718,25 +1722,47 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
             }
         } else {
+            val dialogView = layoutInflater.inflate(R.layout.crash_initial_dialog, null)
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder.setTitle(R.string.safe_mode_title)
-            builder.setMessage(R.string.safe_mode_description)
-            builder.apply {
-                setPositiveButton(R.string.safe_mode_crash_info) { _, _ ->
-                    val tbBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-                    tbBuilder.setTitle(R.string.safe_mode_title)
-                    tbBuilder.setMessage(lastError)
-                    tbBuilder.setNeutralButton(R.string.sort_copy) { _, _ ->
-                        lastError?.let {
-                            clipboardHelper(txt(R.string.safe_mode_title), it)
+            builder.setView(dialogView)
+            val dialog = builder.create()
+
+            dialogView.findViewById<View>(R.id.crash_btn_ok).setOnClickListener {
+                dialog.dismiss()
+            }
+            dialogView.findViewById<View>(R.id.crash_btn_report).setOnClickListener {
+                lastError?.let {
+                    val subject = "⚠️ Crash Report - PluginStream v${BuildConfig.VERSION_NAME}"
+                    val body = "${AppDiagnostics.getDeviceInfo()}\n---\nLatest Logs:\n$it"
+                    sendEmailIntent(this@MainActivity, subject, body) {
+                        Toast.makeText(this@MainActivity, "No email client found", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                dialog.dismiss()
+            }
+            dialogView.findViewById<View>(R.id.crash_btn_info).setOnClickListener {
+                val tbBuilder: AlertDialog.Builder = AlertDialog.Builder(this@MainActivity)
+                tbBuilder.setTitle(R.string.safe_mode_title)
+                tbBuilder.setMessage(lastError)
+                tbBuilder.setNeutralButton(R.string.sort_copy) { _, _ ->
+                    lastError?.let {
+                        clipboardHelper(txt(R.string.safe_mode_title), it)
+                    }
+                }
+                tbBuilder.setPositiveButton("Report Crash") { _, _ ->
+                    lastError?.let {
+                        val subject = "⚠️ Crash Report - PluginStream v${BuildConfig.VERSION_NAME}"
+                        val body = "${AppDiagnostics.getDeviceInfo()}\n---\nLatest Logs:\n$it"
+                        sendEmailIntent(this@MainActivity, subject, body) {
+                            Toast.makeText(this@MainActivity, "No email client found", Toast.LENGTH_SHORT).show()
                         }
                     }
-                    tbBuilder.show()
                 }
-
-                setNegativeButton("Ok") { _, _ -> }
+                tbBuilder.show()
+                dialog.dismiss()
             }
-            builder.show().setDefaultFocus()
+
+            dialog.show()
         }
 
 

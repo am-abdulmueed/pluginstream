@@ -1,0 +1,31 @@
+-------------------------------------------------- 
+COMMIT ID: 2eb63d 
+-------------------------------------------------- 
+diff --git a/app/src/main/java/com/lagradost/cloudstream3/ui/settings/SettingsUpdates.kt b/app/src/main/java/com/lagradost/cloudstream3/ui/settings/SettingsUpdates.kt
+index 118d89ac482..9250f6f6f2b 100644
+--- a/app/src/main/java/com/lagradost/cloudstream3/ui/settings/SettingsUpdates.kt
++++ b/app/src/main/java/com/lagradost/cloudstream3/ui/settings/SettingsUpdates.kt
+@@ -205,8 +205,9 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
+             val prefNames = resources.getStringArray(R.array.apk_installer_pref)
+             val prefValues = resources.getIntArray(R.array.apk_installer_values)
+ 
++            // Use legacy installer as default until we make the new installer completely reliable
+             val currentInstaller =
+-                settingsManager.getInt(getString(R.string.apk_installer_key), 0)
++                settingsManager.getInt(getString(R.string.apk_installer_key), 1)
+ 
+             activity?.showBottomDialog(
+                 prefNames.toList(),
+diff --git a/app/src/main/java/com/lagradost/cloudstream3/utils/InAppUpdater.kt b/app/src/main/java/com/lagradost/cloudstream3/utils/InAppUpdater.kt
+index 9380285ca44..8bcd1b88e70 100644
+--- a/app/src/main/java/com/lagradost/cloudstream3/utils/InAppUpdater.kt
++++ b/app/src/main/java/com/lagradost/cloudstream3/utils/InAppUpdater.kt
+@@ -308,7 +308,7 @@ object InAppUpdater {
+                         }
+ 
+                         val currentInstaller = settingsManager.getInt(
+-                            getString(R.string.apk_installer_key), 0
++                            getString(R.string.apk_installer_key), 1
+                         )
+ 
+                         when (currentInstaller) {

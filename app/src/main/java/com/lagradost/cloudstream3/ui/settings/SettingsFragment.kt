@@ -6,8 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import com.lagradost.cloudstream3.ui.theme.CloudStreamComposeTheme
 import androidx.annotation.StringRes
 import androidx.core.view.children
 import androidx.core.view.updateLayoutParams
@@ -39,11 +37,6 @@ import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.getImageFromDrawable
 import com.lagradost.cloudstream3.utils.txt
 import com.lagradost.cloudstream3.ui.dialog.ContactDeveloperDialog
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberModalBottomSheetState
-import kotlinx.coroutines.launch
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -191,7 +184,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             activity?.navigate(id, Bundle())
         }
 
-        val showContactDialogState = mutableStateOf(false)
+
 
         /** used to debug leaks
         showToast(activity,"${VideoDownloadManager.downloadStatusEvent.size} :
@@ -293,31 +286,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             }
 
             settingsEmail.setOnClickListener {
-                showContactDialogState.value = true
-                binding.composeViewContactDialog.visibility = View.VISIBLE
-            }
-
-            // Set up ComposeView for ContactDeveloperDialog
-            binding.composeViewContactDialog.apply {
-                visibility = if (showContactDialogState.value) View.VISIBLE else View.GONE
-                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-                @OptIn(ExperimentalMaterial3Api::class)
-                setContent {
-                    CloudStreamComposeTheme {
-                        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-                        val scope = rememberCoroutineScope()
-
-                        ContactDeveloperDialog(
-                            showDialog = showContactDialogState.value,
-                            onDismiss = {
-                                showContactDialogState.value = false
-                                binding.composeViewContactDialog.visibility = View.GONE
-                            },
-                            sheetState = sheetState,
-                            scope = scope
-                        )
-                    }
-                }
+                ContactDeveloperDialog().show(childFragmentManager, "ContactDeveloperDialog")
             }
 
             settingsShare.setOnClickListener {
