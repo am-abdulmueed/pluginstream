@@ -268,7 +268,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             settingsInstagram.setOnClickListener {
                 try {
                     val i = Intent(Intent.ACTION_VIEW)
-                    i.data = Uri.parse("https://instagram.com/pluginstream")
+                    i.data = Uri.parse("https://instagram.com/pluginstreamofficial")
                     startActivity(i)
                 } catch (e: Exception) {
                     logError(e)

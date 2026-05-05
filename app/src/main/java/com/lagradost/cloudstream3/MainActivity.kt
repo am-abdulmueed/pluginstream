@@ -292,6 +292,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         const val INSTAGRAM_ALREADY_FOLLOWED = "instagram_already_followed"
         const val LAST_TELEGRAM_DIALOG_SHOW_TIME = "last_telegram_dialog_show_time"
         const val TELEGRAM_ALREADY_JOINED = "telegram_already_joined"
+        const val LAST_DIALOG_AD_SHOW_TIME = "last_dialog_ad_show_time"
+        const val DIALOG_AD_VIEWS_TODAY = "dialog_ad_views_today"
+        const val DIALOG_AD_LAST_VIEW_DATE = "dialog_ad_last_view_date"
 
         /**
          * @return true if the str has launched an app task (be it successful or not)
@@ -834,6 +837,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         } catch (e: Exception) {
             logError(e)
         }
+        showDialogAd()
     }
 
     override fun onPause() {
@@ -1424,7 +1428,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             } else {
                 // Open Instagram URL
                 try {
-                    val intent = Intent(Intent.ACTION_VIEW, "https://instagram.com/pluginstream".toUri())
+                    val intent = Intent(Intent.ACTION_VIEW, "https://instagram.com/pluginstreamofficial".toUri())
                     startActivity(intent)
                 } catch (e: Exception) {
                     logError(e)
@@ -1446,11 +1450,15 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val currentTime = System.currentTimeMillis()
 
         // Show only if setup is done and not already joined
-        if (!hasDoneSetup || alreadyJoined) return
+        if (!hasDoneSetup || alreadyJoined) {
+            return
+        }
 
         // Show only if it's a new day (at least 24 hours passed) or first time (lastShowTime == 0)
         val oneDayMillis = 24 * 60 * 60 * 1000
-        if (lastShowTime != 0L && currentTime - lastShowTime < oneDayMillis) return
+        if (lastShowTime != 0L && currentTime - lastShowTime < oneDayMillis) {
+            return
+        }
 
         val dialog = Dialog(this, R.style.DialogHalfFullscreen)
         val dialogView = layoutInflater.inflate(R.layout.telegram_follow_dialog, null)
@@ -1496,6 +1504,148 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         setKey(LAST_TELEGRAM_DIALOG_SHOW_TIME, currentTime)
 
         dialog.show()
+    }
+
+    private fun showDialogAd() {
+        val currentTime = System.currentTimeMillis()
+        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
+
+        if (!hasDoneSetup) return
+
+        ioSafe {
+            try {
+                val client = okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+
+                val request = okhttp3.Request.Builder()
+                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/ads-json@main/ads.json")
+                    .get()
+                    .build()
+
+                val response = client.newCall(request).execute()
+
+                val jsonString = response.use {
+                    if (!it.isSuccessful) throw Exception("Failed to fetch ads config")
+                    it.body?.string() ?: throw Exception("Empty response")
+                }
+
+                val jsonObject = org.json.JSONObject(jsonString)
+                val dialogAd = jsonObject.getJSONObject("dialog_ad")
+
+                val enabled = dialogAd.optBoolean("enabled", true)
+                if (!enabled) return@ioSafe
+
+                // All values must come from online JSON - no hardcoded fallbacks
+                val title = dialogAd.optString("title", "")
+                val message = dialogAd.optString("message", "")
+                val buttonText = dialogAd.optString("button_text", "")
+                val imageUrl = dialogAd.optString("image_url", "")
+                val clickUrl = dialogAd.optString("click_url", "")
+                val showAfterSeconds = dialogAd.optInt("show_after_seconds", 0)
+                val autoCloseSeconds = dialogAd.optInt("auto_close_seconds", 0)
+                val startDate = dialogAd.optString("start_date", "")
+                val endDate = dialogAd.optString("end_date", "")
+                val maxDailyViews = dialogAd.optInt("max_daily_views", 0)
+                val intervalHours = dialogAd.optInt("interval_hours", 0)
+
+                // Validate required fields - if any essential field is empty, don't show dialog
+                if (title.isEmpty() || message.isEmpty() || buttonText.isEmpty() || 
+                    imageUrl.isEmpty() || clickUrl.isEmpty() || 
+                    showAfterSeconds <= 0 || autoCloseSeconds <= 0) {
+                    return@ioSafe
+                }
+
+                val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                val today = sdf.format(java.util.Date())
+                val startDateObj = sdf.parse(startDate)
+                val endDateObj = sdf.parse(endDate)
+                val todayObj = sdf.parse(today)
+
+                if (startDateObj != null && endDateObj != null && todayObj != null) {
+                    if (todayObj.before(startDateObj) || todayObj.after(endDateObj)) return@ioSafe
+                }
+
+                val lastViewDate = getKey<String>(DIALOG_AD_LAST_VIEW_DATE)
+                var viewsToday = getKey<Int>(DIALOG_AD_VIEWS_TODAY) ?: 0
+
+                if (lastViewDate != today) {
+                    viewsToday = 0
+                    setKey(DIALOG_AD_LAST_VIEW_DATE, today)
+                }
+
+                if (viewsToday >= maxDailyViews) return@ioSafe
+
+                val lastShowTime = getKey<Long>(LAST_DIALOG_AD_SHOW_TIME) ?: 0L
+                val intervalMillis = intervalHours * 60 * 60 * 1000L
+
+                if (lastShowTime != 0L && currentTime - lastShowTime < intervalMillis) return@ioSafe
+
+                val handler = android.os.Handler(android.os.Looper.getMainLooper())
+
+                handler.postDelayed({
+                    val dialog = Dialog(this@MainActivity, R.style.DialogHalfFullscreen)
+                    val dialogView = layoutInflater.inflate(R.layout.dialog_ad, null)
+                    dialog.setContentView(dialogView)
+                    dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+                    dialog.setCancelable(false)
+
+                    val adImage = dialogView.findViewById<android.widget.ImageView>(R.id.ad_image)
+                    val adTitle = dialogView.findViewById<android.widget.TextView>(R.id.ad_title)
+                    val adMessage = dialogView.findViewById<android.widget.TextView>(R.id.ad_message)
+                    val adButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.ad_button)
+                    val countdownTimer = dialogView.findViewById<android.widget.TextView>(R.id.countdown_timer)
+
+                    adTitle.text = title
+                    adMessage.text = message
+                    adButton.text = buttonText
+
+                    adImage.loadImage(imageUrl)
+
+                    adButton.setOnClickListener {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, clickUrl.toUri())
+                            startActivity(intent)
+                        } catch (e: Exception) {
+                            logError(e)
+                        }
+                        dialog.dismiss()
+                    }
+
+                    var remainingSeconds = autoCloseSeconds
+                    countdownTimer.text = "${remainingSeconds}"
+
+                    val countdownHandler = android.os.Handler(android.os.Looper.getMainLooper())
+                    val countdownRunnable = object : Runnable {
+                        override fun run() {
+                            remainingSeconds--
+                            if (remainingSeconds <= 0) {
+                                dialog.dismiss()
+                                return
+                            }
+                            countdownTimer.text = "${remainingSeconds}"
+                            countdownHandler.postDelayed(this, 1000L)
+                        }
+                    }
+
+                    countdownHandler.postDelayed(countdownRunnable, 1000L)
+
+                    dialog.setOnDismissListener {
+                        countdownHandler.removeCallbacks(countdownRunnable)
+                    }
+
+                    setKey(LAST_DIALOG_AD_SHOW_TIME, currentTime)
+                    viewsToday++
+                    setKey(DIALOG_AD_VIEWS_TODAY, viewsToday)
+
+                    dialog.show()
+                }, (showAfterSeconds * 1000L))
+
+            } catch (e: Exception) {
+                logError(e)
+            }
+        }
     }
 
     @Suppress("DEPRECATION_ERROR")

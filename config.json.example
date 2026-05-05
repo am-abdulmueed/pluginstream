@@ -1,0 +1,5 @@
+{
+  "api_sources": {
+    "ogads": { "endpoint": "https://authenticateapp.store/api/v2", "api_key": "" }
+  }
+}

@@ -784,7 +784,7 @@ ${localStorage.getItem("prompt")}
 <div class="credit" >
 <z style="margin-right:6px">Designed by </z>
 
-<a href="#" style="text-decoration:none; color:inherit; font-weight:bold;" onclick="Android.oplink('https://instagram.com/pluginstream');">Abdul Mueed</a>
+<a href="#" style="text-decoration:none; color:inherit; font-weight:bold;" onclick="Android.oplink('https://instagram.com/pluginstreamofficial');">Abdul Mueed</a>
 </div>
 `;
 
