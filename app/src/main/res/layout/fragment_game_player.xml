@@ -66,25 +66,25 @@
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="32dp" />
 
-        <!-- Shimmer Loading Effect -->
+        <!-- Retry Button -->
         <com.facebook.shimmer.ShimmerFrameLayout
             android:id="@+id/offlineShimmer"
             android:layout_width="200dp"
             android:layout_height="48dp"
-            app:shimmer_auto_start="true"
+            app:shimmer_auto_start="false"
             app:shimmer_duration="1500"
             app:shimmer_repeat_mode="reverse">
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/retryButton"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Connecting..."
+                android:text="Retry"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="?attr/textColor"
                 app:backgroundTint="?attr/colorPrimary"
-                app:cornerRadius="24dp"
-                android:enabled="false" />
+                app:cornerRadius="24dp" />
         </com.facebook.shimmer.ShimmerFrameLayout>
 
     </LinearLayout>

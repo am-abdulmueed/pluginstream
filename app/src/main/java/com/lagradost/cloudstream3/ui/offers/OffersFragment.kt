@@ -72,6 +72,7 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
     }
 
     private fun loadOffers() {
+        hideOfflineScreen()
         viewModel.fetchOffers(requireContext())
     }
 
@@ -80,14 +81,14 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
 
         binding?.offersProgressBar?.visibility = View.VISIBLE
         binding?.offersSwipeRefresh?.visibility = View.GONE
-        binding?.offersErrorLayout?.visibility = View.GONE
         binding?.offersEmptyLayout?.visibility = View.GONE
+        hideOfflineScreen()
     }
 
     private fun showOffers(offers: List<CpaOffer>) {
         binding?.offersProgressBar?.visibility = View.GONE
-        binding?.offersErrorLayout?.visibility = View.GONE
         binding?.offersSwipeRefresh?.isRefreshing = false
+        hideOfflineScreen()
 
         if (offers.isEmpty()) {
             binding?.offersSwipeRefresh?.visibility = View.GONE
@@ -104,8 +105,17 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
         binding?.offersSwipeRefresh?.visibility = View.GONE
         binding?.offersSwipeRefresh?.isRefreshing = false
         binding?.offersEmptyLayout?.visibility = View.GONE
-        binding?.offersErrorLayout?.visibility = View.VISIBLE
-        binding?.offersErrorText?.text = message ?: "Failed to load offers"
+        showOfflineScreen()
+    }
+
+    private fun showOfflineScreen() {
+        binding?.offlineScreen?.visibility = View.VISIBLE
+        binding?.offlineShimmer?.startShimmer()
+    }
+
+    private fun hideOfflineScreen() {
+        binding?.offlineScreen?.visibility = View.GONE
+        binding?.offlineShimmer?.stopShimmer()
     }
 
     private fun navigateToOfferDetail(offer: CpaOffer) {

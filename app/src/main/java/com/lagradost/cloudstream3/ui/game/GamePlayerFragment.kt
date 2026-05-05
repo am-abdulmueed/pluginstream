@@ -48,6 +48,15 @@ class GamePlayerFragment : Fragment() {
         progressBar = view.findViewById(R.id.progressBar)
         offlineScreen = view.findViewById(R.id.offlineScreen)
         offlineShimmer = view.findViewById(R.id.offlineShimmer)
+        val retryButton = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.retryButton)
+
+        retryButton.setOnClickListener {
+            isOnline = isNetworkAvailable(requireContext())
+            if (isOnline) {
+                hideOfflineScreen()
+                loadGame(gameUrl)
+            }
+        }
 
         // Check internet connection
         isOnline = isNetworkAvailable(requireContext())
@@ -55,9 +64,25 @@ class GamePlayerFragment : Fragment() {
         if (!isOnline) {
             // Show offline screen
             showOfflineScreen()
-            return
+        } else {
+            setupWebView(gameUrl)
         }
 
+        // Handle back press with callback
+        val callback = object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                } else {
+                    isEnabled = false
+                    requireActivity().onBackPressed()
+                }
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+    }
+
+    private fun setupWebView(gameUrl: String) {
         // Setup WebView settings for smooth gaming
         webView.settings.apply {
             // JavaScript & DOM
@@ -209,22 +234,13 @@ class GamePlayerFragment : Fragment() {
         enableScreenRotation()
         
         // Load the game
+        loadGame(gameUrl)
+    }
+
+    private fun loadGame(gameUrl: String) {
         if (gameUrl.isNotEmpty()) {
             webView.loadUrl(gameUrl)
         }
-
-        // Handle back press with callback
-        val callback = object : androidx.activity.OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (webView.canGoBack()) {
-                    webView.goBack()
-                } else {
-                    isEnabled = false
-                    requireActivity().onBackPressed()
-                }
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
     override fun onResume() {
@@ -241,7 +257,7 @@ class GamePlayerFragment : Fragment() {
             hideOfflineScreen()
             val gameUrl = arguments?.getString("game_url") ?: ""
             if (gameUrl.isNotEmpty()) {
-                webView.loadUrl(gameUrl)
+                setupWebView(gameUrl)
             }
         }
     }
@@ -321,7 +337,6 @@ class GamePlayerFragment : Fragment() {
         webView.visibility = View.GONE
         progressBar.visibility = View.GONE
         offlineScreen.visibility = View.VISIBLE
-        offlineShimmer.startShimmer()
     }
     
     /**
@@ -329,7 +344,6 @@ class GamePlayerFragment : Fragment() {
      */
     private fun hideOfflineScreen() {
         offlineScreen.visibility = View.GONE
-        offlineShimmer.stopShimmer()
         webView.visibility = View.VISIBLE
     }
 }

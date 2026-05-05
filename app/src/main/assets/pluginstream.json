@@ -69,11 +69,6 @@
       "description": "Bangladeshi / BDix repositories"
     },
     {
-      "name": "Kraptor",
-      "url": "https://raw.githubusercontent.com/Kraptor123/cs-kraptor/refs/heads/master/repo.json",
-      "description": "Large Turkish repository (Dizi, Film, Anime etc.)"
-    },
-    {
       "name": "German Providers",
       "url": "https://raw.githubusercontent.com/Bnyro/GermanProviders/refs/heads/master/repo.json",
       "description": "German providers repository"
@@ -97,11 +92,6 @@
       "name": "Vietnamese",
       "url": "https://gitlab.com/tearrs/cloudstream-vietnamese/-/raw/main/repo.json",
       "description": "Vietnamese repository"
-    },
-    {
-      "name": "Pitipitii",
-      "url": "https://raw.githubusercontent.com/sarapcanagii/Pitipitii/master/repo.json",
-      "description": "NeonSpor"
     },
     {
       "name": "LietRepo",

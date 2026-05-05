@@ -45,6 +45,9 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         val gamesRecyclerView = binding.gamesRecyclerView
         val shimmerLayout = binding.shimmerLayout
         val btnOffers = binding.btnGoToOffers
+        val offlineScreen = binding.offlineScreen
+        val offlineShimmer = binding.offlineShimmer
+        val retryButton = binding.retryButton
 
         // Setup RecyclerView with GridLayoutManager (2 columns for mobile)
         val spanCount = 2
@@ -76,6 +79,12 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
             findNavController().navigate(R.id.navigation_offers)
         }
 
+        // Retry button click
+        retryButton.setOnClickListener {
+            hideOfflineScreen(binding)
+            viewModel.fetchGamesIfNeeded(requireContext())
+        }
+
         // Observe ViewModel data
         viewModel.allGames.observe(viewLifecycleOwner) { games ->
             if (games.isNotEmpty()) {
@@ -84,6 +93,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
                 gamesRecyclerView.visibility = View.VISIBLE
                 gameAdapter?.updateList(games)
                 emptyTextView.visibility = View.GONE
+                hideOfflineScreen(binding)
                 
                 // Restore scroll position after data is loaded
                 if (viewModel.scrollPosition > 0) {
@@ -116,6 +126,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
                 shimmerLayout.startShimmer()
                 gamesRecyclerView.visibility = View.GONE
                 emptyTextView.visibility = View.GONE
+                hideOfflineScreen(binding)
             }
         }
 
@@ -123,8 +134,9 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
             if (error != null) {
                 shimmerLayout.stopShimmer()
                 shimmerLayout.visibility = View.GONE
-                emptyTextView.visibility = View.VISIBLE
-                emptyTextView.text = "Failed to load games: $error"
+                gamesRecyclerView.visibility = View.GONE
+                emptyTextView.visibility = View.GONE
+                showOfflineScreen(binding)
             }
         }
 
@@ -139,5 +151,15 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
 
         // Fetch games only if needed
         viewModel.fetchGamesIfNeeded(requireContext())
+    }
+
+    private fun showOfflineScreen(binding: FragmentGameBinding) {
+        binding.offlineScreen.visibility = View.VISIBLE
+        binding.offlineShimmer.startShimmer()
+    }
+
+    private fun hideOfflineScreen(binding: FragmentGameBinding) {
+        binding.offlineScreen.visibility = View.GONE
+        binding.offlineShimmer.stopShimmer()
     }
 }
