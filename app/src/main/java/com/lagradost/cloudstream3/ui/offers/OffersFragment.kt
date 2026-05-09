@@ -1,7 +1,11 @@
 package com.lagradost.cloudstream3.ui.offers
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +26,7 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
 ) {
     private val viewModel: OffersViewModel by viewModels()
     private lateinit var adapter: OffersAdapter
+    private var isDebugPanelVisible = false
 
     override fun fixLayout(view: View) {
         fixSystemBarsPadding(
@@ -57,6 +62,11 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
             }
         }
 
+        // Observe debug logs
+        viewModel.debugLogs.observe(viewLifecycleOwner) { logs ->
+            binding.debugLogText.text = logs
+        }
+
         // Retry button
         binding.offersRetryButton.setOnClickListener {
             loadOffers()
@@ -64,16 +74,47 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
 
         // Setup SwipeRefresh
         binding.offersSwipeRefresh.setOnRefreshListener {
-            loadOffers()
+            loadOffers(forceRefresh = true)
         }
 
-        // Load offers
-        loadOffers()
+        // Debug toggle button - Only visible in DEBUG builds
+        binding.debugToggleButton.visibility = if (com.lagradost.cloudstream3.BuildConfig.DEBUG) View.VISIBLE else View.GONE
+        binding.debugToggleButton.setOnClickListener {
+            toggleDebugPanel()
+        }
+
+        // Close debug button
+        binding.closeDebugButton.setOnClickListener {
+            toggleDebugPanel()
+        }
+
+        // Copy debug log button
+        binding.copyDebugLogButton.setOnClickListener {
+            copyDebugLogs()
+        }
+
+        // Load offers - Only if data is not already loaded
+        if (viewModel.offers.value !is Resource.Success) {
+            loadOffers()
+        }
     }
 
-    private fun loadOffers() {
+    private fun toggleDebugPanel() {
+        isDebugPanelVisible = !isDebugPanelVisible
+        binding?.debugLogPanel?.visibility = if (isDebugPanelVisible) View.VISIBLE else View.GONE
+    }
+
+    private fun copyDebugLogs() {
+        val logs = viewModel.getDebugLogs()
+        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("Debug Logs", logs)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(requireContext(), "Debug logs copied to clipboard!", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun loadOffers(forceRefresh: Boolean = false) {
         hideOfflineScreen()
-        viewModel.fetchOffers(requireContext())
+        viewModel.fetchOffers(requireContext(), forceRefresh)
     }
 
     private fun showLoading() {
@@ -88,13 +129,12 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
     private fun showOffers(offers: List<CpaOffer>) {
         binding?.offersProgressBar?.visibility = View.GONE
         binding?.offersSwipeRefresh?.isRefreshing = false
+        binding?.offersSwipeRefresh?.visibility = View.VISIBLE
         hideOfflineScreen()
 
         if (offers.isEmpty()) {
-            binding?.offersSwipeRefresh?.visibility = View.GONE
             binding?.offersEmptyLayout?.visibility = View.VISIBLE
         } else {
-            binding?.offersSwipeRefresh?.visibility = View.VISIBLE
             binding?.offersEmptyLayout?.visibility = View.GONE
             adapter.submitList(offers)
         }

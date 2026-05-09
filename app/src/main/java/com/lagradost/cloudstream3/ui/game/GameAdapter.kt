@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
@@ -32,6 +33,7 @@ class GameAdapter(
         
         class LargeViewHolder(view: View) : GameViewHolder(view) {
             override val imageView: ImageView = view.findViewById(R.id.gameImageView)
+            val titleView: TextView = view.findViewById<TextView>(R.id.gameTitleTextView)
         }
     }
 
@@ -79,6 +81,7 @@ class GameAdapter(
                     scale(Scale.FILL)
                     size(Size.ORIGINAL)
                 }
+                holder.titleView.text = game.title
                 holder.itemView.setOnClickListener { onGameClick(game) }
             }
         }

@@ -108,6 +108,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         private val pinKeywords = listOf("castel","castle tv (use vlc)", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox")
         private fun isSmartPinned(apiName: String): Boolean {
+            // Skip XPrimeHub from smart pinning
+            if (apiName.contains("XPrimeHub", ignoreCase = true)) return false
+            
             return pinKeywords.any { keyword -> apiName.contains(keyword, ignoreCase = true) }
         }
 

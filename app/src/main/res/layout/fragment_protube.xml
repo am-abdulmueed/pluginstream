@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,4 +9,75 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-</RelativeLayout>
+    <!-- Beautiful Offline Screen -->
+    <LinearLayout
+        android:id="@+id/offlineScreen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone"
+        android:background="?attr/primaryBlackBackground">
+
+        <!-- Offline Icon with Animation -->
+        <LinearLayout
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_baseline_wifi_off_24"
+                android:contentDescription="Offline" />
+        </LinearLayout>
+
+        <!-- Offline Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You're Offline"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="?attr/textColor"
+            android:gravity="center"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Offline Description -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Please check your internet connection and try again."
+            android:textSize="16sp"
+            android:textColor="?attr/grayTextColor"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="32dp" />
+
+        <!-- Shimmer Loading Effect -->
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/offlineShimmer"
+            android:layout_width="200dp"
+            android:layout_height="48dp"
+            app:shimmer_auto_start="true"
+            app:shimmer_duration="1500"
+            app:shimmer_repeat_mode="reverse">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/protubeRetryButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Retry"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="?attr/textColor"
+                app:backgroundTint="?attr/colorPrimary"
+                app:cornerRadius="24dp" />
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

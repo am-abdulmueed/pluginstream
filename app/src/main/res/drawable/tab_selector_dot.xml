@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Selected state: Active dot is bright and primary colored -->
+    <item android:state_selected="true">
+        <layer-list>
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="?attr/colorPrimary" />
+                    <size android:width="9dp" android:height="9dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    
+    <!-- Unselected state: Inactive dots are subtle and adaptive -->
+    <item>
+        <layer-list>
+            <item android:top="1.5dp" android:bottom="1.5dp" android:left="1.5dp" android:right="1.5dp">
+                <shape android:shape="oval">
+                    <solid android:color="?attr/grayTextColor" />
+                    <size android:width="6dp" android:height="6dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

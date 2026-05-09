@@ -222,6 +222,7 @@ dependencies {
     implementation(libs.swiperefreshlayout)
     implementation(libs.markwon.core)
     implementation(libs.markwon.linkify)
+    implementation(libs.markwon.strikethrough)
     implementation(libs.constraintlayout)
 
     // Compose

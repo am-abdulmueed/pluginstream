@@ -10,88 +10,163 @@
         android:id="@+id/dialog_card"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        app:cardCornerRadius="32dp"
-        app:cardElevation="4dp"
-        app:strokeWidth="1.5dp"
-        app:strokeColor="?attr/grayTextColor"
-        app:cardBackgroundColor="?attr/primaryGrayBackground"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/primaryGrayBackground"
+        app:cardBackgroundColor="?attr/primaryBlackBackground"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHeight_max="600dp">
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:fillViewport="true">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="24dp">
 
-                <ImageView
-                    android:id="@+id/ad_image"
-                    android:layout_width="0dp"
-                    android:layout_height="200dp"
-                    android:layout_marginTop="48dp"
-                    android:layout_marginHorizontal="24dp"
-                    android:scaleType="fitCenter"
-                    android:background="@drawable/rounded_dialog"
-                    android:clipToOutline="true"
-                    app:layout_constraintEnd_toEndOf="parent"
+                <TextView
+                    android:id="@+id/ad_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/badge_bg"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:text="Premium"
+                    android:textColor="@android:color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/google_sans"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:src="@tools:sample/backgrounds/scenic" />
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/ad_title"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:layout_marginHorizontal="24dp"
-                    android:gravity="center"
-                    android:text="Special Offer!"
+                    android:layout_marginHorizontal="20dp"
+                    android:gravity="start"
+                    android:text="🎯 Complete Markdown Demo"
                     android:textColor="?attr/textColor"
-                    android:textSize="22sp"
+                    android:textSize="24sp"
                     android:fontFamily="@font/google_sans"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/ad_image" />
+                    app:layout_constraintTop_toBottomOf="@id/ad_badge" />
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/ad_viewpager"
+                    android:layout_width="0dp"
+                    android:layout_height="250dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginHorizontal="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/ad_title" />
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/ad_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="12dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@android:color/transparent"
+                    app:tabBackground="@drawable/tab_selector_dot"
+                    app:tabGravity="center"
+                    app:tabIndicatorHeight="0dp"
+                    app:tabMaxWidth="12dp"
+                    app:tabPaddingStart="4dp"
+                    app:tabPaddingEnd="4dp"
+                    app:tabRippleColor="@null"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/ad_viewpager"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/ad_message"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:layout_marginHorizontal="24dp"
-                    android:gravity="center"
-                    android:text="Check out this amazing opportunity for you."
+                    android:layout_marginHorizontal="20dp"
+                    android:gravity="start"
+                    android:textAlignment="viewStart"
                     android:textColor="?attr/grayTextColor"
                     android:textSize="15sp"
+                    android:lineSpacingExtra="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/ad_title" />
+                    app:layout_constraintTop_toBottomOf="@id/ad_indicator" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/ad_button"
-                    style="@style/WhiteButton"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:id="@+id/button_container"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="56dp"
                     android:layout_marginTop="24dp"
-                    android:layout_marginHorizontal="24dp"
-                    android:layout_marginBottom="16dp"
-                    android:fontFamily="@font/google_sans"
-                    android:text="Click Here Now"
-                    android:textAllCaps="false"
-                    android:paddingVertical="12dp"
-                    app:cornerRadius="28dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginBottom="8dp"
+                    android:orientation="vertical"
+                    android:gravity="center"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/ad_message"
-                    app:layout_constraintBottom_toBottomOf="parent" />
+                    app:layout_constraintBottom_toBottomOf="parent">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/ad_button"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:text="Get Full Access"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="16dp"
+                        app:backgroundTint="?attr/colorPrimary"
+                        app:textColor="?attr/textColor" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/ad_share_button"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/result_share"
+                        android:textAllCaps="false"
+                        app:icon="@drawable/ic_outline_share_24"
+                        app:iconGravity="textStart"
+                        app:iconPadding="12dp"
+                        app:iconSize="20dp"
+                        app:iconTint="?attr/textColor"
+                        app:cornerRadius="16dp"
+                        app:backgroundTint="?attr/primaryGrayBackground"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="#33FFFFFF" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/ad_debug_button"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Show Debug Logs"
+                        android:textAllCaps="false"
+                        android:textColor="?attr/grayTextColor"
+                        android:textSize="12sp"
+                        app:icon="@drawable/ic_baseline_bug_report_24"
+                        app:iconGravity="textStart"
+                        app:iconSize="16dp"
+                        app:iconTint="?attr/grayTextColor"
+                        android:visibility="gone" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/countdown_timer"
@@ -109,6 +184,74 @@
                     android:fontFamily="@font/ds_digi"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/close_icon"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_marginTop="12dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_close_x"
+                    android:contentDescription="Close"
+                    android:visibility="gone"
+                    android:tint="?attr/textColor"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <LinearLayout
+                    android:id="@+id/debug_log_panel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:background="#E6000000"
+                    android:orientation="vertical"
+                    android:padding="12dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/button_container">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Debug Logs"
+                            android:textColor="?attr/colorPrimary"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/copy_ad_debug_log"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:padding="4dp"
+                            android:src="@drawable/ic_baseline_content_copy_24"
+                            app:tint="?attr/colorPrimary"
+                            android:background="?attr/selectableItemBackgroundBorderless" />
+                    </LinearLayout>
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginTop="4dp">
+
+                        <TextView
+                            android:id="@+id/debug_log_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="monospace"
+                            android:text="Waiting for logs..."
+                            android:textColor="#00FF00"
+                            android:textSize="10sp" />
+                    </ScrollView>
+                </LinearLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>

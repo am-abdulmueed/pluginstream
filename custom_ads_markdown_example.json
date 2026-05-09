@@ -1,0 +1,22 @@
+{
+  "dialog_ad": {
+    "enabled": true,
+    "badge": "Hot Offer",
+    "title": "🔥 Special Limited Time Offer!",
+    "message": "## 🎁 Exclusive Benefits\n\n### ✨ **What You Get:**\n- **Premium Access** to all features\n- **Ad-Free Experience** for 30 days\n- **Priority Support** 24/7\n- **Exclusive Content** not available elsewhere\n\n### ⏰ **Limited Time:**\nThis offer is only valid for **72 hours**!\n\n### 💰 **Special Pricing:**\n~~$19.99~~ **Only $4.99**\n\n*Don't miss out on this amazing deal!*",
+    "button_text": "Get Premium Now",
+    "images": [
+      "https://i.ibb.co/kgt1Sj4Y/600x600.webp",
+      "https://i.ibb.co/abc123/example1.webp",
+      "https://i.ibb.co/xyz789/example2.webp"
+    ],
+    "click_url": "https://members.ogads.com/register?r=401055",
+    "show_after_seconds": 3,
+    "auto_close_seconds": 20,
+    "start_date": "2026-05-01",
+    "end_date": "2026-12-31",
+    "max_daily_views": 3,
+    "interval_hours": 7,
+    "show_indicator": true
+  }
+}

@@ -5,13 +5,15 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp">
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/gameCardView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="12dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
         app:cardBackgroundColor="?attr/primaryGrayBackground"
+        app:strokeWidth="1.5dp"
+        app:strokeColor="#1AFFFFFF"
         android:foreground="?attr/selectableItemBackgroundBorderless"
         app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintEnd_toEndOf="parent"
@@ -33,7 +35,7 @@
             <!-- Black gradient overlay at bottom -->
             <View
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
+                android:layout_height="100dp"
                 android:layout_gravity="bottom"
                 android:background="@drawable/gradient_overlay" />
 
@@ -43,15 +45,16 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
                 <TextView
                     android:id="@+id/gameTitleTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="#FFFFFF"
-                    android:textSize="18sp"
+                    android:textSize="22sp"
                     android:textStyle="bold"
+                    android:fontFamily="@font/google_sans"
                     android:maxLines="1"
                     android:ellipsize="end"
                     android:shadowColor="#80000000"
@@ -64,9 +67,10 @@
                     android:layout_height="wrap_content"
                     android:text="⭐ Featured Game"
                     android:textColor="#FFD700"
-                    android:textSize="12sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/google_sans"
+                    android:layout_marginTop="6dp"
                     android:shadowColor="#80000000"
                     android:shadowDx="1"
                     android:shadowDy="1"
@@ -74,6 +78,6 @@
             </LinearLayout>
         </FrameLayout>
 
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

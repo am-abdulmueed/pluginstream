@@ -1,7 +1,426 @@
 ﻿{
     "title":  "Optimized Games List",
-    "total_count":  1493,
+    "total_count":  1524,
     "hits":  [
+                 {
+                     "title":  "Tile Match Explorer",
+                     "gameURL":  "https://playgama.com/export/game/tile-match-explorer?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "matching"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/e4ead717-19fb-42cb-0be7-f875ae59e700/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/a6295272-8bfe-4819-6cdd-4aa6aa045600/original"
+                                }
+                 },
+                 {
+                     "title":  "Noobik Arena - 99 nights",
+                     "gameURL":  "https://playgama.com/export/game/noobik-arena-99-nights?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "skill",
+                                    "survival",
+                                    "monster",
+                                    "tower-defense"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/fa2fe562-856e-44eb-dcfd-0b804c782e00/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/10ac7652-31d1-4022-117e-926b3b310300/original"
+                                }
+                 },
+                 {
+                     "title":  "Crash Test Simulator 3d",
+                     "gameURL":  "https://playgama.com/export/game/crash-test-simulator-3d?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "simulation",
+                                    "3d",
+                                    "car",
+                                    "driving",
+                                    "physics"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/eddd4b32-d473-4662-20f3-91c4ef11f000/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/c1ca9625-b207-4964-afc4-0c394e34ff00/original"
+                                }
+                 },
+                 {
+                     "title":  "Cat vs Granny. Cat Simulator",
+                     "gameURL":  "https://playgama.com/export/game/cat-vs-granny-cat-simulator?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "simulation",
+                                    "funny",
+                                    "cats",
+                                    "easy"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/a39e33ed-0c11-4217-40b3-899f16358a00/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/937c7fc8-092f-47f4-a5f2-ca8ca3b24900/original"
+                                }
+                 },
+                 {
+                     "title":  "Yummy Waffle Ice Cream",
+                     "gameURL":  "https://playgama.com/export/game/yummy-waffle-ice-cream?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "food",
+                                    "decoration",
+                                    "ice-cream",
+                                    "cooking"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/a0debe02-a611-4c7a-bee3-6c6ded1fa900/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/0aaa3ea3-adc6-4158-126d-0b2307cd7a00/original"
+                                }
+                 },
+                 {
+                     "title":  "Cozy Coloring",
+                     "gameURL":  "https://playgama.com/export/game/cozy-coloring?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "cozy",
+                                    "drawing",
+                                    "color",
+                                    "easy"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/9e21d7ed-09a1-47fb-7b89-66316213fe00/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/cecf2761-1c3d-4d8a-6976-6ffd07fe9c00/original"
+                                }
+                 },
+                 {
+                     "title":  "Jelly Merge: Dooper",
+                     "gameURL":  "https://playgama.com/export/game/jelly-merge-dooper?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "merge",
+                                    "brain"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/c02b57df-4ce6-4038-e65e-661a1a971800/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/3811d865-8043-40b6-44a9-c4e1635a0400/original"
+                                }
+                 },
+                 {
+                     "title":  "Mem Brawl: Merge Simulator",
+                     "gameURL":  "https://playgama.com/export/game/mem-brawl-merge-simulator?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "merge"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/031d83d9-58d6-4a3f-b9de-dda1294b9e00/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/65eb884e-19d5-440d-0ffd-7d7a3f201000/original"
+                                }
+                 },
+                 {
+                     "title":  "Spaceball Jump",
+                     "gameURL":  "https://playgama.com/export/game/spaceball-jump?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "arcade",
+                                    "skill",
+                                    "physics"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/e6a8f324-cb7d-46c0-1ea8-4672fa16b000/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/4f96a1c7-702a-4ade-f388-47f9f913aa00/original"
+                                }
+                 },
+                 {
+                     "title":  "Rotcalypse Idle",
+                     "gameURL":  "https://playgama.com/export/game/rotcalypse-idle?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "tycoon",
+                                    "idle"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/30657d6d-df21-46b3-90ad-ca0cb70ae500/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/792ad9ab-2783-49fe-3794-de0b10651f00/original"
+                                }
+                 },
+                 {
+                     "title":  "Party Games Mini Shooter Battle",
+                     "gameURL":  "https://playgama.com/export/game/party-games-mini-shooter-battle?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "shooting",
+                                    "mini"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/a5904401-b51d-46fc-6a80-a3d05e520100/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/46dbc266-c437-4751-0439-10b05adf6200/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Precise Shooting",
+                     "gameURL":  "https://playgama.com/export/game/precise-shooting?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "arcade",
+                                    "skill",
+                                    "basketball",
+                                    "physics"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/f7c0d794-4f4c-44e7-4fa7-bfe5dcf0ff00/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/487aa684-fe11-459e-4d0e-2245513e1500/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Fruite Swipe",
+                     "gameURL":  "https://playgama.com/export/game/fruite-swipe?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "arcade",
+                                    "matching"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/50a47e14-30f9-4474-cfa7-7d54e6672b00/original",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/5ee2feb7-3aca-4736-7992-989b58734100/original"
+                                }
+                 },
+                 {
+                     "title":  "Tracoria: Draw, Color \u0026 Match",
+                     "gameURL":  "https://playgama.com/export/game/tracoria-draw-color-match?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "matching",
+                                    "drawing",
+                                    "color"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/f0488967-597c-44af-d7ee-60de2fb59f00/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/5853ad0c-9551-4256-eb7d-ece2296bf700/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Monster Truck Racing Game Truck Race",
+                     "gameURL":  "https://playgama.com/export/game/monster-truck-racing-game-truck-race?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "monster-truck",
+                                    "driving"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/e4ae6a3c-c934-45d0-fe6a-b7e2f1513900/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/1e0b91ce-fc87-481e-3b44-039fee383c00/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "City Tuk Tuk Rickshaw Game Auto Games",
+                     "gameURL":  "https://playgama.com/export/game/city-tuk-tuk-rickshaw-game-auto-games?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "simulation",
+                                    "car",
+                                    "driving"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/ef08f126-9a14-4a84-4719-d39caea89900/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/e4a2e252-181a-4ef3-f8fa-c4dd80774f00/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Bounce TD",
+                     "gameURL":  "https://playgama.com/export/game/bounce-td?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "merge",
+                                    "tower-defense"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/65d5479c-bf83-4fd5-ae41-e5d6d4b75400/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/c03c8825-9526-4a3a-35ef-6cf1f784e100/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Lucky Clash",
+                     "gameURL":  "https://playgama.com/export/game/lucky-clash?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "strategy",
+                                    "monster",
+                                    "merge",
+                                    "tower-defense"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/3eb466c2-8059-4090-f677-a8617ef89b00/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/782164a1-626f-42c0-50cd-0c5fc6286f00/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "+1 Speed: Escape Prison",
+                     "gameURL":  "https://playgama.com/export/game/1-speed-escape-prison?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "skill",
+                                    "running",
+                                    "obby"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/1ac36acf-8f79-4176-55dd-fe6fe231ba00/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/177bbc57-e322-4017-84bb-81a1831e4900/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Trash Baron",
+                     "gameURL":  "https://playgama.com/export/game/trash-baron?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "strategy",
+                                    "simulation",
+                                    "management"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/9ac3192d-7f12-4ffc-bb60-a58ed84ed000/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/15c97433-a044-4761-7427-8af0f5788300/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Funny Hair Salon",
+                     "gameURL":  "https://playgama.com/export/game/funny-hair-salon?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "girls",
+                                    "funny",
+                                    "hair"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/a301ff75-621a-4526-a841-31ba88b3af00/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/e548d572-5ad9-4e1f-efc4-68fa1b4bf200/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Safari Match",
+                     "gameURL":  "https://playgama.com/export/game/safari-match?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "matching",
+                                    "brain"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/28cdaf8c-af3c-4006-f4b3-0958d4720300/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/25a73f7f-2b42-4b90-b76d-5542a9e27f00/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Block Puzzle: Prize Mania",
+                     "gameURL":  "https://playgama.com/export/game/block-puzzle-prize-mania?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "classic",
+                                    "blocks"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/30f19e6c-5d69-420c-c637-b4b56f13f400/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/36dabc3e-c2fc-4d16-4c1f-2ef083701500/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "The Goopies: Slime Puzzle",
+                     "gameURL":  "https://playgama.com/export/game/the-goopies-slime-puzzle?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "funny",
+                                    "slime",
+                                    "physics",
+                                    "brain",
+                                    "logic"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/8b2ed401-4043-4ffc-28d0-dece4782d400/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/ab392e71-8f24-403a-9924-9c71b296b400/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Mine Obby 3D: Minigame World",
+                     "gameURL":  "https://playgama.com/export/game/mine-obby-3d-minigame-world?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "skill",
+                                    "3d",
+                                    "obby",
+                                    "mini"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/02998659-1c8f-4e9a-31b1-57f97f780000/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/400df601-7431-46fd-0020-c6ee916b8d00/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Animal Transform Race",
+                     "gameURL":  "https://playgama.com/export/game/animal-transform-race?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "skill",
+                                    "multiplayer"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/1cebec27-6a2f-4cc5-15cd-efa256820100/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/9ea249f0-ab2c-4c56-b63e-5da65f1ee100/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Lucky Brainrot Blocks Online",
+                     "gameURL":  "https://playgama.com/export/game/lucky-brainrot-blocks-online?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "adventure",
+                                    "skill",
+                                    "running",
+                                    "clicker",
+                                    "obby",
+                                    "idle"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/7c653af6-727a-40b3-8ac9-bd90feb9b300/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/29e18427-175a-4fd5-fc5e-5905dfbf4200/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "My SweetStreet Shop",
+                     "gameURL":  "https://playgama.com/export/game/my-sweetstreet-shop?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "simulation",
+                                    "shopping",
+                                    "management"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/14d96db2-7c76-4b12-4657-2019145c4600/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/79e5ee97-ac5a-4944-5024-09796bda0100/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Obby Swing for Brainrots Steal",
+                     "gameURL":  "https://playgama.com/export/game/obby-swing-for-brainrots-steal?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "action",
+                                    "tycoon",
+                                    "obby"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/90f2b2d2-9143-4b7d-b840-79b84ecbff00/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/70ee792f-a7d8-4375-835a-594b35074600/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Flows",
+                     "gameURL":  "https://playgama.com/export/game/flows?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "puzzle",
+                                    "logic"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/3b6ac6c6-ae20-48c8-fb45-30024fd75300/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/16552e42-d211-453d-ad44-3044f1910600/enlarged"
+                                }
+                 },
+                 {
+                     "title":  "Realistic Car Crash King",
+                     "gameURL":  "https://playgama.com/export/game/realistic-car-crash-king?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "genres":  [
+                                    "car",
+                                    "driving",
+                                    "physics"
+                                ],
+                     "images":  {
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/38b66abd-4800-4624-7ab0-79caef375200/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/f7900c82-a377-43c9-8901-d4adbc94fe00/enlarged"
+                                }
+                 },
                  {
                      "title":  "Fruits into Baskets",
                      "gameURL":  "https://playgama.com/export/game/fruits-into-baskets?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
@@ -79,9 +498,14 @@
                      "gameURL":  "https://playgama.com/export/game/kick-a-lucky-block-tsunami-waves?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
                      "genres":  [
                                     "action",
+                                    "arcade",
                                     "adventure",
                                     "skill",
+                                    "boys",
+                                    "kids",
+                                    "funny",
                                     "obby",
+                                    "easy",
                                     "idle"
                                 ],
                      "images":  {
@@ -505,8 +929,8 @@
                                     "physics"
                                 ],
                      "images":  {
-                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/084b1d60-446e-4582-a638-bfa2e1e6f600/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/31e8f1e1-93af-4da8-0ac8-2d0b400e1300/enlarged"
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/4dc2672a-1906-48e9-163b-04c251ada600/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/3ddbb825-ad09-4be2-857f-fccfa737bb00/enlarged"
                                 }
                  },
                  {
@@ -639,8 +1063,8 @@
                                     "drifting"
                                 ],
                      "images":  {
-                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/81c3cab0-c706-409b-b6d9-a71d0e2fd000/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/41e4c541-7c95-4767-bc7b-d60c5b66c900/enlarged"
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/7bfb2173-5713-4223-1437-0352a2017500/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/4bdc1b3f-0020-48b3-cfab-9815a0306100/enlarged"
                                 }
                  },
                  {
@@ -955,8 +1379,8 @@
                                     "dinosaur"
                                 ],
                      "images":  {
-                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/74868608-8bc4-4ae8-ce90-80c238252300/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/d399eda9-5060-4ae9-96f7-534d43c19f00/enlarged"
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/602444ec-5c15-4857-8c0e-d12719553800/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/2619fe39-45a4-48de-2c24-f19585287c00/enlarged"
                                 }
                  },
                  {
@@ -1957,8 +2381,8 @@
                                     "multiplayer"
                                 ],
                      "images":  {
-                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/ab11ce40-e714-4e44-b75d-0de9a34af100/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/8db059e0-f4f9-4a9f-41f0-88f25fc9ea00/enlarged"
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/27099f66-9fc3-49b0-6ef1-a4b20ba27400/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/b9e5c1be-9de1-4a7c-b021-b35b7eb30500/enlarged"
                                 }
                  },
                  {
@@ -2179,8 +2603,8 @@
                                     "idle"
                                 ],
                      "images":  {
-                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/1596be4f-8862-4f98-594c-f475dc69e300/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/86015a98-3391-444d-b50f-5b776ff6ba00/enlarged"
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/9f8c81b4-7190-4879-b5bc-e6198dee3300/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/87bdf8de-328b-4366-cf2b-7453a336db00/enlarged"
                                 }
                  },
                  {
@@ -5918,8 +6342,8 @@
                                     "logic"
                                 ],
                      "images":  {
-                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/b06c3a6c-2dcd-4c12-c17c-994017bbe100/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/34c54cc0-b389-4331-166b-243f87a01100/enlarged"
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/919cdc8c-c711-46de-3281-a3eb3d824700/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/5a8a338e-3d22-47c2-30db-2836cc066600/enlarged"
                                 }
                  },
                  {
@@ -6977,8 +7401,8 @@
                                     "board"
                                 ],
                      "images":  {
-                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/1f4c93ef-00cb-4d6d-f002-8936fda82700/enlarged",
-                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/6cbab824-6fe3-49ce-6881-a41b62309500/enlarged"
+                                    "icon":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/6b663e5a-23cf-44a0-5e26-6fe21a3da200/enlarged",
+                                    "poster":  "https://playgama.com/cdn-cgi/imagedelivery/LN2S-4p3-GgZvEx3IPaKUA/e9acf6d4-97ed-43db-e674-1645dd681500/enlarged"
                                 }
                  },
                  {
@@ -16917,6 +17341,7 @@
                      "gameURL":  "https://playgama.com/export/game/hedgies?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
                      "genres":  [
                                     "adventure",
+                                    "funny",
                                     "animals",
                                     "cool-games",
                                     "management",
@@ -19628,7 +20053,7 @@
                  },
                  {
                      "title":  "Backgammon",
-                     "gameURL":  "https://playgama.com/export/game/backgammon-feef-1?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
+                     "gameURL":  "https://playgama.com/export/game/backgammon-multiplayer?clid=p_db0585d2-2da5-4641-b768-657993e9122d",
                      "genres":  [
                                     "two-player",
                                     "backgammon",

@@ -107,6 +107,15 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     override fun onBindingCreated(binding: FragmentProtubeBinding) {
         val root = binding.root as ViewGroup
 
+        binding.protubeRetryButton.setOnClickListener {
+            if (isNetworkAvailable(requireContext())) {
+                hideOfflineScreen()
+                web.reload()
+            } else {
+                showToast("Still no internet connection")
+            }
+        }
+
         if (cachedWeb == null) {
             web = binding.web
             cachedWeb = web
@@ -294,6 +303,27 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
         cookieManager.setAcceptThirdPartyCookies(web, true)
 
         web.webViewClient = object : WebViewClient() {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                 super.onPageStarted(view, url, favicon)
+                 context?.let { ctx ->
+                     if (!isNetworkAvailable(ctx)) {
+                         showOfflineScreen()
+                     } else {
+                         hideOfflineScreen()
+                     }
+                 }
+             }
+ 
+             override fun onReceivedError(
+                 view: WebView?,
+                 request: WebResourceRequest?,
+                 error: WebResourceError?
+             ) {
+                 if (request?.isForMainFrame == true) {
+                     showOfflineScreen()
+                 }
+             }
+
             override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
                 val url = request?.url.toString()
 
@@ -469,6 +499,24 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
                 }
             }
         }
+    }
+
+    private fun showOfflineScreen() {
+        binding?.offlineScreen?.visibility = View.VISIBLE
+        binding?.offlineShimmer?.startShimmer()
+        binding?.web?.visibility = View.GONE
+    }
+
+    private fun hideOfflineScreen() {
+        binding?.offlineScreen?.visibility = View.GONE
+        binding?.offlineShimmer?.stopShimmer()
+        binding?.web?.visibility = View.VISIBLE
+    }
+
+    private fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
     }
 
     private fun downloadFile(filename: String, url: String, mtype: String) {

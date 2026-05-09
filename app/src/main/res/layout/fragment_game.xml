@@ -9,58 +9,85 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
+        android:background="?attr/primaryBlackBackground"
+        app:liftOnScroll="false"
         app:elevation="0dp">
 
-        <!-- Header with Modern Search Bar and Offers Icon -->
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/headerContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="8dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
             app:layout_scrollFlags="scroll|enterAlways">
 
-            <!-- Modern Search Bar -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/gameTitleHeader"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
+                android:text="Explore Games"
+                android:textColor="?attr/textColor"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/google_sans"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/searchCard"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
                 app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorPrimary">
+                app:strokeColor="#1AFFFFFF"
+                app:layout_constraintEnd_toStartOf="@id/btnGoToOffers"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/gameTitleHeader">
 
-                <EditText
-                    android:id="@+id/searchEditText"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/search_nexgama"
-                    android:padding="12dp"
-                    android:background="@android:color/transparent"
-                    android:drawableStart="@android:drawable/ic_menu_search"
-                    android:drawablePadding="10dp"
-                    android:inputType="text"
-                    android:maxLines="1"
-                    android:textColor="?attr/textColor"
-                    android:textColorHint="@android:color/darker_gray"
-                    android:textSize="15sp" />
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/search_icon"
+                        app:tint="?attr/grayTextColor" />
+
+                    <EditText
+                        android:id="@+id/searchEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="10dp"
+                        android:background="@android:color/transparent"
+                        android:hint="Search games..."
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="?attr/textColor"
+                        android:textColorHint="?attr/grayTextColor"
+                        android:textSize="15sp"
+                        android:fontFamily="@font/google_sans" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Offers Icon Button -->
             <ImageButton
                 android:id="@+id/btnGoToOffers"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="4dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/countdown_bg"
                 android:src="@drawable/ic_offers"
                 app:tint="?attr/colorPrimary"
-                android:contentDescription="@string/title_offers" />
-        </LinearLayout>
+                app:layout_constraintBottom_toBottomOf="@id/searchCard"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/searchCard" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Main Content Container -->

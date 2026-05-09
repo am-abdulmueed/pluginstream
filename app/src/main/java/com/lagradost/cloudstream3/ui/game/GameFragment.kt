@@ -49,8 +49,8 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         val offlineShimmer = binding.offlineShimmer
         val retryButton = binding.retryButton
 
-        // Setup RecyclerView with GridLayoutManager (2 columns for mobile)
-        val spanCount = 2
+        // Setup RecyclerView with GridLayoutManager (Dynamic columns for responsiveness)
+        val spanCount = if (isLayout(TV or EMULATOR)) 4 else 2
         
         // Use existing adapter if available to maintain state
         if (gameAdapter == null) {
@@ -68,7 +68,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
             spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                 override fun getSpanSize(position: Int): Int {
                     val games = viewModel.allGames.value ?: emptyList()
-                    return if (games.getOrNull(position)?.isFeatured == true) 2 else 1
+                    return if (games.getOrNull(position)?.isFeatured == true) spanCount else 1
                 }
             }
         }
