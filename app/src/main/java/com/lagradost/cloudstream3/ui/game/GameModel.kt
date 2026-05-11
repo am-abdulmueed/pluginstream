@@ -11,7 +11,8 @@ data class GameModel(
     val gameURL: String,
     val genres: List<String> = emptyList(),
     val images: GameImages,
-    val isFeatured: Boolean = false // For large poster display
+    val isFeatured: Boolean = false, // For large poster display
+    var isFavorite: Boolean = false // User preference
 )
 
 data class GameImages(

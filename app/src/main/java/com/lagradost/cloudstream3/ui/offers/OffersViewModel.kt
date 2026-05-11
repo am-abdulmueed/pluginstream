@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -51,15 +52,20 @@ class OffersViewModel : ViewModel() {
         private const val TAG = "OffersViewModel"
         private const val GITHUB_CONFIG_URL = "https://cdn.jsdelivr.net/gh/am-abdulmueed/offers@main/offers.json"
         private const val AUTHENTICATEAPP_API_URL = "https://authenticateapp.online/api/v2"
+        private const val CPAGRIP_API_URL = "https://www.cpagrip.com/common/offer_feed_json.php"
         private const val IPIFY_URL = "https://api.ipify.org/?format=json"
         private const val API_KEY = "43897|vGaDKh19mgaEz7YfSFe1nynTv5gIiez9fF6U4MA05ed58814"
+        private const val CPAGRIP_USER_ID = "2413394"
+        private const val CPAGRIP_PUB_KEY = "0a4908cabc0f123b7b20e8f60bc924fe"
     }
 
     private fun addLog(message: String) {
         val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
         val logEntry = "[$timestamp] $message"
-        logEntries.add(logEntry)
-        _debugLogs.postValue(logEntries.joinToString("\n"))
+        synchronized(logEntries) {
+            logEntries.add(logEntry)
+            _debugLogs.postValue(logEntries.joinToString("\n"))
+        }
         Log.d(TAG, message)
     }
 
@@ -241,6 +247,97 @@ class OffersViewModel : ViewModel() {
         }
     }
 
+    private suspend fun fetchOffersFromCPAGrip(ip: String?): List<CpaOffer>? {
+        return withContext(Dispatchers.IO) {
+            try {
+                addLog("[CPAGrip] Fetching offers...")
+                
+                val urlBuilder = CPAGRIP_API_URL.toHttpUrlOrNull()?.newBuilder()
+                    ?: throw Exception("Invalid CPAGrip URL")
+                
+                urlBuilder.addQueryParameter("user_id", CPAGRIP_USER_ID)
+                    .addQueryParameter("pubkey", CPAGRIP_PUB_KEY)
+                
+                if (ip != null) {
+                    urlBuilder.addQueryParameter("ip", ip)
+                }
+                
+                val finalUrl = urlBuilder.build().toString()
+                addLog("[CPAGrip] Request URL: $finalUrl")
+
+                val request = Request.Builder()
+                    .url(finalUrl)
+                    .get()
+                    .build()
+
+                val response = client.newCall(request).execute()
+                response.use {
+                    if (it.isSuccessful) {
+                        val body = it.body?.string() ?: return@use null
+                        val jsonResponse = JSONObject(body)
+                        val offersArray = jsonResponse.optJSONArray("offers") ?: return@use null
+                        
+                        val offers = mutableListOf<CpaOffer>()
+                        for (i in 0 until offersArray.length()) {
+                            val offerObj = offersArray.getJSONObject(i)
+                            
+                            val id = offerObj.optInt("offer_id", i + 2000)
+                            val title = offerObj.optString("title", "Offer")
+                            val description = offerObj.optString("description", "")
+                            val link = offerObj.optString("offerlink", "")
+                            val payoutStr = offerObj.optString("payout", "0")
+                            val payout = try { payoutStr.toDouble() } catch (e: Exception) { 0.0 }
+                            val picture = offerObj.optString("offerphoto", "")
+                            val countryStr = offerObj.optString("accepted_countries", "")
+                            val countries = if (countryStr.isNotEmpty()) {
+                                countryStr.split(",").map { it.trim() }
+                            } else {
+                                null
+                            }
+                            
+                            val creatives = if (picture.isNotEmpty()) {
+                                OfferCreatives(url = picture)
+                            } else {
+                                null
+                            }
+                            
+                            offers.add(
+                                CpaOffer(
+                                    id = id,
+                                    title = title,
+                                    description = description,
+                                    conversion = null,
+                                    device = null,
+                                    dailyCap = null,
+                                    isFastPay = null,
+                                    link = link,
+                                    previewLink = null,
+                                    amount = payout,
+                                    payoutCurrency = "USD",
+                                    payoutType = null,
+                                    countries = countries,
+                                    epc = null,
+                                    creatives = creatives,
+                                    offerRank = i,
+                                    payoutsPerCountry = null
+                                )
+                            )
+                        }
+                        
+                        addLog("[CPAGrip] Success! Got ${offers.size} offers")
+                        offers
+                    } else {
+                        addLog("[CPAGrip] Failed! HTTP ${it.code}")
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                addLog("[CPAGrip] Exception: ${e.message}")
+                null
+            }
+        }
+    }
+
     fun fetchOffers(context: Context, forceRefresh: Boolean = false) {
         viewModelScope.launch {
             val currentTime = System.currentTimeMillis()
@@ -270,19 +367,23 @@ class OffersViewModel : ViewModel() {
                         null
                     }
                 }
+                val cpaGripOffersDeferred = async { fetchOffersFromCPAGrip(publicIP) }
 
                 val existingOffers = existingOffersDeferred.await()
                 val newOffers = newOffersDeferred.await()
+                val cpaGripOffers = cpaGripOffersDeferred.await()
 
                 val allOffers = mutableListOf<CpaOffer>()
                 existingOffers?.let { allOffers.addAll(it) }
                 newOffers?.let { allOffers.addAll(it) }
+                cpaGripOffers?.let { allOffers.addAll(it) }
 
                 val cpaleadCount = existingOffers?.size ?: 0
                 val ogadsCount = newOffers?.size ?: 0
+                val cpagripCount = cpaGripOffers?.size ?: 0
                 
                 if (allOffers.isNotEmpty()) {
-                    addLog("Total offers: CPALead($cpaleadCount) + OGAds($ogadsCount) = ${allOffers.size}")
+                    addLog("Total offers: CPALead($cpaleadCount) + OGAds($ogadsCount) + CPAGrip($cpagripCount) = ${allOffers.size}")
                     cachedOffers = allOffers
                     lastFetchTime = currentTime
                     _offers.postValue(Resource.Success(allOffers))

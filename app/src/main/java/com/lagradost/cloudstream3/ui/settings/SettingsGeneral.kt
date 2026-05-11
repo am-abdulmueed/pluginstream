@@ -188,7 +188,7 @@ class SettingsGeneral : BasePreferenceFragmentCompat() {
                 try {
                     val langTagIETF = languageTagsIETF[selectedLangIndex]
                     CommonActivity.setLocale(activity, langTagIETF)
-                    settingsManager.edit {
+                    settingsManager.edit(commit = true) {
                         putString(getString(R.string.locale_key), langTagIETF)
                     }
                     activity?.recreate()

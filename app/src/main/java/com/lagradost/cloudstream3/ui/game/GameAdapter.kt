@@ -8,14 +8,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
+import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
-import coil3.size.Scale
-import coil3.size.Size
 import com.lagradost.cloudstream3.R
 
 class GameAdapter(
-    private val onGameClick: (GameModel) -> Unit
+    private val onGameClick: (GameModel) -> Unit,
+    private val onFavoriteClick: (GameModel) -> Unit,
+    private val forceNormal: Boolean = false
 ) : RecyclerView.Adapter<GameAdapter.GameViewHolder>() {
 
     init {
@@ -26,20 +27,24 @@ class GameAdapter(
     
     sealed class GameViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         abstract val imageView: ImageView
+        abstract val favoriteButton: ImageView
         
         class NormalViewHolder(view: View) : GameViewHolder(view) {
             override val imageView: ImageView = view.findViewById(R.id.gameImageView)
+            override val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
         }
         
         class LargeViewHolder(view: View) : GameViewHolder(view) {
             override val imageView: ImageView = view.findViewById(R.id.gameImageView)
+            override val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
             val titleView: TextView = view.findViewById<TextView>(R.id.gameTitleTextView)
         }
     }
 
     override fun getItemViewType(position: Int): Int {
         // Use isFeatured flag to determine if it should be a large poster
-        return if (games[position].isFeatured) {
+        // unless forceNormal is true
+        return if (games[position].isFeatured && !forceNormal) {
             VIEW_TYPE_LARGE
         } else {
             VIEW_TYPE_NORMAL
@@ -64,13 +69,19 @@ class GameAdapter(
     override fun onBindViewHolder(holder: GameViewHolder, position: Int) {
         val game = games[position]
         
+        // Setup Favorite Icon
+        holder.favoriteButton.setImageResource(
+            if (game.isFavorite) R.drawable.ic_baseline_bookmark_24 
+            else R.drawable.ic_baseline_bookmark_border_24
+        )
+        holder.favoriteButton.setOnClickListener { onFavoriteClick(game) }
+
         when (holder) {
             is GameViewHolder.NormalViewHolder -> {
                 holder.imageView.load(game.images.icon) {
                     placeholder(R.drawable.ic_game_placeholder)
                     error(R.drawable.ic_game_placeholder)
-                    scale(Scale.FILL)
-                    size(Size.ORIGINAL)
+                    crossfade(true)
                 }
                 holder.itemView.setOnClickListener { onGameClick(game) }
             }
@@ -78,8 +89,7 @@ class GameAdapter(
                 holder.imageView.load(game.images.poster) {
                     placeholder(R.drawable.ic_game_placeholder)
                     error(R.drawable.ic_game_placeholder)
-                    scale(Scale.FILL)
-                    size(Size.ORIGINAL)
+                    crossfade(true)
                 }
                 holder.titleView.text = game.title
                 holder.itemView.setOnClickListener { onGameClick(game) }

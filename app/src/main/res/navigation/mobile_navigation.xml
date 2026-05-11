@@ -380,7 +380,24 @@
             app:exitAnim="@anim/exit_anim"
             app:popEnterAnim="@anim/pop_enter"
             app:popExitAnim="@anim/pop_exit" />
+        <action
+            android:id="@+id/action_game_to_saved_games"
+            app:destination="@id/navigation_saved_games"
+            app:enterAnim="@anim/enter_anim"
+            app:exitAnim="@anim/exit_anim"
+            app:popEnterAnim="@anim/pop_enter"
+            app:popExitAnim="@anim/pop_exit" />
     </fragment>
+
+    <fragment
+        android:id="@+id/navigation_saved_games"
+        android:name="com.lagradost.cloudstream3.ui.game.SavedGamesFragment"
+        android:label="Saved Games"
+        app:enterAnim="@anim/enter_anim"
+        app:exitAnim="@anim/exit_anim"
+        app:popEnterAnim="@anim/pop_enter"
+        app:popExitAnim="@anim/pop_exit"
+        tools:layout="@layout/fragment_saved_games" />
 
     <fragment
         android:id="@+id/navigation_game_player"

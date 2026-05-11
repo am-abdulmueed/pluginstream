@@ -37,6 +37,7 @@ import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.getImageFromDrawable
 import com.lagradost.cloudstream3.utils.txt
 import com.lagradost.cloudstream3.ui.dialog.ContactDeveloperDialog
+import android.app.Dialog
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -245,6 +246,10 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 }
             }
 
+            settingsRateApp.setOnClickListener {
+                showReviewDialog()
+            }
+
             settingsGithub.setOnClickListener {
                 try {
                     val i = Intent(Intent.ACTION_VIEW)
@@ -268,7 +273,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             settingsInstagram.setOnClickListener {
                 try {
                     val i = Intent(Intent.ACTION_VIEW)
-                    i.data = Uri.parse("https://instagram.com/pluginstream.app")
+                    i.data = Uri.parse("https://instagram.com/am.abdul.mueed")
                     startActivity(i)
                 } catch (e: Exception) {
                     logError(e)
@@ -329,6 +334,61 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         binding.appVersionInfo.setOnLongClickListener {
             clipboardHelper(txt(R.string.extension_version), "$appVersion $commitInfo $buildTimestamp")
             true
+        }
+    }
+
+    private fun showReviewDialog() {
+        val dialog = Dialog(requireContext(), R.style.DialogHalfFullscreen)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_review, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(true)
+
+        val closeButton = dialogView.findViewById<ImageView>(R.id.closeButton)
+        val apkPureButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.apkPureButton)
+        val githubButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.githubButton)
+        val productHuntButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.productHuntButton)
+        val sourceForgeButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.sourceForgeButton)
+        val productCoolButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.productCoolButton)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        apkPureButton.setOnClickListener {
+            openUrl("https://apkpure.com/reviews/com.betapix.pluginstream")
+            dialog.dismiss()
+        }
+
+        githubButton.setOnClickListener {
+            openUrl("https://github.com/am-abdulmueed/pluginstream")
+            dialog.dismiss()
+        }
+
+        productHuntButton.setOnClickListener {
+            openUrl("https://www.producthunt.com/p/pluginstream/pluginstream")
+            dialog.dismiss()
+        }
+
+        sourceForgeButton.setOnClickListener {
+            openUrl("https://sourceforge.net/projects/pluginstream/reviews/new?stars=5")
+            dialog.dismiss()
+        }
+
+        productCoolButton.setOnClickListener {
+            openUrl("https://www.productcool.com/product/pluginstream")
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun openUrl(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        } catch (e: Exception) {
+            logError(e)
         }
     }
 }

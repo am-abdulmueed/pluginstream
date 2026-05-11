@@ -10,6 +10,7 @@ import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.graphics.PorterDuff
+import android.net.Uri
 import android.os.Bundle
 import android.os.Build
 import android.util.AttributeSet
@@ -214,6 +215,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     private var navController: NavController? = null
     
     companion object {
+        private var isAdShownInSession = false
         var activityResultLauncher: ActivityResultLauncher<Intent>? = null
 
         const val TAG = "MAINACT"
@@ -845,14 +847,15 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         } catch (e: Exception) {
             logError(e)
         }
+        // Show custom ads dialog first, then review dialog after delay
         showDialogAd()
+        showReviewDialogIfNeeded()
     }
 
     override fun onPause() {
         super.onPause()
 
         if (BuildConfig.USE_FIREBASE) {
-            FirebaseHelper.logEvent("session_end")
         }
 
         // Start any delayed updates
@@ -869,11 +872,33 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
     }
 
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
-        CommonActivity.dispatchKeyEvent(this, event) ?: super.dispatchKeyEvent(event)
+    private fun showReviewDialogIfNeeded() {
+        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
+        if (!hasDoneSetup) return
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean =
-        CommonActivity.onKeyDown(this, keyCode, event) ?: super.onKeyDown(keyCode, event)
+        val reviewPrefs = getSharedPreferences("review_prefs", Context.MODE_PRIVATE)
+        val movieCount = reviewPrefs.getInt("movie_count", 0)
+        val hasReviewed = reviewPrefs.getBoolean("has_reviewed", false)
+        val hasShownBefore = reviewPrefs.getBoolean("has_shown_before", false)
+        
+        // Don't show if user has already reviewed
+        if (hasReviewed) return
+        
+        // Show only once after 5 movies watched
+        if (movieCount >= 5 && !hasShownBefore) {
+            val handler = android.os.Handler(android.os.Looper.getMainLooper())
+            handler.postDelayed({
+                showReviewDialog()
+                
+                // Update preferences - mark as shown and reset movie count
+                reviewPrefs.edit().apply {
+                    putBoolean("has_shown_before", true)
+                    putInt("movie_count", 0) // Reset count after showing
+                    apply()
+                }
+            }, 8000) // Show after 8 seconds (after custom ads)
+        }
+    }
 
 
     override fun onUserLeaveHint() {
@@ -1515,6 +1540,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     }
 
     private fun showDialogAd() {
+        if (isAdShownInSession) return
+        showReviewDialogIfNeeded()
         val currentTime = System.currentTimeMillis()
         val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
 
@@ -1610,6 +1637,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 val handler = android.os.Handler(android.os.Looper.getMainLooper())
 
                 handler.postDelayed({
+                    if (isAdShownInSession) return@postDelayed
+                    isAdShownInSession = true
                     val dialog = Dialog(this@MainActivity, R.style.DialogHalfFullscreen)
                     val dialogView = layoutInflater.inflate(R.layout.dialog_ad, null)
                     dialog.setContentView(dialogView)
@@ -1773,6 +1802,14 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     }
 
                     adViewPager.adapter = carouselAdapter
+                    
+                    // Add clear gap between images in the carousel
+                    if (imageList.size > 1) {
+                        val marginPx = (20 * resources.displayMetrics.density).toInt()
+                        adViewPager.setPageTransformer(androidx.viewpager2.widget.MarginPageTransformer(marginPx))
+                        adViewPager.offscreenPageLimit = 1
+                    }
+
                     if (imageList.size > 1 && showIndicator) {
                         adIndicator.isVisible = true
                         TabLayoutMediator(adIndicator, adViewPager) { _, _ -> }.attach()
@@ -2949,5 +2986,70 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
 
         override fun getItemCount(): Int = images.size
+    }
+
+    private fun showReviewDialog() {
+        val dialog = Dialog(this, R.style.DialogHalfFullscreen)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_review, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(true)
+
+        val closeButton = dialogView.findViewById<ImageView>(R.id.closeButton)
+        val apkPureButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.apkPureButton)
+        val githubButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.githubButton)
+        val productHuntButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.productHuntButton)
+        val sourceForgeButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.sourceForgeButton)
+        val productCoolButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.productCoolButton)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        apkPureButton.setOnClickListener {
+            openReviewUrl("https://apkpure.com/reviews/com.betapix.pluginstream")
+            markAsReviewed()
+            dialog.dismiss()
+        }
+
+        githubButton.setOnClickListener {
+            openReviewUrl("https://github.com/am-abdulmueed/pluginstream")
+            markAsReviewed()
+            dialog.dismiss()
+        }
+
+        productHuntButton.setOnClickListener {
+            openReviewUrl("https://www.producthunt.com/p/pluginstream/pluginstream")
+            markAsReviewed()
+            dialog.dismiss()
+        }
+
+        sourceForgeButton.setOnClickListener {
+            openReviewUrl("https://sourceforge.net/projects/pluginstream/reviews/new?stars=5")
+            markAsReviewed()
+            dialog.dismiss()
+        }
+
+        productCoolButton.setOnClickListener {
+            openReviewUrl("https://www.productcool.com/product/pluginstream")
+            markAsReviewed()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun openReviewUrl(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        } catch (e: Exception) {
+            logError(e)
+        }
+    }
+
+    private fun markAsReviewed() {
+        val reviewPrefs = getSharedPreferences("review_prefs", Context.MODE_PRIVATE)
+        reviewPrefs.edit().putBoolean("has_reviewed", true).apply()
     }
 }

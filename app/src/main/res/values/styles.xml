@@ -614,6 +614,19 @@
         <item name="android:windowMinWidthMinor">95%</item> <!-- 95% -->
     </style>
 
+    <style name="AlertDialogResponsive" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog__window_background</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowMinWidthMinor">85%</item>
+        <item name="android:windowMinWidthMajor">85%</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">?attr/textColor</item>
+        <item name="android:textColorPrimary">?attr/textColor</item>
+        <!-- colorPrimarySecond used because colorPrimary fails for no reason -->
+        <item name="colorControlActivated">?attr/colorPrimary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.AppCompat.Button.Borderless</item>
+    </style>
+
     <style name="AlertDialogCustomBlack" parent="Theme.AppCompat.Dialog.Alert">
         <item name="android:windowBackground">?attr/primaryBlackBackground</item>
         <item name="android:layout_width">match_parent</item>

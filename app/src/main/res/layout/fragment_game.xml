@@ -87,6 +87,95 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/searchCard" />
 
+            <!-- Saved Games Shortcut Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/savedGamesCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="?attr/primaryGrayBackground"
+                app:strokeWidth="1dp"
+                app:strokeColor="#33FFFFFF"
+                android:foreground="?attr/selectableItemBackground"
+                app:layout_constraintTop_toBottomOf="@id/searchCard"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+
+                    <FrameLayout
+                        android:layout_width="56dp"
+                        android:layout_height="56dp">
+                        
+                        <ImageView
+                            android:id="@+id/savedGamesIcon"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_baseline_bookmark_24"
+                            android:background="@drawable/circle_background"
+                            android:backgroundTint="#1AFFFFFF"
+                            android:padding="14dp"
+                            app:tint="?attr/colorPrimary" />
+                            
+                        <TextView
+                            android:id="@+id/savedGamesCount"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="top|end"
+                            android:background="@drawable/circle_background"
+                            android:backgroundTint="?attr/colorPrimary"
+                            android:gravity="center"
+                            android:text="0"
+                            android:textColor="@android:color/white"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/savedGamesTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="My Saved Games"
+                            android:textColor="?attr/textColor"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:fontFamily="@font/google_sans" />
+
+                        <TextView
+                            android:id="@+id/savedGamesSubtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No games saved yet"
+                            android:textColor="?attr/grayTextColor"
+                            android:textSize="13sp"
+                            android:fontFamily="@font/google_sans"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
+                        app:tint="?attr/grayTextColor" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
 

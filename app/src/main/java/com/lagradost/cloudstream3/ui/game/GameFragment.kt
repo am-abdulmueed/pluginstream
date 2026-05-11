@@ -7,6 +7,8 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -54,13 +56,15 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         
         // Use existing adapter if available to maintain state
         if (gameAdapter == null) {
-            gameAdapter = GameAdapter { game ->
+            gameAdapter = GameAdapter({ game ->
                 val bundle = Bundle().apply {
                     putString("game_url", game.gameURL)
                     putString("game_title", game.title)
                 }
                 findNavController().navigate(R.id.navigation_game_player, bundle)
-            }
+            }, { game ->
+                viewModel.toggleFavorite(game)
+            })
             gameAdapter?.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
         }
 
@@ -83,6 +87,36 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         retryButton.setOnClickListener {
             hideOfflineScreen(binding)
             viewModel.fetchGamesIfNeeded(requireContext())
+        }
+
+        // Saved Games Card Click
+        binding.savedGamesCard.setOnClickListener {
+            val savedCount = viewModel.savedGames.value?.size ?: 0
+            if (savedCount > 0) {
+                findNavController().navigate(R.id.action_game_to_saved_games)
+            } else {
+                // Show Guide Dialog
+                AlertDialog.Builder(requireContext(), R.style.AlertDialogResponsive)
+                    .setTitle("How to Save Games")
+                    .setMessage("Tap the 🔖 bookmark icon on any game to save it to your collection. Your saved games will appear here for quick access!")
+                    .setPositiveButton("Got it", null)
+                    .show()
+            }
+        }
+
+        // Observe Saved Games to update shortcut card
+        viewModel.savedGames.observe(viewLifecycleOwner) { savedGames ->
+            val count = savedGames.size
+            if (count > 0) {
+                binding.savedGamesCount.text = count.toString()
+                binding.savedGamesCount.visibility = View.VISIBLE
+                binding.savedGamesSubtitle.text = "You have $count saved games"
+                binding.savedGamesSubtitle.setTextColor(requireContext().getColor(R.color.colorPrimary))
+            } else {
+                binding.savedGamesCount.visibility = View.GONE
+                binding.savedGamesSubtitle.text = "No games saved yet"
+                binding.savedGamesSubtitle.setTextColor(requireContext().getColor(R.color.grayTextColor))
+            }
         }
 
         // Observe ViewModel data

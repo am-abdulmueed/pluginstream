@@ -229,6 +229,25 @@
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
+                    android:id="@+id/settings_rate_app"
+                    style="@style/SettingsItem"
+                    android:paddingVertical="16dp"
+                    android:drawableStart="@drawable/ic_star_rate"
+                    android:drawablePadding="16dp"
+                    android:drawableTint="?attr/colorPrimary"
+                    android:text="Rate Our App" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                <TextView
                     android:id="@+id/settings_github"
                     style="@style/SettingsItem"
                     android:paddingVertical="16dp"

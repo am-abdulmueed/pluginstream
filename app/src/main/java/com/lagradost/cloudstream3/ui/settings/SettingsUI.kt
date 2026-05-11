@@ -108,7 +108,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
                 dismissCallback = {},
                 callback = {
                     try {
-                        settingsManager.edit {
+                        settingsManager.edit(commit = true) {
                             putInt(getString(R.string.app_layout_key), prefValues[it])
                         }
                         context?.updateTv()
@@ -153,7 +153,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
                 {}
             ) {
                 try {
-                    settingsManager.edit {
+                    settingsManager.edit(commit = true) {
                         putString(getString(R.string.app_theme_key), prefValues[it])
                     }
                     activity?.recreate()
@@ -191,7 +191,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
                 {}
             ) {
                 try {
-                    settingsManager.edit {
+                    settingsManager.edit(commit = true) {
                         putString(getString(R.string.primary_color_key), prefValues[it])
                     }
                     activity?.recreate()

@@ -637,6 +637,7 @@ open class FullScreenPlayer : AbstractPlayerFragment() {
     override fun onResume() {
         enterFullscreen()
         verifyVolume()
+        incrementMovieCount()
         activity?.attachBackPressedCallback("FullScreenPlayer") {
             if (isShowingEpisodeOverlay) {
                 // isShowingEpisodeOverlay pauses, so this makes it easier to unpause
@@ -2660,6 +2661,19 @@ open class FullScreenPlayer : AbstractPlayerFragment() {
                     }
                 }
                 .start()
+        }
+    }
+
+    private fun incrementMovieCount() {
+        try {
+            val reviewPrefs = context?.getSharedPreferences("review_prefs", Context.MODE_PRIVATE)
+            reviewPrefs?.edit()?.apply {
+                val currentCount = reviewPrefs.getInt("movie_count", 0)
+                putInt("movie_count", currentCount + 1)
+                apply()
+            }
+        } catch (e: Exception) {
+            logError(e)
         }
     }
 }

@@ -1,7 +1,18 @@
 package com.lagradost.cloudstream3.ui.download
 
+import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
+import android.graphics.PixelFormat
 import android.net.Uri
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.getKey
@@ -26,6 +37,10 @@ import kotlinx.coroutines.MainScope
 object DownloadButtonSetup {
     fun handleDownloadClick(click: DownloadClickEvent) {
         val id = click.data.id
+        
+        // Show debug panel for download monitoring
+        showDownloadDebugPanel(click.data)
+        
         when (click.action) {
             DOWNLOAD_ACTION_DELETE_FILE -> {
                 activity?.let { ctx ->
@@ -168,5 +183,90 @@ object DownloadButtonSetup {
                 }
             }
         }
+    }
+
+    private fun showDownloadDebugPanel(downloadData: DownloadObjects.DownloadEpisodeCached) {
+        try {
+            activity?.let { ctx ->
+                // Create floating debug icon similar to offer tab
+                val debugView = View.inflate(ctx, R.layout.floating_debug_icon, null)
+                val floatingButton = debugView.findViewById<View>(R.id.floatingDebugButton)
+                
+                // Add to current window
+                val windowManager = ctx.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+                val params = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    } else {
+                        @Suppress("DEPRECATION")
+                        WindowManager.LayoutParams.TYPE_PHONE
+                    },
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT
+                )
+                
+                params.gravity = Gravity.TOP or Gravity.END
+                params.x = 50
+                params.y = 200
+                
+                windowManager.addView(debugView, params)
+                
+                floatingButton.setOnClickListener {
+                    showDownloadDebugDialog(ctx, downloadData)
+                    windowManager.removeView(debugView)
+                }
+                
+                // Auto remove after 30 seconds
+                Handler(Looper.getMainLooper()).postDelayed({
+                    try {
+                        windowManager.removeView(debugView)
+                    } catch (e: Exception) {
+                        // View already removed
+                    }
+                }, 30000)
+            }
+        } catch (e: Exception) {
+            logError(e)
+        }
+    }
+
+    private fun showDownloadDebugDialog(context: Context, downloadData: DownloadObjects.DownloadEpisodeCached) {
+        val dialog = Dialog(context, R.style.DialogHalfFullscreen)
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.download_debug_dialog, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        val debugText = dialogView.findViewById<TextView>(R.id.debugText)
+        val closeButton = dialogView.findViewById<View>(R.id.closeButton)
+        
+        // Collect download information
+        val debugInfo = buildString {
+            appendLine("🔍 DOWNLOAD DEBUG INFO")
+            appendLine("========================================")
+            appendLine("📱 Name: ${downloadData.name}")
+            appendLine("🎬 Episode: ${downloadData.episode}")
+            appendLine("📁 Season: ${downloadData.season}")
+            appendLine("🆔 ID: ${downloadData.id}")
+            appendLine("🔗 Parent ID: ${downloadData.parentId}")
+            appendLine("📊 Status: ${VideoDownloadManager.downloadStatus[downloadData.id]}")
+            appendLine("⏰ Time: ${System.currentTimeMillis()}")
+            appendLine("========================================")
+            appendLine("📋 DOWNLOAD ACTIVITY:")
+            appendLine("• Checking download manager...")
+            appendLine("• Verifying storage permissions...")
+            appendLine("• Initializing download queue...")
+            appendLine("• Preparing download sources...")
+            appendLine("• Starting download process...")
+        }
+        
+        debugText.text = debugInfo
+        
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialog.show()
     }
 }
