@@ -250,6 +250,10 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 showReviewDialog()
             }
 
+            settingsFaq.setOnClickListener {
+                navigate(R.id.action_navigation_global_to_navigation_faq)
+            }
+
             settingsGithub.setOnClickListener {
                 try {
                     val i = Intent(Intent.ACTION_VIEW)
@@ -309,8 +313,28 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 }
             }
 
+            settingsPrivacyPolicy.setOnClickListener {
+                  try {
+                      val bundle = Bundle()
+                      bundle.putString("type", "privacy")
+                      activity?.navigate(R.id.action_navigation_global_to_navigation_legal, bundle)
+                  } catch (e: Exception) {
+                      logError(e)
+                  }
+              }
+  
+              settingsTermsConditions.setOnClickListener {
+                  try {
+                      val bundle = Bundle()
+                      bundle.putString("type", "terms")
+                      activity?.navigate(R.id.action_navigation_global_to_navigation_legal, bundle)
+                  } catch (e: Exception) {
+                      logError(e)
+                  }
+              }
+
             if (isLayout(TV)) {
-                listOf(settingsGithub, settingsTelegram, settingsInstagram, settingsDevWebsite, settingsEmail, settingsShare).forEach {
+                listOf(settingsGithub, settingsTelegram, settingsInstagram, settingsDevWebsite, settingsEmail, settingsShare, settingsPrivacyPolicy, settingsTermsConditions).forEach {
                     it.isFocusable = true
                     it.isFocusableInTouchMode = true
                 }

@@ -1664,7 +1664,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     val adTitle = dialogView.findViewById<android.widget.TextView>(R.id.ad_title)
                     val adMessage = dialogView.findViewById<android.widget.TextView>(R.id.ad_message)
                     val adButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.ad_button)
-                    val adShareButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.ad_share_button)
+                    val adShareButton = dialogView.findViewById<android.view.View>(R.id.ad_share_button)
                     val adDebugButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.ad_debug_button)
                     val countdownTimer = dialogView.findViewById<android.widget.TextView>(R.id.countdown_timer)
                     val closeIcon = dialogView.findViewById<android.widget.ImageView>(R.id.close_icon)

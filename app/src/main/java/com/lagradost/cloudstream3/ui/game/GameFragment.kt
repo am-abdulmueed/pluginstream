@@ -91,17 +91,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
 
         // Saved Games Card Click
         binding.savedGamesCard.setOnClickListener {
-            val savedCount = viewModel.savedGames.value?.size ?: 0
-            if (savedCount > 0) {
-                findNavController().navigate(R.id.action_game_to_saved_games)
-            } else {
-                // Show Guide Dialog
-                AlertDialog.Builder(requireContext(), R.style.AlertDialogResponsive)
-                    .setTitle("How to Save Games")
-                    .setMessage("Tap the 🔖 bookmark icon on any game to save it to your collection. Your saved games will appear here for quick access!")
-                    .setPositiveButton("Got it", null)
-                    .show()
-            }
+            findNavController().navigate(R.id.action_game_to_saved_games)
         }
 
         // Observe Saved Games to update shortcut card

@@ -229,12 +229,31 @@
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
+                    android:id="@+id/settings_faq"
+                    style="@style/SettingsItem"
+                    android:paddingVertical="16dp"
+                    android:drawableStart="@drawable/baseline_help_outline_24"
+                    android:drawablePadding="16dp"
+                    android:drawableTint="?attr/textColor"
+                    android:text="Support &amp; FAQ" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                <TextView
                     android:id="@+id/settings_rate_app"
                     style="@style/SettingsItem"
                     android:paddingVertical="16dp"
                     android:drawableStart="@drawable/ic_star_rate"
                     android:drawablePadding="16dp"
-                    android:drawableTint="?attr/colorPrimary"
+                    android:drawableTint="?attr/textColor"
                     android:text="Rate Our App" />
             </com.google.android.material.card.MaterialCardView>
 
@@ -353,6 +372,49 @@
                     android:text="@string/share_plugin" />
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Privacy & Terms Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_privacy_policy"
+                        style="@style/SettingsItem"
+                        android:paddingVertical="16dp"
+                        android:drawableStart="@drawable/ic_policy_icon"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="Privacy Policy" />
+
+                    <!-- Divider line for visual separation -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginHorizontal="16dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_terms_conditions"
+                        style="@style/SettingsItem"
+                        android:paddingVertical="16dp"
+                        android:drawableStart="@drawable/ic_terms_icon"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="Terms &amp; Conditions" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <LinearLayout
                 android:id="@+id/app_version_info"
                 android:layout_width="match_parent"
@@ -397,6 +459,16 @@
                         android:textSize="12sp"
                         tools:text="2024-03-21" />
                 </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/dev_handle"
+                    android:textColor="?attr/grayTextColor"
+                    android:textSize="13sp"
+                    android:textStyle="italic"
+                    tools:text="@PluginStream" />
             </LinearLayout>
 
         </LinearLayout>

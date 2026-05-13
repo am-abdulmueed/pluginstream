@@ -123,6 +123,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                 .replace("castle", "PluginStream", ignoreCase = true)
                 .replace("castel", "PluginStream", ignoreCase = true)
                 .replace("caslte", "PluginStream", ignoreCase = true)
+                .replace("Bilibili TV (Requires CS Prerelease)", "Bilibili (Use VPN USA)", ignoreCase = true)
         }
 
         //fun Activity.loadHomepageList(

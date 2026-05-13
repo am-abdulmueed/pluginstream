@@ -133,23 +133,42 @@
                         app:backgroundTint="?attr/colorPrimary"
                         app:textColor="?attr/textColor" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/ad_share_button"
-                        style="@style/Widget.Material3.Button.TonalButton"
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/ad_share_card"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:layout_marginTop="12dp"
-                        android:text="@string/result_share"
-                        android:textAllCaps="false"
-                        app:icon="@drawable/ic_outline_share_24"
-                        app:iconGravity="textStart"
-                        app:iconPadding="12dp"
-                        app:iconSize="20dp"
-                        app:iconTint="?attr/textColor"
-                        app:cornerRadius="16dp"
-                        app:backgroundTint="?attr/primaryGrayBackground"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
                         app:strokeWidth="1dp"
-                        app:strokeColor="#33FFFFFF" />
+                        app:strokeColor="#33FFFFFF"
+                        app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                        <LinearLayout
+                            android:id="@+id/ad_share_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:gravity="center"
+                            android:background="?attr/selectableItemBackground">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_outline_share_24"
+                                app:tint="?attr/textColor" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:text="Share"
+                                android:textColor="?attr/textColor"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textAllCaps="false" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/ad_debug_button"

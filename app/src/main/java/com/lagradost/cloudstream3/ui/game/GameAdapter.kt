@@ -91,7 +91,8 @@ class GameAdapter(
                     error(R.drawable.ic_game_placeholder)
                     crossfade(true)
                 }
-                holder.titleView.text = game.title
+                // Hide title as requested for search results style consistency
+                holder.titleView.visibility = View.GONE
                 holder.itemView.setOnClickListener { onGameClick(game) }
             }
         }
