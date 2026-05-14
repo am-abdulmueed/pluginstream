@@ -414,7 +414,7 @@
     <string name="plugins_updated" formatted="true">%d eklentiler güncellendi</string>
     <string name="blank_repo_message">PluginStream, varsayılan olarak hiçbir site ile gelmez. Siteleri depolardan kurmanız gerekir.
 \n
-\nDiscord\'umuza katılın veya çevrimiçi arama yapın.</string>
+\nTelegram\'umuza katılın veya çevrimiçi arama yapın.</string>
     <string name="view_public_repositories_button">Topluluk depolarını görüntüle</string>
     <string name="view_public_repositories_button_short">Herkese açık liste</string>
     <string name="uppercase_all_subtitles">Tüm altyazılar büyük harf</string>

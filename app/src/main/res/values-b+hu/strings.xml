@@ -418,7 +418,7 @@
     <string name="delete_repository_plugins">Ez az összes tároló bővítményt is törli</string>
     <string name="blank_repo_message">A PluginStreamalapértelmezés szerint nem telepített webhelyeket. A webhelyeket a tárolókból kell telepítenie.
 \n
-\nCsatlakozz a Discord-unkhoz vagy keress online.</string>
+\nCsatlakozz a Telegram-unkhoz vagy keress online.</string>
     <string name="extension_version">Verzió</string>
     <string name="action_mark_as_watched">Megjelölés megtekintettként</string>
     <string name="action_remove_from_watched">Eltávolítás a megnézettek közül</string>

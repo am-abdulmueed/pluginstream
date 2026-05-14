@@ -7,6 +7,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
@@ -106,7 +107,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         val errorProfilePic = errorProfilePics.random()
 
-        private val pinKeywords = listOf("castel","castle tv (use vlc)", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox")
+        private val pinKeywords = listOf("castel","castle tv (use vlc)", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox", "bilibili")
         private fun isSmartPinned(apiName: String): Boolean {
             // Skip XPrimeHub from smart pinning
             if (apiName.contains("XPrimeHub", ignoreCase = true)) return false
@@ -123,7 +124,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                 .replace("castle", "PluginStream", ignoreCase = true)
                 .replace("castel", "PluginStream", ignoreCase = true)
                 .replace("caslte", "PluginStream", ignoreCase = true)
-                .replace("Bilibili TV (Requires CS Prerelease)", "Bilibili (Use VPN USA)", ignoreCase = true)
+                .replace("Bilibili TV (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
+                .replace("BilibiliTV (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
+                .replace("BilibiliTV(Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
+                .replace("Bilibili TV", "Bilibili (Use USA VPN)", ignoreCase = true)
+                .replace("BilibiliTV", "Bilibili (Use USA VPN)", ignoreCase = true)
         }
 
         //fun Activity.loadHomepageList(
@@ -388,6 +393,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         fun Context.selectHomepage(selectedApiName: String?, callback: (String) -> Unit) {
             val validAPIs = filterProviderByPreferredMedia().toMutableList()
+            // Ensure XPrimeHub is included even if it doesn't match preferred media
+            synchronized(apis) {
+                apis.find { it.name.contains("XPrimeHub", ignoreCase = true) }?.let { api ->
+                    if (validAPIs.none { it.name == api.name }) {
+                        validAPIs.add(api)
+                    }
+                }
+            }
 
             validAPIs.add(0, randomApi)
             validAPIs.add(0, noneApi)
@@ -396,7 +409,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             val builder =
                 BottomSheetDialog(this)
 
-            builder.behavior.state = BottomSheetBehavior.STATE_EXPANDED
             val binding: HomeSelectMainpageBinding = HomeSelectMainpageBinding.inflate(
                 builder.layoutInflater,
                 null,
@@ -404,6 +416,43 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             )
 
             builder.setContentView(binding.root)
+
+            builder.behavior.apply {
+                state = BottomSheetBehavior.STATE_HALF_EXPANDED
+                isFitToContents = false
+                halfExpandedRatio = 0.5f
+                // Set peek height to half of screen height
+                peekHeight = (resources.displayMetrics.heightPixels * 0.5).toInt()
+                isHideable = true
+                skipCollapsed = false
+                isDraggable = false // Disable dragging by default
+            }
+
+            // Enable dragging only when the handle is touched
+            binding.dragHandle.setOnTouchListener { _, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        builder.behavior.isDraggable = true
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        // We don't disable it immediately to allow the behavior to finish its animation/settling
+                    }
+                }
+                false // Allow the touch event to pass through if needed
+            }
+
+            // Add a callback to reset draggable state when it settles
+            builder.behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    if (newState == BottomSheetBehavior.STATE_EXPANDED || 
+                        newState == BottomSheetBehavior.STATE_HALF_EXPANDED || 
+                        newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                        builder.behavior.isDraggable = false
+                    }
+                }
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+            })
+
             builder.show()
             builder.let { dialog ->
                 val isMultiLang = getApiProviderLangSettings().let { set ->
@@ -474,7 +523,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         .filter {
                             it.hasMainPage && (pinnedphashset.contains(it.name) || it.supportedTypes.any(
                                 preSelectedTypes::contains
-                            ))
+                            ) || it.name.contains("XPrimeHub", ignoreCase = true))
                         }
                         .sortedBy { it.name.lowercase() }
 
@@ -489,16 +538,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                     val remainingApis = sortedApis.filterNot { pinnedphashset.contains(it.name) }
 
                     val pluginStreamApis = remainingApis.filter { it.name.contains("castle", ignoreCase = true) || it.name.contains("caslte", ignoreCase = true) || it.name.contains("castel", ignoreCase = true) }
+                    val bilibiliApis = remainingApis.filter { it.name.contains("bilibili", ignoreCase = true) }
                     val maxApis = remainingApis.filter { it.name.contains("moviebox", ignoreCase = true) || it.name.contains("moveibox", ignoreCase = true) }
-                    val otherSmartPinnedApis = remainingApis.filter { isSmartPinned(it.name) && !pluginStreamApis.contains(it) && !maxApis.contains(it) }
+                    val otherSmartPinnedApis = remainingApis.filter { isSmartPinned(it.name) && !pluginStreamApis.contains(it) && !maxApis.contains(it) && !bilibiliApis.contains(it) }
                         .sortedBy { api -> pinKeywords.indexOfFirst { api.name.contains(it, ignoreCase = true) } }
-                    val actualRemainingApis = remainingApis.filterNot { isSmartPinned(it.name) || pluginStreamApis.contains(it) || maxApis.contains(it) }
+                    val actualRemainingApis = remainingApis.filterNot { isSmartPinned(it.name) || pluginStreamApis.contains(it) || maxApis.contains(it) || bilibiliApis.contains(it) }
 
                     currentValidApis = mutableListOf<MainAPI>().apply {
                         addAll(validAPIs.take(2))
                         addAll(pluginStreamApis)
                         addAll(otherSmartPinnedApis)
                         addAll(maxApis)
+                        addAll(bilibiliApis)
                         addAll(pinnedApis)
                         addAll(actualRemainingApis)
                     }
@@ -792,7 +843,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
                         homeLoading.isVisible = false
                         homeLoadingError.isVisible = false
-                        homeMasterRecycler.isVisible = true
+                        homeMasterRecycler.isVisible = d.isNotEmpty()
+                        homeEmptyInstruction.isVisible = d.isEmpty() && currentApiName == noneApi.name
                         homeLoadingShimmer.stopShimmer()
                         //home_loaded?.isVisible = true
                         if (toggleRandomButton) {
@@ -840,6 +892,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         homeLoading.isVisible = false
                         homeLoadingError.isVisible = true
                         homeMasterRecycler.isInvisible = true
+                        homeEmptyInstruction.isVisible = false
 
                         // Based on https://github.com/recloudstream/cloudstream/pull/1438
                         val hasNoNetworkConnection = context?.isNetworkAvailable() == false
@@ -872,6 +925,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         homeLoadingShimmer.startShimmer()
                         homeLoading.isVisible = true
                         homeLoadingError.isVisible = false
+                        homeEmptyInstruction.isVisible = false
                         homeMasterRecycler.isInvisible = true
                         (homeMasterRecycler.adapter as? ParentItemAdapter)?.apply {
                             submitList(null)

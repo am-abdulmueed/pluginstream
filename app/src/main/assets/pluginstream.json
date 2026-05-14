@@ -4,7 +4,7 @@
   "last_updated": "2026-05-02",
   "repositories": [
     {
-      "name": "CloudStream",
+      "name": "PluginStream",
       "url": "https://raw.githubusercontent.com/recloudstream/extensions/master/repo.json",
       "description": "Official repository - Dailymotion, Invidious (YouTube), Twitch and more."
     },

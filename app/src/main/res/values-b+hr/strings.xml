@@ -413,7 +413,7 @@
     <string name="plugins_not_downloaded" formatted="true">Nepreuzeto: %d</string>
     <string name="blank_repo_message">PluginStreamstandardno nema instalirane web stranice. Stranice morate instalirati iz repozitorija.
 \n
-\nPridružite se našem Discordu ili tražite online.</string>
+\nPridružite se našem Telegramu ili tražite online.</string>
     <string name="view_public_repositories_button">Prikaži repozitorije zajednice</string>
     <string name="view_public_repositories_button_short">Javni popis</string>
     <string name="uppercase_all_subtitles">Koristi velika slova za sve titlove</string>

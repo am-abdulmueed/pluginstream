@@ -363,7 +363,7 @@
     <string name="view_public_repositories_button_short">Verejný zoznam</string>
     <string name="blank_repo_message">PluginStream nemá nainštalované žiadne stránky v predvolenom nastavení. Musíte nainštalovať stránky z repozitára.
 \n
-\nPripojte sa k nášmu Discord alebo vyhľadajte online.</string>
+\nPripojte sa k nášmu Telegram alebo vyhľadajte online.</string>
     <string name="update_notification_failed">Nepodarilo sa nainštalovať novú verziu aplikácie</string>
     <string name="download_all_plugins_from_repo">Upozornenie: PluginStream 3 nenesie žiadnu zodpovednosť za používanie rozšírenia tretích strán a neposkytuje žiadnu podporu pre nich!</string>
     <string name="add_repository">Pridať repozitár</string>

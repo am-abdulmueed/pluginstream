@@ -274,7 +274,7 @@
     <string name="extension_language">Idioma</string>
     <string name="apk_installer_legacy">Tradicional</string>
     <string name="apk_installer_package_installer">Instalador de programas</string>
-    <string name="blank_repo_message">PluginStream no tiene sitios instalados por defecto. Necesitas instalar los sitios desde los repositorios. \n \nÚnete a nuestro Discord o busca en línea.</string>
+    <string name="blank_repo_message">PluginStream no tiene sitios instalados por defecto. Necesitas instalar los sitios desde los repositorios. \n \nÚnete a nuestro Telegram o busca en línea.</string>
     <string name="download_all_plugins_from_repo">Advertencia: ¡PluginStream 3 no asume ninguna responsabilidad por el uso de extensiones de terceros y no brinda ningún soporte para ellas!</string>
     <string name="updates_settings">Mostrar actualizaciones de la aplicación</string>
     <string name="apk_installer_settings">Instalador de APK</string>

@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.lagradost.cloudstream3.CommonActivity
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.FragmentFaqBinding
 import com.lagradost.cloudstream3.ui.BaseFragment
@@ -25,6 +26,8 @@ import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
 
 import io.noties.markwon.Markwon
+import io.noties.markwon.linkify.LinkifyPlugin
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 
 class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentFaqBinding::inflate)
@@ -99,7 +102,10 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
         setUpToolbar("Support & FAQ")
         setSystemBarsPadding()
 
-        markwon = Markwon.create(requireContext())
+        markwon = Markwon.builder(requireContext())
+            .usePlugin(LinkifyPlugin.create())
+            .usePlugin(StrikethroughPlugin.create())
+            .build()
 
         faqAdapter = FAQAdapter(filteredList)
         binding.faqRecycler.apply {
@@ -115,15 +121,30 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
             }
         })
 
-        binding?.faqSupportCard?.setOnClickListener {
-            try {
-                // Try to open in Telegram app
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("tg://resolve?domain=pluginstreamsupport"))
-                startActivity(intent)
-            } catch (e: Exception) {
-                // Fallback to browser if Telegram app not found
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/pluginstreamsupport"))
-                startActivity(intent)
+        binding.faqSupportCard.setOnClickListener {
+            CommonActivity.getSocialLinks { json ->
+                var telegramUrl = "https://t.me/pluginstreamofficial"
+                val handles = json?.optJSONArray("social_handles")
+                if (handles != null) {
+                    for (i in 0 until handles.length()) {
+                        val handle = handles.getJSONObject(i)
+                        if (handle.optString("platform").lowercase() == "telegram") {
+                            telegramUrl = handle.optString("url").trim().removeSurrounding("`")
+                            break
+                        }
+                    }
+                }
+                
+                try {
+                    // Try to open in Telegram app if possible, else fallback to URL
+                    val uri = Uri.parse(telegramUrl)
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    // Fallback to browser
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(telegramUrl))
+                    startActivity(intent)
+                }
             }
         }
     }
@@ -152,6 +173,7 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
             val item = items[position]
             holder.question.text = item.question
             markwon.setMarkdown(holder.answer, item.answer)
+            holder.answer.movementMethod = android.text.method.LinkMovementMethod.getInstance()
             
             val isExpanded = position == expandedPosition
             holder.answerLayout.visibility = if (isExpanded) View.VISIBLE else View.GONE

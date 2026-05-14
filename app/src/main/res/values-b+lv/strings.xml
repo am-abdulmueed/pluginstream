@@ -491,7 +491,7 @@
     <string name="quality_webrip">Web</string>
     <string name="quality_sdr">SDR</string>
     <string name="resolution">Rezulūcija</string>
-    <string name="blank_repo_message">PluginStream pēc noklusējuma nesatur, nav uzstādīts neviens repozitorijs. Lai izmantotu lietotni, obligāti jāpievieno vismaz viens repozitorijs, kas satur vismaz vienu papildinājumu. Repozitorijus var uzstādīt zem Iestatījumi. Tas viss pateicoties Sky UK Limited 🤮 bezsmadzeņu DMCA noņemšanas rīkojumam, kas liedz iekļaut repozitorijus lietotnē.\n\nPievienojieties mūsu Discord serverim vai meklējiet tiešsaistē.</string>
+    <string name="blank_repo_message">PluginStream pēc noklusējuma nesatur, nav uzstādīts neviens repozitorijs. Lai izmantotu lietotni, obligāti jāpievieno vismaz viens repozitorijs, kas satur vismaz vienu papildinājumu. Repozitorijus var uzstādīt zem Iestatījumi. Tas viss pateicoties Sky UK Limited 🤮 bezsmadzeņu DMCA noņemšanas rīkojumam, kas liedz iekļaut repozitorijus lietotnē.\n\nPievienojieties mūsu Telegram im vai meklējiet tiešsaistē.</string>
     <string name="batch_download_nothing_to_download_format" formatted="true">Viss %s jau ir lejupielādēts</string>
     <string name="repository_name_hint">Repozitorija nosaukums (pēc izvēles, neobligāti)</string>
     <string name="plugin_downloaded">Papildinājums lejupielādēts</string>

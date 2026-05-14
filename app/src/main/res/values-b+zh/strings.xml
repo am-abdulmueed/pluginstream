@@ -416,7 +416,7 @@
     <string name="plugins_updated" formatted="true">已更新 %d 插件</string>
     <string name="blank_repo_message">PluginStream 默认不安装片源。您需要从仓库中安装片源。
 \n
-\n加入我们的 Discord 或在网上搜索。</string>
+\n加入我们的 Telegram 或在网上搜索。</string>
     <string name="view_public_repositories_button">查看社区仓库</string>
     <string name="view_public_repositories_button_short">公开列表</string>
     <string name="uppercase_all_subtitles">字幕全大写</string>

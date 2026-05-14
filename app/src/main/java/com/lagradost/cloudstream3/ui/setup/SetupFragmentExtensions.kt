@@ -20,6 +20,8 @@ import com.lagradost.cloudstream3.ui.settings.extensions.RepositoryData
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import com.lagradost.cloudstream3.utils.Coroutines.main
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class MasterRepo(
     @JsonProperty("name") val name: String,
@@ -67,10 +69,32 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
     private fun setRepositories(success: Boolean = true) {
         main {
             val ctx = context ?: return@main
+            
             val pluginstreamJson = try {
-                ctx.assets.open("pluginstream.json").bufferedReader().use { it.readText() }
+                // Try to fetch from GitHub first for fresh repositories
+                val client = okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+                val request = okhttp3.Request.Builder()
+                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/repo-json@main/pluginstream.json")
+                    .build()
+                
+                val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    client.newCall(request).execute()
+                }
+                
+                if (response.isSuccessful) {
+                    response.body?.string()
+                } else {
+                    throw Exception("Online fetch failed")
+                }
             } catch (e: Exception) {
-                null
+                // Fallback to local assets if offline or error
+                try {
+                    ctx.assets.open("pluginstream.json").bufferedReader().use { it.readText() }
+                } catch (localError: Exception) {
+                    null
+                }
             }
 
             val masterRepoRepos = pluginstreamJson?.let {
@@ -100,6 +124,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
 
                 repos.forEach {
                     PluginsViewModel.downloadAll(activity, it.url, null)
+                    RepositoryManager.addRepository(it)
                 }
             }
         }

@@ -1435,7 +1435,29 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         val alreadyFollowedCheckbox = dialogView.findViewById<CheckBox>(R.id.already_followed_checkbox)
 
+        fun openUrl(url: String?) {
+            if (url.isNullOrBlank()) return
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, url.trim().removeSurrounding("`").toUri())
+                startActivity(intent)
+            } catch (e: Exception) {
+                logError(e)
+            }
+        }
 
+        var instagramUrl = "https://instagram.com/pluginstreamofficial"
+        CommonActivity.getSocialLinks { json ->
+            val handles = json?.optJSONArray("social_handles")
+            if (handles != null) {
+                for (i in 0 until handles.length()) {
+                    val handle = handles.getJSONObject(i)
+                    if (handle.optString("platform").lowercase() == "instagram") {
+                        instagramUrl = handle.optString("url")
+                        break
+                    }
+                }
+            }
+        }
 
         dialog.setOnDismissListener {
             showTelegramFollowDialog()
@@ -1460,12 +1482,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 dialog.dismiss()
             } else {
                 // Open Instagram URL
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW, "https://instagram.com/pluginstreamofficial".toUri())
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    logError(e)
-                }
+                openUrl(instagramUrl)
                 dialog.dismiss()
             }
         }
@@ -1502,7 +1519,29 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         val alreadyJoinedCheckbox = dialogView.findViewById<CheckBox>(R.id.already_joined_checkbox)
 
+        fun openUrl(url: String?) {
+            if (url.isNullOrBlank()) return
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, url.trim().removeSurrounding("`").toUri())
+                startActivity(intent)
+            } catch (e: Exception) {
+                logError(e)
+            }
+        }
 
+        var telegramUrl = "https://t.me/pluginstreamofficial"
+        CommonActivity.getSocialLinks { json ->
+            val handles = json?.optJSONArray("social_handles")
+            if (handles != null) {
+                for (i in 0 until handles.length()) {
+                    val handle = handles.getJSONObject(i)
+                    if (handle.optString("platform").lowercase() == "telegram") {
+                        telegramUrl = handle.optString("url")
+                        break
+                    }
+                }
+            }
+        }
 
         // Only show checkbox if it's NOT the first time (lastShowTime != 0)
         if (lastShowTime != 0L) {
@@ -1523,12 +1562,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 dialog.dismiss()
             } else {
                 // Open Telegram URL
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW, "https://t.me/pluginstreamofficial".toUri())
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    logError(e)
-                }
+                openUrl(telegramUrl)
                 dialog.dismiss()
             }
         }
@@ -2989,7 +3023,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     }
 
     private fun showReviewDialog() {
-        val dialog = Dialog(this, R.style.DialogHalfFullscreen)
+        val dialog = Dialog(this, R.style.AlertDialogResponsive)
         val dialogView = layoutInflater.inflate(R.layout.dialog_review, null)
         dialog.setContentView(dialogView)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)

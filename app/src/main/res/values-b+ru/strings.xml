@@ -413,7 +413,7 @@
     <string name="next">Далее</string>
     <string name="blank_repo_message">В PluginStream по умолчанию не установлены сайты. Вам необходимо установить сайты из репозиториев.
 \n
-\nПрисоединяйтесь к нашему Discord-серверу или найдите в интернете.</string>
+\nПрисоединяйтесь к нашему Telegram-серверу или найдите в интернете.</string>
     <string name="error_invalid_data">Недопустимые данные</string>
     <string name="resolution_and_title">Разрешение и название</string>
     <string name="previous">Предыдущий</string>

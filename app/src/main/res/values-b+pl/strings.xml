@@ -387,7 +387,7 @@
     <string name="plugins_updated">Zaaktualizowano %d rozszerzeń</string>
     <string name="blank_repo_message">PluginStream nie ma domyślnie zainstalowanych żadnych witryn. Musisz zainstalować witryny z repozytoriów.
 \n
-\nDołącz do naszego Discorda lub poszukaj online.</string>
+\nDołącz do naszego Telegram lub poszukaj online.</string>
     <string name="view_public_repositories_button">Zobacz repozytoria społeczności</string>
     <string name="view_public_repositories_button_short">Publiczna lista</string>
     <string name="uppercase_all_subtitles">Wszystkie napisy wielką literą</string>

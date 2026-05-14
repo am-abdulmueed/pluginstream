@@ -401,9 +401,9 @@
     <string name="plugins_downloaded" formatted="true">تم تحميل: %d</string>
     <string name="plugins_disabled" formatted="true">مُعطل %d</string>
     <string name="plugins_not_downloaded" formatted="true">غير مُحمل: %d</string>
-    <string name="blank_repo_message">لا يحتوي PluginStream على مواقع مثبتة افتراضيًا. تحتاج إلى تثبيت المواقع من المستودعات.
+    <string name="blank_repo_message">PluginStream has no sites installed by default. You need to install the sites from repositories.
 \n
-\nانضم إلى ديسكورد أو ابحث عبر الإنترنت.</string>
+\nJoin our Telegram or search online.</string>
     <string name="view_public_repositories_button">عرض مستودعات المجتمع</string>
     <string name="view_public_repositories_button_short">قائمة عامة</string>
     <string name="uppercase_all_subtitles">جميع الترجمات حروف كبيرة</string>

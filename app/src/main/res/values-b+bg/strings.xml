@@ -405,9 +405,9 @@
     <string formatted="true" name="plugins_disabled">Деактивирано: %d</string>
     <string formatted="true" name="plugins_not_downloaded">Не е изтеглено: %d</string>
     <string formatted="true" name="plugins_updated">Актуализирани %d плъгини</string>
-    <string name="blank_repo_message">PluginStream няма инсталирани сайтове по подразбиране. Трябва да инсталирате сайтовете от хранилища.
+    <string name="blank_repo_message">PluginStream has no sites installed by default. You need to install the sites from repositories.
 \n
-\nПрисъединете се към нашия Дискорд или потърсете онлайн.</string>
+\nJoin our Telegram or search online.</string>
     <string name="view_public_repositories_button">Вижте хранилищата на общността</string>
     <string name="view_public_repositories_button_short">Публичен списък</string>
     <string name="uppercase_all_subtitles">Всички субтитри с главни букви</string>

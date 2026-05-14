@@ -398,7 +398,7 @@
     <string name="plugins_not_downloaded" formatted="true">Não transferido: %d</string>
     <string name="blank_repo_message">PluginStream não tem fontes instaladas por padrão. Você precisa instalar um site de repositórios.
 \n
-\nEntre no nosso Discord ou pesquise online.</string>
+\nEntre no nosso Telegram ou pesquise online.</string>
     <string name="view_public_repositories_button">Ver repositórios da comunidade</string>
     <string name="view_public_repositories_button_short">Lista pública</string>
     <string name="uppercase_all_subtitles">Todas as legendas em maiúsculas</string>

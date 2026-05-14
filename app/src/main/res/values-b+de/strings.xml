@@ -403,7 +403,7 @@
     <string name="plugins_not_downloaded" formatted="true">Nicht heruntergeladen: %d</string>
     <string name="blank_repo_message">PluginStream hat standardmäßig keine Websites installiert. Websites müssen aus Repositories installiert werden.
 \n
-\nTrete unserem Discord Server bei oder suche online.</string>
+\nTrete unserem Telegram Server bei oder suche online.</string>
     <string name="view_public_repositories_button">Community-Repositories anzeigen</string>
     <string name="view_public_repositories_button_short">Öffentliche Liste</string>
     <string name="uppercase_all_subtitles">Alle Untertitel in Großbuchstaben</string>

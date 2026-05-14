@@ -15,6 +15,7 @@ import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.lagradost.cloudstream3.BuildConfig
+import com.lagradost.cloudstream3.CommonActivity
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.MainSettingsBinding
 import com.lagradost.cloudstream3.mvvm.logError
@@ -254,44 +255,47 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 navigate(R.id.action_navigation_global_to_navigation_faq)
             }
 
+            fun openUrl(url: String?) {
+                if (url.isNullOrBlank()) return
+                try {
+                    val i = Intent(Intent.ACTION_VIEW)
+                    i.data = Uri.parse(url.trim().removeSurrounding("`"))
+                    startActivity(i)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            CommonActivity.getSocialLinks { json ->
+                val handles = json?.optJSONArray("social_handles")
+                if (handles != null) {
+                    for (i in 0 until handles.length()) {
+                        val handle = handles.getJSONObject(i)
+                        val platform = handle.optString("platform")
+                        val url = handle.optString("url")
+                        
+                        when (platform.lowercase()) {
+                            "instagram" -> settingsInstagram.setOnClickListener { openUrl(url) }
+                            "telegram" -> settingsTelegram.setOnClickListener { openUrl(url) }
+                        }
+                    }
+                } else {
+                    // Fallbacks if fetch fails
+                    settingsTelegram.setOnClickListener {
+                        openUrl("https://t.me/pluginstreamofficial")
+                    }
+                    settingsInstagram.setOnClickListener {
+                        openUrl("https://instagram.com/am.abdul.mueed")
+                    }
+                }
+            }
+
             settingsGithub.setOnClickListener {
-                try {
-                    val i = Intent(Intent.ACTION_VIEW)
-                    i.data = Uri.parse("https://github.com/am-abdulmueed")
-                    startActivity(i)
-                } catch (e: Exception) {
-                    logError(e)
-                }
-            }
-
-            settingsTelegram.setOnClickListener {
-                try {
-                    val i = Intent(Intent.ACTION_VIEW)
-                    i.data = Uri.parse("https://t.me/pluginstreamofficial")
-                    startActivity(i)
-                } catch (e: Exception) {
-                    logError(e)
-                }
-            }
-
-            settingsInstagram.setOnClickListener {
-                try {
-                    val i = Intent(Intent.ACTION_VIEW)
-                    i.data = Uri.parse("https://instagram.com/am.abdul.mueed")
-                    startActivity(i)
-                } catch (e: Exception) {
-                    logError(e)
-                }
+                openUrl("https://github.com/am-abdulmueed")
             }
 
             settingsDevWebsite.setOnClickListener {
-                try {
-                    val i = Intent(Intent.ACTION_VIEW)
-                    i.data = Uri.parse("https://am-abdulmueed.vercel.app")
-                    startActivity(i)
-                } catch (e: Exception) {
-                    logError(e)
-                }
+                openUrl("https://am-abdulmueed.vercel.app")
             }
 
             settingsEmail.setOnClickListener {
@@ -362,7 +366,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
     }
 
     private fun showReviewDialog() {
-        val dialog = Dialog(requireContext(), R.style.DialogHalfFullscreen)
+        val dialog = Dialog(requireContext(), R.style.AlertDialogResponsive)
         val dialogView = layoutInflater.inflate(R.layout.dialog_review, null)
         dialog.setContentView(dialogView)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)

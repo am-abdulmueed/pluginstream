@@ -414,7 +414,7 @@
     <string name="plugins_updated" formatted="true">Aggiornati %d plugin</string>
     <string name="blank_repo_message">PluginStreamnon ha siti installati per impostazione predefinita. È necessario installare i siti dai repository.
 \n
-\nUnisciti al nostro Discord o cerca online.</string>
+\nUnisciti al nostro Telegram o cerca online.</string>
     <string name="view_public_repositories_button">Visualizza i repository della comunità</string>
     <string name="view_public_repositories_button_short">Lista pubblica</string>
     <string name="uppercase_all_subtitles">Tutti i sottotitoli in maiuscolo</string>

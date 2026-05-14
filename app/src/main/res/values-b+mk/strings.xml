@@ -465,7 +465,7 @@
     <string name="plugin_downloaded">Приклучокот е преземен</string>
     <string name="plugin_load_fail" formatted="true">Не може да се вчита %s</string>
     <string name="setup_extensions_subtext">Преземи ја листата на сајтови што сакаш да ги користиш</string>
-    <string name="blank_repo_message">PluginStream нема стандардно инсталирани приклучоци. Треба сам да инсталираш приклучоци.\n\nПридружи се на нашиот Discord и дознај повеќе или барај онлајн.</string>
+    <string name="blank_repo_message">PluginStream нема стандардно инсталирани приклучоци. Треба сам да инсталираш приклучоци.\n\nПридружи се на нашиот Telegram и дознај повеќе или барај онлајн.</string>
     <string name="tracks">Видео резолуција и аудио јазик</string>
     <string name="safe_mode_description">Сите екстензии беа исклучени поради пад за да ти помогне да ја пронајдеш причината што предизвикува проблем.</string>
     <string name="extension_rating" formatted="true">Оцена: %s</string>

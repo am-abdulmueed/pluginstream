@@ -473,7 +473,7 @@
     <string name="update_notification_downloading">Se descarcă actualizarea aplicației…</string>
     <string name="blank_repo_message">PluginStream nu are niciun site instalat din start. Trebuie să instalați site-urile din depozite.
 \n
-\nAlăturați-vă Discord-ului nostru sau căutați online.</string>
+\nAlăturați-vă Telegram-ului nostru sau căutați online.</string>
     <string name="batch_download_start_format" formatted="true">A început să descarce %1$d %2$s…</string>
     <string name="safe_mode_title">Mod sigur pornit</string>
     <string name="safe_mode_file">Fișier Mod Sigur găsit!

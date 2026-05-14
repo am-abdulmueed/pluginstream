@@ -450,7 +450,7 @@
     <string name="delete_repository_plugins">Cela supprimera également tous les plugins du repository</string>
     <string name="blank_repo_message">PluginStreamn\'a aucun site installé par défaut. Vous devez installer les sites à partir de dépôts.
 \n
-\nRejoignez notre Discord ou cherchez en ligne.</string>
+\nRejoignez notre Telegram ou cherchez en ligne.</string>
     <string name="extension_language">Langage</string>
     <string name="enable_skip_op_from_database_des">Afficher les popups skip pour les intro / fins</string>
     <string name="apk_installer_legacy">Ancienne méthode d\'installation</string>

@@ -456,9 +456,9 @@
     <string name="plugins_updated" formatted="true">%d প্লাগইন আপডেট কৰা হ\'ল</string>
     <string name="plugins_disabled" formatted="true">নিষ্ক্ৰিয় কৰা: %d</string>
     <string name="plugins_not_downloaded" formatted="true">ডাউনলোড কৰা নহয়: %d</string>
-    <string name="blank_repo_message">PluginStreamত কোনো চাইট ডিফল্টভাৱে ইনষ্টল হোৱা নাই। আপুনিয়ে ৰিপ\'জিট\'ৰিবোৰৰ পৰা চাইটসমূহ ইনষ্টল কৰিব লাগিব।
+    <string name="blank_repo_message">PluginStream has no sites installed by default. You need to install the sites from repositories.
 \n
-\nআমাৰ Discordত যোগদান কৰক বা অনলাইন বিচাৰক।</string>
+\nJoin our Telegram or search online.</string>
     <string name="view_public_repositories_button">সম্প্ৰদায়ৰ ৰিপ\'জিট\'ৰিসমূহ চাওক</string>
     <string name="uppercase_all_subtitles">সকলো চাবটাইটল মুকলি আখৰত</string>
     <string name="download_all_plugins_from_repo">সতর্কতা: PluginStream কোৱা নাই যে তৃতীয় পক্ষৰ বৃদ্ধিসমূহ ব্যৱহাৰ কৰিবলৈ আপুনি সম্পূৰ্ণ দায়িত্ব ল\'ব আৰু কোনো সহায় নাপাব!</string>

@@ -415,7 +415,7 @@
     <string name="plugins_updated" formatted="true">已更新 %d 外掛程式</string>
     <string name="blank_repo_message">PluginStream 預設沒有安裝網站。你需要從儲存庫安裝網站。
 \n
-\n加入我們的 Discord 或在網路上搜尋。</string>
+\n加入我們的 Telegram 或在網路上搜尋。</string>
     <string name="view_public_repositories_button">查看</string>
     <string name="view_public_repositories_button_short">公開清單</string>
     <string name="uppercase_all_subtitles">字幕全大寫</string>

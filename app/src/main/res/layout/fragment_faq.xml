@@ -132,20 +132,30 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@drawable/baseline_help_outline_24"
-            app:tint="?attr/grayTextColor"
-            android:alpha="0.5" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="😅"
+            android:textSize="64sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="No results found"
+            android:textColor="?attr/textColor"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:paddingHorizontal="32dp"
+            android:text="Can't find what you're looking for? Join our community for instant help!"
             android:textColor="?attr/grayTextColor"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
     </LinearLayout>
 
 </RelativeLayout>

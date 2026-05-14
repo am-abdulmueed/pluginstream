@@ -444,11 +444,11 @@
     <string name="plugins_downloaded" formatted="true">הורד: %d</string>
     <string name="plugins_disabled" formatted="true">מוגבל: %d</string>
     <string name="plugins_not_downloaded" formatted="true">לא מורד: %d</string>
-    <string name="blank_repo_message">לקלאודסטרים אין אתרים מותקנים כברירת מחדל. עליכם להתקין את האתרים ממאגרים.
+    <string name="blank_repo_message">כברירת מחדל, אין אתרים מותקנים ב-PluginStream. עליך להתקין את האתרים ממאגרים.
 \n
-\nבגלל הסרת DMCA על ידי Sky UK LImited 🤮 אנחנו לא יכולים לקשר את אתר המאגרים באפליקציה.
+\nבשל הסרה DMCA על ידי Sky UK Limited 🤮, איננו יכולים לקשר את אתרי המאגרים באפליקציה.
 \n
-\nתצטרפו לדיסקורד שלנו או תחפשו באינטרנט.</string>
+\nהצטרף לטלגרם שלנו או חפש באינטרנט.</string>
     <string name="view_public_repositories_button">הצג מאגרים קהילתיים</string>
     <string name="view_public_repositories_button_short">רשימה ציבורית</string>
     <string name="uppercase_all_subtitles">לשים את הכתוביות באותיות רישיות</string>

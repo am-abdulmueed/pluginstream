@@ -29,7 +29,7 @@
     <string name="duplicate_title">May Natagpuan na Nag-doble</string>
     <string name="duplicate_message_single" formatted="true">Lumalabas na mayroong potensyal na nag-doble na item sa iyong library: \'%s.\' \n\nGusto mo pa rin bang idagdag ang item na ito, palitan ang nauna, o kanselahin ito?</string>
     <string name="battery_dialog_message">Para matiyak ang mga walang patid na pag-download at notification para sa mga naka-subscribe na palabas sa TV, kailangan ng PluginStreamng pahintulot na tumakbo sa background. Sa pamamagitan ng pagpindot sa OK, ipapakita sa iyo ang isang dialog. Mangyaring pindutin ang \'Allow\'.\n\nPakitandaan, ang pahintulot na ito ay hindi nangangahulugan na maubos ng CS3 ang iyong baterya. Ito ay gagana lamang sa background kung kinakailangan, tulad ng kapag tumatanggap ng mga notification o nagda-download ng mga video mula sa mga opisyal na extension.</string>
-    <string name="blank_repo_message">Ang PluginStreamay walang mga site na naka-install sa umpisa. Kailangan mong i-install ang mga site mula sa mga repositoryo. \n \nSumali sa aming Discord o maghanap online.</string>
+    <string name="blank_repo_message">Ang PluginStreamay walang mga site na naka-install sa umpisa. Kailangan mong i-install ang mga site mula sa mga repositoryo. \n \nSumali sa aming Telegram o maghanap online.</string>
     <string name="download_all_plugins_from_repo">Babala: Walang pananagutan ang PluginStream3 sa paggamit ng mga extension ng third-party at hindi kami nagbibigay ng anumang suporta para sa kanila!</string>
     <string name="speech_recognition_unavailable">Hindi available ang speech recognition</string>
     <string name="result_open_in_browser">Buksan sa Browser</string>

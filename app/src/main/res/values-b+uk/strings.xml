@@ -413,7 +413,7 @@
     <string name="plugins_disabled" formatted="true">Вимкнено: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Не завантажено: %d</string>
     <string name="plugins_updated" formatted="true">Оновлено %d розширень</string>
-    <string name="blank_repo_message">Типово у PluginStream немає жодного встановленого сайту. Вам потрібно встановити сайти з репозиторіїв.\n\nПриєднуйтеся до нашого Discord або шукайте в інтернеті.</string>
+    <string name="blank_repo_message">Типово у PluginStream немає жодного встановленого сайту. Вам потрібно встановити сайти з репозиторіїв.\n\nПриєднуйтеся до нашого Telegram або шукайте в інтернеті.</string>
     <string name="view_public_repositories_button">Переглянути репозиторії спільноти</string>
     <string name="view_public_repositories_button_short">Публічний список</string>
     <string name="uppercase_all_subtitles">Усі субтитри великими літерами</string>

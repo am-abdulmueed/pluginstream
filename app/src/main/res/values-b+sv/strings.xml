@@ -486,7 +486,7 @@
     <string name="skip_type_format" formatted="true">Skippa %s</string>
     <string name="blank_repo_message">PluginStream har inga webbplatser installerade som standard. Du måste installera webbplatser från arkiv.
 \n
-\nGå med i vår Discord eller sök online.</string>
+\nGå med i vår Telegram eller sök online.</string>
     <string name="select_library">Välj bibliotek</string>
     <string name="empty_library_no_accounts_message">Ditt bibliotek är tomt :(
 \nLogga in på ett bibliotekskonto eller lägg till program i ditt lokala bibliotek.</string>

@@ -500,7 +500,7 @@
     <string name="apply_on_restart">மாற்றங்களைக் காண பயன்பாட்டை மறுதொடக்கம் செய்யுங்கள்.</string>
     <string name="safe_mode_crash_info">செயலிழப்பு தகவலைக் காண்க</string>
     <string name="delete_repository">களஞ்சியத்தை நீக்கு</string>
-    <string name="blank_repo_message">கிளவுட்ச்ட்ரீமில் இயல்புநிலையாக எந்தத் தளங்களும் நிறுவப்படவில்லை. நீங்கள் களஞ்சியங்களிலிருந்து தளங்களை நிறுவ வேண்டும். \n\n எங்கள் முரண்பாட்டில் சேரவும் அல்லது ஆன்லைனில் தேடுங்கள்.</string>
+    <string name="blank_repo_message">கிளவுட்ஸ்ட்ரீமில் இயல்பாக எந்த பிளாட்ஃபார்ம்களும் நிறுவப்படவில்லை. நீங்கள் ரெபாசிட்டரிகளிலிருந்து பிளாட்ஃபார்ம்களை நிறுவ வேண்டும். எங்கள் டெலிகிராமில் இணையுங்கள் அல்லது ஆன்லைனில் தேடுங்கள்.</string>
     <string name="extension_status">நிலை</string>
     <string name="extension_size">அளவு</string>
     <string name="extension_types">ஆதரிக்கப்பட்டது</string>

@@ -413,7 +413,7 @@
     <string name="plugins_not_downloaded" formatted="true">Không tải: %d</string>
     <string name="blank_repo_message">PluginStream không có sẵn trang web nào. Bạn cần cài đặt các trang web từ kho lưu trữ.
 \n
-\nHãy tham gia Discord của chúng tôi hoặc tìm kiếm trực tuyến.</string>
+\nHãy tham gia Telegram của chúng tôi hoặc tìm kiếm trực tuyến.</string>
     <string name="view_public_repositories_button">Xem kho lưu trữ của cộng đồng</string>
     <string name="view_public_repositories_button_short">Danh sách công khai</string>
     <string name="uppercase_all_subtitles">In hoa toàn bộ phụ đề</string>

@@ -392,7 +392,7 @@
     <string name="view_public_repositories_button_short">Daftar publik</string>
     <string name="blank_repo_message">PluginStreamtidak memiliki situs yang terinstal secara default. Anda perlu menginstal situs-situs dari repositori.
 \n
-\nBergabunglah dengan Discord kami atau cari secara online.</string>
+\nBergabunglah dengan Telegram kami atau cari secara online.</string>
     <string name="repository_url_hint">URL Repositori atau Kode Pendek</string>
     <string name="create_account">Buat Akun</string>
     <string name="error">Error</string>
