@@ -7,7 +7,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
@@ -417,41 +416,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
             builder.setContentView(binding.root)
 
-            builder.behavior.apply {
-                state = BottomSheetBehavior.STATE_HALF_EXPANDED
-                isFitToContents = false
-                halfExpandedRatio = 0.5f
-                // Set peek height to half of screen height
-                peekHeight = (resources.displayMetrics.heightPixels * 0.5).toInt()
-                isHideable = true
-                skipCollapsed = false
-                isDraggable = false // Disable dragging by default
-            }
-
-            // Enable dragging only when the handle is touched
-            binding.dragHandle.setOnTouchListener { _, event ->
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        builder.behavior.isDraggable = true
-                    }
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        // We don't disable it immediately to allow the behavior to finish its animation/settling
-                    }
-                }
-                false // Allow the touch event to pass through if needed
-            }
-
-            // Add a callback to reset draggable state when it settles
-            builder.behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
-                override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    if (newState == BottomSheetBehavior.STATE_EXPANDED || 
-                        newState == BottomSheetBehavior.STATE_HALF_EXPANDED || 
-                        newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                        builder.behavior.isDraggable = false
-                    }
-                }
-                override fun onSlide(bottomSheet: View, slideOffset: Float) {}
-            })
+            builder.behavior.state = BottomSheetBehavior.STATE_EXPANDED
 
             builder.show()
             builder.let { dialog ->
@@ -843,8 +808,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
                         homeLoading.isVisible = false
                         homeLoadingError.isVisible = false
-                        homeMasterRecycler.isVisible = d.isNotEmpty()
-                        homeEmptyInstruction.isVisible = d.isEmpty() && currentApiName == noneApi.name
+                        homeMasterRecycler.isVisible = true
                         homeLoadingShimmer.stopShimmer()
                         //home_loaded?.isVisible = true
                         if (toggleRandomButton) {
@@ -892,7 +856,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         homeLoading.isVisible = false
                         homeLoadingError.isVisible = true
                         homeMasterRecycler.isInvisible = true
-                        homeEmptyInstruction.isVisible = false
 
                         // Based on https://github.com/recloudstream/cloudstream/pull/1438
                         val hasNoNetworkConnection = context?.isNetworkAvailable() == false
@@ -925,7 +888,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         homeLoadingShimmer.startShimmer()
                         homeLoading.isVisible = true
                         homeLoadingError.isVisible = false
-                        homeEmptyInstruction.isVisible = false
                         homeMasterRecycler.isInvisible = true
                         (homeMasterRecycler.adapter as? ParentItemAdapter)?.apply {
                             submitList(null)

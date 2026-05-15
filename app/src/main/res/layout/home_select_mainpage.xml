@@ -5,19 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/primaryBlackBackground"
-    android:orientation="vertical">
-
-    <!-- Bottom Sheet Handle -->
-    <View
-        android:id="@+id/drag_handle"
-        android:layout_width="40dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/rounded_background"
-        android:backgroundTint="?attr/grayTextColor"
-        android:alpha="0.5" />
+    android:orientation="vertical"
+    android:paddingTop="16dp">
 
     <TextView
         android:layout_width="match_parent"

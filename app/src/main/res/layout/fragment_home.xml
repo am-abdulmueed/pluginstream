@@ -220,42 +220,12 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/home_master_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:descendantFocusability="afterDescendants"
-        android:paddingBottom="100dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/home_parent_item_preview" />
-
-    <LinearLayout
-        android:id="@+id/home_empty_instruction"
-        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="32dp"
-        android:visibility="gone"
-        tools:visibility="visible">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="👀"
-            android:textSize="48sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/google_sans"
-            android:gravity="center"
-            android:text="Tap &quot;Select&quot; to pick a provider and start watching!"
-            android:textColor="?attr/textColor"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
+        android:descendantFocusability="afterDescendants"
+        android:nextFocusLeft="@id/nav_rail_view"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/homepage_parent"
+        tools:visibility="gone" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/home_api_fab"

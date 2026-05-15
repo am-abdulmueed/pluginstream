@@ -1,0 +1,258 @@
+
+
+
+
+
+
+
+
+
+
+PS E:\projects\in_build\pluginstream> git show 95b906a -- app/src/main/java/com/lagradost/cloudstream3/ui/home/HomeFragment.kt app/src/main/res/layout/fragment_home.xml app/src/main/res/layout/home_select_mainpage.xml                                                   commit 95b906a709c95fa773bc9729b23bd37129e89c38 (HEAD -> main, live/main)
+Author: betapix <177719587+betapix@users.noreply.github.com>
+Date:   Thu May 14 20:23:33 2026 +0500
+
+    fix: ensure Setup Fragment plugin is visible in Settings > Extensions
+
+diff --git a/app/src/main/java/com/lagradost/cloudstream3/ui/home/HomeFragment.kt b/app/src/main/java/com/lagradost/cloudstream3/ui/home/HomeFragment.kt
+index 807ecde1..903802dd 100644
+--- a/app/src/main/java/com/lagradost/cloudstream3/ui/home/HomeFragment.kt
++++ b/app/src/main/java/com/lagradost/cloudstream3/ui/home/HomeFragment.kt
+@@ -7,6 +7,7 @@ import android.content.DialogInterface
+ import android.content.Intent
+ import android.os.Bundle
+ import android.view.LayoutInflater
++import android.view.MotionEvent
+ import android.view.View
+ import android.view.ViewGroup
+ import android.widget.AbsListView
+@@ -106,7 +107,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+
+         val errorProfilePic = errorProfilePics.random()
+
+-        private val pinKeywords = listOf("castel","castle tv (use vlc)", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox")
++        private val pinKeywords = listOf("castel","castle tv (use vlc)", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox", "bilibili")
+         private fun isSmartPinned(apiName: String): Boolean {
+             // Skip XPrimeHub from smart pinning
+             if (apiName.contains("XPrimeHub", ignoreCase = true)) return false
+@@ -123,7 +124,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+                 .replace("castle", "PluginStream", ignoreCase = true)
+                 .replace("castel", "PluginStream", ignoreCase = true)
+                 .replace("caslte", "PluginStream", ignoreCase = true)
+-                .replace("Bilibili TV (Requires CS Prerelease)", "Bilibili (Use VPN USA)", ignoreCase = true)
++                .replace("Bilibili TV (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
++                .replace("BilibiliTV (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
++                .replace("BilibiliTV(Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
++                .replace("Bilibili TV", "Bilibili (Use USA VPN)", ignoreCase = true)
++                .replace("BilibiliTV", "Bilibili (Use USA VPN)", ignoreCase = true)
+         }
+
+         //fun Activity.loadHomepageList(
+@@ -388,6 +393,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+
+         fun Context.selectHomepage(selectedApiName: String?, callback: (String) -> Unit) {
+             val validAPIs = filterProviderByPreferredMedia().toMutableList()
++            // Ensure XPrimeHub is included even if it doesn't match preferred media
++            synchronized(apis) {
++                apis.find { it.name.contains("XPrimeHub", ignoreCase = true) }?.let { api ->
++                    if (validAPIs.none { it.name == api.name }) {
++                        validAPIs.add(api)
++                    }
++                }
++            }
+
+             validAPIs.add(0, randomApi)
+             validAPIs.add(0, noneApi)
+@@ -396,7 +409,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+             val builder =
+                 BottomSheetDialog(this)
+
+-            builder.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+             val binding: HomeSelectMainpageBinding = HomeSelectMainpageBinding.inflate(
+                 builder.layoutInflater,
+                 null,
+@@ -404,6 +416,43 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+             )
+
+             builder.setContentView(binding.root)
++
++            builder.behavior.apply {
++                state = BottomSheetBehavior.STATE_HALF_EXPANDED
++                isFitToContents = false
++                halfExpandedRatio = 0.5f
++                // Set peek height to half of screen height
++                peekHeight = (resources.displayMetrics.heightPixels * 0.5).toInt()
++                isHideable = true
++                skipCollapsed = false
++                isDraggable = false // Disable dragging by default
++            }
++
++            // Enable dragging only when the handle is touched
++            binding.dragHandle.setOnTouchListener { _, event ->
++                when (event.action) {
++                    MotionEvent.ACTION_DOWN -> {
++                        builder.behavior.isDraggable = true
++                    }
++                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
++                        // We don't disable it immediately to allow the behavior to finish its animation/settling
++                    }
++                }
++                false // Allow the touch event to pass through if needed
++            }
++
++            // Add a callback to reset draggable state when it settles
++            builder.behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
++                override fun onStateChanged(bottomSheet: View, newState: Int) {
++                    if (newState == BottomSheetBehavior.STATE_EXPANDED ||
++                        newState == BottomSheetBehavior.STATE_HALF_EXPANDED ||
++                        newState == BottomSheetBehavior.STATE_COLLAPSED) {
++                        builder.behavior.isDraggable = false
++                    }
++                }
++                override fun onSlide(bottomSheet: View, slideOffset: Float) {}
++            })
++
+             builder.show()
+             builder.let { dialog ->
+                 val isMultiLang = getApiProviderLangSettings().let { set ->
+@@ -474,7 +523,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+                         .filter {
+                             it.hasMainPage && (pinnedphashset.contains(it.name) || it.supportedTypes.any(
+                                 preSelectedTypes::contains
+-                            ))
++                            ) || it.name.contains("XPrimeHub", ignoreCase = true))
+                         }
+                         .sortedBy { it.name.lowercase() }
+
+@@ -489,16 +538,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+                     val remainingApis = sortedApis.filterNot { pinnedphashset.contains(it.name) }
+
+                     val pluginStreamApis = remainingApis.filter { it.name.contains("castle", ignoreCase = true) || it.name.contains("caslte", ignoreCase = true) || it.name.contains("castel", ignoreCase = true) }
++                    val bilibiliApis = remainingApis.filter { it.name.contains("bilibili", ignoreCase = true) }
+                     val maxApis = remainingApis.filter { it.name.contains("moviebox", ignoreCase = true) || it.name.contains("moveibox", ignoreCase = true) }
+-                    val otherSmartPinnedApis = remainingApis.filter { isSmartPinned(it.name) && !pluginStreamApis.contains(it) && !maxApis.contains(it) }
++                    val otherSmartPinnedApis = remainingApis.filter { isSmartPinned(it.name) && !pluginStreamApis.contains(it) && !maxApis.contains(it) && !bilibiliApis.contains(it) }
+                         .sortedBy { api -> pinKeywords.indexOfFirst { api.name.contains(it, ignoreCase = true) } }
+-                    val actualRemainingApis = remainingApis.filterNot { isSmartPinned(it.name) || pluginStreamApis.contains(it) || maxApis.contains(it) }
++                    val actualRemainingApis = remainingApis.filterNot { isSmartPinned(it.name) || pluginStreamApis.contains(it) || maxApis.contains(it) || bilibiliApis.contains(it) }
+
+                     currentValidApis = mutableListOf<MainAPI>().apply {
+                         addAll(validAPIs.take(2))
+                         addAll(pluginStreamApis)
+                         addAll(otherSmartPinnedApis)
+                         addAll(maxApis)
++                        addAll(bilibiliApis)
+                         addAll(pinnedApis)
+                         addAll(actualRemainingApis)
+                     }
+@@ -792,7 +843,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+
+                         homeLoading.isVisible = false
+                         homeLoadingError.isVisible = false
+-                        homeMasterRecycler.isVisible = true
++                        homeMasterRecycler.isVisible = d.isNotEmpty()
++                        homeEmptyInstruction.isVisible = d.isEmpty() && currentApiName == noneApi.name
+                         homeLoadingShimmer.stopShimmer()
+                         //home_loaded?.isVisible = true
+                         if (toggleRandomButton) {
+@@ -840,6 +892,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+                         homeLoading.isVisible = false
+                         homeLoadingError.isVisible = true
+                         homeMasterRecycler.isInvisible = true
++                        homeEmptyInstruction.isVisible = false
+
+                         // Based on https://github.com/recloudstream/cloudstream/pull/1438
+                         val hasNoNetworkConnection = context?.isNetworkAvailable() == false
+@@ -872,6 +925,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
+                         homeLoadingShimmer.startShimmer()
+                         homeLoading.isVisible = true
+                         homeLoadingError.isVisible = false
++                        homeEmptyInstruction.isVisible = false
+                         homeMasterRecycler.isInvisible = true
+                         (homeMasterRecycler.adapter as? ParentItemAdapter)?.apply {
+                             submitList(null)
+diff --git a/app/src/main/res/layout/fragment_home.xml b/app/src/main/res/layout/fragment_home.xml
+index 99a764de..c80310c2 100644
+--- a/app/src/main/res/layout/fragment_home.xml
++++ b/app/src/main/res/layout/fragment_home.xml
+@@ -220,12 +220,42 @@
+     <androidx.recyclerview.widget.RecyclerView
+         android:id="@+id/home_master_recycler"
+         android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
++        android:layout_height="match_parent"
++        android:clipToPadding="false"
+         android:descendantFocusability="afterDescendants"
+-        android:nextFocusLeft="@id/nav_rail_view"
+-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+-        tools:listitem="@layout/homepage_parent"
+-        tools:visibility="gone" />
++        android:paddingBottom="100dp"
++        app:layout_behavior="@string/appbar_scrolling_view_behavior"
++        tools:listitem="@layout/home_parent_item_preview" />
++
++    <LinearLayout
++        android:id="@+id/home_empty_instruction"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_gravity="center"
++        android:gravity="center"
++        android:orientation="vertical"
++        android:padding="32dp"
++        android:visibility="gone"
++        tools:visibility="visible">
++
++        <TextView
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:text="👀"
++            android:textSize="48sp" />
++
++        <TextView
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="16dp"
++            android:fontFamily="@font/google_sans"
++            android:gravity="center"
++            android:text="Tap &quot;Select&quot; to pick a provider and start watching!"
++            android:textColor="?attr/textColor"
++            android:textSize="18sp"
++            android:textStyle="bold" />
++
++    </LinearLayout>
+
+     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+         android:id="@+id/home_api_fab"
+diff --git a/app/src/main/res/layout/home_select_mainpage.xml b/app/src/main/res/layout/home_select_mainpage.xml
+index 27b56014..e9756692 100644
+--- a/app/src/main/res/layout/home_select_mainpage.xml
++++ b/app/src/main/res/layout/home_select_mainpage.xml
+@@ -5,8 +5,19 @@
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:background="?attr/primaryBlackBackground"
+-    android:orientation="vertical"
+-    android:paddingTop="16dp">
++    android:orientation="vertical">
++
++    <!-- Bottom Sheet Handle -->
++    <View
++        android:id="@+id/drag_handle"
++        android:layout_width="40dp"
++        android:layout_height="4dp"
++        android:layout_gravity="center_horizontal"
++        android:layout_marginTop="12dp"
++        android:layout_marginBottom="8dp"
++        android:background="@drawable/rounded_background"
++        android:backgroundTint="?attr/grayTextColor"
++        android:alpha="0.5" />
+
+     <TextView
+         android:layout_width="match_parent"
+@@ -90,4 +101,4 @@
+         </LinearLayout>
+     </LinearLayout>
+
+-</LinearLayout>
+\ No newline at end of file
++</LinearLayout>
