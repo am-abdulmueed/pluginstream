@@ -131,17 +131,21 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                 nextLeft = R.id.nav_rail_view
             )
 
-            if (!isLayout(TV))
+            if (!isLayout(TV)) {
                 binding.addRepoButton.let { button ->
                     button.post {
-                        setPadding(
-                            paddingLeft,
-                            paddingTop,
-                            paddingRight,
-                            button.measuredHeight + button.marginTop + button.marginBottom
+                        val margin = button.marginBottom + button.marginTop
+                        val statsHeight = binding.pluginStorageAppbar.measuredHeight + binding.pluginStorageAppbar.marginBottom + binding.pluginStorageAppbar.marginTop
+                        
+                        binding.repoRecyclerView.setPadding(
+                            binding.repoRecyclerView.paddingLeft,
+                            binding.repoRecyclerView.paddingTop,
+                            binding.repoRecyclerView.paddingRight,
+                            button.measuredHeight + margin + statsHeight
                         )
                     }
                 }
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->

@@ -81,147 +81,13 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Settings Options as Cards -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_general"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/ic_outline_settings_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/category_general" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_player"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/ic_baseline_play_arrow_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/category_player" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_providers"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/ic_baseline_language_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/category_providers" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_ui"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/baseline_grid_view_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/category_ui" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_updates"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/ic_baseline_system_update_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/category_updates" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_credits"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/ic_outline_info_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/category_account" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_extensions"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/baseline_grid_view_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/extensions" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- PREFERENCE Section -->
+            <!-- 1. ACCOUNT & SECURITY -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp"
-                android:text="@string/category_app_feedback"
+                android:text="@string/category_account_security"
                 android:textColor="?attr/grayTextColor"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -238,61 +104,312 @@
                 app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
-                <TextView
-                    android:id="@+id/settings_rate_app"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_star_rate"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/rate_our_app" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_general"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_outline_settings_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/general" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_account"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_outline_account_circle_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/account" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_providers"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_baseline_language_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/providers" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_extensions"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_baseline_extension_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/extensions" />
+
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_share"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/ic_outline_share_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/share_plugin" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_report_bugs"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/ic_baseline_bug_report_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/report_a_bug" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- SUPPORT Section -->
+            <!-- 2. APPEARANCE & PLAYBACK -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp"
-                android:text="@string/category_support_help"
+                android:text="@string/category_appearance_playback"
+                android:textColor="?attr/grayTextColor"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:letterSpacing="0.1" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_ui"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_baseline_color_lens_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/ui" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_player"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_baseline_play_arrow_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/player" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 3. PREFERENCES -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/category_preferences"
+                android:textColor="?attr/grayTextColor"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:letterSpacing="0.1" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_rate_app"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_star_rate"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/rate_our_app" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_share"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_outline_share_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/share_app" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_bug_report"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_baseline_bug_report_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/report_a_bug" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 4. SYSTEM & UPDATES -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/category_system_updates"
+                android:textColor="?attr/grayTextColor"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:letterSpacing="0.1" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_updates"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_baseline_system_update_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/updates" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <LinearLayout
+                        android:id="@+id/settings_system_compatibility"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:drawableStart="@drawable/ic_baseline_tv_24"
+                            android:drawablePadding="16dp"
+                            android:drawableTint="?attr/textColor"
+                            android:text="@string/system_compatibility"
+                            android:textColor="?attr/textColor"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="40dp"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/system_compatibility_summary"
+                            android:textColor="?attr/grayTextColor"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <LinearLayout
+                        android:id="@+id/settings_app_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:drawableStart="@drawable/ic_outline_info_24"
+                            android:drawablePadding="16dp"
+                            android:drawableTint="?attr/textColor"
+                            android:text="@string/app_info_cache"
+                            android:textColor="?attr/textColor"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="40dp"
+                            android:layout_marginTop="2dp"
+                            android:text="@string/app_info_cache_summary"
+                            android:textColor="?attr/grayTextColor"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 5. SUPPORT -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/category_support"
                 android:textColor="?attr/grayTextColor"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -312,65 +429,24 @@
                 <TextView
                     android:id="@+id/settings_faq"
                     style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
                     android:drawableStart="@drawable/baseline_help_outline_24"
                     android:drawablePadding="16dp"
                     android:drawableTint="?attr/textColor"
-                    android:text="@string/support_faqs" />
+                    android:text="@string/support_faq" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ABOUT & LEGAL Section -->
+            <!-- 6. ABOUT & LEGAL -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp"
-                android:text="@string/category_legal_info"
+                android:text="@string/category_about_legal"
                 android:textColor="?attr/grayTextColor"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:textAllCaps="true"
                 android:letterSpacing="0.1" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_see_with_dev"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_outline_info_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/about_us" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_privacy_policy"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_policy_icon"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/privacy_policy" />
-            </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -382,14 +458,50 @@
                 app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
-                <TextView
-                    android:id="@+id/settings_terms"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_terms_icon"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/terms_of_service" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/settings_about"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_outline_account_circle_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/about" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_privacy"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_policy_icon"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/privacy_policy" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_terms"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_terms_icon"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?attr/textColor"
+                        android:text="@string/terms_of_service" />
+
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>

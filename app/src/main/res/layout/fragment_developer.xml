@@ -113,7 +113,7 @@
                         <View
                             android:layout_width="4dp"
                             android:layout_height="24dp"
-                            android:background="?attr/colorPrimary" />
+                            android:background="#FFD700" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -137,7 +137,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/dev_label"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="#FFD700"
                             android:textStyle="bold"
                             android:textSize="14sp"
                             android:textAllCaps="true"
@@ -163,7 +163,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/role_label"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="#FFD700"
                             android:textStyle="bold"
                             android:textSize="14sp"
                             android:textAllCaps="true"
@@ -189,7 +189,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/philosophy_label"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="#FFD700"
                             android:textStyle="bold"
                             android:textSize="14sp"
                             android:textAllCaps="true"
@@ -213,7 +213,7 @@
                         app:cardCornerRadius="12dp"
                         app:cardElevation="0dp"
                         app:strokeWidth="0dp"
-                        app:cardBackgroundColor="#0D3D50FA"> <!-- Subtle primary color tint -->
+                        app:cardBackgroundColor="#1A000000"> <!-- Subtle dark tint -->
 
                         <LinearLayout
                             android:layout_width="match_parent"

@@ -46,6 +46,16 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+import android.app.ActivityManager
+import android.content.Context
+import android.os.Build
+import android.os.Environment
+import android.os.StatFs
+import android.provider.Settings
+import android.widget.Toast
+import com.lagradost.cloudstream3.CommonActivity.showToast
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+
 class SettingsFragment : BaseFragment<MainSettingsBinding>(
     BaseFragment.BindingCreator.Inflate(MainSettingsBinding::inflate)
 ) {
@@ -229,13 +239,13 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         binding.apply {
             listOf(
                 settingsGeneral to R.id.action_navigation_global_to_navigation_settings_general,
-                settingsPlayer to R.id.action_navigation_global_to_navigation_settings_player,
-                settingsCredits to R.id.action_navigation_global_to_navigation_settings_account,
-                settingsUi to R.id.action_navigation_global_to_navigation_settings_ui,
+                settingsAccount to R.id.action_navigation_global_to_navigation_settings_account,
                 settingsProviders to R.id.action_navigation_global_to_navigation_settings_providers,
-                settingsUpdates to R.id.action_navigation_global_to_navigation_settings_updates,
                 settingsExtensions to R.id.action_navigation_global_to_navigation_settings_extensions,
-                settingsSeeWithDev to R.id.action_navigation_global_to_navigation_developer,
+                settingsUi to R.id.action_navigation_global_to_navigation_settings_ui,
+                settingsPlayer to R.id.action_navigation_global_to_navigation_settings_player,
+                settingsUpdates to R.id.action_navigation_global_to_navigation_settings_updates,
+                settingsAbout to R.id.action_navigation_global_to_navigation_developer,
             ).forEach { (view, navigationId) ->
                 view.apply {
                     setOnClickListener {
@@ -248,7 +258,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 }
             }
 
-            settingsReportBugs.setOnClickListener {
+            settingsBugReport.setOnClickListener {
                 ContactDeveloperDialog().show(childFragmentManager, "ContactDeveloperDialog")
             }
 
@@ -267,7 +277,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 }
             }
 
-            settingsPrivacyPolicy.setOnClickListener {
+            settingsPrivacy.setOnClickListener {
                 try {
                     val bundle = Bundle()
                     bundle.putString("type", "privacy")
@@ -302,10 +312,84 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 }
             }
 
+            settingsSystemCompatibility.setOnClickListener {
+                showSystemCompatibilityDialog()
+            }
+
+            settingsAppInfo.setOnClickListener {
+                openAppSystemInfo()
+            }
+
             // Default focus on TV
             if (isLayout(TV)) {
                 settingsGeneral.requestFocus()
             }
+        }
+    }
+
+    private fun showSystemCompatibilityDialog() {
+        val context = context ?: return
+        
+        // 1. Check RAM Info
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val memoryInfo = ActivityManager.MemoryInfo()
+        activityManager.getMemoryInfo(memoryInfo)
+        
+        val totalRamGb = memoryInfo.totalMem / (1024 * 1024 * 1024)
+        val availableRamGb = memoryInfo.availMem / (1024 * 1024 * 1024)
+        
+        // 2. Check Storage Info (Internal Storage)
+        val path: File = Environment.getDataDirectory()
+        val stat = StatFs(path.path)
+        val blockSize = stat.blockSizeLong
+        val availableBlocks = stat.availableBlocksLong
+        val totalBlocks = stat.blockCountLong
+        
+        val totalStorageGb = (totalBlocks * blockSize) / (1024 * 1024 * 1024)
+        val freeStorageGb = (availableBlocks * blockSize) / (1024 * 1024 * 1024)
+        
+        // 3. Device Model and Android Version
+        val deviceModel = Build.MODEL
+        val androidVersion = Build.VERSION.RELEASE
+
+        // Smoothness Recommendation Logic
+        val isCompatible = availableRamGb >= 1 && freeStorageGb >= 1
+        val statusMessage = if (isCompatible) {
+            "✅ Your device meets the requirements! App will run smoothly."
+        } else {
+            "⚠️ Low resources detected. You might experience minor lags."
+        }
+
+        val infoText = """
+            Device Model: $deviceModel
+            Android Version: OS $androidVersion
+            
+            Total RAM: ${totalRamGb} GB
+            Available RAM: ${availableRamGb} GB
+            
+            Total Storage: ${totalStorageGb} GB
+            Free Space: ${freeStorageGb} GB
+            
+            $statusMessage
+        """.trimIndent()
+
+        MaterialAlertDialogBuilder(context, R.style.AlertDialogCustomTransparent)
+            .setTitle(R.string.system_compatibility)
+            .setMessage(infoText)
+            .setPositiveButton(R.string.close, null)
+            .show()
+    }
+
+    private fun openAppSystemInfo() {
+        val context = context ?: return
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", context.packageName, null)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            showToast(activity, "Unable to open settings automatically.", Toast.LENGTH_SHORT)
         }
     }
 
