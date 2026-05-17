@@ -64,6 +64,8 @@
         <item name="white">@color/white</item>
         <item name="black">@color/black</item>
         <item name="dividerColor">#1AFFFFFF</item>
+        <item name="dialogCardColor">?attr/primaryGrayBackground</item>
+        <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="focusBackground">?android:attr/selectableItemBackground</item>
         <item name="preferenceTheme">@style/CustomPreferenceThemeOverlay</item>
 
@@ -136,6 +138,8 @@
         <item name="grayTextColor">@color/grayTextColor</item>
         <item name="white">@color/white</item>
         <item name="black">@color/black</item>
+        <item name="dialogCardColor">?attr/primaryGrayBackground</item>
+        <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="colorOnPrimary">@color/whiteText</item>
     </style>
 
@@ -182,7 +186,9 @@
         <item name="white">@color/black</item>
         <item name="black">@color/white</item>
         <item name="colorOnPrimary">@color/blackText</item>
-        <item name="dividerColor">#1A000000</item>
+        <item name="dialogCardColor">?attr/primaryGrayBackground</item>
+        <item name="dialogButtonColor">?attr/colorPrimary</item>
+        <item name="dividerColor">#33000000</item>
         <item name="isLightTheme">true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
     </style>
@@ -196,6 +202,8 @@
         <item name="textColor">@color/DraculaTextColor</item>
         <item name="iconColor">@color/DraculaIconColor</item>
         <item name="white">@color/DraculaTextColor</item>
+        <item name="dialogCardColor">?attr/primaryGrayBackground</item>
+        <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="black">@color/DraculaPrimaryGrayBackground</item>
         <item name="colorOnPrimary">@color/DraculaTextColor</item>
     </style>
@@ -210,6 +218,8 @@
         <item name="textColor">@color/SilentBlueTextColor</item>
         <item name="iconColor">@color/SilentBlueIconColor</item>
         <item name="white">@color/SilentBlueTextColor</item>
+        <item name="dialogCardColor">?attr/primaryGrayBackground</item>
+        <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="black">@color/SilentBluePrimaryGrayBackground</item>
         <item name="colorOnPrimary">@color/SilentBlueTextColor</item>
     </style>
@@ -223,8 +233,10 @@
         <item name="textColor">@color/LavenderTextColor</item>
         <item name="iconColor">@color/LavenderIconColor</item>
         <item name="white">@color/LavenderTextColor</item>
+        <item name="dialogCardColor">?attr/primaryGrayBackground</item>
+        <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="black">@color/LavenderPrimaryGrayBackground</item>
-        <item name="dividerColor">#1A2D1B47</item>
+        <item name="dividerColor">#332D1B47</item>
         <item name="colorOnPrimary">@color/LavenderTextColor</item>
         <item name="isLightTheme">true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
@@ -239,6 +251,8 @@
         <item name="grayTextColor">@color/material_dynamic_neutral60</item>
         <item name="white">@color/material_dynamic_neutral90</item>
         <item name="black">@color/material_dynamic_neutral10</item>
+        <item name="dialogCardColor">?attr/primaryGrayBackground</item>
+        <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="colorOnPrimary">@color/material_on_primary_emphasis_medium</item>
     </style>
 

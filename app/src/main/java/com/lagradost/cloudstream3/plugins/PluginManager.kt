@@ -144,6 +144,42 @@ object PluginManager {
         }
     }
 
+    suspend fun deleteAllOnlinePlugins(context: Context) {
+        lock.withLock {
+            val extensionsDir = File(context.filesDir, ONLINE_PLUGINS_FOLDER)
+            
+            // 1. Unload all currently loaded plugins that belong to the Extensions folder
+            val loadedPaths = plugins.keys.filter { it.contains(ONLINE_PLUGINS_FOLDER) }
+            loadedPaths.forEach { path ->
+                unloadPlugin(path)
+            }
+            
+            // 2. Unload all registered online plugins (just in case they weren't in the plugins map)
+            val onlinePlugins = getPluginsOnline()
+            onlinePlugins.forEach {
+                unloadPlugin(it.filePath)
+            }
+
+            // 3. Delete the directory recursively
+            if (extensionsDir.exists()) {
+                try {
+                    val success = extensionsDir.deleteRecursively()
+                    Log.i(TAG, "deleteAllOnlinePlugins: Deleted $ONLINE_PLUGINS_FOLDER success=$success")
+                } catch (e: Exception) {
+                    logError(e)
+                    // Fallback: try to delete files individually if recursive delete fails
+                    extensionsDir.listFiles()?.forEach { it.deleteRecursively() }
+                }
+            }
+            
+            // 4. Clear the metadata - Use setKey with empty array to be sure
+            setKey(PLUGINS_KEY, emptyArray<PluginData>())
+            setKey(REPOSITORIES_KEY, emptyArray<RepositoryData>())
+            setKey("PREBUILT_REPOSITORIES", emptyArray<RepositoryData>())
+            loadedOnlinePlugins = false
+        }
+    }
+
     suspend fun deleteRepositoryData(repositoryPath: String) {
         lock.withLock {
             val plugins = getPluginsOnline().filter {

@@ -24,7 +24,8 @@
                 android:layout_marginBottom="24dp"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="2dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <LinearLayout
@@ -87,7 +88,8 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
@@ -105,7 +107,8 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
@@ -123,7 +126,8 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
@@ -141,7 +145,8 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
@@ -159,7 +164,8 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
@@ -177,7 +183,8 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
@@ -195,7 +202,8 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
@@ -207,12 +215,13 @@
                     android:text="@string/extensions" />
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- PREFERENCE Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="8dp"
-                android:text="@string/about"
+                android:text="@string/category_app_feedback"
                 android:textColor="?attr/grayTextColor"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -225,26 +234,8 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_faq"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/baseline_help_outline_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="Support &amp; FAQ" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
@@ -254,7 +245,7 @@
                     android:drawableStart="@drawable/ic_star_rate"
                     android:drawablePadding="16dp"
                     android:drawableTint="?attr/textColor"
-                    android:text="Rate Our App" />
+                    android:text="@string/rate_our_app" />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
@@ -263,213 +254,143 @@
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_github"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_github_logo"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/github" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_telegram"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_telegram_logo"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/telegram" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_instagram"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_instagram_logo"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/instagram" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_dev_website"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_baseline_public_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/dev_website" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Email / Get in Touch -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_email"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_email_logo"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/contact_developer" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
                     android:id="@+id/settings_share"
                     style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
                     android:drawableStart="@drawable/ic_outline_share_24"
                     android:drawablePadding="16dp"
                     android:drawableTint="?attr/textColor"
                     android:text="@string/share_plugin" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Privacy & Terms Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
-                app:strokeWidth="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/settings_privacy_policy"
-                        style="@style/SettingsItem"
-                        android:paddingVertical="16dp"
-                        android:drawableStart="@drawable/ic_policy_icon"
-                        android:drawablePadding="16dp"
-                        android:drawableTint="?attr/textColor"
-                        android:text="Privacy Policy" />
-
-                    <!-- Divider line for visual separation -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="16dp"
-                        android:background="?attr/dividerColor" />
-
-                    <TextView
-                        android:id="@+id/settings_terms_conditions"
-                        style="@style/SettingsItem"
-                        android:paddingVertical="16dp"
-                        android:drawableStart="@drawable/ic_terms_icon"
-                        android:drawablePadding="16dp"
-                        android:drawableTint="?attr/textColor"
-                        android:text="Terms &amp; Conditions" />
-
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/settings_report_bugs"
+                    style="@style/SettingsItem"
+                    android:drawableStart="@drawable/ic_baseline_bug_report_24"
+                    android:drawablePadding="16dp"
+                    android:drawableTint="?attr/textColor"
+                    android:text="@string/report_a_bug" />
             </com.google.android.material.card.MaterialCardView>
 
-            <LinearLayout
-                android:id="@+id/app_version_info"
+            <!-- SUPPORT Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/category_support_help"
+                android:textColor="?attr/grayTextColor"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:letterSpacing="0.1" />
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingBottom="32dp">
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
-                    android:id="@+id/app_version"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="?attr/grayTextColor"
-                    android:textSize="14sp"
-                    tools:text="Version 4.0.1" />
+                    android:id="@+id/settings_faq"
+                    style="@style/SettingsItem"
+                    android:paddingVertical="16dp"
+                    android:drawableStart="@drawable/baseline_help_outline_24"
+                    android:drawablePadding="16dp"
+                    android:drawableTint="?attr/textColor"
+                    android:text="@string/support_faqs" />
+            </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="4dp">
+            <!-- ABOUT & LEGAL Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/category_legal_info"
+                android:textColor="?attr/grayTextColor"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:letterSpacing="0.1" />
 
-                    <TextView
-                        android:id="@+id/commit_hash"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/grayTextColor"
-                        android:textSize="12sp"
-                        tools:text="abc1234" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=" • "
-                        android:textColor="?attr/grayTextColor" />
-
-                    <TextView
-                        android:id="@+id/build_date"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="?attr/grayTextColor"
-                        android:textSize="12sp"
-                        tools:text="2024-03-21" />
-                </LinearLayout>
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/dev_handle"
-                    android:textColor="?attr/grayTextColor"
-                    android:textSize="13sp"
-                    android:textStyle="italic"
-                    tools:text="@PluginStream" />
-            </LinearLayout>
+                    android:id="@+id/settings_see_with_dev"
+                    style="@style/SettingsItem"
+                    android:paddingVertical="16dp"
+                    android:drawableStart="@drawable/ic_outline_info_24"
+                    android:drawablePadding="16dp"
+                    android:drawableTint="?attr/textColor"
+                    android:text="@string/about_us" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                <TextView
+                    android:id="@+id/settings_privacy_policy"
+                    style="@style/SettingsItem"
+                    android:paddingVertical="16dp"
+                    android:drawableStart="@drawable/ic_policy_icon"
+                    android:drawablePadding="16dp"
+                    android:drawableTint="?attr/textColor"
+                    android:text="@string/privacy_policy" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="40dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="1dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
+                app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+                <TextView
+                    android:id="@+id/settings_terms"
+                    style="@style/SettingsItem"
+                    android:paddingVertical="16dp"
+                    android:drawableStart="@drawable/ic_terms_icon"
+                    android:drawablePadding="16dp"
+                    android:drawableTint="?attr/textColor"
+                    android:text="@string/terms_of_service" />
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

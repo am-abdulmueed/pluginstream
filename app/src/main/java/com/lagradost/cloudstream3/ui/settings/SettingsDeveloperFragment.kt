@@ -1,0 +1,107 @@
+package com.lagradost.cloudstream3.ui.settings
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.view.View
+import com.lagradost.cloudstream3.BuildConfig
+import com.lagradost.cloudstream3.CommonActivity
+import com.lagradost.cloudstream3.R
+import com.lagradost.cloudstream3.databinding.FragmentDeveloperBinding
+import com.lagradost.cloudstream3.mvvm.logError
+import com.lagradost.cloudstream3.ui.BaseFragment
+import com.lagradost.cloudstream3.ui.dialog.ContactDeveloperDialog
+import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setUpToolbar
+import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
+import com.lagradost.cloudstream3.ui.settings.Globals.TV
+import com.lagradost.cloudstream3.ui.settings.Globals.isLandscape
+import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
+import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
+import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
+import com.lagradost.cloudstream3.utils.UIHelper.navigate
+import com.lagradost.cloudstream3.utils.txt
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+
+class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
+    BaseFragment.BindingCreator.Inflate(FragmentDeveloperBinding::inflate)
+) {
+    override fun fixLayout(view: View) {
+        fixSystemBarsPadding(
+            view,
+            padBottom = isLandscape(),
+            padLeft = isLayout(TV or EMULATOR)
+        )
+    }
+
+    override fun onBindingCreated(binding: FragmentDeveloperBinding) {
+        setUpToolbar(R.string.dev_profile)
+
+        binding.apply {
+            fun openUrl(url: String?) {
+                if (url.isNullOrBlank()) return
+                try {
+                    val i = Intent(Intent.ACTION_VIEW)
+                    i.data = Uri.parse(url.trim().removeSurrounding("`"))
+                    startActivity(i)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            CommonActivity.getSocialLinks { json ->
+                val handles = json?.optJSONArray("social_handles")
+                if (handles != null) {
+                    for (i in 0 until handles.length()) {
+                        val handle = handles.getJSONObject(i)
+                        val platform = handle.optString("platform")
+                        val url = handle.optString("url")
+                        
+                        when (platform.lowercase()) {
+                            "instagram" -> settingsInstagram.setOnClickListener { openUrl(url) }
+                            "telegram" -> settingsTelegram.setOnClickListener { openUrl(url) }
+                        }
+                    }
+                } else {
+                    // Fallbacks
+                    settingsTelegram.setOnClickListener {
+                        openUrl("https://t.me/pluginstreamofficial")
+                    }
+                    settingsInstagram.setOnClickListener {
+                        openUrl("https://instagram.com/am.abdul.mueed")
+                    }
+                }
+            }
+
+            settingsGithub.setOnClickListener {
+                openUrl("https://github.com/am-abdulmueed")
+            }
+
+            settingsDevWebsite.setOnClickListener {
+                openUrl("https://am-abdulmueed.vercel.app")
+            }
+
+            val appVersionStr = BuildConfig.VERSION_NAME
+            val commitInfo = getString(R.string.commit_hash)
+            val buildTimestamp = SimpleDateFormat(
+                "yyyy-MM-dd",
+                Locale.getDefault()
+            ).apply { timeZone = TimeZone.getTimeZone("UTC") }
+                .format(Date(BuildConfig.BUILD_DATE))
+
+            appVersion.text = "Version $appVersionStr"
+            commitHash.text = commitInfo
+            buildDate.text = buildTimestamp
+            appVersionInfo.setOnLongClickListener {
+                clipboardHelper(
+                    txt(R.string.extension_version),
+                    "$appVersionStr $commitInfo $buildTimestamp"
+                )
+                true
+            }
+        }
+    }
+}

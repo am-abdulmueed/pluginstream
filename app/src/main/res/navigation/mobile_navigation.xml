@@ -498,6 +498,23 @@
         app:popEnterAnim="@anim/enter_anim"
         app:popExitAnim="@anim/exit_anim" />
     <action
+        android:id="@+id/action_navigation_global_to_navigation_developer"
+        app:destination="@id/navigation_developer"
+        app:enterAnim="@anim/enter_anim"
+        app:exitAnim="@anim/exit_anim"
+        app:popEnterAnim="@anim/enter_anim"
+        app:popExitAnim="@anim/exit_anim" />
+    <fragment
+        android:id="@+id/navigation_developer"
+        android:name="com.lagradost.cloudstream3.ui.settings.SettingsDeveloperFragment"
+        android:label="@string/dev_profile"
+        app:enterAnim="@anim/enter_anim"
+        app:exitAnim="@anim/exit_anim"
+        app:popEnterAnim="@anim/enter_anim"
+        app:popExitAnim="@anim/exit_anim"
+        tools:layout="@layout/fragment_developer" />
+
+    <action
         android:id="@+id/action_navigation_global_to_navigation_settings_extensions"
         app:destination="@id/navigation_settings_extensions"
         app:enterAnim="@anim/enter_anim"

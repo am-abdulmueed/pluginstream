@@ -69,6 +69,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
     private fun setRepositories(success: Boolean = true) {
         main {
             val ctx = context ?: return@main
+            binding?.loadingSpinner?.isVisible = true
             
             val pluginstreamJson = try {
                 // Try to fetch from GitHub first for fresh repositories
@@ -105,6 +106,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
 
             val repositories = RepositoryManager.getRepositories() + PREBUILT_REPOSITORIES + masterRepoRepos
             val hasRepos = repositories.isNotEmpty()
+            binding?.loadingSpinner?.isVisible = false
             binding?.repoRecyclerView?.isVisible = hasRepos
             binding?.blankRepoScreen?.isVisible = !hasRepos
 

@@ -140,6 +140,29 @@ android {
         }
     }
 
+    val taskNames = gradle.startParameter.taskNames
+    val isPrereleaseTask = taskNames.any { it.contains("prerelease", ignoreCase = true) }
+    val isStableTask = taskNames.any { it.contains("stable", ignoreCase = true) }
+
+    variantFilter {
+        val flavorNames = flavors.map { it.name }
+        if (isPrereleaseTask) {
+            if (flavorNames.contains("stable")) {
+                ignore = true
+            }
+        } else if (isStableTask) {
+            if (flavorNames.contains("prerelease")) {
+                ignore = true
+            }
+        } else {
+            // Default case (e.g. assembleDebug, build, etc.)
+            // Only build stable by default to avoid building prerelease unnecessarily
+            if (flavorNames.contains("prerelease")) {
+                ignore = true
+            }
+        }
+    }
+
     flavorDimensions.add("state")
     productFlavors {
         create("stable") {

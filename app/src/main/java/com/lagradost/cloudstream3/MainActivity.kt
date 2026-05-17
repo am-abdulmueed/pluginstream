@@ -771,6 +771,22 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
              * highlight the wrong one in UI.
              */
             when (destination.id) {
+                R.id.navigation_home -> {
+                    navRailView.menu.findItem(R.id.navigation_home)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_home)?.isChecked = true
+                }
+                R.id.navigation_search -> {
+                    navRailView.menu.findItem(R.id.navigation_search)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_search)?.isChecked = true
+                }
+                R.id.navigation_protube -> {
+                    navRailView.menu.findItem(R.id.navigation_protube)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_protube)?.isChecked = true
+                }
+                R.id.navigation_library -> {
+                    navRailView.menu.findItem(R.id.navigation_library)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_library)?.isChecked = true
+                }
                 in listOf(R.id.navigation_downloads, R.id.navigation_download_child, R.id.navigation_download_queue) -> {
                     navRailView.menu.findItem(R.id.navigation_downloads)?.isChecked = true
                     navView.menu.findItem(R.id.navigation_downloads)?.isChecked = true
@@ -995,6 +1011,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_search -> R.id.main_search
             R.id.navigation_library -> R.id.main_search
             R.id.navigation_downloads -> R.id.download_appbar
+            R.id.navigation_settings -> R.id.settings_toolbar
             R.id.navigation_protube -> R.id.web
             else -> null
         }
@@ -1700,7 +1717,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     val adButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.ad_button)
                     val adShareButton = dialogView.findViewById<android.view.View>(R.id.ad_share_button)
                     val adDebugButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.ad_debug_button)
-                    val countdownTimer = dialogView.findViewById<android.widget.TextView>(R.id.countdown_timer)
+                    val skipButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.skip_button)
                     val closeIcon = dialogView.findViewById<android.widget.ImageView>(R.id.close_icon)
                     val debugLogPanel = dialogView.findViewById<android.widget.LinearLayout>(R.id.debug_log_panel)
                     val debugLogText = dialogView.findViewById<android.widget.TextView>(R.id.debug_log_text)
@@ -1750,6 +1767,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                             }
                             "exclusive" -> {
                                 adBadge.setBackgroundResource(R.drawable.badge_bg_purple)
+                                adBadge.setTextColor(android.graphics.Color.WHITE)
+                            }
+                            "announcement", "new feature", "update" -> {
+                                adBadge.setBackgroundResource(R.drawable.badge_bg_announcement)
                                 adBadge.setTextColor(android.graphics.Color.WHITE)
                             }
                             "premium", "vip" -> {
@@ -1920,27 +1941,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                         dialog.dismiss()
                     }
 
-                    var remainingSeconds = autoCloseSeconds
-                    countdownTimer.text = "${remainingSeconds}"
-
-                    val countdownHandler = android.os.Handler(android.os.Looper.getMainLooper())
-                    val countdownRunnable = object : Runnable {
-                        override fun run() {
-                            remainingSeconds--
-                            if (remainingSeconds <= 0) {
-                                countdownTimer.isGone = true
-                                closeIcon.isVisible = true
-                                return
-                            }
-                            countdownTimer.text = "${remainingSeconds}"
-                            countdownHandler.postDelayed(this, 1000L)
-                        }
-                    }
-
-                    countdownHandler.postDelayed(countdownRunnable, 1000L)
-
-                    dialog.setOnDismissListener {
-                        countdownHandler.removeCallbacks(countdownRunnable)
+                    skipButton.setOnClickListener {
+                        dialog.dismiss()
                     }
 
                     setKey(LAST_DIALOG_AD_SHOW_TIME, currentTime)
@@ -2691,13 +2693,27 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             // write a nextFocus for the navrail
             rail.findViewById<View?>(R.id.navigation_settings)?.nextFocusDownId =
                 R.id.nav_footer_profile_card
-            for (id in arrayOf(
-                R.id.navigation_home,
-                R.id.navigation_search,
-                R.id.navigation_library,
-                R.id.navigation_downloads,
-                R.id.navigation_settings
-            )) {
+            
+            val navItems = if (isLayout(TV or EMULATOR)) {
+                arrayOf(
+                    R.id.navigation_home,
+                    R.id.navigation_search,
+                    R.id.navigation_protube,
+                    R.id.navigation_downloads,
+                    R.id.navigation_library,
+                    R.id.navigation_settings
+                )
+            } else {
+                arrayOf(
+                    R.id.navigation_home,
+                    R.id.navigation_search,
+                    R.id.navigation_game,
+                    R.id.navigation_protube,
+                    R.id.navigation_more
+                )
+            }
+
+            for (id in navItems) {
                 val view = rail.findViewById<View?>(id) ?: continue
                 prevId?.let { view.nextFocusUpId = it }
                 prevView?.nextFocusDownId = id

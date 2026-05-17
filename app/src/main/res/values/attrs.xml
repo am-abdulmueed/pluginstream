@@ -71,6 +71,8 @@
         <attr name="white" format="color" />
         <attr name="black" format="color" />
         <attr name="dividerColor" format="color" />
+        <attr name="dialogCardColor" format="color" />
+        <attr name="dialogButtonColor" format="color" />
     </declare-styleable>
 
     <declare-styleable name="PercentageCropImageView">

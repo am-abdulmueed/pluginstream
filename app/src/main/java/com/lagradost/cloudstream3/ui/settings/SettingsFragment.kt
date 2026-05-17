@@ -235,6 +235,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 settingsProviders to R.id.action_navigation_global_to_navigation_settings_providers,
                 settingsUpdates to R.id.action_navigation_global_to_navigation_settings_updates,
                 settingsExtensions to R.id.action_navigation_global_to_navigation_settings_extensions,
+                settingsSeeWithDev to R.id.action_navigation_global_to_navigation_developer,
             ).forEach { (view, navigationId) ->
                 view.apply {
                     setOnClickListener {
@@ -247,58 +248,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 }
             }
 
-            settingsRateApp.setOnClickListener {
-                showReviewDialog()
-            }
-
-            settingsFaq.setOnClickListener {
-                navigate(R.id.action_navigation_global_to_navigation_faq)
-            }
-
-            fun openUrl(url: String?) {
-                if (url.isNullOrBlank()) return
-                try {
-                    val i = Intent(Intent.ACTION_VIEW)
-                    i.data = Uri.parse(url.trim().removeSurrounding("`"))
-                    startActivity(i)
-                } catch (e: Exception) {
-                    logError(e)
-                }
-            }
-
-            CommonActivity.getSocialLinks { json ->
-                val handles = json?.optJSONArray("social_handles")
-                if (handles != null) {
-                    for (i in 0 until handles.length()) {
-                        val handle = handles.getJSONObject(i)
-                        val platform = handle.optString("platform")
-                        val url = handle.optString("url")
-                        
-                        when (platform.lowercase()) {
-                            "instagram" -> settingsInstagram.setOnClickListener { openUrl(url) }
-                            "telegram" -> settingsTelegram.setOnClickListener { openUrl(url) }
-                        }
-                    }
-                } else {
-                    // Fallbacks if fetch fails
-                    settingsTelegram.setOnClickListener {
-                        openUrl("https://t.me/pluginstreamofficial")
-                    }
-                    settingsInstagram.setOnClickListener {
-                        openUrl("https://instagram.com/am.abdul.mueed")
-                    }
-                }
-            }
-
-            settingsGithub.setOnClickListener {
-                openUrl("https://github.com/am-abdulmueed")
-            }
-
-            settingsDevWebsite.setOnClickListener {
-                openUrl("https://am-abdulmueed.vercel.app")
-            }
-
-            settingsEmail.setOnClickListener {
+            settingsReportBugs.setOnClickListener {
                 ContactDeveloperDialog().show(childFragmentManager, "ContactDeveloperDialog")
             }
 
@@ -318,27 +268,35 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             }
 
             settingsPrivacyPolicy.setOnClickListener {
-                  try {
-                      val bundle = Bundle()
-                      bundle.putString("type", "privacy")
-                      activity?.navigate(R.id.action_navigation_global_to_navigation_legal, bundle)
-                  } catch (e: Exception) {
-                      logError(e)
-                  }
-              }
-  
-              settingsTermsConditions.setOnClickListener {
-                  try {
-                      val bundle = Bundle()
-                      bundle.putString("type", "terms")
-                      activity?.navigate(R.id.action_navigation_global_to_navigation_legal, bundle)
-                  } catch (e: Exception) {
-                      logError(e)
-                  }
-              }
+                try {
+                    val bundle = Bundle()
+                    bundle.putString("type", "privacy")
+                    activity?.navigate(R.id.action_navigation_global_to_navigation_legal, bundle)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            settingsTerms.setOnClickListener {
+                try {
+                    val bundle = Bundle()
+                    bundle.putString("type", "terms")
+                    activity?.navigate(R.id.action_navigation_global_to_navigation_legal, bundle)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            settingsRateApp.setOnClickListener {
+                showReviewDialog()
+            }
+
+            settingsFaq.setOnClickListener {
+                navigate(R.id.action_navigation_global_to_navigation_faq)
+            }
 
             if (isLayout(TV)) {
-                listOf(settingsGithub, settingsTelegram, settingsInstagram, settingsDevWebsite, settingsEmail, settingsShare, settingsPrivacyPolicy, settingsTermsConditions).forEach {
+                listOf(settingsRateApp, settingsFaq).forEach {
                     it.isFocusable = true
                     it.isFocusableInTouchMode = true
                 }
@@ -348,20 +306,6 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             if (isLayout(TV)) {
                 settingsGeneral.requestFocus()
             }
-        }
-
-        val appVersion = BuildConfig.VERSION_NAME
-        val commitInfo = getString(R.string.commit_hash)
-        val buildTimestamp = SimpleDateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG,
-            Locale.getDefault()
-        ).apply { timeZone = TimeZone.getTimeZone("UTC")
-        }.format(Date(BuildConfig.BUILD_DATE)).replace("UTC", "")
-
-        binding.appVersion.text = appVersion
-        binding.buildDate.text = buildTimestamp
-        binding.appVersionInfo.setOnLongClickListener {
-            clipboardHelper(txt(R.string.extension_version), "$appVersion $commitInfo $buildTimestamp")
-            true
         }
     }
 

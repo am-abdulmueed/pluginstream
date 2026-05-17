@@ -50,8 +50,8 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
             "We're always looking for your ideas! If you want something new added to PluginStream, you can **contact us** through the Contact Us button or **DM us** on our official Instagram/Telegram."
         ),
         FAQItem(
-            "Movie Plugin Issues & Repo Fix 🎬",
-            "1. First try **switching** to a different plugin.\n2. If the problem persists, go to **Settings > Extensions** and delete old plugins.\n3. On the same screen, click **'Add Repository'**.\n4. Click on the second option and enter **code: 3737**."
+            "Movie Plugin Issues & Fix 🎬",
+            "1. First try **switching** to a different plugin.\n2. If the problem persists, go to **Settings > Extensions**.\n3. Click the **bin icon** at the top to remove all plugins.\n4. **Restart the app** (close and reopen) to fresh install all plugins."
         ),
         FAQItem(
             "If Bilibili and other providers not working? 🌐",

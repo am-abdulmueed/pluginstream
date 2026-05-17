@@ -20,6 +20,7 @@ import com.lagradost.cloudstream3.MainActivity.Companion.afterRepositoryLoadedEv
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.AddRepoInputBinding
 import com.lagradost.cloudstream3.databinding.FragmentExtensionsBinding
+import com.lagradost.cloudstream3.mvvm.logError
 import com.lagradost.cloudstream3.mvvm.observe
 import com.lagradost.cloudstream3.mvvm.observeNullable
 import com.lagradost.cloudstream3.plugins.RepositoryManager
@@ -35,8 +36,10 @@ import com.lagradost.cloudstream3.utils.AppContextUtils.addRepositoryDialog
 import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.main
+import com.lagradost.cloudstream3.plugins.PluginManager
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.setText
+import com.google.android.material.appbar.MaterialToolbar
 
 class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentExtensionsBinding::inflate)
@@ -75,6 +78,49 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
     override fun onBindingCreated(binding: FragmentExtensionsBinding) {
         setUpToolbar(R.string.extensions)
         setToolBarScrollFlags()
+
+        val settingsToolbar = view?.findViewById<MaterialToolbar>(R.id.settings_toolbar)
+        settingsToolbar?.inflateMenu(R.menu.menu_extensions)
+        settingsToolbar?.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.action_delete_all -> {
+                    val ctx = context ?: return@setOnMenuItemClickListener true
+                    val builder = AlertDialog.Builder(ctx, R.style.AlertDialogCustomTransparent)
+                    val dialogBinding = com.lagradost.cloudstream3.databinding.DialogDeleteConfirmationBinding.inflate(layoutInflater)
+                    
+                    builder.setView(dialogBinding.root)
+                    val dialog = builder.create()
+
+                    dialogBinding.btnDelete.setOnClickListener {
+                        ioSafe {
+                            try {
+                                PluginManager.deleteAllOnlinePlugins(ctx)
+                                main {
+                                    showToast(activity, R.string.apply_on_restart, Toast.LENGTH_LONG)
+                                    reloadRepositories()
+                                    dialog.dismiss()
+                                }
+                            } catch (e: Exception) {
+                                logError(e)
+                                main {
+                                    showToast(activity, "Error deleting plugins", Toast.LENGTH_SHORT)
+                                    dialog.dismiss()
+                                }
+                            }
+                        }
+                    }
+
+                    dialogBinding.btnCancel.setOnClickListener {
+                        dialog.dismiss()
+                    }
+
+                    dialog.show()
+                    dialog.setDefaultFocus()
+                    true
+                }
+                else -> false
+            }
+        }
 
         binding.repoRecyclerView.apply {
             setLinearListLayout(
@@ -253,15 +299,12 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
         val isTv = isLayout(TV)
         binding.apply {
-            addRepoButton.isGone = isTv
-            addRepoButtonImageviewHolder.isVisible = isTv
+            // addRepoButton.isGone = isTv // Keep it visible for now so TV users can add repos
 
             // Band-aid for Fire TV
             pluginStorageAppbar.isFocusableInTouchMode = isTv
-            addRepoButtonImageview.isFocusableInTouchMode = isTv
 
             addRepoButton.setOnClickListener(addRepositoryClick)
-            addRepoButtonImageview.setOnClickListener(addRepositoryClick)
         }
         reloadRepositories()
     }

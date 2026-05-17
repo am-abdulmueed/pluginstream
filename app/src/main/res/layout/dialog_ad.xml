@@ -187,20 +187,21 @@
                         android:visibility="gone" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/countdown_timer"
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/skip_button"
+                    style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="16dp"
-                    android:background="@drawable/countdown_bg"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="15s"
-                    android:textColor="?attr/textColor"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="12dp"
+                    android:text="Skip"
+                    android:textAllCaps="false"
+                    android:textColor="?attr/grayTextColor"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:fontFamily="@font/ds_digi"
+                    android:paddingHorizontal="16dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 

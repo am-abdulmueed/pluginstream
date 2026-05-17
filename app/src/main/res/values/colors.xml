@@ -61,10 +61,10 @@
     <!-- <color name="freeStorageColor">?attr/grayTextColor</color> #676767-->
 
     <!--Light Mode -->
-    <color name="lightPrimaryGrayBackground">#f1f1f1</color>
-    <color name="lightBitDarkerGrayBackground">#fff</color>
-    <color name="lightGrayBackground">#eeeeee</color>
-    <color name="lightItemBackground">#eeeeee</color>
+    <color name="lightPrimaryGrayBackground">#E8E8E8</color>
+    <color name="lightBitDarkerGrayBackground">#FFFFFF</color>
+    <color name="lightGrayBackground">#F5F5F5</color>
+    <color name="lightItemBackground">#F5F5F5</color>
     <color name="lightTextColor">#202125</color>
     <color name="lightGrayTextColor">#5f6267</color>
     <color name="lightIconColor">#5f6267</color>
@@ -79,8 +79,8 @@
     <color name="DraculaIconColor">#6272A4</color>
 
     <!-- Lavender Dreams Theme -->
-    <color name="LavenderPrimaryGrayBackground">#f7eefc</color>
-    <color name="LavenderBitDarkerGrayBackground">#fdf0fb</color>
+    <color name="LavenderPrimaryGrayBackground">#EEDDFA</color>
+    <color name="LavenderBitDarkerGrayBackground">#FFFFFF</color>
     <color name="LavenderGrayBackground">#b794f6</color>
     <color name="LavenderItemBackground">#f8f5ff</color>
     <color name="LavenderTextColor">#2d1b47</color>

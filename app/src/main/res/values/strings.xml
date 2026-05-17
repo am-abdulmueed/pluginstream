@@ -217,6 +217,26 @@
     <string name="telegram">Telegram</string>
     <string name="share_plugin">Share App</string>
     <string name="dev_website">Website</string>
+    <string name="see_with_dev">About</string>
+    <string name="about_dev_heading">About the Developer</string>
+    <string name="dev_label">👤 Developer:</string>
+    <string name="role_label">🎨 Role:</string>
+    <string name="philosophy_label">🌐 Philosophy:</string>
+    <string name="dev_name">Abdul Mueed</string>
+    <string name="dev_role">Developer &amp; UI/UX Designer</string>
+    <string name="dev_philosophy">Proud supporter of Free &amp; Open-Source Software.</string>
+    <string name="dev_tagline">"Crafting digital solutions with clean code, elegant design, and an open-source heart."</string>
+    <string name="dev_profile">About</string>
+    <string name="category_app_feedback">Preferences</string>
+    <string name="category_support_help">SUPPORT</string>
+    <string name="category_legal_info">ABOUT &amp; LEGAL</string>
+    <string name="rate_our_app">Rate Our App</string>
+    <string name="report_a_bug">Report a Bug</string>
+    <string name="about_us">About Us</string>
+    <string name="support_faqs">Support &amp; FAQs</string>
+    <string name="contact_developer">Report a Bug</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
     <string name="lightnovel">Light novel app by the same devs</string>
     <string name="anim">Anime app by the same devs</string>
     <string name="discord">Join Discord</string>
@@ -792,6 +812,8 @@
     <string name="game_icon">Game Icon</string>
     <string name="games">Games</string>
     <string name="search_games">Search games...</string>
-    <string name="contact_developer">Get in Touch</string>
     <string name="dev_handle">@PluginStream</string>
+    <string name="delete_all_extensions_warning">Warning ⚠️\n\nDeleting all extensions will reset everything. You will need to restart the app (close and reopen) to ensure all plugins are reinstalled fresh.</string>
+    <string name="delete_all_extensions">Delete All</string>
+    <string name="close">Close</string>
 </resources>
