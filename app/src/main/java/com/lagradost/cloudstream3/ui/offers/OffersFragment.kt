@@ -88,6 +88,11 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
             toggleDebugPanel()
         }
 
+        // Clear debug log button
+        binding.clearDebugLogButton.setOnClickListener {
+            viewModel.clearDebugLogs()
+        }
+
         // Copy debug log button
         binding.copyDebugLogButton.setOnClickListener {
             copyDebugLogs()

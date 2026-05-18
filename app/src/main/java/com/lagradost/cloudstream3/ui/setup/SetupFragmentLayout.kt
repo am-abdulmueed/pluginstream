@@ -52,6 +52,7 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
                 }
 
                 nextBtt.setOnClickListener {
+                    if (findNavController().currentDestination?.id != R.id.navigation_setup_layout) return@setOnClickListener
                     setKey(HAS_DONE_SETUP_KEY, true)
                     findNavController().navigate(R.id.navigation_home)
                 }

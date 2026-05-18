@@ -29,6 +29,12 @@ import io.noties.markwon.Markwon
 import io.noties.markwon.linkify.LinkifyPlugin
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 
+import io.noties.markwon.LinkResolver
+import io.noties.markwon.AbstractMarkwonPlugin
+import io.noties.markwon.MarkwonConfiguration
+import com.lagradost.cloudstream3.utils.UIHelper.navigate
+import android.provider.Settings as AndroidSettings
+
 class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentFaqBinding::inflate)
 ) {
@@ -51,7 +57,7 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
         ),
         FAQItem(
             "Movie Plugin Issues & Fix 🎬",
-            "1. First try **switching** to a different plugin.\n2. If the problem persists, go to **Settings > Extensions**.\n3. Click the **bin icon** at the top to remove all plugins.\n4. **Restart the app** (close and reopen) to fresh install all plugins."
+            "1. First try **switching** to a different plugin.\n2. If the problem persists, go to **[Settings > Extensions](app://extensions)**.\n3. Click the **[bin icon](app://extensions)** at the top to remove all plugins.\n4. **Restart the app** (close and reopen) to fresh install all plugins."
         ),
         FAQItem(
             "If Bilibili and other providers not working? 🌐",
@@ -75,7 +81,7 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
         ),
         FAQItem(
             "App running slow, what to do? 🔌",
-            "• Check your **internet connection**.\n• **Clear Cache** in Settings.\n• Always use the **Latest Version**."
+            "• Check your **internet connection**.\n• **[Clear Cache](app://clear_cache)** in Settings.\n• Always use the **Latest Version**."
         ),
         FAQItem(
             "Account & Privacy 🔒",
@@ -105,6 +111,38 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
         markwon = Markwon.builder(requireContext())
             .usePlugin(LinkifyPlugin.create())
             .usePlugin(StrikethroughPlugin.create())
+            .usePlugin(object : AbstractMarkwonPlugin() {
+                override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
+                    builder.linkResolver(object : LinkResolver {
+                        override fun resolve(view: View, link: String) {
+                            when {
+                                link == "app://clear_cache" -> {
+                                    try {
+                                        val intent = Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                            data = Uri.fromParts("package", view.context.packageName, null)
+                                        }
+                                        view.context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        // Fallback to default behavior if possible
+                                    }
+                                }
+                                link == "app://extensions" -> {
+                                    try {
+                                        activity?.navigate(R.id.action_navigation_global_to_navigation_settings_extensions)
+                                    } catch (e: Exception) {
+                                        // Fallback
+                                    }
+                                }
+                                else -> {
+                                    // Handle other links normally
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+                                    view.context.startActivity(intent)
+                                }
+                            }
+                        }
+                    })
+                }
+            })
             .build()
 
         faqAdapter = FAQAdapter(filteredList)

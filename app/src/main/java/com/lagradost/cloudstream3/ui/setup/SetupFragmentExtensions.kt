@@ -152,21 +152,28 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
 
                 nextBtt.setOnClickListener {
                     // Continue setup
-                    if (isSetup)
-                        if (
-                        // If any available languages
-                            synchronized(apis) { apis.distinctBy { it.lang }.size > 1 }
-                        ) {
-                            findNavController().navigate(R.id.action_navigation_setup_extensions_to_navigation_setup_provider_languages)
-                        } else {
-                            findNavController().navigate(R.id.action_navigation_setup_extensions_to_navigation_setup_media)
+                    if (isSetup) {
+                        val currentDestination = findNavController().currentDestination?.id
+                        if (currentDestination == R.id.navigation_setup_extensions) {
+                            if (
+                            // If any available languages
+                                synchronized(apis) { apis.distinctBy { it.lang }.size > 1 }
+                            ) {
+                                findNavController().navigate(R.id.action_navigation_setup_extensions_to_navigation_setup_provider_languages)
+                            } else {
+                                findNavController().navigate(R.id.action_navigation_setup_extensions_to_navigation_setup_media)
+                            }
                         }
-                    else
+                    } else {
                         findNavController().navigate(R.id.navigation_home)
+                    }
                 }
 
                 prevBtt.setOnClickListener {
-                    findNavController().navigate(R.id.navigation_setup_language)
+                    val currentDestination = findNavController().currentDestination?.id
+                    if (currentDestination == R.id.navigation_setup_extensions) {
+                        findNavController().navigate(R.id.navigation_setup_language)
+                    }
                 }
             }
         }

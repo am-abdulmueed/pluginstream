@@ -68,6 +68,7 @@ class SetupFragmentProviderLanguage : BaseFragment<FragmentSetupProviderLanguage
                 }
 
                 nextBtt.setOnClickListener {
+                    if (findNavController().currentDestination?.id != R.id.navigation_setup_provider_languages) return@setOnClickListener
                     findNavController().navigate(R.id.navigation_setup_provider_languages_to_navigation_setup_media)
                 }
 

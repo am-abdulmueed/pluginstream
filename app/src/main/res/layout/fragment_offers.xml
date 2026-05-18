@@ -36,9 +36,19 @@
                 android:textColor="?attr/colorPrimary" />
 
             <ImageButton
+                android:id="@+id/clearDebugLogButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_baseline_delete_outline_24"
+                app:tint="?attr/textColor"
+                android:contentDescription="Clear Debug Logs" />
+
+            <ImageButton
                 android:id="@+id/copyDebugLogButton"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginStart="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_baseline_content_copy_24"
                 app:tint="?attr/textColor"

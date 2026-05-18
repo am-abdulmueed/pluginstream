@@ -225,6 +225,43 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- SaasHub -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/saasHubButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#1AFFFFFF"
+                app:cardBackgroundColor="?attr/primaryBlackBackground"
+                android:foreground="?android:attr/selectableItemBackground">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="10dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_saashub"
+                        android:layout_marginBottom="6dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="SaasHub"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textColor"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </GridLayout>
 
         <!-- Center the last button -->

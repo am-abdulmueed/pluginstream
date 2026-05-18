@@ -117,15 +117,24 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
         fun getDisplayApiName(apiName: String?): String? {
             if (apiName == null) return null
             if (apiName == noneApi.name) return "Select"
-            return apiName.replace("moviebox", "Max", ignoreCase = true)
+            
+            // Normalize spaces and case for better matching
+            val normalizedName = apiName.replace("\\s+".toRegex(), " ").trim()
+            
+            return normalizedName
+                .replace("moviebox", "Max", ignoreCase = true)
                 .replace("moveibox", "Max", ignoreCase = true)
-                .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
                 .replace("castle tv (use vlc)", "PluginStream", ignoreCase = true)
+                .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
                 .replace("castle", "PluginStream", ignoreCase = true)
                 .replace("castel", "PluginStream", ignoreCase = true)
                 .replace("caslte", "PluginStream", ignoreCase = true)
-                .replace("TV (use vlc)", "", ignoreCase = true) // Remove any remaining suffix
+                .replace("TV (use vlc)", "", ignoreCase = true)
+                .replace("TV (usevlc)", "", ignoreCase = true)
+                .replace("(use vlc)", "", ignoreCase = true)
+                .replace("(usevlc)", "", ignoreCase = true)
                 .trim()
+                .replace("Bilibili (Use USA VPN) (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
                 .replace("Bilibili TV (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
                 .replace("BilibiliTV (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
                 .replace("BilibiliTV(Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)

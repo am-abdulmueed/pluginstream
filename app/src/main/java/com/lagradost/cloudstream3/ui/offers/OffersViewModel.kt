@@ -273,9 +273,22 @@ class OffersViewModel : ViewModel() {
                 val response = client.newCall(request).execute()
                 response.use {
                     if (it.isSuccessful) {
-                        val body = it.body?.string() ?: return@use null
-                        val jsonResponse = JSONObject(body)
-                        val offersArray = jsonResponse.optJSONArray("offers") ?: return@use null
+                        val body = it.body?.string() ?: run {
+                            addLog("[CPAGrip] Error: Empty response body")
+                            return@use null
+                        }
+                        
+                        val jsonResponse = try {
+                            JSONObject(body)
+                        } catch (e: Exception) {
+                            addLog("[CPAGrip] Error: Failed to parse JSON. Response start: ${body.take(100)}...")
+                            return@use null
+                        }
+
+                        val offersArray = jsonResponse.optJSONArray("offers") ?: run {
+                            addLog("[CPAGrip] Warning: No 'offers' array found in response. Response: $body")
+                            return@use null
+                        }
                         
                         val offers = mutableListOf<CpaOffer>()
                         for (i in 0 until offersArray.length()) {
@@ -372,6 +385,11 @@ class OffersViewModel : ViewModel() {
                 val existingOffers = existingOffersDeferred.await()
                 val newOffers = newOffersDeferred.await()
                 val cpaGripOffers = cpaGripOffersDeferred.await()
+                
+                // Final log for CPAGrip count to ensure visibility
+                cpaGripOffers?.let { 
+                    addLog("[CPAGrip] Final: Got ${it.size} offers")
+                }
 
                 val allOffers = mutableListOf<CpaOffer>()
                 existingOffers?.let { allOffers.addAll(it) }
@@ -402,7 +420,16 @@ class OffersViewModel : ViewModel() {
     }
 
     fun getDebugLogs(): String {
-        return logEntries.joinToString("\n")
+        return synchronized(logEntries) {
+            logEntries.joinToString("\n")
+        }
+    }
+
+    fun clearDebugLogs() {
+        synchronized(logEntries) {
+            logEntries.clear()
+            _debugLogs.postValue("")
+        }
     }
 
     fun getAmountForCountry(offer: CpaOffer, countryCode: String?): Double {

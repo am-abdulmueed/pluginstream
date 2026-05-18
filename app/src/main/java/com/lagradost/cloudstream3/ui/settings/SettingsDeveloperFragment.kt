@@ -26,9 +26,28 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+import java.time.LocalDate
+import java.time.Period
+
 class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentDeveloperBinding::inflate)
 ) {
+    private fun calculateAge(birthDateStr: String): Int {
+        return try {
+            val parts = birthDateStr.split("-")
+            val day = parts[0].toInt()
+            val month = parts[1].toInt()
+            val year = parts[2].toInt()
+
+            val birthDate = LocalDate.of(year, month, day)
+            val currentDate = LocalDate.now()
+
+            Period.between(birthDate, currentDate).years
+        } catch (e: Exception) {
+            19
+        }
+    }
+
     override fun fixLayout(view: View) {
         fixSystemBarsPadding(
             view,
@@ -83,6 +102,24 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
             settingsDevWebsite.setOnClickListener {
                 openUrl("https://am-abdulmueed.vercel.app")
             }
+
+            settingsEmail.setOnClickListener {
+                try {
+                    val intent = Intent(Intent.ACTION_SENDTO)
+                    intent.data = Uri.parse("mailto:am.abdulmueed3@gmail.com")
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    logError(e)
+                }
+            }
+
+            // Update dynamic age in philosophy/bio with Bullet Points
+            val age = calculateAge("21-07-2006")
+            val bioPoints = "• I’m a $age-year-old Web & App Developer and freelancer from Pakistan.\n" +
+                           "• Focused on Full Stack development, currently exploring Rust & Go.\n" +
+                           "• Passionate games lover, with a vision to build and work in the gaming industry in the future."
+            devPhilosophy.text = bioPoints
+            devPhilosophy.setLineSpacing(8f, 1f) // Use setLineSpacing instead of property assignment
 
             val appVersionStr = BuildConfig.VERSION_NAME
             val commitInfo = getString(R.string.commit_hash)

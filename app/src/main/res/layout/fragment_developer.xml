@@ -106,53 +106,28 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="24dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="20dp">
+                        android:orientation="horizontal">
 
                         <View
                             android:layout_width="4dp"
                             android:layout_height="24dp"
-                            android:background="#FFD700" />
+                            android:background="?attr/textColor"
+                            android:alpha="0.7" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
-                            android:text="@string/about_dev_heading"
+                            android:text="About Me"
                             android:textColor="?attr/textColor"
                             android:textSize="22sp"
                             android:fontFamily="@font/google_sans"
                             android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- Developer Info Items -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginBottom="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/dev_label"
-                            android:textColor="#FFD700"
-                            android:textStyle="bold"
-                            android:textSize="14sp"
-                            android:textAllCaps="true"
-                            android:letterSpacing="0.05" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/dev_name"
-                            android:textColor="?attr/textColor"
-                            android:textSize="18sp"
-                            android:layout_marginTop="2dp"
-                            android:fontFamily="@font/google_sans" />
-                    </LinearLayout>
-
+                    <!-- ROLE SECTION -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -163,9 +138,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/role_label"
-                            android:textColor="#FFD700"
+                            android:textColor="?attr/textColor"
+                            android:alpha="0.6"
                             android:textStyle="bold"
-                            android:textSize="14sp"
+                            android:textSize="11sp"
                             android:textAllCaps="true"
                             android:letterSpacing="0.05" />
 
@@ -174,11 +150,132 @@
                             android:layout_height="wrap_content"
                             android:text="@string/dev_role"
                             android:textColor="?attr/textColor"
-                            android:textSize="18sp"
+                            android:textSize="14sp"
                             android:layout_marginTop="2dp"
                             android:fontFamily="@font/google_sans" />
                     </LinearLayout>
 
+                    <!-- PROFILE SECTION (Dynamic Age) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/dev_profile_label"
+                            android:textColor="?attr/textColor"
+                            android:alpha="0.6"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05" />
+
+                        <TextView
+                            android:id="@+id/dev_philosophy"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/textColor"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp"
+                            android:paddingStart="16dp"
+                            android:fontFamily="@font/google_sans" />
+                    </LinearLayout>
+
+                    <!-- EXPERTISE SECTION -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/expertise_label"
+                            android:textColor="?attr/textColor"
+                            android:alpha="0.6"
+                            android:textStyle="bold"
+                            android:textSize="11sp"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.05" />
+
+                        <!-- Mobile Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="6dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Mobile: "
+                                android:textColor="?attr/textColor"
+                                android:alpha="0.5"
+                                android:textStyle="bold"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Kotlin • Flutter • Jetpack Compose • React Native"
+                                android:textColor="?attr/textColor"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                        </LinearLayout>
+
+                        <!-- Web Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="4dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Web &amp; Backend: "
+                                android:textColor="?attr/textColor"
+                                android:alpha="0.5"
+                                android:textStyle="bold"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Next.js • Node.js • Python"
+                                android:textColor="?attr/textColor"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                        </LinearLayout>
+
+                        <!-- Desktop Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="4dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Desktop: "
+                                android:textColor="?attr/textColor"
+                                android:alpha="0.5"
+                                android:textStyle="bold"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Electron • Flutter • Kotlin (JVM)"
+                                android:textColor="?attr/textColor"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- PHILOSOPHY SECTION -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -189,21 +286,21 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/philosophy_label"
-                            android:textColor="#FFD700"
+                            android:textColor="?attr/textColor"
+                            android:alpha="0.6"
                             android:textStyle="bold"
-                            android:textSize="14sp"
+                            android:textSize="11sp"
                             android:textAllCaps="true"
                             android:letterSpacing="0.05" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/dev_philosophy"
+                            android:text="@string/dev_philosophy_text"
                             android:textColor="?attr/textColor"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
                             android:layout_marginTop="2dp"
-                            android:fontFamily="@font/google_sans"
-                            android:lineSpacingExtra="2dp" />
+                            android:fontFamily="@font/google_sans" />
                     </LinearLayout>
 
                     <!-- Catchy Quote/Tagline Section -->
@@ -242,94 +339,133 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="12dp"
                 android:text="Connect"
-                android:textColor="?attr/grayTextColor"
-                android:textSize="14sp"
+                android:textColor="?attr/textColor"
+                android:alpha="0.6"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:textAllCaps="true"
                 android:letterSpacing="0.1" />
 
-            <!-- Contact Links -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Horizontal Social Icons Row -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="32dp">
 
-                <TextView
+                <!-- GitHub -->
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/settings_github"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_github_logo"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/github" />
-            </com.google.android.material.card.MaterialCardView>
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="12dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/dividerColor"
+                    app:cardBackgroundColor="?attr/primaryGrayBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_github_logo"
+                        app:tint="?attr/textColor" />
+                </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_telegram"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_telegram_logo"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/telegram" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
-                    android:id="@+id/settings_instagram"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_instagram_logo"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/instagram" />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/dividerColor"
-                app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-                <TextView
+                <!-- Website -->
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/settings_dev_website"
-                    style="@style/SettingsItem"
-                    android:paddingVertical="16dp"
-                    android:drawableStart="@drawable/ic_baseline_public_24"
-                    android:drawablePadding="16dp"
-                    android:drawableTint="?attr/textColor"
-                    android:text="@string/dev_website" />
-            </com.google.android.material.card.MaterialCardView>
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="12dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/dividerColor"
+                    app:cardBackgroundColor="?attr/primaryGrayBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_baseline_public_24"
+                        app:tint="?attr/textColor" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Telegram -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/settings_telegram"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="12dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/dividerColor"
+                    app:cardBackgroundColor="?attr/primaryGrayBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_telegram_logo"
+                        app:tint="?attr/textColor" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Email -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/settings_email"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="12dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/dividerColor"
+                    app:cardBackgroundColor="?attr/primaryGrayBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_email_logo"
+                        app:tint="?attr/textColor" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Instagram -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/settings_instagram"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/dividerColor"
+                    app:cardBackgroundColor="?attr/primaryGrayBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_instagram_logo"
+                        app:tint="?attr/textColor" />
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/app_version_info"

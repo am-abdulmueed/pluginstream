@@ -352,32 +352,48 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         val deviceModel = Build.MODEL
         val androidVersion = Build.VERSION.RELEASE
 
-        // Smoothness Recommendation Logic
-        val isCompatible = availableRamGb >= 1 && freeStorageGb >= 1
+        // Smoothness Recommendation Logic (Thresholds: 2GB RAM & 1GB Storage)
+        val isCompatible = availableRamGb >= 2 && freeStorageGb >= 1
         val statusMessage = if (isCompatible) {
-            "✅ Your device meets the requirements! App will run smoothly."
+            "✅ Your device meets the recommended requirements! App will run smoothly."
         } else {
-            "⚠️ Low resources detected. You might experience minor lags."
+            "⚠️ Low resources detected. (Recommended: 2GB+ Free RAM & 1GB+ Free Space)"
         }
 
         val infoText = """
-            Device Model: $deviceModel
-            Android Version: OS $androidVersion
+            📱 Device Model: $deviceModel
+            🤖 Android Version: OS $androidVersion
             
-            Total RAM: ${totalRamGb} GB
-            Available RAM: ${availableRamGb} GB
+            🧠 Total RAM: ${totalRamGb} GB
+            💡 Available RAM: ${availableRamGb} GB (Req: 2GB)
             
-            Total Storage: ${totalStorageGb} GB
-            Free Space: ${freeStorageGb} GB
+            📁 Total Storage: ${totalStorageGb} GB
+            🚀 Free Space: ${freeStorageGb} GB (Req: 1GB)
             
+            ----------------------------------
             $statusMessage
         """.trimIndent()
 
-        MaterialAlertDialogBuilder(context, R.style.AlertDialogCustomTransparent)
+        // Theme adaptive and stylish Material Dialog
+        val dialog = MaterialAlertDialogBuilder(context)
             .setTitle(R.string.system_compatibility)
             .setMessage(infoText)
             .setPositiveButton(R.string.close, null)
-            .show()
+            .create()
+
+        dialog.show()
+
+        // Responsive width and auto-height
+        val window = dialog.window
+        window?.setLayout(
+            (context.resources.displayMetrics.widthPixels * 0.85).toInt(),
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        
+        // No hardcoded colors - uses theme attributes automatically
+        dialog.findViewById<android.widget.TextView>(android.R.id.message)?.apply {
+            textSize = 14f
+        }
     }
 
     private fun openAppSystemInfo() {
@@ -406,6 +422,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         val productHuntButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.productHuntButton)
         val sourceForgeButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.sourceForgeButton)
         val productCoolButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.productCoolButton)
+        val saasHubButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.saasHubButton)
 
         closeButton.setOnClickListener {
             dialog.dismiss()
@@ -433,6 +450,11 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
 
         productCoolButton.setOnClickListener {
             openUrl("https://www.productcool.com/product/pluginstream")
+            dialog.dismiss()
+        }
+
+        saasHubButton.setOnClickListener {
+            openUrl("https://www.saashub.com/pluginstream-reviews/new")
             dialog.dismiss()
         }
 
