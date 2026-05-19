@@ -3,39 +3,53 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="8dp"
+    android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="4dp"
-    app:cardCornerRadius="16dp"
+    app:cardCornerRadius="14dp"
     app:cardElevation="0dp"
-    app:strokeWidth="0dp"
-    app:cardBackgroundColor="?attr/primaryGrayBackground">
+    app:strokeWidth="0.8dp"
+    app:strokeColor="?attr/dividerColor"
+    app:cardBackgroundColor="?attr/primaryBlackBackground">
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="?attr/selectableItemBackground">
+        android:layout_height="52dp"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="16dp">
 
         <TextView
             android:id="@+id/text1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/pinicon"
             android:fontFamily="@font/google_sans"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="56dp"
             android:textColor="?attr/textColor"
-            android:textSize="16sp"
+            android:textSize="15sp"
+            android:textStyle="normal"
             tools:text="Provider Name" />
 
         <ImageView
             android:id="@+id/pinicon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="end|center_vertical"
-            android:layout_marginEnd="16dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:src="@drawable/pin_ic"
             android:visibility="gone"
             app:tint="?attr/textColor"
             tools:visibility="visible" />
-    </FrameLayout>
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/pin_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:visibility="gone"
+            app:useMaterialThemeColors="true"
+            tools:visibility="visible" />
+
+    </RelativeLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -11,7 +11,6 @@ android {
 }
 
 dependencies {
-    implementation 'com.unity3d.ads:unity-ads:4.12.2'
 }
 
 

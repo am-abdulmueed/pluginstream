@@ -271,9 +271,6 @@ dependencies {
     // FFmpeg Decoding
     implementation(libs.bundles.nextlib)
 
-    // Unity Ads
-    implementation("com.unity3d.ads:unity-ads:4.9.2")
-
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
     implementation("com.google.firebase:firebase-analytics")
@@ -285,6 +282,7 @@ dependencies {
 
     // UI Stuff
     implementation(libs.shimmer) // Shimmering Effect (Loading Skeleton)
+    implementation(libs.lottie)
     implementation(libs.palette.ktx) // Palette for Images -> Colors
     implementation(libs.tvprovider)
     implementation(libs.overlappingpanels) // Gestures

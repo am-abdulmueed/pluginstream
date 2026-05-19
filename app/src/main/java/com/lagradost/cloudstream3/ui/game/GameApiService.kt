@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 
 object GameApiService {
-    private const val GITHUB_RAW_URL = "https://raw.githubusercontent.com/am-abdulmueed/PluginStream-Games/main/games_final_lite.json"
+    private const val GITHUB_RAW_URL = "https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@main/games_final_lite.json"
     
     private val objectMapper = jacksonObjectMapper()
     private val client = Requests().apply {

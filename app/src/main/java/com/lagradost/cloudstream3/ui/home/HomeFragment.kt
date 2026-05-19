@@ -454,48 +454,94 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                 }
 
                 var pinnedphashset = DataStoreHelper.pinnedProviders.toHashSet()
+                var isPinningMode = false
+                val tempPinnedProviders = pinnedphashset.toMutableSet()
 
-                val listView = dialog.findViewById<ListView>(R.id.listview1)
+                val recyclerView = dialog.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.listview1)
+                val selfPinBtt = dialog.findViewById<View>(R.id.self_pin_btt)
+                selfPinBtt?.visibility = View.GONE
+                val donePinBtt = dialog.findViewById<View>(R.id.done_pin_btt)
+                
+                val providerNames = mutableListOf<String>()
+                var localUpdateList: (() -> Unit)? = null
+                val providerAdapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+                    inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
+                        val titleText: TextView = view.findViewById(R.id.text1)
+                        val pinIcon: ImageView = view.findViewById(R.id.pinicon)
+                        val pinCheckbox: com.google.android.material.checkbox.MaterialCheckBox = view.findViewById(R.id.pin_checkbox)
+                    }
 
-                val arrayAdapter = object : ArrayAdapter<String>(
-                    this, R.layout.sort_bottom_single_provider_choice,
-                    mutableListOf()
-                ) {
-                    override fun getView(
-                        position: Int,
-                        convertView: View?,
-                        parent: ViewGroup
-                    ): View {
-                        val view = convertView ?: LayoutInflater.from(context)
+                    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
+                        val view = LayoutInflater.from(parent.context)
                             .inflate(R.layout.sort_bottom_single_provider_choice, parent, false)
-                        val titleText = view.findViewById<TextView>(R.id.text1)
-                        val pinIcon = view.findViewById<ImageView>(R.id.pinicon)
-                        val api = currentValidApis[position]
-                        val name = getItem(position)
-                        titleText?.text = name
-                        val isPinned =
-                            pinnedphashset.contains(api.name) || isSmartPinned(api.name)
-                        pinIcon.visibility = if (isPinned) View.VISIBLE else View.GONE
-                        return view
+                        return ViewHolder(view)
                     }
-                }
-                listView?.adapter = arrayAdapter
-                listView?.choiceMode = AbsListView.CHOICE_MODE_SINGLE
 
-                listView?.setOnItemClickListener { _, _, i, _ ->
-                    if (currentValidApis.isNotEmpty()) {
-                        currentApiName = currentValidApis[i].name
-                        //to switch to apply simply remove this
-                        currentApiName.let(callback)
-                        dialog.dismissSafe()
+                    override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+                        val api = currentValidApis[position]
+                        val name = providerNames[position]
+                        val vh = holder as ViewHolder
+                        vh.titleText.text = name
+                        
+                        if (isPinningMode) {
+                            vh.pinIcon.visibility = View.GONE
+                            vh.pinCheckbox.visibility = View.VISIBLE
+                            vh.pinCheckbox.isChecked = tempPinnedProviders.contains(api.name)
+                            
+                            vh.pinCheckbox.setOnCheckedChangeListener { _, isChecked ->
+                                if (isChecked) tempPinnedProviders.add(api.name)
+                                else tempPinnedProviders.remove(api.name)
+                            }
+                            
+                            vh.itemView.setOnClickListener {
+                                vh.pinCheckbox.toggle()
+                            }
+                        } else {
+                            vh.pinCheckbox.visibility = View.GONE
+                            val isPinned = pinnedphashset.contains(api.name) || isSmartPinned(api.name)
+                            vh.pinIcon.visibility = if (isPinned) View.VISIBLE else View.GONE
+                            vh.pinCheckbox.setOnCheckedChangeListener(null)
+
+                            vh.itemView.setOnClickListener {
+                                if (currentValidApis.isNotEmpty()) {
+                                    currentApiName = currentValidApis[position].name
+                                    currentApiName.let(callback)
+                                    dialog.dismissSafe()
+                                }
+                            }
+                        }
+
+                        vh.itemView.setOnLongClickListener {
+                            if (!isPinningMode && currentValidApis.isNotEmpty() && position > 1) {
+                                val pinnedp = DataStoreHelper.pinnedProviders.toMutableList()
+                                val thisapi = currentValidApis[position].name
+                                if (pinnedp.contains(thisapi)) {
+                                    pinnedp.remove(thisapi)
+                                } else {
+                                    pinnedp.add(thisapi)
+                                }
+                                DataStoreHelper.pinnedProviders = pinnedp.toTypedArray()
+                                // Calling updateList via a side effect since it's defined below
+                                localUpdateList?.invoke()
+                            }
+                            true
+                        }
                     }
+
+                    override fun getItemCount(): Int = providerNames.size
                 }
+
+                recyclerView?.adapter = providerAdapter
 
                 fun updateList() {
                     DataStoreHelper.homePreference = preSelectedTypes
                     val pinnedp = DataStoreHelper.pinnedProviders.toList()
                     pinnedphashset = pinnedp.toHashSet()
-                    arrayAdapter.clear()
+                    if (!isPinningMode) {
+                        tempPinnedProviders.clear()
+                        tempPinnedProviders.addAll(pinnedphashset)
+                    }
+                    
                     val sortedApis = validAPIs
                         .filter {
                             it.hasMainPage && (pinnedphashset.contains(it.name) || it.supportedTypes.any(
@@ -531,30 +577,31 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         addAll(actualRemainingApis)
                     }
 
-                    val names =
+                    providerNames.clear()
+                    providerNames.addAll(
                         currentValidApis.map {
                             val displayName = getDisplayApiName(it.name) ?: it.name
                             if (isMultiLang) "${getFlagFromIso(it.lang)?.plus(" ") ?: ""}$displayName" else displayName
                         }
-                    val index = currentValidApis.map { it.name }.indexOf(currentApiName)
-                    listView?.setItemChecked(index, true)
-                    arrayAdapter.addAll(names)
-                    arrayAdapter.notifyDataSetChanged()
+                    )
+                    providerAdapter.notifyDataSetChanged()
                 }
-                // pin provider on hold
-                listView?.setOnItemLongClickListener { _, _, i, _ ->
-                    if (currentValidApis.isNotEmpty() && i > 1) {
-                        val pinnedp = DataStoreHelper.pinnedProviders.toMutableList()
-                        val thisapi = currentValidApis[i].name
-                        if (pinnedp.contains(thisapi)) {
-                            pinnedp.remove(thisapi)
-                        } else {
-                            pinnedp.add(thisapi)
-                        }
-                        DataStoreHelper.pinnedProviders = pinnedp.toTypedArray()
-                        updateList()
-                    }
-                    true
+
+                localUpdateList = ::updateList
+
+                /* selfPinBtt?.setOnClickListener {
+                    isPinningMode = true
+                    selfPinBtt.visibility = View.GONE
+                    donePinBtt?.visibility = View.VISIBLE
+                    providerAdapter.notifyDataSetChanged()
+                } */
+
+                donePinBtt?.setOnClickListener {
+                    isPinningMode = false
+                    donePinBtt.visibility = View.GONE
+                    // selfPinBtt?.visibility = View.VISIBLE
+                    DataStoreHelper.pinnedProviders = tempPinnedProviders.toTypedArray()
+                    updateList()
                 }
 
                 bindChips(
@@ -654,6 +701,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
     private var toggleRandomButton = false
 
     private var bottomSheetDialog: BottomSheetDialog? = null
+    private var updateListFunc: (() -> Unit)? = null
     private var homeMasterAdapter: HomeParentItemAdapterPreview? = null
 
     var lastSavedHomepage: String? = null

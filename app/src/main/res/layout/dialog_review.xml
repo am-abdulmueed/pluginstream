@@ -26,7 +26,7 @@
                 android:layout_height="48dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#1AFFFFFF"
+                app:cardBackgroundColor="?attr/boxItemBackground"
                 android:layout_alignParentStart="true">
                 
                 <ImageView
@@ -34,7 +34,7 @@
                     android:layout_height="match_parent"
                     android:src="@drawable/ic_star_rate"
                     android:padding="12dp"
-                    app:tint="?attr/colorPrimary" />
+                    app:tint="?attr/textColor" />
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
@@ -67,9 +67,9 @@
             android:textSize="14sp"
             android:textColor="?attr/grayTextColor"
             android:lineSpacingExtra="4dp"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="20dp" />
 
-        <!-- Platform Buttons Grid -->
+        <!-- Platform Buttons Grid (3 rows x 2 columns) -->
         <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#1AFFFFFF"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryBlackBackground"
                 android:foreground="?android:attr/selectableItemBackground">
                 <LinearLayout
@@ -95,17 +95,17 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="10dp">
+                    android:padding="12dp">
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_apkpure"
-                        android:layout_marginBottom="6dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="APKPure"
-                        android:textSize="11sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textColor"
                         android:gravity="center"
@@ -124,7 +124,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#1AFFFFFF"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryBlackBackground"
                 android:foreground="?android:attr/selectableItemBackground">
                 <LinearLayout
@@ -132,17 +132,17 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="10dp">
+                    android:padding="12dp">
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_github"
-                        android:layout_marginBottom="6dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="GitHub"
-                        android:textSize="11sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textColor"
                         android:gravity="center"
@@ -161,7 +161,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#1AFFFFFF"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryBlackBackground"
                 android:foreground="?android:attr/selectableItemBackground">
                 <LinearLayout
@@ -169,17 +169,17 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="10dp">
+                    android:padding="12dp">
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_product_hunt"
-                        android:layout_marginBottom="6dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Product Hunt"
-                        android:textSize="11sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textColor"
                         android:gravity="center"
@@ -198,7 +198,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#1AFFFFFF"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryBlackBackground"
                 android:foreground="?android:attr/selectableItemBackground">
                 <LinearLayout
@@ -206,17 +206,17 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="10dp">
+                    android:padding="12dp">
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_sourceforge"
-                        android:layout_marginBottom="6dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="SourceForge"
-                        android:textSize="11sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textColor"
                         android:gravity="center"
@@ -235,7 +235,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#1AFFFFFF"
+                app:strokeColor="?attr/dividerColor"
                 app:cardBackgroundColor="?attr/primaryBlackBackground"
                 android:foreground="?android:attr/selectableItemBackground">
                 <LinearLayout
@@ -243,17 +243,54 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="10dp">
+                    android:padding="12dp">
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
                         android:src="@drawable/ic_saashub"
-                        android:layout_marginBottom="6dp" />
+                        android:layout_marginBottom="8dp" />
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="SaasHub"
-                        android:textSize="11sp"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/textColor"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ProductCool -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/productCoolButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_margin="4dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/dividerColor"
+                app:cardBackgroundColor="?attr/primaryBlackBackground"
+                android:foreground="?android:attr/selectableItemBackground">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="12dp">
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_product_cool"
+                        android:layout_marginBottom="8dp" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ProductCool"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:textColor="?attr/textColor"
                         android:gravity="center"
@@ -264,59 +301,14 @@
 
         </GridLayout>
 
-        <!-- Center the last button -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_marginTop="4dp">
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/productCoolButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5"
-                android:layout_margin="4dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#1AFFFFFF"
-                app:cardBackgroundColor="?attr/primaryBlackBackground"
-                android:foreground="?android:attr/selectableItemBackground">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="10dp">
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_product_cool"
-                        android:layout_marginBottom="6dp" />
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="ProductCool"
-                        android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/textColor"
-                        android:gravity="center"
-                        android:maxLines="1"
-                        android:ellipsize="end" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Thank you for your support! 🙏"
             android:textSize="12sp"
-            android:textColor="?attr/colorPrimary"
+            android:textColor="?attr/grayTextColor"
             android:gravity="center"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="20dp" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

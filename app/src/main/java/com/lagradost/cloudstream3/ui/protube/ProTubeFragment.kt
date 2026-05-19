@@ -43,7 +43,6 @@ import com.lagradost.cloudstream3.ui.BaseFragment
 import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setSystemBarsPadding
 import com.lagradost.cloudstream3.utils.AdsManager
 import com.lagradost.cloudstream3.utils.Coroutines.main
-import com.unity3d.ads.*
 import com.google.android.abdul.protube.R as ProTubeR
 import org.json.JSONObject
 import java.io.IOException
@@ -72,10 +71,6 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
     private var isPip = false
 
     private lateinit var web: YTProWebview
-
-    private val unityGameID = "6072815"
-    private val rewardedID = "Rewarded_Android"
-    private val testMode = false
 
     companion object {
         private var webViewState: Bundle? = null
@@ -147,8 +142,6 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
             prefs?.edit()?.putBoolean("bgplay", true)?.apply()
         }
 
-        initUnityAds()
-
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (web.canGoBack()) {
@@ -159,63 +152,6 @@ class ProTubeFragment : BaseFragment<FragmentProtubeBinding>(
                 }
             }
         })
-    }
-
-    private fun initUnityAds() {
-        context?.let { ctx ->
-            UnityAds.initialize(ctx.applicationContext, unityGameID, testMode, object : IUnityAdsInitializationListener {
-                override fun onInitializationComplete() {
-                    // Disabled: showRewardDialog()
-                }
-
-                override fun onInitializationFailed(error: UnityAds.UnityAdsInitializationError?, message: String?) {
-                }
-            })
-        }
-    }
-
-    private fun showRewardDialog() {
-        context?.let { ctx ->
-            main {
-                val dialog = Dialog(ctx, ProTubeR.style.CustomDialog)
-                val dialogView = layoutInflater.inflate(ProTubeR.layout.dialog_reward_ad, null)
-                dialog.setContentView(dialogView)
-                dialog.setCancelable(false)
-
-            val dialogIcon = dialogView.findViewById<ImageView>(ProTubeR.id.dialog_icon)
-            if (Build.VERSION.SDK_INT >= 28) {
-                try {
-                    val source = ImageDecoder.createSource(ctx.resources, ProTubeR.drawable.ytpro)
-                    val drawable = ImageDecoder.decodeDrawable(source)
-                    dialogIcon.setImageDrawable(drawable)
-                    if (drawable is AnimatedImageDrawable) {
-                        drawable.start()
-                    }
-                } catch (e: IOException) {
-                    dialogIcon.setImageResource(ProTubeR.drawable.ytpro)
-                }
-            } else {
-                dialogIcon.setImageResource(ProTubeR.drawable.ytpro)
-            }
-
-            val btnWatch = dialogView.findViewById<Button>(ProTubeR.id.btn_watch_ad)
-            btnWatch.setOnClickListener {
-                dialog.dismiss()
-                loadRewardedAd()
-            }
-
-            val window = dialog.window
-            if (window != null) {
-                val lp = WindowManager.LayoutParams()
-                lp.copyFrom(window.attributes)
-                lp.width = (ctx.resources.displayMetrics.widthPixels * 0.9).toInt()
-                lp.height = WindowManager.LayoutParams.WRAP_CONTENT
-                window.attributes = lp
-            }
-
-            dialog.show()
-            }
-        }
     }
 
     private fun loadRewardedAd() {

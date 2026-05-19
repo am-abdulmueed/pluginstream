@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
@@ -23,6 +24,10 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import android.Manifest
+import android.content.pm.PackageManager
+import com.airbnb.lottie.LottieAnimationView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -112,17 +117,18 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     private val searchViewModel: SearchViewModel by activityViewModels()
     private var bottomSheetDialog: BottomSheetDialog? = null
 
-    private val speechRecognizerLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val data: Intent? = result.data
-                val matches = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
-                if (!matches.isNullOrEmpty()) {
-                    val recognizedText = matches[0]
-                    binding?.mainSearch?.setQuery(recognizedText, true)
-                }
-            }
+    private lateinit var voiceSearchManager: VoiceSearchManager
+    private var voiceBottomSheetDialog: BottomSheetDialog? = null
+
+    private val requestAudioPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            startModernVoiceSearch()
+        } else {
+            showToast("Microphone permission required for voice search")
         }
+    }
 
     override fun pickLayout(): Int? =
         if (isLayout(TV or EMULATOR)) R.layout.fragment_search_tv else R.layout.fragment_search
@@ -143,6 +149,9 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         hideKeyboard()
         bottomSheetDialog?.ownHide()
         activity?.detachBackPressedCallback("SearchFragment")
+        if (::voiceSearchManager.isInitialized) {
+            voiceSearchManager.destroy()
+        }
         super.onDestroyView()
     }
 
@@ -216,6 +225,55 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         }
     }
 
+    private fun setupVoiceSearch() {
+        voiceSearchManager = VoiceSearchManager(requireContext(), object : VoiceSearchManager.VoiceSearchCallback {
+            override fun onListeningStarted() {
+                showVoiceBottomSheet()
+            }
+
+            override fun onResultsFound(text: String) {
+                voiceBottomSheetDialog?.dismiss()
+                binding?.mainSearch?.setQuery(text, true)
+            }
+
+            override fun onErrorOccurred(errorMsg: String) {
+                voiceBottomSheetDialog?.dismiss()
+                showToast(errorMsg)
+            }
+
+            override fun onListeningStopped() {
+                val lottieView = voiceBottomSheetDialog?.findViewById<LottieAnimationView>(R.id.voiceLottieAnimation)
+                lottieView?.pauseAnimation()
+            }
+        })
+    }
+
+    private fun showVoiceBottomSheet() {
+        if (voiceBottomSheetDialog == null) {
+            voiceBottomSheetDialog = BottomSheetDialog(requireContext(), R.style.AppBottomSheetDialogTheme).apply {
+                setContentView(R.layout.dialog_voice_search)
+                setOnDismissListener { voiceSearchManager.stopListening() }
+            }
+        }
+        
+        voiceBottomSheetDialog?.findViewById<TextView>(R.id.voiceStatusText)?.text = "Listening for movie name..."
+        voiceBottomSheetDialog?.findViewById<LottieAnimationView>(R.id.voiceLottieAnimation)?.playAnimation()
+        
+        voiceBottomSheetDialog?.show()
+    }
+
+    private fun onMicButtonClicked() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startModernVoiceSearch()
+        } else {
+            requestAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    private fun startModernVoiceSearch() {
+        voiceSearchManager.startListening()
+    }
+
     override fun fixLayout(view: View) {
         fixSystemBarsPadding(
             view,
@@ -234,6 +292,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         savedInstanceState: Bundle?
     ) {
         reloadRepos()
+        setupVoiceSearch()
         binding.apply {
             val adapter =
                 SearchAdapter(
@@ -249,30 +308,8 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
             searchLoadingBar.alpha = 0f
         }
 
-        binding.voiceSearch.setOnClickListener { searchView ->
-            searchView?.context?.let { ctx ->
-                try {
-                    if (!SpeechRecognizer.isRecognitionAvailable(ctx)) {
-                        showToast(R.string.speech_recognition_unavailable)
-                    } else {
-                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                            putExtra(
-                                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-                            )
-                            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-                            putExtra(
-                                RecognizerIntent.EXTRA_PROMPT,
-                                ctx.getString(R.string.begin_speaking)
-                            )
-                        }
-                        speechRecognizerLauncher.launch(intent)
-                    }
-                } catch (_: Throwable) {
-                    // launch may throw
-                    showToast(R.string.speech_recognition_unavailable)
-                }
-            }
+        binding.voiceSearch.setOnClickListener {
+            onMicButtonClicked()
         }
 
         val searchExitIcon =

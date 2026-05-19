@@ -21,7 +21,7 @@ object GameCacheManager {
     private const val KEY_LAST_COMMIT = "last_commit_hash"
     private const val KEY_CACHE_TIMESTAMP = "cache_timestamp"
     
-    private const val GAMES_JSON_URL = "https://raw.githubusercontent.com/am-abdulmueed/PluginStream-Games/main/games_final_lite.json"
+    private const val GAMES_JSON_URL = "https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@main/games_final_lite.json"
     private const val GITHUB_API_URL = "https://api.github.com/repos/am-abdulmueed/PluginStream-Games/commits?path=games_final_lite.json&per_page=1"
     
     private val objectMapper = jacksonObjectMapper()

@@ -24,7 +24,7 @@ The Games tab in CloudStream3 provides users with access to a curated collection
 - **Icons**: `app/src/main/res/drawable/ic_game_selector.xml`, `app/src/main/res/drawable/ic_game_placeholder.xml`
 
 ### External Data
-- **Games JSON**: `https://raw.githubusercontent.com/am-abdulmueed/PluginStream-Games/main/games_final_lite.json`
+- **Games JSON**: `https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@main/games_final_lite.json`
 - **GitHub API**: `https://api.github.com/repos/am-abdulmueed/PluginStream-Games/commits`
 
 ## Data Models
@@ -81,7 +81,7 @@ data class GameImages(
 ## API Integration
 
 ### GitHub-Based Data Source
-- **Primary URL**: `https://raw.githubusercontent.com/am-abdulmueed/PluginStream-Games/main/games_final_lite.json`
+- **Primary URL**: `https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@main/games_final_lite.json`
 - **Version Control**: GitHub API for commit hash checking
 - **Update Detection**: Smart cache invalidation based on file changes
 

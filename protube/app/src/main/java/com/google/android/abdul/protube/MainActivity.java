@@ -26,8 +26,6 @@ import javax.net.ssl.HttpsURLConnection;
 import java.util.*;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
-import com.unity3d.ads.*;
-import com.unity3d.services.banners.*;
 
 public class MainActivity extends Activity {
 
@@ -47,13 +45,6 @@ public class MainActivity extends Activity {
     private YTProWebview web;
     private OnBackInvokedCallback backCallback;
 
-    private String unityGameID = "6072815";
-    private String rewardedID = "Rewarded_Android";
-    private String bannerID = "Banner_Android";
-    private boolean testMode = false;
-    private BannerView bannerView;
-    private FrameLayout bannerContainer;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,65 +61,6 @@ public class MainActivity extends Activity {
         load(false);
 
         MainActivity.this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        initUnityAds();
-    }
-
-    private void initUnityAds() {
-        UnityAds.initialize(getApplicationContext(), unityGameID, testMode, new IUnityAdsInitializationListener() {
-            @Override
-            public void onInitializationComplete() {
-                // Disabled: loadBannerAd();
-                // Disabled: showRewardDialog();
-            }
-
-            @Override
-            public void onInitializationFailed(UnityAds.UnityAdsInitializationError error, String message) {
-            }
-        });
-    }
-
-    private void showRewardDialog() {
-        runOnUiThread(() -> {
-            Dialog dialog = new Dialog(this, R.style.CustomDialog);
-            View view = getLayoutInflater().inflate(R.layout.dialog_reward_ad, null);
-            dialog.setContentView(view);
-            dialog.setCancelable(false);
-            
-            ImageView dialogIcon = view.findViewById(R.id.dialog_icon);
-            if (Build.VERSION.SDK_INT >= 28) {
-                try {
-                    ImageDecoder.Source source = ImageDecoder.createSource(getResources(), R.drawable.ytpro);
-                    Drawable drawable = ImageDecoder.decodeDrawable(source);
-                    dialogIcon.setImageDrawable(drawable);
-                    if (drawable instanceof AnimatedImageDrawable) {
-                        ((AnimatedImageDrawable) drawable).start();
-                    }
-                } catch (IOException e) {
-                    dialogIcon.setImageResource(R.drawable.ytpro);
-                }
-            } else {
-                dialogIcon.setImageResource(R.drawable.ytpro);
-            }
-            
-            Button btnWatch = view.findViewById(R.id.btn_watch_ad);
-            btnWatch.setOnClickListener(v -> {
-                dialog.dismiss();
-                loadRewardedAd();
-            });
-
-            // Make it responsive (set width limit)
-            Window window = dialog.getWindow();
-            if (window != null) {
-                WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-                lp.copyFrom(window.getAttributes());
-                lp.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
-                lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
-                window.setAttributes(lp);
-            }
-            
-            dialog.show();
-        });
     }
 
     private void showFollowDialog() {
@@ -186,60 +118,6 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
     
-    private void loadRewardedAd() {
-        UnityAds.load(rewardedID, new IUnityAdsLoadListener() {
-            @Override
-            public void onUnityAdsAdLoaded(String placementId) {
-                UnityAds.show(MainActivity.this, rewardedID, new IUnityAdsShowListener() {
-                    @Override
-                    public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {}
-
-                    @Override
-                    public void onUnityAdsShowStart(String placementId) {}
-
-                    @Override
-                    public void onUnityAdsShowClick(String placementId) {}
-
-                    @Override
-                    public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
-                        SharedPreferences prefs = getSharedPreferences("YTPRO", MODE_PRIVATE);
-                        if (prefs.getInt("launch_count", 0) == 3 && !prefs.getBoolean("ig_followed", false)) {
-                            prefs.edit().putBoolean("ig_followed", true).apply();
-                            showFollowDialog();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {
-            }
-        });
-    }
-
-    private void loadBannerAd() {
-        bannerContainer = findViewById(R.id.banner_container);
-        bannerView = new BannerView(this, bannerID, new UnityBannerSize(320, 50));
-        bannerView.setListener(new BannerView.IListener() {
-            @Override
-            public void onBannerLoaded(BannerView bannerAdView) {}
-
-            @Override
-            public void onBannerShown(BannerView bannerAdView) {}
-
-            @Override
-            public void onBannerClick(BannerView bannerAdView) {}
-
-            @Override
-            public void onBannerFailedToLoad(BannerView bannerAdView, BannerErrorInfo errorInfo) {}
-
-            @Override
-            public void onBannerLeftApplication(BannerView bannerAdView) {}
-        });
-        bannerContainer.addView(bannerView);
-        bannerView.load();
-    }
-
     public void load(boolean dl) {
 
         web = findViewById(R.id.web);
