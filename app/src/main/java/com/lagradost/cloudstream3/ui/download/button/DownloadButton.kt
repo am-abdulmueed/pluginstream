@@ -42,12 +42,12 @@ class DownloadButton(context: Context, attributeSet: AttributeSet) :
         textView: TextView?,
         callback: (DownloadClickEvent) -> Unit
     ) {
-        this.findViewById<MaterialButton>(R.id.download_movie_button)?.setOnClickListener {
-            val activity = context.getActivity() ?: return@setOnClickListener
-            AdsManager.showRewardedAd(activity) {
-                callback.invoke(DownloadClickEvent(it.id, card))
-            }
-        }
+        this.setDefaultClickListener(
+            this.findViewById<MaterialButton>(R.id.download_movie_button),
+            textView,
+            card,
+            callback
+        )
     }
 
     @SuppressLint("SetTextI18n")
