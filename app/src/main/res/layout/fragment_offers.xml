@@ -133,12 +133,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:paddingHorizontal="24dp"
+                    android:paddingTop="32dp"
+                    android:paddingBottom="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Offers"
+                        android:text="Exclusive Offers"
                         android:textColor="?attr/textColor"
                         android:textSize="32sp"
                         android:textStyle="bold"
@@ -147,7 +149,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="You can choose any offer"
+                        android:text="Complete tasks to earn rewards"
                         android:textColor="?attr/grayTextColor"
                         android:textSize="15sp"
                         android:layout_marginTop="4dp"

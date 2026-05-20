@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.AbsListView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
@@ -19,6 +20,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
@@ -347,50 +349,86 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
 
                     val cancelBtt = dialog.findViewById<MaterialButton>(R.id.cancel_btt)
                     val applyBtt = dialog.findViewById<MaterialButton>(R.id.apply_btt)
+                    val selfPinBtt = dialog.findViewById<View>(R.id.self_pin_btt)
+                    selfPinBtt?.visibility = View.GONE
+                    val donePinBtt = dialog.findViewById<View>(R.id.done_pin_btt)
+                    donePinBtt?.visibility = View.GONE
+                    val searchBar = dialog.findViewById<EditText>(R.id.search_bar_edit_text)
+                    val recyclerView = dialog.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.listview1)
 
-                    val listView = dialog.findViewById<ListView>(R.id.listview1)
-                    val arrayAdapter = ArrayAdapter<String>(ctx, R.layout.sort_bottom_single_choice)
-                    listView?.adapter = arrayAdapter
-                    listView?.choiceMode = AbsListView.CHOICE_MODE_MULTIPLE
+                    val providerNames = mutableListOf<String>()
+                    var currentSearchQuery = ""
 
-                    listView?.setOnItemClickListener { _, _, i, _ ->
-                        if (currentValidApis.isNotEmpty()) {
-                            val api = currentValidApis[i].name
-                            if (currentSelectedApis.contains(api)) {
-                                listView.setItemChecked(i, false)
-                                currentSelectedApis -= api
-                            } else {
-                                listView.setItemChecked(i, true)
-                                currentSelectedApis += api
+                    val providerAdapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+                        inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
+                            val titleText: TextView = view.findViewById(R.id.text1)
+                            val pinCheckbox: com.google.android.material.checkbox.MaterialCheckBox = view.findViewById(R.id.pin_checkbox)
+                            val pinIcon: ImageView = view.findViewById(R.id.pinicon)
+                            val prefixIcon: ImageView = view.findViewById(R.id.prefix_icon)
+                        }
+
+                        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
+                            val view = LayoutInflater.from(parent.context)
+                                .inflate(R.layout.sort_bottom_single_provider_choice, parent, false)
+                            return ViewHolder(view)
+                        }
+
+                        override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+                            val api = currentValidApis[position]
+                            val name = providerNames[position]
+                            val vh = holder as ViewHolder
+                            vh.titleText.text = name
+                            vh.pinIcon.visibility = View.GONE
+                            vh.prefixIcon.visibility = View.GONE
+                            
+                            vh.pinCheckbox.visibility = View.VISIBLE
+                            vh.pinCheckbox.setOnCheckedChangeListener(null)
+                            vh.pinCheckbox.isChecked = currentSelectedApis.contains(api.name)
+                            
+                            vh.pinCheckbox.setOnCheckedChangeListener { _, isChecked ->
+                                if (isChecked) currentSelectedApis += api.name
+                                else currentSelectedApis -= api.name
+                            }
+                            
+                            vh.itemView.setOnClickListener {
+                                vh.pinCheckbox.toggle()
                             }
                         }
+
+                        override fun getItemCount(): Int = currentValidApis.size
                     }
+
+                    recyclerView?.adapter = providerAdapter
 
                     fun updateList(types: List<TvType>) {
                         DataStoreHelper.searchPreferenceTags = types
 
-                        arrayAdapter.clear()
-                        currentValidApis = validAPIs.filter { api ->
+                        val allFilteredApis = validAPIs.filter { api ->
                             api.supportedTypes.any {
                                 types.contains(it)
                             }
                         }.sortedBy { it.name.lowercase() }
 
-                        val names = currentValidApis.map {
+                        currentValidApis = allFilteredApis.filter { 
+                            it.name.contains(currentSearchQuery, ignoreCase = true)
+                        }
+
+                        providerNames.clear()
+                        providerNames.addAll(currentValidApis.map {
                             val displayName = HomeFragment.getDisplayApiName(it.name) ?: it.name
                             if (isMultiLang) "${
                                 SubtitleHelper.getFlagFromIso(
                                     it.lang
                                 )?.plus(" ") ?: ""
                             }$displayName" else displayName
-                        }
-                        for ((index, api) in currentValidApis.map { it.name }.withIndex()) {
-                            listView?.setItemChecked(index, currentSelectedApis.contains(api))
-                        }
+                        })
+                        
+                        providerAdapter.notifyDataSetChanged()
+                    }
 
-                        //arrayAdapter.notifyDataSetChanged()
-                        arrayAdapter.addAll(names)
-                        arrayAdapter.notifyDataSetChanged()
+                    searchBar?.addTextChangedListener { text ->
+                        currentSearchQuery = text?.toString() ?: ""
+                        updateList(selectedSearchTypes.toList())
                     }
 
                     bindChips(
@@ -410,11 +448,6 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                             )
 
                         }
-                    }
-
-
-                    cancelBtt?.setOnClickListener {
-                        dialog.dismissSafe()
                     }
 
                     cancelBtt?.setOnClickListener {

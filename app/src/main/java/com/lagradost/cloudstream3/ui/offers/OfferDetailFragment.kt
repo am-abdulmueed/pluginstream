@@ -89,6 +89,9 @@ class OfferDetailFragment : BaseFragment<FragmentOfferDetailBinding>(
         // Set title
         binding.detailOfferTitle.text = offer.title
 
+        // Set payout label
+        binding.detailPayoutLabel.text = "${offer.payoutCurrency ?: "USD"} ${String.format("%.2f", offer.amount)} Reward"
+
         // Install button click - open link in browser
         binding.detailInstallButton.setOnClickListener {
             openOfferLink(offer.link)

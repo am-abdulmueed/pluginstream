@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
@@ -21,6 +22,7 @@ import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
@@ -461,13 +463,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                 val selfPinBtt = dialog.findViewById<View>(R.id.self_pin_btt)
                 selfPinBtt?.visibility = View.GONE
                 val donePinBtt = dialog.findViewById<View>(R.id.done_pin_btt)
+                val searchBar = dialog.findViewById<EditText>(R.id.search_bar_edit_text)
                 
                 val providerNames = mutableListOf<String>()
+                var currentSearchQuery = ""
                 var localUpdateList: (() -> Unit)? = null
                 val providerAdapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
                     inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
                         val titleText: TextView = view.findViewById(R.id.text1)
                         val pinIcon: ImageView = view.findViewById(R.id.pinicon)
+                        val prefixIcon: ImageView = view.findViewById(R.id.prefix_icon)
                         val pinCheckbox: com.google.android.material.checkbox.MaterialCheckBox = view.findViewById(R.id.pin_checkbox)
                     }
 
@@ -482,6 +487,25 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         val name = providerNames[position]
                         val vh = holder as ViewHolder
                         vh.titleText.text = name
+
+                        // Set prefix icons for Select and Random
+                        if (!isPinningMode) {
+                            when (position) {
+                                0 -> { // Select
+                                    vh.prefixIcon.setImageResource(R.drawable.ic_baseline_check_24)
+                                    vh.prefixIcon.visibility = View.VISIBLE
+                                }
+                                1 -> { // Random
+                                    vh.prefixIcon.setImageResource(R.drawable.ic_baseline_autorenew_24)
+                                    vh.prefixIcon.visibility = View.VISIBLE
+                                }
+                                else -> {
+                                    vh.prefixIcon.visibility = View.GONE
+                                }
+                            }
+                        } else {
+                            vh.prefixIcon.visibility = View.GONE
+                        }
                         
                         if (isPinningMode) {
                             vh.pinIcon.visibility = View.GONE
@@ -567,14 +591,21 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         .sortedBy { api -> pinKeywords.indexOfFirst { api.name.contains(it, ignoreCase = true) } }
                     val actualRemainingApis = remainingApis.filterNot { isSmartPinned(it.name) || pluginStreamApis.contains(it) || maxApis.contains(it) || bilibiliApis.contains(it) }
 
+                    val filteredPluginStreamApis = pluginStreamApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
+                    val filteredOtherSmartPinnedApis = otherSmartPinnedApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
+                    val filteredMaxApis = maxApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
+                    val filteredBilibiliApis = bilibiliApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
+                    val filteredPinnedApis = pinnedApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
+                    val filteredActualRemainingApis = actualRemainingApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
+
                     currentValidApis = mutableListOf<MainAPI>().apply {
                         addAll(validAPIs.take(2))
-                        addAll(pluginStreamApis)
-                        addAll(otherSmartPinnedApis)
-                        addAll(maxApis)
-                        addAll(bilibiliApis)
-                        addAll(pinnedApis)
-                        addAll(actualRemainingApis)
+                        addAll(filteredPluginStreamApis)
+                        addAll(filteredOtherSmartPinnedApis)
+                        addAll(filteredMaxApis)
+                        addAll(filteredBilibiliApis)
+                        addAll(filteredPinnedApis)
+                        addAll(filteredActualRemainingApis)
                     }
 
                     providerNames.clear()
@@ -588,6 +619,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                 }
 
                 localUpdateList = ::updateList
+
+                searchBar?.addTextChangedListener { text ->
+                    currentSearchQuery = text?.toString() ?: ""
+                    updateList()
+                }
 
                 /* selfPinBtt?.setOnClickListener {
                     isPinningMode = true
