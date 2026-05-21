@@ -36,6 +36,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
@@ -180,12 +181,23 @@ class DownloadQueueService : Service() {
                 }
             }
 
-            debugWarning({ timeTaken == null || timeTaken > 3_000 }, {
-                "Abnormally long downloader startup time of: ${timeTaken ?: timeout.inWholeMilliseconds}ms"
-            })
-            debugAssert({ timeTaken == null }, { "Downloader startup should not time out" })
+            if (timeTaken == null) {
+                Log.w(TAG, "Abnormally long downloader startup time of: ${timeout.inWholeMilliseconds}ms (timed out waiting for plugins)")
+            } else if (timeTaken > 3_000) {
+                Log.w(TAG, "Abnormally long downloader startup time of: ${timeTaken}ms")
+            }
 
             totalDownloadFlow
+                .debounce { (instances, queue) ->
+                    // Filter away incorrect transient queue states.
+                    // For example when we pop the queue and add a download instance there exists a transient state where
+                    // there is no queue and no download instances (leading to an early exit)
+                    if (instances.isEmpty() && queue.isEmpty()) {
+                        500.milliseconds
+                    } else {
+                        0.milliseconds
+                    }
+                }
                 .takeWhile { (instances, queue) ->
                     // Stop if destroyed
                     isRunning

@@ -6,10 +6,8 @@ import android.util.AttributeSet
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
-import com.lagradost.cloudstream3.CloudStreamApp.Companion.getActivity
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.ui.download.DownloadClickEvent
-import com.lagradost.cloudstream3.utils.AdsManager
 import com.lagradost.cloudstream3.utils.downloader.DownloadObjects
 
 class DownloadButton(context: Context, attributeSet: AttributeSet) :

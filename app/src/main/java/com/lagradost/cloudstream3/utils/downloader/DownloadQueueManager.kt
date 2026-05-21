@@ -14,6 +14,7 @@ import com.lagradost.cloudstream3.plugins.PluginManager
 import com.lagradost.cloudstream3.services.DownloadQueueService
 import com.lagradost.cloudstream3.services.DownloadQueueService.Companion.downloadInstances
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
+import com.lagradost.cloudstream3.utils.Coroutines.runOnMainThread
 import com.lagradost.cloudstream3.utils.downloader.DownloadObjects.DownloadQueueWrapper
 import com.lagradost.cloudstream3.utils.downloader.VideoDownloadManager.KEY_RESUME_IN_QUEUE
 import com.lagradost.cloudstream3.utils.downloader.VideoDownloadManager.downloadStatus
@@ -179,7 +180,7 @@ object DownloadQueueManager {
         if (DownloadQueueService.isRunning) {
             return
         }
-        ioSafe {
+        runOnMainThread {
             val intent = DownloadQueueService.getIntent(context)
             ContextCompat.startForegroundService(context, intent)
         }
