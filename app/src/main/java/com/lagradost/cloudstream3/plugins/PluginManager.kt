@@ -515,6 +515,7 @@ object PluginManager {
                 pluginData
             )
         }
+        loadedOnlinePlugins = true
     }
 
     /**

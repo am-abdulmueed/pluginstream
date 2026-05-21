@@ -439,7 +439,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         }
 
         productHuntButton.setOnClickListener {
-            openUrl("https://www.producthunt.com/p/pluginstream/pluginstream")
+            openUrl("https://www.producthunt.com/products/pluginstream/reviews/new")
             dialog.dismiss()
         }
 

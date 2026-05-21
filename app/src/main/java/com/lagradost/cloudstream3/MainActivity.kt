@@ -2969,6 +2969,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
         
         // Start the download queue
+        DownloadQueueManager.init(this)
         binding?.bannerContainer?.let {
              AdsManager.initBannerAd(this, it)
          }
@@ -3069,7 +3070,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
 
         productHuntButton.setOnClickListener {
-            openReviewUrl("https://www.producthunt.com/p/pluginstream/pluginstream")
+            openReviewUrl("https://www.producthunt.com/products/pluginstream/reviews/new")
             markAsReviewed()
             dialog.dismiss()
         }
