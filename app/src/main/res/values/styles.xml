@@ -138,6 +138,7 @@
         <item name="grayTextColor">@color/grayTextColor</item>
         <item name="white">@color/white</item>
         <item name="black">@color/black</item>
+        <item name="dividerColor">#1AFFFFFF</item>
         <item name="dialogCardColor">?attr/primaryGrayBackground</item>
         <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="colorOnPrimary">@color/whiteText</item>
@@ -200,8 +201,10 @@
         <item name="iconGrayBackground">@color/DraculaGrayBackground</item>
         <item name="boxItemBackground">@color/DraculaItemBackground</item>
         <item name="textColor">@color/DraculaTextColor</item>
+        <item name="grayTextColor">@color/DraculaGrayTextColor</item>
         <item name="iconColor">@color/DraculaIconColor</item>
         <item name="white">@color/DraculaTextColor</item>
+        <item name="dividerColor">#336272A4</item>
         <item name="dialogCardColor">?attr/primaryGrayBackground</item>
         <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="black">@color/DraculaPrimaryGrayBackground</item>
@@ -216,8 +219,10 @@
         <item name="iconGrayBackground">@color/SilentBlueGrayBackground</item>
         <item name="boxItemBackground">@color/SilentBlueItemBackground</item>
         <item name="textColor">@color/SilentBlueTextColor</item>
+        <item name="grayTextColor">@color/SilentBlueGrayTextColor</item>
         <item name="iconColor">@color/SilentBlueIconColor</item>
         <item name="white">@color/SilentBlueTextColor</item>
+        <item name="dividerColor">#337B83B0</item>
         <item name="dialogCardColor">?attr/primaryGrayBackground</item>
         <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="black">@color/SilentBluePrimaryGrayBackground</item>
@@ -231,6 +236,7 @@
         <item name="iconGrayBackground">@color/LavenderGrayBackground</item>
         <item name="boxItemBackground">@color/LavenderItemBackground</item>
         <item name="textColor">@color/LavenderTextColor</item>
+        <item name="grayTextColor">@color/LavenderGrayTextColor</item>
         <item name="iconColor">@color/LavenderIconColor</item>
         <item name="white">@color/LavenderTextColor</item>
         <item name="dialogCardColor">?attr/primaryGrayBackground</item>
@@ -251,6 +257,7 @@
         <item name="grayTextColor">@color/material_dynamic_neutral60</item>
         <item name="white">@color/material_dynamic_neutral90</item>
         <item name="black">@color/material_dynamic_neutral10</item>
+        <item name="dividerColor">#1AFFFFFF</item>
         <item name="dialogCardColor">?attr/primaryGrayBackground</item>
         <item name="dialogButtonColor">?attr/colorPrimary</item>
         <item name="colorOnPrimary">@color/material_on_primary_emphasis_medium</item>

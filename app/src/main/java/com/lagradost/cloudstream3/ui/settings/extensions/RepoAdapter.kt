@@ -18,6 +18,8 @@ import com.lagradost.cloudstream3.utils.getImageFromDrawable
 import com.lagradost.cloudstream3.utils.txt
 import androidx.core.content.ContextCompat
 
+import com.lagradost.cloudstream3.databinding.RepositoryItemSetupBinding
+
 class RepoAdapter(
     val isSetup: Boolean,
     val clickCallback: RepoAdapter.(RepositoryData) -> Unit,
@@ -29,15 +31,13 @@ class RepoAdapter(
     })) {
 
     override fun onCreateContent(parent: ViewGroup): ViewHolderState<Any> {
-        val layout = if (isLayout(TV)) RepositoryItemTvBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        ) else RepositoryItemBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
+        val layout = if (isLayout(TV)) {
+            RepositoryItemTvBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        } else if (isSetup) {
+            RepositoryItemSetupBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        } else {
+            RepositoryItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        }
         return ViewHolderState(layout)
     }
 
@@ -50,11 +50,13 @@ class RepoAdapter(
         val actionButton = when (binding) {
             is RepositoryItemTvBinding -> binding.actionButton
             is RepositoryItemBinding -> binding.actionButton
+            is RepositoryItemSetupBinding -> binding.actionButton
             else -> return
         }
         val actionProgress = when (binding) {
             is RepositoryItemTvBinding -> binding.actionProgress
             is RepositoryItemBinding -> binding.actionProgress
+            is RepositoryItemSetupBinding -> binding.actionProgress
             else -> return
         }
         val context = actionButton.context
@@ -88,6 +90,7 @@ class RepoAdapter(
         when (val binding = holder.view) {
             is RepositoryItemBinding -> clearImage(binding.entryIcon)
             is RepositoryItemTvBinding -> clearImage(binding.entryIcon)
+            is RepositoryItemSetupBinding -> clearImage(binding.entryIcon)
         }
     }
 
@@ -159,6 +162,47 @@ class RepoAdapter(
                             "${item.name}$SHAREABLE_REPO_SEPARATOR\n ${item.url}"
                         clipboardHelper(txt(R.string.repo_copy_label), shareableRepoData)
                         true
+                    }
+
+                    val originalName = item.name ?: ""
+                    mainText.text = originalName.replace("moviebox", "Max", ignoreCase = true)
+                        .replace("moveibox", "Max", ignoreCase = true)
+                        .replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
+                        .replace("castle", "PluginStream", ignoreCase = true)
+                        .replace("castel", "PluginStream", ignoreCase = true)
+                        .replace("caslte", "PluginStream", ignoreCase = true)
+                    subText.text = item.url
+                    if (!item.iconUrl.isNullOrEmpty()) {
+                        entryIcon.loadImage(item.iconUrl) {
+                            error(
+                                getImageFromDrawable(
+                                    binding.root.context,
+                                    R.drawable.ic_github_logo
+                                )
+                            )
+                        }
+                    } else {
+                        entryIcon.loadImage(R.drawable.ic_github_logo)
+                    }
+                }
+            }
+
+            is RepositoryItemSetupBinding -> {
+                binding.apply {
+                    // Only shows icon if on setup or if it isn't a prebuilt repo.
+                    // No delete buttons on prebuilt repos.
+                    if (!isPrebuilt || isSetup) {
+                        actionButton.setImageResource(drawable)
+                    }
+
+                    actionButton.setOnClickListener {
+                        imageClickCallback(item)
+                    }
+
+                    bindAction(isPrebuilt, drawable, this, item)
+
+                    repositoryItemRoot.setOnClickListener {
+                        clickCallback(item)
                     }
 
                     val originalName = item.name ?: ""

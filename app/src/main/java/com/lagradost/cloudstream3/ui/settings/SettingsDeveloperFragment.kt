@@ -115,9 +115,9 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
 
             // Update dynamic age in philosophy/bio with Bullet Points
             val age = calculateAge("21-07-2006")
-            val bioPoints = "• I’m a $age-year-old Web & App Developer and freelancer from Pakistan.\n" +
-                           "• Focused on Full Stack development, currently exploring Rust & Go.\n" +
-                           "• Passionate games lover, with a vision to build and work in the gaming industry in the future."
+            val bioPoints = "🚀 I'm a $age-year-old developer crafting high-performance, ad-free multimedia experiences.\n\n" +
+                           "🧠 Architecting modular, extension-driven apps with seamless cross-platform scaling.\n\n" +
+                           "⚡ Obsessed with optimization—replacing bloated frameworks with lightweight, lightning-fast tools."
             devPhilosophy.text = bioPoints
             devPhilosophy.setLineSpacing(8f, 1f) // Use setLineSpacing instead of property assignment
 

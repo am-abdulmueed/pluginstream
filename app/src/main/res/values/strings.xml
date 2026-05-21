@@ -98,6 +98,10 @@
     <string name="home_more_info">More info</string>
     <string name="home_expanded_hide">Hide</string>
     <string name="home_play">Play</string>
+    <string name="whats_new">What\'s New</string>
+    <string name="whats_new_summary">See what changed in the latest update</string>
+    <string name="whats_new_key">whats_new_key</string>
+    <string name="changelog_last_version">changelog_last_version</string>
     <string name="home_info">Info</string>
     <string name="filter_bookmarks">Filter Bookmarks</string>
     <string name="error_bookmarks_text">Bookmarks</string>

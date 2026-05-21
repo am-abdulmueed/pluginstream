@@ -230,9 +230,7 @@ fabric.properties
 
 todo.md
 lint.txt
+in_progress.md
 config.json
-diff/
-
-
-# Compare
-cloudstream
+INFO/
+AIO/

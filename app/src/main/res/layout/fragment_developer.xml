@@ -148,7 +148,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/dev_role"
+                            android:text="Extension-Based Multimedia &amp; Cross-Platform Developer"
                             android:textColor="?attr/textColor"
                             android:textSize="14sp"
                             android:layout_marginTop="2dp"
@@ -184,17 +184,17 @@
                             android:fontFamily="@font/google_sans" />
                     </LinearLayout>
 
-                    <!-- EXPERTISE SECTION -->
+                    <!-- ARCHITECTURE & TECH STACK SECTION -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="24dp">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/expertise_label"
+                            android:text="Architecture &amp; Tech Stack"
                             android:textColor="?attr/textColor"
                             android:alpha="0.6"
                             android:textStyle="bold"
@@ -202,25 +202,49 @@
                             android:textAllCaps="true"
                             android:letterSpacing="0.05" />
 
-                        <!-- Mobile Row -->
+                        <!-- Architecture Row -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginTop="6dp">
+                            android:layout_marginTop="8dp">
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="85dp"
                                 android:layout_height="wrap_content"
-                                android:text="Mobile: "
+                                android:text="🏗️ Core"
                                 android:textColor="?attr/textColor"
-                                android:alpha="0.5"
+                                android:alpha="0.8"
                                 android:textStyle="bold"
                                 android:textSize="13sp"
                                 android:fontFamily="@font/google_sans" />
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Kotlin • Flutter • Jetpack Compose • React Native"
+                                android:text="Extension-Based Arch • Plugin Ecosystems"
+                                android:textColor="?attr/textColor"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                        </LinearLayout>
+
+                        <!-- Mobile Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="8dp">
+                            <TextView
+                                android:layout_width="85dp"
+                                android:layout_height="wrap_content"
+                                android:text="📱 Mobile"
+                                android:textColor="?attr/textColor"
+                                android:alpha="0.8"
+                                android:textStyle="bold"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Kotlin Native • Jetpack Compose • Flutter"
                                 android:textColor="?attr/textColor"
                                 android:textSize="13sp"
                                 android:fontFamily="@font/google_sans" />
@@ -231,20 +255,20 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginTop="4dp">
+                            android:layout_marginTop="8dp">
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="85dp"
                                 android:layout_height="wrap_content"
-                                android:text="Web &amp; Backend: "
+                                android:text="🌐 Backend"
                                 android:textColor="?attr/textColor"
-                                android:alpha="0.5"
+                                android:alpha="0.8"
                                 android:textStyle="bold"
                                 android:textSize="13sp"
                                 android:fontFamily="@font/google_sans" />
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Next.js • Node.js • Python"
+                                android:text="Next.js (TS) • Node.js • Python (FastAPI)"
                                 android:textColor="?attr/textColor"
                                 android:textSize="13sp"
                                 android:fontFamily="@font/google_sans" />
@@ -255,62 +279,85 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginTop="4dp">
+                            android:layout_marginTop="8dp">
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="85dp"
                                 android:layout_height="wrap_content"
-                                android:text="Desktop: "
+                                android:text="💻 Desktop"
                                 android:textColor="?attr/textColor"
-                                android:alpha="0.5"
+                                android:alpha="0.8"
                                 android:textStyle="bold"
                                 android:textSize="13sp"
                                 android:fontFamily="@font/google_sans" />
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Electron • Flutter • Kotlin (JVM)"
+                                android:text="Tauri • Electron • Kotlin (JVM)"
                                 android:textColor="?attr/textColor"
                                 android:textSize="13sp"
                                 android:fontFamily="@font/google_sans" />
                         </LinearLayout>
+
+                        <!-- Capabilities Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="8dp">
+                            <TextView
+                                android:layout_width="85dp"
+                                android:layout_height="wrap_content"
+                                android:text="⚡ Skills"
+                                android:textColor="?attr/textColor"
+                                android:alpha="0.8"
+                                android:textStyle="bold"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Ad-Blocking Engines • Video Player Integration"
+                                android:textColor="?attr/textColor"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                        </LinearLayout>
+
+                        <!-- DevOps Row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="8dp">
+                            <TextView
+                                android:layout_width="85dp"
+                                android:layout_height="wrap_content"
+                                android:text="🔒 DevOps"
+                                android:textColor="?attr/textColor"
+                                android:alpha="0.8"
+                                android:textStyle="bold"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Docker • GitHub Actions • Secure APIs"
+                                android:textColor="?attr/textColor"
+                                android:textSize="13sp"
+                                android:fontFamily="@font/google_sans" />
+                        </LinearLayout>
+
                     </LinearLayout>
 
-                    <!-- PHILOSOPHY SECTION -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginBottom="24dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/philosophy_label"
-                            android:textColor="?attr/textColor"
-                            android:alpha="0.6"
-                            android:textStyle="bold"
-                            android:textSize="11sp"
-                            android:textAllCaps="true"
-                            android:letterSpacing="0.05" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/dev_philosophy_text"
-                            android:textColor="?attr/textColor"
-                            android:textSize="14sp"
-                            android:layout_marginTop="2dp"
-                            android:fontFamily="@font/google_sans" />
-                    </LinearLayout>
-
-                    <!-- Catchy Quote/Tagline Section -->
+                    <!-- Catchy Quote/Developer Note Section -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:cardCornerRadius="12dp"
+                        android:layout_marginTop="8dp"
+                        app:cardCornerRadius="16dp"
                         app:cardElevation="0dp"
-                        app:strokeWidth="0dp"
-                        app:cardBackgroundColor="#1A000000"> <!-- Subtle dark tint -->
+                        app:strokeWidth="1dp"
+                        app:strokeColor="?attr/dividerColor"
+                        app:cardBackgroundColor="#11FFFFFF"> <!-- Very subtle modern tint -->
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -322,12 +369,12 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/dev_tagline"
+                                android:text="💡 Developer Note: Built with a passion for clean code and a strictly ads-free, performance-first user experience."
                                 android:textColor="?attr/grayTextColor"
-                                android:textSize="14sp"
+                                android:textSize="13sp"
                                 android:textStyle="italic"
                                 android:gravity="center"
-                                android:lineSpacingExtra="6dp"
+                                android:lineSpacingExtra="4dp"
                                 android:fontFamily="@font/google_sans" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>

@@ -143,6 +143,13 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
+        getPref(R.string.whats_new_key)?.setOnPreferenceClickListener {
+            activity?.let {
+                com.lagradost.cloudstream3.ui.changelog.ChangelogFragment().show(it.supportFragmentManager, "changelog")
+            }
+            return@setOnPreferenceClickListener true
+        }
+
         getPref(R.string.show_logcat_key)?.setOnPreferenceClickListener { pref ->
             val builder = AlertDialog.Builder(pref.context, R.style.AlertDialogCustom)
 

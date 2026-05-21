@@ -1,0 +1,53 @@
+[ 
+   { 
+     "version": "5.1.0", 
+     "title": "PluginStream v5.1.0 - What's New?", 
+     "logs": [ 
+       { 
+         "icon": "🎮", 
+         "title": "Massive Gaming Library", 
+         "description": "Over 1,600+ games are now available at your fingertips." 
+       }, 
+       { 
+         "icon": "🎨", 
+         "title": "UI Overhaul", 
+         "description": "A completely new, smooth, and modern user interface." 
+       }, 
+       { 
+         "icon": "📢", 
+         "title": "Instant Announcements", 
+         "description": "Receive important updates and notifications directly inside the app." 
+       }, 
+       { 
+         "icon": "🛠️", 
+         "title": "Installer Upgrade", 
+         "description": "Added 'Legacy Mode' support to ensure smooth installations." 
+       }, 
+       { 
+         "icon": "📥", 
+         "title": "Downloads Fixed", 
+         "description": "Resolved previous issues with movie downloading." 
+       }, 
+       { 
+         "icon": "🧩", 
+         "title": "Plugin Enhancements", 
+         "description": "Updated plugin names and improved overall performance." 
+       }, 
+       { 
+         "icon": "🤝", 
+         "title": "Support the Developer", 
+         "description": "New 'Offers' section—download offers to help support the development." 
+       }, 
+       { 
+         "icon": "ℹ️", 
+         "title": "Info Hub", 
+         "description": "Added Support & Contact, FAQs, App Requirements, Legal & Privacy (Privacy Policy and Terms & Conditions), and About sections." 
+       }, 
+       { 
+         "icon": "⭐", 
+         "title": "Share & Review", 
+         "description": "Share with friends and give us your feedback!" 
+       } 
+     ] 
+   } 
+ ]

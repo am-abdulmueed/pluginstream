@@ -2003,6 +2003,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     // Recompile oat on new version
                     PluginManager.deleteAllOatFiles(this)
                 }
+
+                // Show changelog on update
+                main {
+                    com.lagradost.cloudstream3.ui.changelog.ChangelogFragment().show(supportFragmentManager, "changelog")
+                }
             }
         }
 
