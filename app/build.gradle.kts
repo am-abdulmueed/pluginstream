@@ -8,7 +8,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.dokka)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services") version "4.4.4"
 }
@@ -144,21 +143,23 @@ android {
     val isPrereleaseTask = taskNames.any { it.contains("prerelease", ignoreCase = true) }
     val isStableTask = taskNames.any { it.contains("stable", ignoreCase = true) }
 
-    variantFilter {
-        val flavorNames = flavors.map { it.name }
-        if (isPrereleaseTask) {
-            if (flavorNames.contains("stable")) {
-                ignore = true
-            }
-        } else if (isStableTask) {
-            if (flavorNames.contains("prerelease")) {
-                ignore = true
-            }
-        } else {
-            // Default case (e.g. assembleDebug, build, etc.)
-            // Only build stable by default to avoid building prerelease unnecessarily
-            if (flavorNames.contains("prerelease")) {
-                ignore = true
+    androidComponents {
+        beforeVariants { variant ->
+            val flavorNames = variant.productFlavors.map { it.second }
+            if (isPrereleaseTask) {
+                if (flavorNames.contains("stable")) {
+                    variant.enable = false
+                }
+            } else if (isStableTask) {
+                if (flavorNames.contains("prerelease")) {
+                    variant.enable = false
+                }
+            } else {
+                // Default case (e.g. assembleDebug, build, etc.)
+                // Only build stable by default to avoid building prerelease unnecessarily
+                if (flavorNames.contains("prerelease")) {
+                    variant.enable = false
+                }
             }
         }
     }
@@ -355,7 +356,7 @@ tasks.withType<KotlinJvmCompile> {
 dokka {
     moduleName = "App"
     dokkaSourceSets {
-        main {
+        configureEach {
             analysisPlatform = KotlinPlatform.JVM
             documentedVisibilities(
                 VisibilityModifier.Public,
