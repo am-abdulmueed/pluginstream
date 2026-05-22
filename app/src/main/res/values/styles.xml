@@ -255,6 +255,7 @@
         <item name="boxItemBackground">@color/material_dynamic_neutral20</item>
         <item name="textColor">@color/material_dynamic_neutral90</item>
         <item name="grayTextColor">@color/material_dynamic_neutral60</item>
+        <item name="iconColor">@color/material_dynamic_neutral60</item>
         <item name="white">@color/material_dynamic_neutral90</item>
         <item name="black">@color/material_dynamic_neutral10</item>
         <item name="dividerColor">#1AFFFFFF</item>

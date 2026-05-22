@@ -47,7 +47,7 @@
         android:layout_height="match_parent"
         android:background="?attr/primaryBlackBackground"
         android:clipToPadding="false"
-        android:padding="16dp"
+        android:paddingVertical="8dp"
         android:nextFocusLeft="@id/nav_rail_view"
         android:nextFocusUp="@id/tvtypes_chips"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"

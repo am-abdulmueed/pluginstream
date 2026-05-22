@@ -120,6 +120,7 @@
         android:focusable="true"
         android:nextFocusLeft="@id/repository_item_root"
         android:nextFocusRight="@id/action_button"
+        app:tint="?attr/iconColor"
         app:srcCompat="@drawable/ic_baseline_tune_24"
         tools:visibility="visible" />
 
@@ -139,6 +140,7 @@
             android:focusable="true"
             android:nextFocusLeft="@id/action_settings"
             android:padding="12dp"
+            app:tint="?attr/iconColor"
             tools:src="@drawable/ic_baseline_add_24" />
 
         <ProgressBar

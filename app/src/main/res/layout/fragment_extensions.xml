@@ -17,6 +17,7 @@
         android:background="?attr/primaryBlackBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingVertical="8dp"
         android:nextFocusUp="@id/settings_toolbar"
         android:nextFocusDown="@id/plugin_storage_appbar"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
