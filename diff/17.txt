@@ -1,0 +1,16 @@
+-------------------------------------------------- 
+COMMIT ID: d191245 
+-------------------------------------------------- 
+diff --git a/app/build.gradle b/app/build.gradle
+index 1bfd5f63..577f7d6c 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -9,7 +9,7 @@ android {
+         minSdkVersion 21
+         targetSdkVersion 36
+         versionCode 1
+-        versionName "3.95"
++        versionName "3.98"
+     }
+ 
+     buildTypes {

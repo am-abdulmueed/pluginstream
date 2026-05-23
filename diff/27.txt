@@ -1,0 +1,21 @@
+-------------------------------------------------- 
+COMMIT ID: b3ab413 
+-------------------------------------------------- 
+diff --git a/app/src/main/java/com/google/android/youtube/pro/webview/YTProWebViewClient.java b/app/src/main/java/com/google/android/youtube/pro/webview/YTProWebViewClient.java
+index 95696cb8..ad51d0df 100644
+--- a/app/src/main/java/com/google/android/youtube/pro/webview/YTProWebViewClient.java
++++ b/app/src/main/java/com/google/android/youtube/pro/webview/YTProWebViewClient.java
+@@ -33,6 +33,13 @@ public YTProWebViewClient(MainActivity activity, YTProWebView web) {
+ 	@Override
+ 	public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+ 		String url = request.getUrl().toString();
++
++		if (url.contains("accounts.google.com") ||
++		url.contains("google.com/signin") ||
++		url.contains("google.com/oauth") ||
++		url.contains("googleapis.com/oauth")) {
++			return super.shouldInterceptRequest(view, request);
++		}
+ 		
+ 		if (request.isForMainFrame() && (url.contains("m.youtube.com") || url.contains("www.youtube.com"))) {
+ 			try {

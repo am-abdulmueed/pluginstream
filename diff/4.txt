@@ -1,0 +1,64 @@
+-------------------------------------------------- 
+COMMIT ID: 1769aee 
+-------------------------------------------------- 
+diff --git a/app/src/main/java/com/google/android/youtube/pro/ForegroundService.java b/app/src/main/java/com/google/android/youtube/pro/ForegroundService.java
+index 646900aa..c5e7d79b 100644
+--- a/app/src/main/java/com/google/android/youtube/pro/ForegroundService.java
++++ b/app/src/main/java/com/google/android/youtube/pro/ForegroundService.java
+@@ -19,6 +19,8 @@
+ import android.util.Base64;
+ import android.util.Log;
+ 
++import com.google.android.youtube.pro.receivers.NotificationActionReceiver;
++
+ public class ForegroundService extends Service {
+ 
+     public static final String CHANNEL_ID = "Media";
+@@ -129,19 +131,19 @@ else if("play".equals(action)){
+         openAppIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+         PendingIntent openAppPendingIntent = PendingIntent.getActivity(cont, 0, openAppIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+ 
+-        Intent playIntent = new Intent(cont, NotificationActionService.class);
++        Intent playIntent = new Intent(cont, NotificationActionReceiver.class);
+         playIntent.setAction("PLAY_ACTION");
+         PendingIntent playPendingIntent = PendingIntent.getBroadcast(cont, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+ 
+-        Intent pauseIntent = new Intent(cont, NotificationActionService.class);
++        Intent pauseIntent = new Intent(cont, NotificationActionReceiver.class);
+         pauseIntent.setAction("PAUSE_ACTION");
+         PendingIntent pausePendingIntent = PendingIntent.getBroadcast(cont, 0, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+ 
+-        Intent nextIntent = new Intent(cont, NotificationActionService.class);
++        Intent nextIntent = new Intent(cont, NotificationActionReceiver.class);
+         nextIntent.setAction("NEXT_ACTION");
+         PendingIntent nextPendingIntent = PendingIntent.getBroadcast(cont, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+ 
+-        Intent prevIntent = new Intent(cont, NotificationActionService.class);
++        Intent prevIntent = new Intent(cont, NotificationActionReceiver.class);
+         prevIntent.setAction("PREV_ACTION");
+         PendingIntent prevPendingIntent = PendingIntent.getBroadcast(cont, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+ 
+@@ -238,19 +240,19 @@ else if("play".equals(action)){
+         openAppIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+         PendingIntent openAppPendingIntent = PendingIntent.getActivity(this, 0, openAppIntent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+ 
+-        Intent playIntent = new Intent(this, NotificationActionService.class);
++        Intent playIntent = new Intent(this, NotificationActionReceiver.class);
+         playIntent.setAction("PLAY_ACTION");
+         PendingIntent playPendingIntent = PendingIntent.getBroadcast(this, 0, playIntent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+ 
+-        Intent pauseIntent = new Intent(this, NotificationActionService.class);
++        Intent pauseIntent = new Intent(this, NotificationActionReceiver.class);
+         pauseIntent.setAction("PAUSE_ACTION");
+         PendingIntent pausePendingIntent = PendingIntent.getBroadcast(this, 0, pauseIntent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+ 
+-        Intent nextIntent = new Intent(this, NotificationActionService.class);
++        Intent nextIntent = new Intent(this, NotificationActionReceiver.class);
+         nextIntent.setAction("NEXT_ACTION");
+         PendingIntent nextPendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+ 
+-        Intent prevIntent = new Intent(this, NotificationActionService.class);
++        Intent prevIntent = new Intent(this, NotificationActionReceiver.class);
+         prevIntent.setAction("PREV_ACTION");
+         PendingIntent prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+ 

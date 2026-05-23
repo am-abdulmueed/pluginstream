@@ -12,3 +12,4 @@ public class DownloadFromIntentFilter extends MainActivity {
         load(true);
     }
 }
+

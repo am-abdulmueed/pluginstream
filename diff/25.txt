@@ -1,0 +1,42 @@
+-------------------------------------------------- 
+COMMIT ID: 87db46e 
+-------------------------------------------------- 
+diff --git a/README.md b/README.md
+index c95a5161..a0e5e3d9 100644
+--- a/README.md
++++ b/README.md
+@@ -35,9 +35,10 @@
+    * Summarise Vidoes
+    * Customisable prompts and models
+  * Video Downloader
+- * Shorts Downloader 
++ * Shorts Downloader
++ * In-built Video and Audio Muxer
+  * Thumbnails Downloader
+- * Captions Downloader 
++ * Captions Downloader
+  * Ads Blocker
+  * Minimize Video
+  * Picture in Picture Mode
+@@ -49,7 +50,8 @@
+  * Skip Sponsers
+  * Force Zoom
+  * Hide Shorts
+- * APK size under 50KB
++ * Upto 10x video speed 
++ * Minimal APK size
+  * Adaptive UI icons
+  * Minimal
+  * Almost 0 Internal Dependencies
+@@ -63,9 +65,9 @@ The available variables for gemini prompt are
+ * `{videoId}` : Video Id of the video
+ 
+ ## ToDo
+- * Add basic features to the video player
+  * Enhance Audio
+- * Merging Adaptive Formats
++ * Skip Silence 
++ 
+ 
+ ### Credits
+  * [Sponsor Block](https://github.com/ajayyy/SponsorBlock)

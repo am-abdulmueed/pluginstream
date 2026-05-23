@@ -1,0 +1,16 @@
+-------------------------------------------------- 
+COMMIT ID: a025f1a 
+-------------------------------------------------- 
+diff --git a/app/build.gradle b/app/build.gradle
+index c4f89617..0a72131a 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -22,7 +22,7 @@ android {
+ 
+ dependencies {
+     // Add your dependencies here
+-    implementation 'androidx.webkit:webkit:1.16.0-rc01'
++    implementation 'androidx.webkit:webkit:1.15.0'
+ }
+ 
+ 

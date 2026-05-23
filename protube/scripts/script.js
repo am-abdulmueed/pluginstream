@@ -1,33 +1,26 @@
 /*****YTPRO*******
-Author: Abdul Mueed
-Version: 3.9.5
-URI: https://github.com/am-abdulmueed/protube
-Last Updated On: 4 Mar , 2026 , 12:36 IST
+Author: Prateek Chaubey
+Version: 3.9.8
+URI: https://github.com/prateek-chaubey/YTPRO
+Last Updated On: 1 May , 2026 , 19:25 IST
 */
 
 
 //DEBUG
-/*var debug=false;
-var Android={
-pipvid:()=>{},
-gohome:()=>{},
-getInfo:()=>{},
-oplink:()=>{},
-downvid:()=>{}
-};
+/*
 s1: FoQR9rLpRy8
 s2: PN51tJhZscE
 */
 if (window.eruda == null && localStorage.getItem("devMode") == "true") {
   //ERUDA
-  window.location.href = `javascript:(function () { var script = document.createElement('script'); script.src="//youtube.com/ytpro_cdn/npm/eruda"; document.body.appendChild(script); script.onload = function () { eruda.init();} })();`;
+  var script = document.createElement('script'); script.src="//youtube.com/ytpro_cdn/npm/eruda"; document.body.appendChild(script); script.onload=()=>{eruda.init();}
 }
 /**/
 
 if (!YTProVer) {
 
   /*Few Stupid Inits*/
-  var YTProVer = "3.95";
+  var YTProVer = "3.98";
   var ytoldV = "";
   var isF = false;   //what is this for?
   var isAp = false; // oh it's for bg play 
@@ -39,10 +32,15 @@ if (!YTProVer) {
   var webUrls = ["m.youtube.com", "youtube.com", "yout.be", "accounts.google.com"];
   var GeminiAT = "";
   var GeminiModels = {
-    "2.0 Flash": '[null,null,null,null,"f299729663a2343f"]',   //g2.0 FLASH
-    "2.0 Flash Thinking": '[null,null,null,null,"7ca48d02d802f20a"]', //g2.0 flash thinking
-    '2.5 Flash': '[1,null,null,null,"71c2d248d3b102ff",null,null,0,[4]]',
-    '2.5 Pro': '[1,null,null,null,"4af6c7f5da75d65d",null,null,0,[4]]',
+    "3.0 Pro": '[1,null,null,null,"9d8ca3786ebdfbea",null,null,0,[4],null,null,1]',
+    "3.0 Flash": '[1,null,null,null,"fbb127bbb056c959",null,null,0,[4],null,null,1]',
+    "3.0 Flash Thinking": '[1,null,null,null,"5bf011840784117a",null,null,0,[4],null,null,1]',
+    "3.0 Pro Plus": '[1,null,null,null,"e6fa609c3fa255c0",null,null,0,[4],null,null,4]',
+    "3.0 Flash Plus": '[1,null,null,null,"56fdd199312815e2",null,null,0,[4],null,null,4]',
+    "3.0 Flash Thinking Plus": '[1,null,null,null,"e051ce1aa80aa576",null,null,0,[4],null,null,4]',
+    "3.0 Pro Advanced": '[1,null,null,null,"e6fa609c3fa255c0",null,null,0,[4],null,null,2]',
+    "3.0 Flash Advanced": '[1,null,null,null,"56fdd199312815e2",null,null,0,[4],null,null,2]',
+    "3.0 Flash Thinking Advanced": '[1,null,null,null,"e051ce1aa80aa576",null,null,0,[4],null,null,2]'
   };
   var YTPROCodecs = {
     video: ["AV1", "VP8", "VP9", "H264"],
@@ -65,7 +63,7 @@ if (!YTProVer) {
     localStorage.setItem("gesM", "false");
     localStorage.setItem("fzoom", "false");
     localStorage.setItem("saveCInfo", "true");
-    localStorage.setItem("geminiModel", "2.5 Flash");
+    localStorage.setItem("geminiModel", "3.0 Flash");
     localStorage.setItem("prompt", "Give me details about this YouTube video Id: {videoId} , a detailed summary of timestamps with facts , resources and reviews of the main content");
     localStorage.setItem("devMode", "false");
 
@@ -82,6 +80,10 @@ if (!YTProVer) {
   }
   if (localStorage.getItem("fzoom") == "true") {
     document.getElementsByName("viewport")[0].setAttribute("content", "");
+  }
+
+  if (["2.0 Flash", "2.0 Flash Thinking", "2.5 Flash", "2.5 Pro"].includes(localStorage.getItem('geminiModel'))) {
+    localStorage.setItem('geminiModel', "3.0 Flash");
   }
 
 

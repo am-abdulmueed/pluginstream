@@ -1,0 +1,15 @@
+-------------------------------------------------- 
+COMMIT ID: 9403f51 
+-------------------------------------------------- 
+diff --git a/scripts/package.json b/scripts/package.json
+index ea44dcb9..adb78a1e 100644
+--- a/scripts/package.json
++++ b/scripts/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "ytpro",
+-  "version": "3.9.53",
++  "version": "3.9.8",
+   "description": "All in one YouTube App with AdBlocker, Downloader , Background Player , PIP Mode , Google Gemini ✨ and many more features.",
+   "main": "script.js",
+   "repository": {

@@ -3,6 +3,8 @@ package com.lagradost.cloudstream3
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.app.PictureInPictureParams
+import android.util.Rational
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -413,6 +415,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                                 START_ACTION_RESUME_LATEST
                             )
                         }
+                    } else if (str.contains("youtube.com") || str.contains("youtu.be")) {
+                        val bundle = Bundle()
+                        bundle.putString("url", str)
+                        navigate(R.id.navigation_protube, bundle)
+                        return true
                     } else if (str.startsWith(APP_STRING_SHARE)) {
                         try {
                             val data = str.substringAfter("$APP_STRING_SHARE:")
@@ -919,6 +926,23 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
+
+        // Handle ProTube PIP
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+        val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
+        if (currentFragment is com.lagradost.cloudstream3.ui.protube.ProTubeFragment) {
+            if (Build.VERSION.SDK_INT >= 26 && currentFragment.isPlaying) {
+                try {
+                    val params = PictureInPictureParams.Builder()
+                        .setAspectRatio(if (currentFragment.portrait) Rational(9, 16) else Rational(16, 9))
+                        .build()
+                    enterPictureInPictureMode(params)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
         onUserLeaveHint(this)
     }
 
@@ -980,7 +1004,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     private fun handleAppIntent(intent: Intent?) {
         if (intent == null) return
-        val str = intent.dataString
+        var str = intent.dataString
+        if (intent.action == Intent.ACTION_SEND) {
+            str = intent.getStringExtra(Intent.EXTRA_TEXT)
+        }
         loadCache()
 
         handleAppIntentUrl(this, str, false, intent.extras)

@@ -308,6 +308,9 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.nicehttp) // HTTP Lib
     
+    implementation(libs.webkit)
+    implementation(libs.media)
+    
     implementation(project(":library"))
 }
 

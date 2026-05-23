@@ -1,0 +1,291 @@
+-------------------------------------------------- 
+COMMIT ID: c75caf6 
+-------------------------------------------------- 
+diff --git a/app/src/main/java/com/google/android/youtube/pro/utils/MediaMuxerUtils.java b/app/src/main/java/com/google/android/youtube/pro/utils/MediaMuxerUtils.java
+new file mode 100644
+index 00000000..5e233015
+--- /dev/null
++++ b/app/src/main/java/com/google/android/youtube/pro/utils/MediaMuxerUtils.java
+@@ -0,0 +1,281 @@
++package com.google.android.youtube.pro.utils;
++
++import android.content.ContentResolver;
++import android.content.ContentValues;
++import android.content.Context;
++import android.database.Cursor;
++import android.media.MediaCodec;
++import android.media.MediaExtractor;
++import android.media.MediaFormat;
++import android.media.MediaMuxer;
++import android.net.Uri;
++import android.os.Build;
++import android.os.Handler;
++import android.os.Looper;
++import android.os.ParcelFileDescriptor;
++import android.provider.MediaStore;
++import android.util.Log;
++
++import java.io.File;
++import java.io.FileDescriptor;
++import java.nio.ByteBuffer;
++
++public class MediaMuxerUtils {
++
++    private static final String TAG = "YTPRO_MEDIA";
++
++    public interface MuxCallback {
++        void onSuccess(File outputFile);
++        void onFailure(Exception e);
++    }
++
++    public static void muxVideoAudio(Context context,
++                                     File videoFile,
++                                     File audioFile,
++                                     File outputFile,
++                                     MuxCallback callback) {
++        new Thread(() -> {
++            MediaExtractor videoExtractor = new MediaExtractor();
++            MediaExtractor audioExtractor = new MediaExtractor();
++            MediaMuxer muxer = null;
++            Uri outputUri = null;
++            ParcelFileDescriptor pfd = null;
++
++            try {
++                boolean isWebm = outputFile.getName().endsWith(".webm");
++                int outFormat = isWebm
++                        ? MediaMuxer.OutputFormat.MUXER_OUTPUT_WEBM
++                        : MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4;
++
++                // ── Create muxer ──────────────────────────────────────────────
++                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
++                    ContentResolver resolver = context.getContentResolver();
++                    ContentValues values = new ContentValues();
++                    values.put(MediaStore.Downloads.DISPLAY_NAME, outputFile.getName());
++                    values.put(MediaStore.Downloads.MIME_TYPE, isWebm ? "video/webm" : "video/mp4");
++                    values.put(MediaStore.Downloads.RELATIVE_PATH, "Download/YTPRO");
++                    values.put(MediaStore.Downloads.IS_PENDING, 1);
++
++                    outputUri = resolver.insert(
++                            MediaStore.Downloads.getContentUri("external"), values);
++
++                    if (outputUri == null) throw new Exception("MediaStore insert returned null for output");
++
++                    pfd = resolver.openFileDescriptor(outputUri, "rw");
++                    if (pfd == null) throw new Exception("openFileDescriptor returned null");
++
++                    FileDescriptor fd = pfd.getFileDescriptor();
++                    muxer = new MediaMuxer(fd, outFormat);
++
++                } else {
++                    // API 21-28
++                    muxer = new MediaMuxer(outputFile.getAbsolutePath(), outFormat);
++                }
++
++                // ── Set data sources ──────────────────────────────────────────
++                // Both video and audio files were written by our app.
++                // On API 29+ they physically exist on disk even though created
++                // via MediaStore, so getAbsolutePath() works fine for MediaExtractor.
++                try {
++                    videoExtractor.setDataSource(videoFile.getAbsolutePath());
++                } catch (Exception e) {
++                    throw new Exception("Failed to read video file: " + e.getMessage());
++                }
++
++                if (audioFile != null && audioFile.exists()) {
++                    try {
++                        audioExtractor.setDataSource(audioFile.getAbsolutePath());
++                    } catch (Exception e) {
++                        throw new Exception("Failed to read audio file: " + e.getMessage());
++                    }
++                }
++
++                // ── Video track ───────────────────────────────────────────────
++                int muxerVideoTrackIndex = -1;
++                for (int i = 0; i < videoExtractor.getTrackCount(); i++) {
++                    MediaFormat format = videoExtractor.getTrackFormat(i);
++                    String mime = format.getString(MediaFormat.KEY_MIME);
++                    if (mime != null && mime.startsWith("video/")) {
++                        // Check if codec is supported on this device/API
++                        if (!isCodecSupported(mime)) {
++                            throw new Exception("Video codec not supported on this device: " + mime);
++                        }
++                        videoExtractor.selectTrack(i);
++                        muxerVideoTrackIndex = muxer.addTrack(format);
++                        break;
++                    }
++                }
++
++                if (muxerVideoTrackIndex < 0) {
++                    throw new Exception("No video track found in file");
++                }
++
++                // ── Audio track ───────────────────────────────────────────────
++                int muxerAudioTrackIndex = -1;
++                if (audioFile != null && audioFile.exists()) {
++                    for (int i = 0; i < audioExtractor.getTrackCount(); i++) {
++                        MediaFormat format = audioExtractor.getTrackFormat(i);
++                        String mime = format.getString(MediaFormat.KEY_MIME);
++                        if (mime != null && mime.startsWith("audio/")) {
++                            if (!isCodecSupported(mime)) {
++                                // Audio codec not supported — log and skip
++                                // instead of crashing, mux video only
++                                Log.w(TAG, "Audio codec not supported, muxing video only: " + mime);
++                                break;
++                            }
++                            audioExtractor.selectTrack(i);
++                            muxerAudioTrackIndex = muxer.addTrack(format);
++                            break;
++                        }
++                    }
++                }
++
++                // ── Start muxer ───────────────────────────────────────────────
++                try {
++                    muxer.start();
++                } catch (IllegalStateException e) {
++                    throw new Exception("Muxer failed to start: " + e.getMessage());
++                }
++
++                ByteBuffer buffer = ByteBuffer.allocate(1024 * 1024);
++                MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
++
++                // ── Write video ───────────────────────────────────────────────
++                try {
++                    while (true) {
++                        int sampleSize = videoExtractor.readSampleData(buffer, 0);
++                        if (sampleSize < 0) break;
++                        info.offset = 0;
++                        info.size = sampleSize;
++                        info.presentationTimeUs = videoExtractor.getSampleTime();
++                        info.flags = videoExtractor.getSampleFlags();
++                        muxer.writeSampleData(muxerVideoTrackIndex, buffer, info);
++                        videoExtractor.advance();
++                    }
++                } catch (Exception e) {
++                    throw new Exception("Failed writing video samples: " + e.getMessage());
++                }
++
++                // ── Write audio ───────────────────────────────────────────────
++                if (muxerAudioTrackIndex >= 0) {
++                    buffer.clear();
++                    try {
++                        while (true) {
++                            int sampleSize = audioExtractor.readSampleData(buffer, 0);
++                            if (sampleSize < 0) break;
++                            info.offset = 0;
++                            info.size = sampleSize;
++                            info.presentationTimeUs = audioExtractor.getSampleTime();
++                            info.flags = audioExtractor.getSampleFlags();
++                            muxer.writeSampleData(muxerAudioTrackIndex, buffer, info);
++                            audioExtractor.advance();
++                        }
++                    } catch (Exception e) {
++                        throw new Exception("Failed writing audio samples: " + e.getMessage());
++                    }
++                }
++
++                // ── Stop muxer ────────────────────────────────────────────────
++                try {
++                    muxer.stop();
++                    muxer.release();
++                    muxer = null;
++                } catch (IllegalStateException e) {
++                    throw new Exception("Muxer failed to stop: " + e.getMessage());
++                }
++
++                // ── Finalize output in MediaStore ─────────────────────────────
++                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && outputUri != null) {
++                    ContentValues values = new ContentValues();
++                    values.put(MediaStore.Downloads.IS_PENDING, 0);
++                    context.getContentResolver().update(outputUri, values, null, null);
++                }
++
++                if (pfd != null) { pfd.close(); pfd = null; }
++
++                Log.d(TAG, "Muxing successful: " + outputFile.getName());
++
++                if (callback != null) {
++                    new Handler(Looper.getMainLooper()).post(() -> callback.onSuccess(outputFile));
++                }
++
++            } catch (Exception e) {
++                Log.e(TAG, "Mux failed: " + e.getMessage());
++
++                // If output was created in MediaStore but muxing failed, delete it
++                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && outputUri != null) {
++                    try {
++                        context.getContentResolver().delete(outputUri, null, null);
++                    } catch (Exception ignored) {}
++                } else {
++                    // API 21-28 — delete the broken output file
++                    if (outputFile.exists()) outputFile.delete();
++                }
++
++                if (callback != null) {
++                    final Exception err = e;
++                    new Handler(Looper.getMainLooper()).post(() -> callback.onFailure(err));
++                }
++
++            } finally {
++                try { videoExtractor.release(); } catch (Exception ignored) {}
++                try { audioExtractor.release(); } catch (Exception ignored) {}
++                try { if (muxer != null) { muxer.stop(); muxer.release(); } } catch (Exception ignored) {}
++                try { if (pfd != null) pfd.close(); } catch (Exception ignored) {}
++
++                // ── Delete temp input files ───────────────────────────────────
++                // On API 29+ query MediaStore to get Uri then delete via resolver
++                // On API 21-28 direct File.delete() works fine
++                deleteFile(context, videoFile);
++                if (audioFile != null) deleteFile(context, audioFile);
++            }
++        }).start();
++    }
++
++    // Deletes a file correctly for the current API level
++    private static void deleteFile(Context context, File file) {
++        if (!file.exists()) return;
++
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
++            // Query MediaStore for the Uri of this file by display name
++            Uri collection = MediaStore.Downloads.getContentUri("external");
++            String[] projection = {MediaStore.Downloads._ID};
++            String selection = MediaStore.Downloads.DISPLAY_NAME + " = ?";
++            String[] args = {file.getName()};
++
++            try (Cursor cursor = context.getContentResolver().query(
++                    collection, projection, selection, args, null)) {
++                if (cursor != null && cursor.moveToFirst()) {
++                    long id = cursor.getLong(
++                            cursor.getColumnIndexOrThrow(MediaStore.Downloads._ID));
++                    Uri uri = Uri.withAppendedPath(collection, String.valueOf(id));
++                    context.getContentResolver().delete(uri, null, null);
++                    Log.d(TAG, "Deleted via MediaStore: " + file.getName());
++                }
++            } catch (Exception e) {
++                Log.e(TAG, "Failed to delete via MediaStore: " + e.getMessage());
++            }
++        } else {
++            // API 21-28
++            file.delete();
++        }
++    }
++
++    // Checks if a codec mime type is supported on this device
++    private static boolean isCodecSupported(String mime) {
++        try {
++            android.media.MediaCodecList list =
++                    new android.media.MediaCodecList(android.media.MediaCodecList.ALL_CODECS);
++            for (android.media.MediaCodecInfo info : list.getCodecInfos()) {
++                for (String supported : info.getSupportedTypes()) {
++                    if (supported.equalsIgnoreCase(mime)) return true;
++                }
++            }
++        } catch (Exception e) {
++            Log.w(TAG, "Codec check failed: " + e.getMessage());
++            // If check itself fails, let it try anyway
++            return true;
++        }
++        return false;
++    }
++}
+\ No newline at end of file

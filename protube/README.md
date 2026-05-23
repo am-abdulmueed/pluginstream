@@ -28,36 +28,33 @@
    * Customisable prompts and models
  * Video Downloader
  * Shorts Downloader 
+ * In-built Video and Audio Muxer
  * Thumbnails Downloader
  * Captions Downloader 
  * Ads Blocker
  * Minimize Video
  * Picture in Picture Mode
- * Gesture control for Volume and Brightness 
- * Shows Number of Dislikes
- * Background Audio Player
- * Custom Heart feature to save videos without logging into your account
- * Enable / disable media codecs
+ * Background Player
+ * Gemini Integration
+ * Sponsor Block
  * Skip Sponsers
  * Force Zoom
  * Hide Shorts
- * APK size under 50KB
+ * Upto 10x video speed 
+ * Minimal APK size
  * Adaptive UI icons
  * Minimal
  * Almost 0 Internal Dependencies
- * Auto Updation of App
+ * Open Source
 
 
-## Gemini Prompt
+## Gemini ✨
 The available variables for gemini prompt are
-* `{url}` : The URL of the video
-* `{title}` : Title of the video
 * `{videoId}` : Video Id of the video
 
 ## ToDo
- * Add basic features to the video player
  * Enhance Audio
- * Merging Adaptive Formats
+ * Skip Silence 
 
 ### Credits
  * [Sponsor Block](https://github.com/ajayyy/SponsorBlock)

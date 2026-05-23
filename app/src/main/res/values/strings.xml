@@ -498,6 +498,16 @@
     <string name="quality_blueray">Blu-ray</string>
     <string name="quality_workprint">WP</string>
     <string name="quality_dvd">DVD</string>
+
+    <!-- ProTube Strings -->
+    <string name="grant_mic">Please Grant Microphone Permission in order to use Speech Recognition</string>
+    <string name="grant_storage">Please Grant Storage Permission in order to download files</string>
+    <string name="dl_started">Download started</string>
+    <string name="no_pip">Unfortunately, PIP is not supported on your Android version</string>
+    <string name="dl">Download</string>
+    <string name="follow_ig">Follow on Instagram</string>
+    <string name="ig_handle">pluginstream</string>
+
     <string name="quality_4k">4K</string>
     <string name="quality_sd">SD</string>
     <string name="quality_uhd">UHD</string>
