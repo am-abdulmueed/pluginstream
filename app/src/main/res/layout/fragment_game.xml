@@ -247,20 +247,15 @@
         android:visibility="gone"
         android:background="?attr/primaryBlackBackground">
 
-        <!-- Offline Icon with Animation -->
-        <LinearLayout
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:layout_marginBottom="24dp">
-
-            <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:src="@drawable/ic_baseline_wifi_off_24"
-                android:contentDescription="Offline" />
-        </LinearLayout>
+        <!-- Offline Icon with Lottie Animation -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/offlineLottie"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_marginBottom="24dp"
+            app:lottie_fileName="no_internet.json"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true" />
 
         <!-- Offline Title -->
         <TextView

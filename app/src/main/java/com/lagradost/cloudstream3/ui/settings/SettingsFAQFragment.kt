@@ -61,10 +61,10 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
         ),
         FAQItem(
             "If Bilibili and other providers not working? 🌐",
-            "• **VPN Usage:** Some providers like **Bilibili** or other regional plugins may require a **VPN (USA/Region specific)** to function correctly.\n• **Indian Content:** All Indian plugins work perfectly **without VPN**.\n• If a provider doesn't load or shows an error, try **connecting to a VPN** and refresh."
+            "• **VPN Usage:** Some regional providers or plugins may require a **VPN (USA/Region specific)** to function correctly.\n• **Indian Content:** All Indian plugins work perfectly **without VPN**.\n• **Troubleshooting:** If any provider or plugin is not working, try connecting to a **VPN**. If you are already connected, try **disconnecting** it and refresh."
         ),
         FAQItem(
-            "Why some providers show regional content issues? 🌍",
+            "If any provider or plugin is not working? 🌐",
             "• **Regional Restrictions:** Some providers restrict content based on your location. This is why you might see **'Content not available'** or 'Failed to load' errors.\n• **Solution:** Using a **VPN** is the best way to bypass these regional issues. Connect to a server in the **USA or UK** for the best results with English providers."
         ),
         FAQItem(

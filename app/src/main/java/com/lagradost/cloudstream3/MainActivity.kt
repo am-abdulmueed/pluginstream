@@ -98,6 +98,12 @@ import com.lagradost.cloudstream3.mvvm.safe
 import com.lagradost.cloudstream3.mvvm.observe
 import com.lagradost.cloudstream3.mvvm.observeNullable
 import com.lagradost.cloudstream3.network.initClient
+import com.lagradost.cloudstream3.utils.UIHelper.toPx
+import com.lagradost.cloudstream3.ui.settings.Globals.isLandscape
+import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
+import com.lagradost.cloudstream3.ui.settings.Globals.TV
+import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.lagradost.cloudstream3.plugins.PluginManager
 import com.lagradost.cloudstream3.plugins.PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins
 import com.lagradost.cloudstream3.plugins.PluginManager.loadSinglePlugin
@@ -602,17 +608,30 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
         val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
 
+        updateFloatingMenuPosition()
         floatingContainer?.visibility = View.VISIBLE
         isFloatingMenuVisible = true
 
-        // Animate FABs appearing
-        val fabs = listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
+        val isLandscape = isLandscape()
+        val fabs = if (isLandscape) {
+            listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
+        } else {
+            listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
+        }
+
         fabs.forEachIndexed { index, fab ->
             fab?.apply {
-                translationY = 100f
+                if (isLandscape) {
+                    translationX = 100f
+                    translationY = 0f
+                } else {
+                    translationY = 100f
+                    translationX = 0f
+                }
                 alpha = 0f
                 animate()
                     .translationY(0f)
+                    .translationX(0f)
                     .alpha(1f)
                     .setStartDelay(index * 50L)
                     .setDuration(200)
@@ -631,12 +650,18 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
         val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
 
-        // Animate FABs disappearing
-        val fabs = listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
+        val isLandscape = isLandscape()
+        val fabs = if (isLandscape) {
+            listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
+        } else {
+            listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
+        }
+
         fabs.forEachIndexed { index, fab ->
             fab?.apply {
                 animate()
-                    .translationY(100f)
+                    .translationY(if (isLandscape) 0f else 100f)
+                    .translationX(if (isLandscape) 100f else 0f)
                     .alpha(0f)
                     .setStartDelay(index * 30L)
                     .setDuration(150)
@@ -651,6 +676,53 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     .start()
             }
         }
+    }
+
+    private fun updateFloatingMenuPosition() {
+        val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer) ?: return
+        val params = floatingContainer.layoutParams as? ConstraintLayout.LayoutParams ?: return
+        val isLandscape = isLandscape()
+
+        if (isLandscape) {
+            floatingContainer.orientation = LinearLayout.HORIZONTAL
+            params.bottomToTop = ConstraintLayout.LayoutParams.UNSET
+            params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            params.startToStart = ConstraintLayout.LayoutParams.UNSET
+            
+            // Landscape: Right side, horizontal layout
+            params.marginEnd = 80.toPx // Shift left to avoid overlapping with Select FAB
+            params.bottomMargin = 16.toPx
+            params.horizontalBias = 1.0f
+
+            // Adjust children margins for horizontal layout
+            for (i in 0 until floatingContainer.childCount) {
+                val child = floatingContainer.getChildAt(i)
+                (child.layoutParams as? LinearLayout.LayoutParams)?.apply {
+                    setMargins(12.toPx, 0, 0, 0) // Margin between horizontal items
+                }
+            }
+        } else {
+            floatingContainer.orientation = LinearLayout.VERTICAL
+            params.bottomToTop = R.id.nav_view_container
+            params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+            params.endToEnd = R.id.nav_view_container
+            params.startToStart = R.id.nav_view_container
+            
+            // Portrait: Bottom bar center-right, vertical layout
+            params.marginEnd = 0
+            params.bottomMargin = 4.toPx
+            params.horizontalBias = 0.91f
+
+            // Adjust children margins for vertical layout
+            for (i in 0 until floatingContainer.childCount) {
+                val child = floatingContainer.getChildAt(i)
+                (child.layoutParams as? LinearLayout.LayoutParams)?.apply {
+                    setMargins(0, 0, 0, 12.toPx) // Margin between vertical items
+                }
+            }
+        }
+        floatingContainer.layoutParams = params
     }
 
     private fun updateMoreIconToShow(isShowing: Boolean) {
@@ -674,6 +746,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         super.onConfigurationChanged(newConfig)
         updateLocale() // android fucks me by chaining lang when rotating the phone
         updateTheme(this) // Update if system theme
+
+        if (isFloatingMenuVisible) {
+            updateFloatingMenuPosition()
+        }
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
