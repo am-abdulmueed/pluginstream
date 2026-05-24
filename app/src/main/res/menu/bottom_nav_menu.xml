@@ -14,10 +14,6 @@
             android:title="@string/games"
             android:iconTint="@null" />
         <item
-            android:id="@+id/navigation_protube"
-            android:icon="@drawable/ic_youtube_selector"
-            android:title="YouTube" />
-        <item
             android:id="@+id/navigation_more"
             android:icon="@drawable/ic_more_menu"
             android:title="@string/title_more" />
