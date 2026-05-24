@@ -9,10 +9,6 @@
         android:icon="@drawable/search_icon"
         android:title="@string/title_search" />
     <item
-        android:id="@+id/navigation_protube"
-        android:icon="@drawable/ic_youtube_selector"
-        android:title="YouTube" />
-    <item
         android:id="@+id/navigation_downloads"
         android:icon="@drawable/netflix_download"
         android:title="@string/title_downloads" />

@@ -14,7 +14,6 @@
     <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" /> <!-- Used for updates without prompt -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- Used for update service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" /> <!-- Used for background downloads and extension syncing -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" /> <!-- Used for ProTube background play -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" /> <!-- Used for voice search in app -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" /> <!-- Used for fingerprint or face lock app security -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" /> <!-- We can use this directly as CS3 is not on Play Store -->
@@ -246,17 +245,6 @@
                     android:scheme="https" />
             </intent-filter>
 
-            <!-- ProTube / YouTube handling -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-                <data android:host="youtube.com" />
-                <data android:host="*.youtube.com" />
-                <data android:host="youtu.be" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -294,17 +282,6 @@
         <activity
             android:name=".ui.ControllerActivity"
             android:exported="false" />
-
-        <service
-            android:name=".ui.protube.ForegroundService"
-            android:enabled="true"
-            android:foregroundServiceType="mediaPlayback"
-            android:exported="false" />
-
-        <receiver
-            android:name=".ui.protube.receivers.NotificationActionReceiver"
-            android:enabled="true"
-            android:exported="true" />
 
         <service
             android:name=".services.PackageInstallerService"

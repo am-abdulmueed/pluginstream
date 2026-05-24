@@ -1452,7 +1452,7 @@ class ResultViewModel2 : ViewModel() {
                 activity?.let { act ->
                     AdsManager.loadAndShowAdWithRetry(
                         act,
-                        loadingText = "Please wait, watch a short ad & download",
+                        loadingText = "Buffering stream...",
                         onAdFinished = {
                             DownloadQueueManager.addToQueue(
                                 DownloadObjects.DownloadQueueItem(
@@ -1476,7 +1476,7 @@ class ResultViewModel2 : ViewModel() {
                 activity?.let { act ->
                     AdsManager.loadAndShowAdWithRetry(
                         act,
-                        loadingText = "Please wait, watch a short ad & download",
+                        loadingText = "Buffering stream...",
                         onAdFinished = {
                             acquireSingleLink(
                                 click.data,
@@ -1575,7 +1575,7 @@ class ResultViewModel2 : ViewModel() {
                     if (nextCount % 5 == 0) {
                         AdsManager.loadAndShowAdWithRetry(
                             act,
-                            loadingText = "Please wait, watch a short ad & continue",
+                            loadingText = "Buffering stream...",
                             onAdFinished = {
                                 playInternal()
                             }

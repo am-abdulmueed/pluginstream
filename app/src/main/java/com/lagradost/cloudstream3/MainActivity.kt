@@ -415,11 +415,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                                 START_ACTION_RESUME_LATEST
                             )
                         }
-                    } else if (str.contains("youtube.com") || str.contains("youtu.be")) {
-                        val bundle = Bundle()
-                        bundle.putString("url", str)
-                        navigate(R.id.navigation_protube, bundle)
-                        return true
                     } else if (str.startsWith(APP_STRING_SHARE)) {
                         try {
                             val data = str.substringAfter("$APP_STRING_SHARE:")
@@ -708,7 +703,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_search,
             R.id.navigation_game,
             R.id.navigation_offers,
-            R.id.navigation_protube,
             R.id.navigation_library,
             R.id.navigation_downloads,
             R.id.navigation_settings,
@@ -785,10 +779,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 R.id.navigation_search -> {
                     navRailView.menu.findItem(R.id.navigation_search)?.isChecked = true
                     navView.menu.findItem(R.id.navigation_search)?.isChecked = true
-                }
-                R.id.navigation_protube -> {
-                    navRailView.menu.findItem(R.id.navigation_protube)?.isChecked = true
-                    navView.menu.findItem(R.id.navigation_protube)?.isChecked = true
                 }
                 R.id.navigation_library -> {
                     navRailView.menu.findItem(R.id.navigation_library)?.isChecked = true
@@ -927,22 +917,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
 
-        // Handle ProTube PIP
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
-        val currentFragment = navHostFragment?.childFragmentManager?.fragments?.firstOrNull()
-        if (currentFragment is com.lagradost.cloudstream3.ui.protube.ProTubeFragment) {
-            if (Build.VERSION.SDK_INT >= 26 && currentFragment.isPlaying) {
-                try {
-                    val params = PictureInPictureParams.Builder()
-                        .setAspectRatio(if (currentFragment.portrait) Rational(9, 16) else Rational(16, 9))
-                        .build()
-                    enterPictureInPictureMode(params)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-
         onUserLeaveHint(this)
     }
 
@@ -1039,7 +1013,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_library -> R.id.main_search
             R.id.navigation_downloads -> R.id.download_appbar
             R.id.navigation_settings -> R.id.settings_toolbar
-            R.id.navigation_protube -> R.id.web
             else -> null
         }
         if (targetView != null && isLayout(TV or EMULATOR)) {
@@ -2730,7 +2703,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 arrayOf(
                     R.id.navigation_home,
                     R.id.navigation_search,
-                    R.id.navigation_protube,
                     R.id.navigation_downloads,
                     R.id.navigation_library,
                     R.id.navigation_settings
@@ -2740,7 +2712,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     R.id.navigation_home,
                     R.id.navigation_search,
                     R.id.navigation_game,
-                    R.id.navigation_protube,
                     R.id.navigation_more
                 )
             }

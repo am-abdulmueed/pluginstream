@@ -18,6 +18,7 @@
             android:layout_height="match_parent"
             android:background="?attr/primaryGrayBackground"
             android:descendantFocusability="afterDescendants"
+            app:itemIconSize="28dp"
             app:itemIconTint="@color/item_select_color"
             app:itemTextColor="@color/item_select_color"
             app:itemRippleColor="?attr/colorControlHighlight"
@@ -102,7 +103,7 @@
                 android:layout_gravity="center"
                 app:elevation="0dp"
                 app:labelVisibilityMode="unlabeled"
-                app:itemIconSize="24dp"
+                app:itemIconSize="28dp"
                 app:itemIconTint="@color/item_select_color"
                 app:itemRippleColor="?attr/colorControlHighlight"
                 app:menu="@menu/bottom_nav_menu" />

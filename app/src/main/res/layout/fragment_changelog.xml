@@ -43,12 +43,12 @@
                     android:id="@+id/changelog_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="24dp"
                     android:text="What's New?"
                     android:textAlignment="center"
                     android:textColor="?attr/textColor"
-                    android:textSize="26sp"
-                    android:fontFamily="sans-serif-black"
+                    android:textSize="24sp"
+                    android:fontFamily="@font/google_sans"
                     android:textStyle="bold" />
 
                 <androidx.recyclerview.widget.RecyclerView

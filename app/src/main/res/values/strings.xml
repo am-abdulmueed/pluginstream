@@ -499,15 +499,6 @@
     <string name="quality_workprint">WP</string>
     <string name="quality_dvd">DVD</string>
 
-    <!-- ProTube Strings -->
-    <string name="grant_mic">Please Grant Microphone Permission in order to use Speech Recognition</string>
-    <string name="grant_storage">Please Grant Storage Permission in order to download files</string>
-    <string name="dl_started">Download started</string>
-    <string name="no_pip">Unfortunately, PIP is not supported on your Android version</string>
-    <string name="dl">Download</string>
-    <string name="follow_ig">Follow on Instagram</string>
-    <string name="ig_handle">pluginstream</string>
-
     <string name="quality_4k">4K</string>
     <string name="quality_sd">SD</string>
     <string name="quality_uhd">UHD</string>
@@ -559,14 +550,14 @@
     <string name="delete_repository_plugins">This will also delete all repository plugins</string>
     <string name="delete_repository">Delete repository</string>
     <string name="delete_plugin">Delete plugin</string>
-    <string name="setup_extensions_subtext">Please wait 15 seconds while we connect to the best providers.</string>
+    <string name="setup_extensions_subtext">Connecting to the best providers, please wait...</string>
     <string name="plugins_downloaded" formatted="true">Downloaded: %d</string>
     <string name="plugins_disabled" formatted="true">Disabled: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Not downloaded: %d</string>
     <string name="plugins_updated" formatted="true">Updated %d plugins</string>
-    <string name="blank_repo_message">PluginStream has no sites installed by default. You need to install the sites from repositories.
+    <string name="blank_repo_message">No sites are currently installed in PluginStream. Please close and reopen the app to refresh.
 \n
-\nJoin our Telegram or search online.</string>
+\nAlternatively, join our Telegram or search online to add repositories.</string>
     <string name="view_public_repositories_button">View community repositories</string>
     <string name="view_public_repositories_button_short">Public list</string>
     <string name="uppercase_all_subtitles">Uppercase all subtitles</string>

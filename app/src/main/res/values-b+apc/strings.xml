@@ -373,9 +373,9 @@
     <string name="enter_pin_with_name" formatted="true">حطو الأرقام السرية لـ\"%s\"</string>
     <string name="apk_installer_legacy">الطريقة القديمة</string>
     <string name="subtitles_raised">معلى</string>
-    <string name="blank_repo_message">PluginStream has no sites installed by default. You need to install the sites from repositories.
+    <string name="blank_repo_message">لم يتم تثبيت أي مواقع في PluginStream حالياً. يرجى إغلاق التطبيق وإعادة فتحه للتحديث.
 \n
-\nJoin our Telegram or search online.</string>
+\nأو بدلاً من ذلك، انضم إلى التيليجرام الخاص بنا أو ابحث عبر الإنترنت لإضافة المستودعات (repositories).</string>
     <string name="add_sync">زبد تتبع</string>
     <string name="mobile_data">3G/4G…</string>
     <string name="player_loaded_subtitles" formatted="true">نفَتح %s</string>

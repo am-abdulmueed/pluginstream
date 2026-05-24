@@ -55,16 +55,6 @@ class ContactDeveloperDialog : BottomSheetDialogFragment() {
             dismiss()
         }
         
-        view.findViewById<View>(R.id.contact_protube_support).setOnClickListener {
-            val logs = AppDiagnostics.readLogs(50)
-            val subject = "[PluginStream-ProTube] Feedback/Issue"
-            val body = "Feedback Type: [Video Quality / Search Issue / Feature Request]\n\nDescribe the Problem:\n[Describe what can be improved in ProTube...]\n\n${AppDiagnostics.getDeviceInfo()}\n\n--- Recent Logs ---\n$logs"
-            sendEmailIntent(requireContext(), subject, body) {
-                Toast.makeText(requireContext(), "No email client found", Toast.LENGTH_SHORT).show()
-            }
-            dismiss()
-        }
-        
         view.findViewById<View>(R.id.contact_general_bug).setOnClickListener {
             val logs = AppDiagnostics.readLogs(100)
             val subject = "⚠️ Bug Report - PluginStream v${BuildConfig.VERSION_NAME}"
