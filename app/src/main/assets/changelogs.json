@@ -14,6 +14,11 @@
          "description": "A completely new, smooth, and modern user interface." 
        }, 
        { 
+         "icon": "✨", 
+         "title": "App Icons Updated", 
+         "description": "Fresh and updated app icons for a more premium look." 
+       }, 
+       { 
          "icon": "📢", 
          "title": "Instant Announcements", 
          "description": "Receive important updates and notifications directly inside the app." 
