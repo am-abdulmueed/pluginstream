@@ -246,6 +246,7 @@ open class FullScreenPlayer : AbstractPlayerFragment() {
     }
 
     override fun onDestroyView() {
+        exitFullscreen()
         // Clean up brightness overlay if created
         safe {
             // remove overlay if present
@@ -618,7 +619,9 @@ open class FullScreenPlayer : AbstractPlayerFragment() {
     protected fun exitFullscreen() {
         resetZoomToDefault()
         // if (lockRotation)
-        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
+        if (!isLayout(TV or EMULATOR)) {
+            activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
+        }
 
         // simply resets brightness and notch settings that might have been overridden
         val lp = activity?.window?.attributes
@@ -663,7 +666,6 @@ open class FullScreenPlayer : AbstractPlayerFragment() {
     }
 
     override fun onDestroy() {
-        exitFullscreen()
         super.onDestroy()
     }
 

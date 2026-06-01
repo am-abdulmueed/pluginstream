@@ -1,29 +1,27 @@
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("com.android.library")
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "io.github.aedev.flow"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "io.github.aedev.flow"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 14
-        versionName = "2.0.5"
+        minSdk = 23
 
         testInstrumentationRunner = "io.github.aedev.flow.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
         
+        buildConfigField("String", "VERSION_NAME", "\"2.1.0\"")
+
         // Support all architectures for maximum device compatibility
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
@@ -31,16 +29,7 @@ android {
         
         // Enable multidex for older devices
         multiDexEnabled = true
-
-        dependenciesInfo {
-            // Disables dependency metadata when building APKs (for IzzyOnDroid/F-Droid)
-            includeInApk = false
-            // Disables dependency metadata when building Android App Bundles (for Google Play)
-            includeInBundle = false
-        }
     }
-
-
 
     buildFeatures {
         buildConfig = true
@@ -73,19 +62,15 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
-            isDebuggable = true
             isMinifyEnabled = false
             isShrinkResources = false
         }
         release {
-            isDebuggable = false
             // Follow NewPipe approach: minify but don't shrink resources
             isMinifyEnabled = true
             isShrinkResources = false // disabled for reproducible builds
             proguardFiles(
-                getDefaultProguardFile("proguard-android.txt"),
+                getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             // Use release signing if configured, otherwise fallback to debug
@@ -107,8 +92,10 @@ android {
 
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
 
     buildFeatures {
@@ -134,9 +121,9 @@ android {
 
 dependencies {
     // --- Core Android ---
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.core.ktx)
     implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.activity.compose)
+    implementation(libs.activity.compose)
     
     // --- Compose (Using BOM is best practice) ---
     implementation(platform(libs.androidx.compose.bom)) 
@@ -159,7 +146,9 @@ dependencies {
     implementation(libs.androidx.constraintlayout.compose)
 
     // --- Image Loading ---
-    implementation(libs.coil.compose) 
+    implementation(libs.coil)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
     implementation(libs.picasso)
     implementation("androidx.palette:palette-ktx:1.0.0")
 
@@ -169,7 +158,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     // --- Data & Network ---
-    implementation(libs.newpipe.extractor) 
+    implementation(libs.newpipeextractor) 
     
     // Networking
     implementation(libs.okhttp)
@@ -189,15 +178,15 @@ dependencies {
     implementation(libs.conscrypt.android)
 
     // --- Media Playback ---
-    implementation(libs.androidx.media3.exoplayer)
-    implementation(libs.androidx.media3.ui)
-    implementation(libs.androidx.media3.common)
-    implementation(libs.androidx.media3.session)
-    implementation(libs.androidx.media3.exoplayer.hls)
-    implementation(libs.androidx.media3.exoplayer.dash)
-    implementation(libs.androidx.media3.datasource)
-    implementation(libs.androidx.media3.datasource.okhttp)
-    implementation(libs.androidx.media)
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
+    implementation(libs.media3.common)
+    implementation(libs.media3.session)
+    implementation(libs.media3.exoplayer.hls)
+    implementation(libs.media3.exoplayer.dash)
+    implementation(libs.media3.container)
+    implementation(libs.media3.datasource.okhttp)
+    implementation(libs.media)
 
     // --- Database & Storage ---
     implementation(libs.androidx.room.runtime)
@@ -216,7 +205,7 @@ dependencies {
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
 
-    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.work.runtime.ktx)
     implementation(libs.androidx.multidex)
 
     implementation(libs.brotli) 
@@ -232,15 +221,15 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("com.google.truth:truth:1.1.5")
     testImplementation("app.cash.turbine:turbine:1.1.0")
-    testImplementation("com.google.dagger:hilt-android-testing:2.51.1")
-    kspTest("com.google.dagger:hilt-android-compiler:2.51.1")
+    testImplementation("com.google.dagger:hilt-android-testing:2.53.1")
+    kspTest("com.google.dagger:hilt-android-compiler:2.53.1")
 
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.09.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.51.1")
-    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.51.1")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.53.1")
+    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.53.1")
     
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
@@ -252,5 +241,5 @@ ksp {
 }
 
 hilt {
-    enableTransformForLocalTests = false
+    enableAggregatingTask = true
 }

@@ -6,9 +6,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.asDrawable
 import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -317,7 +318,7 @@ class MusicPlaybackService : Service() {
             .allowHardware(false)
             .build()
         val bitmap = when (val result = applicationContext.imageLoader.execute(request)) {
-            is SuccessResult -> (result.drawable as? BitmapDrawable)?.bitmap
+            is coil3.request.SuccessResult -> (result.image.asDrawable(applicationContext.resources) as? BitmapDrawable)?.bitmap
             else -> null
         }
         bitmap?.let { ensureMinSize(it, 512) }

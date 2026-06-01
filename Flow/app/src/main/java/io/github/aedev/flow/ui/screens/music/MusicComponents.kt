@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import io.github.aedev.flow.R
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 
 @Composable
 fun MusicTrackRow(

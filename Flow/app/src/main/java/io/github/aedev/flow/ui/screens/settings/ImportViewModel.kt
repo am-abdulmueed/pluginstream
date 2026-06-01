@@ -25,8 +25,8 @@ import javax.inject.Inject
  *     so a started import is visible from either screen.
  *
  * Usage from a @Composable:
- *   val activity = LocalContext.current as ComponentActivity
- *   val importViewModel: ImportViewModel = hiltViewModel(activity)
+ *   val activity = remember(context) { /* Discover ComponentActivity from ContextWrapper */ }
+ *   val importViewModel: ImportViewModel = activity?.let { hiltViewModel(it) } ?: hiltViewModel()
  */
 @HiltViewModel
 class ImportViewModel @Inject constructor(

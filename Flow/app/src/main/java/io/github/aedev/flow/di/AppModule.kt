@@ -4,11 +4,13 @@ import android.content.Context
 import android.util.Log
 import io.github.aedev.flow.BuildConfig
 import io.github.aedev.flow.innertube.YouTube
-import coil.ImageLoader
-import coil.disk.DiskCache
-import coil.memory.MemoryCache
-import coil.util.DebugLogger
+import coil3.ImageLoader
+import coil3.disk.DiskCache
+import coil3.memory.MemoryCache
+import coil3.request.crossfade
+import coil3.util.DebugLogger
 import okhttp3.OkHttpClient
+import okio.Path.Companion.toPath
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,20 +41,21 @@ object AppModule {
         okHttpClient: OkHttpClient
     ): ImageLoader {
         return ImageLoader.Builder(context)
-            .okHttpClient(okHttpClient)
+            .components {
+                add(coil3.network.okhttp.OkHttpNetworkFetcherFactory(okHttpClient))
+            }
             .memoryCache {
-                MemoryCache.Builder(context)
-                    .maxSizePercent(0.25)
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
                     .build()
             }
             .diskCache {
                 DiskCache.Builder()
-                    .directory(context.cacheDir.resolve("image_cache"))
+                    .directory(context.cacheDir.resolve("image_cache").absolutePath.toPath())
                     .maxSizePercent(0.02)
                     .build()
             }
             .crossfade(true)
-            .respectCacheHeaders(false) // Cache images even if headers say otherwise (YouTube thumbnails)
             .apply { if (BuildConfig.DEBUG) logger(DebugLogger()) }
             .build()
     }

@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-5.0.0-green?style=flat-square&logo=github" />
+   <img src="https://img.shields.io/badge/Version-5.1.1-green?style=flat-square&logo=github" />
   <img src="https://img.shields.io/badge/Platform-Android-orange?style=flat-square&logo=android" />
   <img src="https://img.shields.io/badge/Security-0%2F95%20Clean-brightgreen?style=flat-square&logo=virustotal" />
 </p>

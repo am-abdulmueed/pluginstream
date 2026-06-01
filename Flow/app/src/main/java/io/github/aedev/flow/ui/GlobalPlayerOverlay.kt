@@ -115,11 +115,18 @@ fun GlobalPlayerOverlay(
     if (video == null || !isVisible) return
     
     val context = LocalContext.current
-    val activity = context as ComponentActivity
+    val activity = remember(context) {
+        var ctx = context
+        while (ctx is android.content.ContextWrapper) {
+            if (ctx is androidx.activity.ComponentActivity) break
+            ctx = ctx.baseContext
+        }
+        ctx as? androidx.activity.ComponentActivity
+    }
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     
-    val playerViewModel: VideoPlayerViewModel = hiltViewModel(activity)
+    val playerViewModel: VideoPlayerViewModel = activity?.let { hiltViewModel(it) } ?: hiltViewModel()
     val playerUiState by playerViewModel.uiState.collectAsStateWithLifecycle()
     val playerState by EnhancedPlayerManager.getInstance().playerState.collectAsStateWithLifecycle()
     val sponsorSegments by EnhancedPlayerManager.getInstance().sponsorSegments.collectAsState()
@@ -510,7 +517,7 @@ fun GlobalPlayerOverlay(
                         if (playerUiState.isRestoredSession) {
                             val thumbUrl = video.thumbnailUrl.takeIf { it.isNotEmpty() }
                                 ?: "https://i.ytimg.com/vi/${video.id}/hq720.jpg"
-                            coil.compose.AsyncImage(
+                            coil3.compose.AsyncImage(
                                 model = thumbUrl,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
@@ -663,10 +670,12 @@ fun GlobalPlayerOverlay(
                                     io.github.aedev.flow.player.PictureInPictureHelper.isPipSupported(context) &&
                                     pipPreferences.manualPipButtonEnabled,
                                 onPipClick = {
-                                    PictureInPictureHelper.enterPipMode(
-                                        activity = activity,
-                                        isPlaying = playerState.isPlaying
-                                    )
+                                    activity?.let { act ->
+                                        PictureInPictureHelper.enterPipMode(
+                                            activity = act,
+                                            isPlaying = playerState.isPlaying
+                                        )
+                                    }
                                 },
                                 seekbarPreviewHelper = screenState.seekbarPreviewHelper,
                                 chapters = playerUiState.chapters,

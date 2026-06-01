@@ -14,9 +14,9 @@ import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.localization.ContentCountry
 import org.schabi.newpipe.extractor.localization.Localization
 
-import dagger.hilt.android.HiltAndroidApp
-import coil.ImageLoader
-import coil.ImageLoaderFactory
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.PlatformContext
 import javax.inject.Inject
 import java.security.Security
 import org.conscrypt.Conscrypt
@@ -26,13 +26,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-@HiltAndroidApp
-class FlowApplication : Application(), ImageLoaderFactory {
+open class FlowApplication : Application(), SingletonImageLoader.Factory {
     
     @Inject
     lateinit var imageLoader: ImageLoader
 
-    override fun newImageLoader(): ImageLoader = imageLoader
+    override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoader
     
     companion object {
         private const val TAG = "FlowApplication"

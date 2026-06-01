@@ -267,7 +267,7 @@ fun TrackOptionsBottomSheet(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.size(56.dp)
                 ) {
-                    coil.compose.AsyncImage(
+                    coil3.compose.AsyncImage(
                         model = track.thumbnailUrl,
                         contentDescription = null,
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop

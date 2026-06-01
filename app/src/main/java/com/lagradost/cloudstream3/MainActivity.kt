@@ -218,7 +218,9 @@ import com.lagradost.cloudstream3.ui.dialog.EMAIL_ADDRESS
 import com.lagradost.cloudstream3.ui.dialog.sendEmailIntent
 import com.lagradost.cloudstream3.utils.AppDiagnostics
 import com.lagradost.cloudstream3.utils.downloader.DownloadQueueManager
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCallback {
     private var navController: NavController? = null
     
@@ -777,6 +779,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val isNavVisible = listOf(
             R.id.navigation_home,
             R.id.navigation_search,
+            R.id.navigation_flow,
             R.id.navigation_game,
             R.id.navigation_offers,
             R.id.navigation_library,
@@ -1100,6 +1103,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     R.id.navigation_downloads,
                     R.id.navigation_home,
                     R.id.navigation_search,
+                    R.id.navigation_flow,
                     R.id.navigation_library,
                     R.id.navigation_settings,
                 )) {

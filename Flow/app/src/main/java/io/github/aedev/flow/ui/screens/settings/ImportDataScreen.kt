@@ -55,8 +55,15 @@ fun ImportDataScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Activity-scoped ViewModel: survives screen navigation so imports keep running
-    val activity = context as ComponentActivity
-    val importViewModel: ImportViewModel = hiltViewModel(activity)
+    val activity = remember(context) {
+        var ctx = context
+        while (ctx is android.content.ContextWrapper) {
+            if (ctx is androidx.activity.ComponentActivity) break
+            ctx = ctx.baseContext
+        }
+        ctx as? androidx.activity.ComponentActivity
+    }
+    val importViewModel: ImportViewModel = activity?.let { hiltViewModel(it) } ?: hiltViewModel()
     val importState by importViewModel.state.collectAsStateWithLifecycle()
 
     // Show snackbar when an import finishes (success or error), then reset state

@@ -50,7 +50,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.local.ChannelSubscription
 import io.github.aedev.flow.data.local.SubscriptionRepository
@@ -97,11 +97,19 @@ data class ChannelSearchResult(
 @Composable
 fun OnboardingScreen(onComplete: () -> Unit) {
     val context = LocalContext.current
+    val activity = remember(context) {
+        var ctx = context
+        while (ctx is android.content.ContextWrapper) {
+            if (ctx is androidx.activity.ComponentActivity) break
+            ctx = ctx.baseContext
+        }
+        ctx as? androidx.activity.ComponentActivity
+    }
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
 
     val subscriptionRepo = remember { SubscriptionRepository.getInstance(context) }
-    val importViewModel: ImportViewModel = hiltViewModel(context as ComponentActivity)
+    val importViewModel: ImportViewModel = activity?.let { hiltViewModel(it) } ?: hiltViewModel()
 
     var currentStep by remember { mutableStateOf(OnboardingStep.INTERESTS) }
 

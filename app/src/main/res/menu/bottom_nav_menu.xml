@@ -9,6 +9,10 @@
             android:icon="@drawable/search_icon"
             android:title="@string/title_search" />
         <item
+            android:id="@+id/navigation_flow"
+            android:icon="@drawable/ic_flow_nav"
+            android:title="@string/title_flow" />
+        <item
             android:id="@+id/navigation_game"
             android:icon="@drawable/ic_game_selector"
             android:title="@string/games"

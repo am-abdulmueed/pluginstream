@@ -52,15 +52,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.min
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import androidx.compose.animation.animateColorAsState
 import androidx.palette.graphics.Palette
-import coil.imageLoader
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.asDrawable
 import androidx.core.graphics.drawable.toBitmap
 
 import io.github.aedev.flow.R
@@ -100,8 +101,8 @@ fun EnhancedMusicPlayerScreen(
                 .size(128)
                 .build()
             val result = context.imageLoader.execute(request)
-            if (result is SuccessResult) {
-                val bitmap = result.drawable.toBitmap()
+            if (result is coil3.request.SuccessResult) {
+                val bitmap = result.image.asDrawable(context.resources).toBitmap()
                 val palette = Palette.from(bitmap).generate()
                 val bgSwatch = palette.darkMutedSwatch ?: palette.darkVibrantSwatch ?: palette.dominantSwatch
                 val accentSwatch = palette.vibrantSwatch ?: palette.lightVibrantSwatch ?: palette.lightMutedSwatch

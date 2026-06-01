@@ -53,7 +53,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.ui.components.CompactVideoCard
@@ -500,8 +500,8 @@ private fun ChannelHeader(
                     .fillMaxWidth()
                     .aspectRatio(320f / 100f),
                 contentScale = ContentScale.Crop,
-                onError = {
-                    Log.e("ChannelHeader", "Banner load failed for $bannerUrl: ${it.result.throwable?.message}")
+                onError = { state ->
+                    Log.e("ChannelHeader", "Banner load failed for $bannerUrl: ${state.result.throwable.message}")
                 }
             )
         } else {

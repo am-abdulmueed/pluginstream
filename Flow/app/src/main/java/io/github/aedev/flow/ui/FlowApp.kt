@@ -53,11 +53,18 @@ fun FlowApp(
     onDeeplinkConsumed: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val activity = context as? androidx.activity.ComponentActivity
+    val activity = remember(context) {
+        var ctx = context
+        while (ctx is android.content.ContextWrapper) {
+            if (ctx is androidx.activity.ComponentActivity) break
+            ctx = ctx.baseContext
+        }
+        ctx as? androidx.activity.ComponentActivity
+    }
     val navController = rememberNavController()
     val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
     
-    val playerViewModel: VideoPlayerViewModel = hiltViewModel(activity!!)
+    val playerViewModel: VideoPlayerViewModel = activity?.let { hiltViewModel(it) } ?: hiltViewModel()
     val playerUiStateResult = playerViewModel.uiState.collectAsStateWithLifecycle()
     val playerUiState by playerUiStateResult
     val playerState by EnhancedPlayerManager.getInstance().playerState.collectAsStateWithLifecycle()

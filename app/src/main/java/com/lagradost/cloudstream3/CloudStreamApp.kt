@@ -9,6 +9,8 @@ import android.os.Build
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import dagger.hilt.android.HiltAndroidApp
+import io.github.aedev.flow.FlowApplication
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -70,8 +72,8 @@ class ExceptionHandler(
     }
 }
 
-@Prerelease
-class CloudStreamApp : Application(), SingletonImageLoader.Factory {
+@HiltAndroidApp
+class CloudStreamApp : FlowApplication(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()

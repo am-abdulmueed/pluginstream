@@ -43,7 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.ui.PlayerView
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.model.toShortVideo
@@ -1198,34 +1198,22 @@ fun ShortsActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = modifier
-            .sizeIn(minWidth = 44.dp, minHeight = 44.dp)
+            .size(48.dp)
+            .clip(CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null,
+                indication = ripple(bounded = true, color = Color.White.copy(alpha = 0.2f)),
                 onClick = onClick
             )
-            .padding(horizontal = 4.dp)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = text,
             tint = tint,
-            modifier = Modifier.size(26.dp)
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall.copy(
-                shadow = androidx.compose.ui.graphics.Shadow(
-                    color = Color.Black,
-                    blurRadius = 4f
-                )
-            ),
-            color = Color.White,
-            fontWeight = FontWeight.Medium
+            modifier = Modifier.size(28.dp)
         )
     }
 }

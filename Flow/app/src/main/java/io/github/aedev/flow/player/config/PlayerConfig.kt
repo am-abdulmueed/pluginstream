@@ -15,7 +15,7 @@ object PlayerConfig {
     fun cacheSizeMbToBytes(mb: Int): Long = if (mb <= 0) 0L else mb * 1024L * 1024L
 
     /** Cache directory name */
-    const val CACHE_DIR_NAME = "exoplayer"
+    const val CACHE_DIR_NAME = "flow_exoplayer"
     
     // ===== Buffer Configuration =====
     /** Allocator buffer size (64 KB optimal for DASH segments) */

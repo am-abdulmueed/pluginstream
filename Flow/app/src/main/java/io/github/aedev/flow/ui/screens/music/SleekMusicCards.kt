@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import io.github.aedev.flow.R
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 
 /**
  * Sleek music card with gradient overlay - inspired by modern music apps

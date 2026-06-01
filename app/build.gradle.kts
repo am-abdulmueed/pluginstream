@@ -7,9 +7,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.dagger.hilt.android")
     alias(libs.plugins.dokka)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services") version "4.4.4"
+    id("com.google.devtools.ksp")
 }
 
 val javaTarget = JvmTarget.fromTarget(libs.versions.jvmTarget.get())
@@ -80,14 +82,14 @@ android {
         }
     }
 
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.betapix.pluginstream"
-        minSdk = libs.versions.minSdk.get().toInt()
-        targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 68
-        versionName = "4.9.1"
+        minSdk = 23
+        targetSdk = 36
+        versionCode = 69
+        versionName = "5.1.1"
 
         resValue("string", "commit_hash", getGitCommitHash())
 
@@ -311,6 +313,12 @@ dependencies {
     implementation(libs.media)
     
     implementation(project(":library"))
+    implementation(project(":flow"))
+
+    // Hilt Setup
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.hilt.navigation.compose)
 }
 
 tasks.register<Jar>("androidSourcesJar") {
