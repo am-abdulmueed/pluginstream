@@ -22,7 +22,7 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
     }
 
     override fun onBindingCreated(binding: FragmentSetupLayoutBinding) {
-        safe {
+        /*safe {
             val ctx = context ?: return@safe
 
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(ctx)
@@ -61,6 +61,6 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
                     findNavController().popBackStack()
                 }
             }
-        }
+        }*/
     }
 }

@@ -93,7 +93,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
-        getPref(R.string.app_layout_key)?.setOnPreferenceClickListener {
+        /*getPref(R.string.app_layout_key)?.setOnPreferenceClickListener {
             val prefNames = resources.getStringArray(R.array.app_layout)
             val prefValues = resources.getIntArray(R.array.app_layout_values)
 
@@ -119,7 +119,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
                 }
             )
             return@setOnPreferenceClickListener true
-        }
+        }*/
 
         getPref(R.string.app_theme_key)?.setOnPreferenceClickListener {
             val prefNames = resources.getStringArray(R.array.themes_names).toMutableList()

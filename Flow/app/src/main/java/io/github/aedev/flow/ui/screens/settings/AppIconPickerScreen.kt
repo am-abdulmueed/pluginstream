@@ -70,14 +70,14 @@ private data class AppIconOption(
 )
 
 private val ALL_ICONS = listOf(
-    AppIconOption(".IconFlowRed", R.string.icon_name_flow_red, Color(0xFF0F0F0F), R.drawable.ic_flow_logo_foreground),
-    AppIconOption(".IconFlowLight", R.string.icon_name_flow_light, Color(0xFFFFFFFF), R.drawable.ic_flow_logo_foreground),
-    AppIconOption(".IconAmoled", R.string.icon_name_amoled, Color(0xFF000000), R.drawable.ic_fg_amoled),
-    AppIconOption(".IconMonochrome", R.string.icon_name_monochrome, Color(0xFFFFFFFF), R.drawable.ic_fg_monochrome),
-    AppIconOption(".IconGhost", R.string.icon_name_ghost, Color(0xFF121212), R.drawable.ic_fg_ghost),
-    AppIconOption(".IconDynamic", R.string.icon_name_dynamic, Color.Unspecified, R.drawable.ic_launcher_dynamic_foreground, usesThemeColors = true),
-    AppIconOption(".IconMaterialSky", R.string.icon_name_material_sky, Color(0xFFD7E3FF), R.drawable.ic_flow_logo_foreground),
-    AppIconOption(".IconMaterialMint", R.string.icon_name_material_mint, Color(0xFFC7E8D4), R.drawable.ic_flow_logo_foreground)
+    AppIconOption(".IconFlowRed", R.string.icon_name_flow_red, Color(0xFF0F0F0F), R.drawable.ic_flow_logo_foreground_old),
+    AppIconOption(".IconFlowLight", R.string.icon_name_flow_light, Color(0xFFFFFFFF), R.drawable.ic_flow_logo_foreground_old),
+    AppIconOption(".IconAmoled", R.string.icon_name_amoled, Color(0xFF000000), R.drawable.ic_flow_fg_amoled),
+    AppIconOption(".IconMonochrome", R.string.icon_name_monochrome, Color(0xFFFFFFFF), R.drawable.ic_flow_fg_monochrome),
+    AppIconOption(".IconGhost", R.string.icon_name_ghost, Color(0xFF121212), R.drawable.ic_flow_fg_ghost),
+    AppIconOption(".IconDynamic", R.string.icon_name_dynamic, Color.Unspecified, R.drawable.ic_flow_launcher_dynamic_foreground, usesThemeColors = true),
+    AppIconOption(".IconMaterialSky", R.string.icon_name_material_sky, Color(0xFFD7E3FF), R.drawable.ic_flow_logo_foreground_old),
+    AppIconOption(".IconMaterialMint", R.string.icon_name_material_mint, Color(0xFFC7E8D4), R.drawable.ic_flow_logo_foreground_old)
 )
 
 private fun getActiveIconSuffix(context: Context): String {

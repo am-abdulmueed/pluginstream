@@ -14,6 +14,7 @@ import com.lagradost.cloudstream3.mvvm.safe
 import com.lagradost.cloudstream3.ui.BaseFragment
 import com.lagradost.cloudstream3.utils.DataStoreHelper
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
+import com.lagradost.cloudstream3.ui.setup.HAS_DONE_SETUP_KEY
 
 class SetupFragmentMedia : BaseFragment<FragmentSetupMediaBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentSetupMediaBinding::inflate)
@@ -65,7 +66,9 @@ class SetupFragmentMedia : BaseFragment<FragmentSetupMediaBinding>(
 
                 nextBtt.setOnClickListener {
                     if (findNavController().currentDestination?.id != R.id.navigation_setup_media) return@setOnClickListener
-                    findNavController().navigate(R.id.navigation_setup_media_to_navigation_setup_layout)
+                    // findNavController().navigate(R.id.navigation_setup_media_to_navigation_setup_layout)
+                    com.lagradost.cloudstream3.CloudStreamApp.setKey(HAS_DONE_SETUP_KEY, true)
+                    findNavController().navigate(R.id.navigation_home)
                 }
 
                 prevBtt.setOnClickListener {

@@ -162,7 +162,7 @@ fun NavGraphBuilder.flowAppGraph(
         )
     ) { backStackEntry ->
         currentRoute.value = "shorts"
-        showBottomNav.value = true
+        showBottomNav.value = false
         selectedBottomNavIndex.intValue = 1
         val startVideoId = backStackEntry.arguments?.getString("startVideoId")
         ShortsScreen(

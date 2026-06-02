@@ -153,7 +153,7 @@ fun SettingsScreen(
     }
     BackHandler(enabled = isSearchActive) { isSearchActive = false; searchQuery = "" }
 
-    val onCheckForUpdatesClick: () -> Unit = {
+    /*val onCheckForUpdatesClick: () -> Unit = {
         if (BuildConfig.UPDATER_ENABLED && !isCheckingUpdate) {
             isCheckingUpdate = true
             coroutineScope.launch(Dispatchers.IO) {
@@ -213,7 +213,8 @@ fun SettingsScreen(
                 }
             }
         }
-    }
+    }*/
+    val onCheckForUpdatesClick: () -> Unit = {}
 
     // Section label strings for the search index
     val secFlowEngine = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_flow_engine_header)
@@ -679,13 +680,13 @@ item {
                         onClick = { showAppLanguageDialog = true }
                     )
                     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                    SettingsItem(
+                    /*SettingsItem(
                         icon = Icons.Outlined.AppShortcut,
                         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon),
                         subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon_subtitle),
                         onClick = onNavigateToAppIconPicker
                     )
-                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))*/
                     SettingsItem(
                         icon = Icons.Outlined.Tune,
                         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_appearance),
@@ -844,7 +845,7 @@ item {
             // =================================================
             // ABOUT
             // =================================================
-            item { SectionHeader(text = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_about)) }
+            /*item { SectionHeader(text = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_about)) }
             item {
                 SettingsGroup {
                     SettingsItem(
@@ -880,7 +881,7 @@ item {
                         onClick = onNavigateToDonations
                     )
                 }
-            }
+            }*/
         }
         }
     }

@@ -211,9 +211,9 @@ fun FlowApp(
         )
     }
     
-    LaunchedEffect(playerSheetState.currentValue, playerSheetState.isDragging) {
+    LaunchedEffect(playerSheetState.currentValue, playerSheetState.isDragging, currentRoute.value) {
         if (!playerSheetState.isDragging) {
-            showBottomNav.value = playerSheetState.currentValue != PlayerSheetValue.Expanded
+            showBottomNav.value = currentRoute.value.isBottomNavRoute() && playerSheetState.currentValue != PlayerSheetValue.Expanded
             when (playerSheetState.currentValue) {
                 PlayerSheetValue.Expanded -> GlobalPlayerState.expandMiniPlayer()
                 PlayerSheetValue.Collapsed -> GlobalPlayerState.collapseMiniPlayer()
@@ -278,10 +278,10 @@ fun FlowApp(
         }
     }
 
-    LaunchedEffect(musicPlayerSheetState.isExpanded) {
+    LaunchedEffect(musicPlayerSheetState.isExpanded, currentRoute.value) {
         if (musicPlayerSheetState.isExpanded) {
             showBottomNav.value = false
-        } else if (!musicPlayerSheetState.isDismissed && playerSheetState.currentValue != PlayerSheetValue.Expanded) {
+        } else if (!musicPlayerSheetState.isDismissed && playerSheetState.currentValue != PlayerSheetValue.Expanded && currentRoute.value.isBottomNavRoute()) {
             showBottomNav.value = true
         }
     }
@@ -576,6 +576,15 @@ private fun navRouteForIndex(index: Int): String = when (index) {
     5 -> "search"
     6 -> "categories"
     else -> "home"
+}
+
+private fun String.isBottomNavRoute(): Boolean {
+    return this == "home" ||
+            this == "subscriptions" ||
+            this == "library" ||
+            this == "search" ||
+            this == "categories" ||
+            this == "music"
 }
 
 private fun String.isLibraryOrSettingsRouteForMusicMiniPlayer(): Boolean {
