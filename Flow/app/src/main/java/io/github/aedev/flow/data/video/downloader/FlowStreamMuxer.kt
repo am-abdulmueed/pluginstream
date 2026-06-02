@@ -62,7 +62,8 @@ object FlowStreamMuxer {
             val useWebM = videoMime.contains("vp9", ignoreCase = true) ||
                           videoMime.contains("vp8", ignoreCase = true) ||
                           videoMime.contains("vp09", ignoreCase = true)
-            val isAv1   = videoMime.contains("av01", ignoreCase = true)
+            val isAv1   = videoMime.contains("av01", ignoreCase = true) ||
+                          videoMime.contains("av1", ignoreCase = true)
 
             val audioTrackIndex = selectTrack(audioExtractor, "audio/")
             if (audioTrackIndex < 0) {

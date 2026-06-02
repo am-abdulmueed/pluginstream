@@ -22,11 +22,13 @@ import io.github.aedev.flow.data.model.toVideo
 import io.github.aedev.flow.player.shorts.ShortsPlayerPool
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.ui.components.FlowCommentsBottomSheet
+import io.github.aedev.flow.ui.components.CommentSortFilter
 import io.github.aedev.flow.ui.components.FlowDescriptionBottomSheet
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 
@@ -84,15 +86,33 @@ fun ShortsScreen(
     // Bottom sheet states
     var showCommentsSheet by remember { mutableStateOf(false) }
     var showDescriptionSheet by remember { mutableStateOf(false) }
-    var isTopComments by remember { mutableStateOf(true) }
+    var commentSortFilter by remember { mutableStateOf(CommentSortFilter.TOP) }
     val comments by viewModel.commentsState.collectAsState()
     val isLoadingComments by viewModel.isLoadingComments.collectAsState()
 
-    // Sorted comments — pinned always first, then top/newest order
-    val sortedComments = remember(comments, isTopComments) {
+    fun relativeTimeToSeconds(timeStr: String): Long {
+        val lower = timeStr.lowercase().trim()
+        val number = Regex("\\d+").find(lower)?.value?.toLongOrNull() ?: 0L
+        return when {
+            "second" in lower -> number
+            "minute" in lower -> number * 60L
+            "hour" in lower -> number * 3_600L
+            "day" in lower -> number * 86_400L
+            "week" in lower -> number * 604_800L
+            "month" in lower -> number * 2_592_000L
+            "year" in lower -> number * 31_536_000L
+            else -> Long.MAX_VALUE
+        }
+    }
+
+    val sortedComments = remember(comments, commentSortFilter) {
         val pinned = comments.filter { it.isPinned }
         val unpinned = comments.filterNot { it.isPinned }
-        val sortedUnpinned = if (isTopComments) unpinned.sortedByDescending { it.likeCount } else unpinned
+        val sortedUnpinned = when (commentSortFilter) {
+            CommentSortFilter.TOP -> unpinned.sortedByDescending { it.likeCount }
+            CommentSortFilter.NEWEST -> unpinned.sortedBy { relativeTimeToSeconds(it.publishedTime) }
+            CommentSortFilter.OLDEST -> unpinned.sortedByDescending { relativeTimeToSeconds(it.publishedTime) }
+        }
         pinned + sortedUnpinned
     }
 
@@ -143,6 +163,7 @@ fun ShortsScreen(
 
                 // Load likes and metadata for the current short
                 LaunchedEffect(pagerState.currentPage) {
+                    delay(750)
                     uiState.shorts.getOrNull(pagerState.currentPage)?.let {
                         viewModel.loadShortDetails(it.id)
                     }
@@ -155,15 +176,21 @@ fun ShortsScreen(
                     }
                 }
 
-                // Pre-resolve streams for adjacent pages
+                // Pre-resolve lightweight playback streams for the visible page and near neighbors.
                 LaunchedEffect(pagerState.currentPage) {
                     val currentIdx = pagerState.currentPage
                     val idsToPreload = listOfNotNull(
+                        uiState.shorts.getOrNull(currentIdx)?.id,
                         uiState.shorts.getOrNull(currentIdx + 1)?.id,
                         uiState.shorts.getOrNull(currentIdx + 2)?.id
                     )
                     if (idsToPreload.isNotEmpty()) {
-                        viewModel.preResolveStreams(idsToPreload)
+                        val preferredLang = audioLangPref.preferredAudioLanguage.first()
+                        idsToPreload.forEach { id ->
+                            launch {
+                                viewModel.getPlaybackStreams(id, shortsTargetHeight, preferredLang)
+                            }
+                        }
                     }
                 }
 
@@ -171,88 +198,34 @@ fun ShortsScreen(
                 LaunchedEffect(pagerState.settledPage) {
                     val settled = pagerState.settledPage
                     val playerPool = ShortsPlayerPool.getInstance()
+                    playerPool.initialize(context)
 
-                    suspend fun getStreams(id: String, preferredAudioUrl: String? = null): Pair<String?, String?>? {
-                        val streamInfo = viewModel.getVideoStreamInfo(id) ?: return null
-                        val targetH = shortsTargetHeight
-                        val allVideoStreams = (streamInfo.videoStreams.orEmpty() + streamInfo.videoOnlyStreams.orEmpty())
-                        val videoStream = if (targetH == 0) {
-                            allVideoStreams.maxByOrNull { it.height }
-                        } else {
-                            allVideoStreams.filter { it.height <= targetH }.maxByOrNull { it.height }
-                                ?: allVideoStreams.minByOrNull { it.height } 
-                        }
-
-                        val preferredLang = audioLangPref.preferredAudioLanguage.first()
-                        val audioCandidates = streamInfo.audioStreams
-                            ?.sortedByDescending { it.averageBitrate } ?: emptyList()
-
-                        val audioStream = when (preferredLang) {
-                            "original" -> {
-                                audioCandidates.firstOrNull { stream ->
-                                    stream.audioTrackType == org.schabi.newpipe.extractor.stream.AudioTrackType.ORIGINAL
-                                } ?: audioCandidates.firstOrNull { stream ->
-                                    stream.audioTrackType != org.schabi.newpipe.extractor.stream.AudioTrackType.DUBBED
-                                } ?: audioCandidates.firstOrNull()
+                    suspend fun prepareShort(index: Int, short: ShortVideo, shouldPlay: Boolean) {
+                        try {
+                            val preferredLang = audioLangPref.preferredAudioLanguage.first()
+                            val streams = viewModel.getPlaybackStreams(short.id, shortsTargetHeight, preferredLang)
+                            if (streams != null) {
+                                playerPool.prepare(index, short.id, streams.videoUrl, streams.audioUrl, shouldPlay)
+                            } else {
+                                Log.w("ShortsScreen", "No stream URL resolved for ${short.id}")
                             }
-                            else -> {
-                                audioCandidates.firstOrNull { a ->
-                                    val lang = a.audioLocale?.language ?: ""
-                                    lang.startsWith(preferredLang, true)
-                                } ?: audioCandidates.firstOrNull { stream ->
-                                    stream.audioTrackType == org.schabi.newpipe.extractor.stream.AudioTrackType.ORIGINAL
-                                } ?: audioCandidates.firstOrNull()
-                            }
+                        } catch (e: Exception) {
+                            Log.e("ShortsScreen", "Failed to prepare player for ${short.id}", e)
                         }
-
-                        return (videoStream?.content ?: videoStream?.url) to (audioStream?.content ?: audioStream?.url)
                     }
 
-                    // 1. Activate Current
                     playerPool.activatePlayer(settled)
 
-                    val currentShort = uiState.shorts.getOrNull(settled)
-                    if (currentShort != null) {
-                        launch {
-                            try {
-                                val streams = getStreams(currentShort.id)
-                                val vUrl = streams?.first
-                                if (vUrl != null) {
-                                    playerPool.prepare(settled, currentShort.id, vUrl, streams?.second, true)
-                                } else {
-                                    Log.w("ShortsScreen", "No stream URL resolved for ${currentShort.id}")
-                                }
-                            } catch (e: Exception) {
-                                Log.e("ShortsScreen", "Failed to prepare player for ${currentShort.id}", e)
-                            }
-                        }
+                    uiState.shorts.getOrNull(settled)?.let { currentShort ->
+                        launch { prepareShort(settled, currentShort, shouldPlay = true) }
+                    }
+                    uiState.shorts.getOrNull(settled + 1)?.let { nextShort ->
+                        launch { prepareShort(settled + 1, nextShort, shouldPlay = false) }
+                    }
+                    uiState.shorts.getOrNull(settled - 1)?.let { prevShort ->
+                        launch { prepareShort(settled - 1, prevShort, shouldPlay = false) }
                     }
 
-                    // 2. Preload Next
-                    val nextShort = uiState.shorts.getOrNull(settled + 1)
-                    if (nextShort != null) {
-                        launch {
-                            val streams = getStreams(nextShort.id)
-                            val vUrl = streams?.first
-                            if (vUrl != null) {
-                                playerPool.prepare(settled + 1, nextShort.id, vUrl, streams?.second, false)
-                            }
-                        }
-                    }
-
-                    // 3. Preload Previous
-                    val prevShort = uiState.shorts.getOrNull(settled - 1)
-                    if (prevShort != null) {
-                        launch {
-                            val streams = getStreams(prevShort.id)
-                            val vUrl = streams?.first
-                            if (vUrl != null) {
-                                playerPool.prepare(settled - 1, prevShort.id, vUrl, streams?.second, false)
-                            }
-                        }
-                    }
-
-                    // 4. Cleanup distant players
                     playerPool.releaseUnusedPlayers(settled)
                 }
 
@@ -383,8 +356,8 @@ fun ShortsScreen(
             FlowCommentsBottomSheet(
                 comments = sortedComments,
                 isLoading = isLoadingComments,
-                isTopSelected = isTopComments,
-                onFilterChanged = { isTopComments = it },
+                selectedFilter = commentSortFilter,
+                onFilterChanged = { commentSortFilter = it },
                 onLoadReplies = { viewModel.loadCommentReplies(it) },
                 onAuthorClick = { authorHandle ->
                     showCommentsSheet = false

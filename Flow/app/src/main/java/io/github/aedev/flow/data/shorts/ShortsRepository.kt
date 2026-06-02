@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.util.LruCache
 import io.github.aedev.flow.data.local.SubscriptionRepository
+import io.github.aedev.flow.data.local.ViewHistory
 import io.github.aedev.flow.data.model.ShortVideo
 import io.github.aedev.flow.data.model.ShortsSequenceResult
 import io.github.aedev.flow.data.model.toShortVideo
@@ -12,7 +13,13 @@ import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.data.repository.YouTubeRepository
 import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.innertube.models.YouTubeClient
+import io.github.aedev.flow.innertube.models.response.PlayerResponse
+import io.github.aedev.flow.innertube.pages.NewPipeExtractor
+import io.github.aedev.flow.player.quality.QualityManager
+import io.github.aedev.flow.player.stream.InnerTubeVideoStreamExtractor
+import io.github.aedev.flow.player.stream.VideoCodecUtils
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
@@ -22,6 +29,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -53,11 +62,15 @@ class ShortsRepository private constructor(private val context: Context) {
 
     private val youtubeRepository = YouTubeRepository.getInstance()
     private val subscriptionRepository = SubscriptionRepository.getInstance(context)
+    private val viewHistory = ViewHistory.getInstance(context)
     private val shortsDiscovery = ShortsDiscoveryEngine.getInstance(context)
     
     // In-memory caches — ephemeral, cleared when app process dies
     private val streamInfoCache = LruCache<String, StreamInfo>(50)
+    private val playbackStreamsCache = LruCache<String, ShortPlaybackStreams>(50)
     private val shortsCache = LruCache<String, ShortVideo>(100)
+    private val streamResolveMutex = Mutex()
+    private val playbackStreamsInFlight = mutableMapOf<String, Deferred<ShortPlaybackStreams?>>()
     
     // Track recently shown to prevent immediate repeats within a session
     private val recentlyShownIds = mutableSetOf<String>()
@@ -109,7 +122,8 @@ class ShortsRepository private constructor(private val context: Context) {
                 cached.shorts.isNotEmpty()
             ) {
                 Log.d(TAG, "♻ Using cached feed (${cached.shorts.size} shorts)")
-                return@withContext cached
+                val filtered = cached.copy(shorts = filterWatchedShorts(cached.shorts))
+                if (filtered.shorts.isNotEmpty()) return@withContext filtered
             }
             return@withContext fetchDiscoveryFeed()
         }
@@ -123,9 +137,10 @@ class ShortsRepository private constructor(private val context: Context) {
 
         if (rawResult != null && rawResult.shorts.isNotEmpty()) {
             Log.d(TAG, "✓ InnerTube seed returned ${rawResult.shorts.size} shorts")
-            rawResult.shorts.forEach { shortsCache.put(it.id, it) }
-            markAsShown(rawResult.shorts.map { it.id })
-            return@withContext rawResult
+            val filtered = rawResult.copy(shorts = filterWatchedShorts(rawResult.shorts))
+            filtered.shorts.forEach { shortsCache.put(it.id, it) }
+            markAsShown(filtered.shorts.map { it.id })
+            return@withContext filtered
         }
 
         Log.w(TAG, "InnerTube seed failed — falling back to discovery feed")
@@ -154,7 +169,10 @@ class ShortsRepository private constructor(private val context: Context) {
         }
 
         if (innerTubeResult != null && innerTubeResult.shorts.isNotEmpty()) {
-            val itShorts = innerTubeResult.shorts
+            val itShorts = filterWatchedShorts(innerTubeResult.shorts)
+            if (itShorts.isEmpty()) {
+                Log.i(TAG, "InnerTube fast-path contained only watched Shorts")
+            } else {
             markAsShown(itShorts.map { it.id })
             itShorts.forEach { shortsCache.put(it.id, it) }
 
@@ -172,6 +190,8 @@ class ShortsRepository private constructor(private val context: Context) {
                     ?.filter { it.id !in recentlyShownIds && it.id !in existingIds }
                     ?.let { deduplicateByTitle(it) }
                     ?.map { it.toShortVideo() }
+                    ?.let { filterWatchedShorts(it) }
+                    ?.let { orderShortsNewestFirst(it) }
                     .orEmpty()
 
                 if (newCandidates.isNotEmpty()) {
@@ -197,6 +217,7 @@ class ShortsRepository private constructor(private val context: Context) {
             }
 
             return earlyResult
+            }
         }
 
         // InnerTube unavailable — await discovery or NewPipe fallback
@@ -214,7 +235,7 @@ class ShortsRepository private constructor(private val context: Context) {
                 null
             }
             if (newPipeResult != null && newPipeResult.shorts.isNotEmpty()) {
-                val reRanked = reRankWithFlowNeuro(newPipeResult.shorts, userSubs)
+                val reRanked = orderShortsNewestFirst(reRankWithFlowNeuro(newPipeResult.shorts, userSubs))
                 val result = newPipeResult.copy(shorts = reRanked)
                 result.shorts.forEach { shortsCache.put(it.id, it) }
                 markAsShown(result.shorts.map { it.id })
@@ -230,6 +251,8 @@ class ShortsRepository private constructor(private val context: Context) {
             .filter { it.id !in recentlyShownIds }
             .let { deduplicateByTitle(it) }
             .map { it.toShortVideo() }
+            .let { filterWatchedShorts(it) }
+            .let { orderShortsNewestFirst(it) }
 
         markAsShown(candidateShorts.map { it.id })
         candidateShorts.forEach { shortsCache.put(it.id, it) }
@@ -281,6 +304,7 @@ class ShortsRepository private constructor(private val context: Context) {
                     val shorts = page.items
                         .map { it.toShortVideo() }
                         .filter { it.id !in recentlyShownIds }
+                        .let { filterWatchedShorts(it) }
                     ShortsSequenceResult(shorts, page.continuation)
                 } else null
             }
@@ -322,7 +346,7 @@ class ShortsRepository private constructor(private val context: Context) {
                 null
             } ?: metadataEnriched
 
-            val reRanked = reRankWithFlowNeuro(enriched, userSubs)
+            val reRanked = orderShortsNewestFirst(reRankWithFlowNeuro(enriched, userSubs))
             val enrichedResult = result.copy(shorts = reRanked)
             enrichedResult.shorts.forEach { shortsCache.put(it.id, it) }
             markAsShown(enrichedResult.shorts.map { it.id })
@@ -343,7 +367,7 @@ class ShortsRepository private constructor(private val context: Context) {
                 fetchFromNewPipe()
             }
             if (fallback != null) {
-                val reRanked = reRankWithFlowNeuro(fallback.shorts, userSubs)
+                val reRanked = orderShortsNewestFirst(reRankWithFlowNeuro(fallback.shorts, userSubs))
                 val rankedFallback = fallback.copy(shorts = reRanked)
                 rankedFallback.shorts.forEach { shortsCache.put(it.id, it) }
                 markAsShown(rankedFallback.shorts.map { it.id })
@@ -402,6 +426,9 @@ class ShortsRepository private constructor(private val context: Context) {
         return result
     }
 
+    private fun orderShortsNewestFirst(shorts: List<ShortVideo>): List<ShortVideo> =
+        shorts.sortedByDescending { it.timestamp }
+
     // FLOWNEURO RE-RANKING — YouTube algo primary, FlowNeuro personalization    
     /**
      * Re-rank shorts using FlowNeuroEngine.
@@ -429,11 +456,12 @@ class ShortsRepository private constructor(private val context: Context) {
             val rankedIds = ranked.map { it.id }
             val shortById = candidates.associateBy { it.id }
             val reRanked = rankedIds.mapNotNull { shortById[it] }
+            FlowNeuroEngine.recordFeedImpressions(listOf(pinned.toVideo()) + ranked)
             Log.d(TAG, "✓ FlowNeuro re-ranked ${reRanked.size} shorts")
-            listOf(pinned) + reRanked
+            orderShortsNewestFirst(listOf(pinned) + reRanked)
         } catch (e: Exception) {
             Log.w(TAG, "FlowNeuro re-ranking failed, using original order: ${e.message}")
-            shorts
+            orderShortsNewestFirst(shorts)
         }
     }
     
@@ -472,6 +500,242 @@ class ShortsRepository private constructor(private val context: Context) {
         streamInfo
     }
     
+    suspend fun resolvePlaybackStreams(
+        videoId: String,
+        targetHeight: Int,
+        preferredAudioLanguage: String
+    ): ShortPlaybackStreams? = withContext(Dispatchers.IO) {
+        val cacheKey = "$videoId|$targetHeight|$preferredAudioLanguage"
+        playbackStreamsCache.get(cacheKey)?.let { return@withContext it }
+
+        val inFlight = streamResolveMutex.withLock {
+            playbackStreamsInFlight[cacheKey]?.let { return@withLock it }
+            repositoryScope.async {
+                resolvePlaybackStreamsUncached(videoId, targetHeight, preferredAudioLanguage)
+            }.also { playbackStreamsInFlight[cacheKey] = it }
+        }
+
+        try {
+            inFlight.await()?.also { playbackStreamsCache.put(cacheKey, it) }
+        } finally {
+            streamResolveMutex.withLock {
+                if (playbackStreamsInFlight[cacheKey] === inFlight) {
+                    playbackStreamsInFlight.remove(cacheKey)
+                }
+            }
+        }
+    }
+
+    private suspend fun resolvePlaybackStreamsUncached(
+        videoId: String,
+        targetHeight: Int,
+        preferredAudioLanguage: String
+    ): ShortPlaybackStreams? {
+        resolveFromUnifiedExtractor(videoId, targetHeight, preferredAudioLanguage)?.let { return it }
+
+        resolveFromInnerTubePlayer(videoId, targetHeight, preferredAudioLanguage)?.let { return it }
+
+        val streamInfo = resolveStreamInfo(videoId) ?: return null
+        val allVideoStreams = (streamInfo.videoStreams.orEmpty() + streamInfo.videoOnlyStreams.orEmpty())
+        fun qualityHeight(stream: org.schabi.newpipe.extractor.stream.VideoStream): Int {
+            return QualityManager.normalizeQualityHeight(VideoCodecUtils.qualityHeightFromStream(stream))
+        }
+        val videoStream = if (targetHeight == 0) {
+            allVideoStreams.maxByOrNull { qualityHeight(it) }
+        } else {
+            allVideoStreams.filter { qualityHeight(it) <= targetHeight }.maxByOrNull { qualityHeight(it) }
+                ?: allVideoStreams.minByOrNull { qualityHeight(it) }
+        }
+
+        val audioCandidates = streamInfo.audioStreams
+            ?.sortedByDescending { it.averageBitrate } ?: emptyList()
+        val audioStream = when (preferredAudioLanguage) {
+            "original", "" -> audioCandidates.firstOrNull { stream ->
+                stream.audioTrackType == org.schabi.newpipe.extractor.stream.AudioTrackType.ORIGINAL
+            } ?: audioCandidates.firstOrNull { stream ->
+                stream.audioTrackType != org.schabi.newpipe.extractor.stream.AudioTrackType.DUBBED
+            } ?: audioCandidates.firstOrNull()
+            else -> audioCandidates.firstOrNull { a ->
+                val lang = a.audioLocale?.language ?: ""
+                lang.startsWith(preferredAudioLanguage, true)
+            } ?: audioCandidates.firstOrNull { stream ->
+                stream.audioTrackType == org.schabi.newpipe.extractor.stream.AudioTrackType.ORIGINAL
+            } ?: audioCandidates.firstOrNull()
+        }
+
+        val videoUrl = videoStream?.content ?: videoStream?.url ?: return null
+        return ShortPlaybackStreams(
+            videoUrl = videoUrl,
+            audioUrl = audioStream?.content ?: audioStream?.url,
+            durationMs = streamInfo.duration.takeIf { it > 0 }?.let { it * 1000L }
+        )
+    }
+
+    suspend fun getAvailableVideoQualities(videoId: String): List<ShortVideoQuality> = withContext(Dispatchers.IO) {
+        try {
+            val result = withTimeoutOrNull(STREAM_RESOLVE_TIMEOUT_MS) {
+                InnerTubeVideoStreamExtractor.extract(videoId)
+            }
+            val formats = result?.videoFormats?.filter { !it.url.isNullOrBlank() }.orEmpty()
+            if (formats.isNotEmpty()) {
+                return@withContext formats
+                    .groupBy { shortsQualityClass(it) }
+                    .mapNotNull { (cls, group) ->
+                        val best = group.maxByOrNull { it.averageBitrate ?: it.bitrate } ?: return@mapNotNull null
+                        val url = best.url ?: return@mapNotNull null
+                        ShortVideoQuality(cls, "${cls}p", url, codecLabelFromMime(best.mimeType))
+                    }
+                    .sortedByDescending { it.heightClass }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "getAvailableVideoQualities (unified) failed for $videoId: ${e.message}")
+        }
+
+        val streamInfo = resolveStreamInfo(videoId) ?: return@withContext emptyList()
+        (streamInfo.videoStreams.orEmpty() + streamInfo.videoOnlyStreams.orEmpty())
+            .filterIsInstance<org.schabi.newpipe.extractor.stream.VideoStream>()
+            .groupBy { QualityManager.normalizeQualityHeight(VideoCodecUtils.qualityHeightFromStream(it)) }
+            .mapNotNull { (cls, group) ->
+                val best = group.maxByOrNull { it.bitrate } ?: return@mapNotNull null
+                val url = best.content ?: best.url ?: return@mapNotNull null
+                ShortVideoQuality(cls, "${cls}p", url, best.format?.name?.uppercase() ?: "")
+            }
+            .sortedByDescending { it.heightClass }
+    }
+
+    suspend fun getInnerTubeDownloadFormats(
+        videoId: String
+    ): Pair<List<PlayerResponse.StreamingData.Format>, List<PlayerResponse.StreamingData.Format>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = withTimeoutOrNull(STREAM_RESOLVE_TIMEOUT_MS) {
+                    InnerTubeVideoStreamExtractor.extract(videoId)
+                } ?: return@withContext emptyList<PlayerResponse.StreamingData.Format>() to emptyList<PlayerResponse.StreamingData.Format>()
+                val video = result.videoFormats.filter { !it.url.isNullOrBlank() }
+                val audio = result.audioFormats.filter { !it.url.isNullOrBlank() }
+                video to audio
+            } catch (e: Exception) {
+                Log.w(TAG, "getInnerTubeDownloadFormats failed for $videoId: ${e.message}")
+                emptyList<PlayerResponse.StreamingData.Format>() to emptyList<PlayerResponse.StreamingData.Format>()
+            }
+        }
+
+    private fun codecLabelFromMime(mime: String): String = when {
+        mime.contains("av01", true) -> "AV1"
+        mime.contains("vp9", true) || mime.contains("vp09", true) -> "VP9"
+        mime.contains("avc", true) || mime.contains("mp4", true) -> "H.264"
+        mime.contains("vp8", true) -> "VP8"
+        else -> ""
+    }
+
+    private fun shortsQualityClass(f: PlayerResponse.StreamingData.Format): Int {
+        f.qualityLabel?.let { label ->
+            Regex("(\\d+)p").find(label)?.groupValues?.getOrNull(1)?.toIntOrNull()?.let { return it }
+        }
+        val w = f.width ?: 0
+        val h = f.height ?: 0
+        return if (w > 0 && h > 0) minOf(w, h) else maxOf(w, h)
+    }
+
+    private fun selectVideoForTarget(
+        videoFormats: List<PlayerResponse.StreamingData.Format>,
+        targetHeight: Int
+    ): PlayerResponse.StreamingData.Format? =
+        if (targetHeight == 0) {
+            videoFormats.maxByOrNull { shortsQualityClass(it) }
+        } else {
+            videoFormats.filter { shortsQualityClass(it) <= targetHeight }.maxByOrNull { shortsQualityClass(it) }
+                ?: videoFormats.minByOrNull { shortsQualityClass(it) }
+        }
+
+    private fun selectAudioForLanguage(
+        audioFormats: List<PlayerResponse.StreamingData.Format>,
+        preferredAudioLanguage: String
+    ): PlayerResponse.StreamingData.Format? {
+        val sorted = audioFormats.sortedByDescending {
+            (it.averageBitrate ?: it.bitrate) + if (it.mimeType.contains("webm", true)) 10_000 else 0
+        }
+        return when (preferredAudioLanguage) {
+            "original", "" -> sorted.firstOrNull { it.isOriginal } ?: sorted.firstOrNull()
+            else -> sorted.firstOrNull { format ->
+                format.audioTrack?.id?.substringAfterLast(".")?.startsWith(preferredAudioLanguage, true) == true
+            } ?: sorted.firstOrNull { it.isOriginal } ?: sorted.firstOrNull()
+        }
+    }
+
+    private suspend fun resolveFromUnifiedExtractor(
+        videoId: String,
+        targetHeight: Int,
+        preferredAudioLanguage: String
+    ): ShortPlaybackStreams? {
+        return try {
+            val result = withTimeoutOrNull(STREAM_RESOLVE_TIMEOUT_MS) {
+                InnerTubeVideoStreamExtractor.extract(videoId)
+            } ?: return null
+
+            val videoFormats = result.videoFormats.filter { !it.url.isNullOrBlank() }
+            if (videoFormats.isEmpty()) return null
+
+            val selectedVideo = selectVideoForTarget(videoFormats, targetHeight) ?: return null
+            val videoUrl = selectedVideo.url ?: return null
+
+            val audioFormats = result.audioFormats.filter { !it.url.isNullOrBlank() }
+            val selectedAudio = selectAudioForLanguage(audioFormats, preferredAudioLanguage)
+
+            Log.d(TAG, "✓ Unified extractor resolved $videoId at ${shortsQualityClass(selectedVideo)}p via ${result.usedClient.clientName}")
+            ShortPlaybackStreams(
+                videoUrl = videoUrl,
+                audioUrl = selectedAudio?.url,
+                durationMs = result.playerResponse.videoDetails?.lengthSeconds?.toLongOrNull()?.times(1000L)
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Unified extractor resolve failed for $videoId: ${e.message}")
+            null
+        }
+    }
+
+    private suspend fun resolveFromInnerTubePlayer(
+        videoId: String,
+        targetHeight: Int,
+        preferredAudioLanguage: String
+    ): ShortPlaybackStreams? {
+        return try {
+            val response = withTimeoutOrNull(3_500L) {
+                YouTube.shortsPlayer(videoId).getOrNull()
+                    ?: YouTube.player(videoId, client = YouTubeClient.ANDROID).getOrNull()
+            } ?: return null
+
+            val streamingData = response.streamingData ?: return null
+
+            val audioFormats = streamingData.adaptiveFormats
+                .filter { it.isAudio && (!it.url.isNullOrBlank() || !it.signatureCipher.isNullOrBlank()) }
+                .sortedByDescending { (it.averageBitrate ?: it.bitrate) + if (it.mimeType.contains("webm", true)) 10_000 else 0 }
+
+            val adaptiveVideo = streamingData.adaptiveFormats
+                .filter { !it.isAudio && it.height != null && (!it.url.isNullOrBlank() || !it.signatureCipher.isNullOrBlank()) }
+            val videoFormats = if (adaptiveVideo.isNotEmpty() && audioFormats.isNotEmpty()) {
+                adaptiveVideo
+            } else {
+                (streamingData.formats.orEmpty() + streamingData.adaptiveFormats)
+                    .filter { !it.isAudio && (!it.url.isNullOrBlank() || !it.signatureCipher.isNullOrBlank()) }
+            }
+
+            val selectedVideo = selectVideoForTarget(videoFormats, targetHeight) ?: return null
+            val selectedAudio = selectAudioForLanguage(audioFormats, preferredAudioLanguage)
+
+            val videoUrl = NewPipeExtractor.getStreamUrl(selectedVideo, videoId) ?: return null
+            val audioUrl = selectedAudio?.let { NewPipeExtractor.getStreamUrl(it, videoId) }
+            ShortPlaybackStreams(
+                videoUrl = videoUrl,
+                audioUrl = audioUrl,
+                durationMs = response.videoDetails?.lengthSeconds?.toLongOrNull()?.times(1000L)
+            )
+        } catch (e: Exception) {
+            Log.w(TAG, "Fast Shorts stream resolve failed for $videoId: ${e.message}")
+            null
+        }
+    }
+
     /**
      * Pre-resolve streams for multiple video IDs concurrently.
      * Used to pre-buffer adjacent shorts in the pager.
@@ -505,7 +769,7 @@ class ShortsRepository private constructor(private val context: Context) {
     suspend fun getHomeFeedShorts(): List<ShortVideo> = withContext(Dispatchers.IO) {
         try {
             val result = getShortsFeed()
-            result.shorts.take(20)
+            orderShortsNewestFirst(filterWatchedShorts(result.shorts)).take(20)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get home feed shorts", e)
             emptyList()
@@ -633,8 +897,18 @@ class ShortsRepository private constructor(private val context: Context) {
             .filter { it.duration in 1..60 }
             .map { it.toShortVideo() }
             .filter { it.id !in recentlyShownIds }
+            .let { filterWatchedShorts(it) }
+            .let { orderShortsNewestFirst(it) }
         
         return ShortsSequenceResult(shorts, null)
+    }
+
+    private suspend fun filterWatchedShorts(shorts: List<ShortVideo>): List<ShortVideo> {
+        if (shorts.isEmpty()) return shorts
+        val watchedIds = runCatching { viewHistory.getWatchedShortIdsAboveThreshold(90f) }
+            .getOrDefault(emptySet())
+        if (watchedIds.isEmpty()) return shorts
+        return shorts.filter { it.id !in watchedIds }
     }
     
     // INTERNAL — Recently Shown Tracking
@@ -663,6 +937,7 @@ class ShortsRepository private constructor(private val context: Context) {
      */
     fun clearCaches() {
         streamInfoCache.evictAll()
+        playbackStreamsCache.evictAll()
         shortsCache.evictAll()
         recentlyShownIds.clear()
         cachedInitialFeed = null
@@ -689,3 +964,16 @@ class ShortsRepository private constructor(private val context: Context) {
         return getShortsFeed()
     }
 }
+
+data class ShortPlaybackStreams(
+    val videoUrl: String,
+    val audioUrl: String?,
+    val durationMs: Long?
+)
+
+data class ShortVideoQuality(
+    val heightClass: Int,
+    val label: String,
+    val videoUrl: String,
+    val codecLabel: String
+)

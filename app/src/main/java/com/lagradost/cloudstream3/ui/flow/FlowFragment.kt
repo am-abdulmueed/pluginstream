@@ -27,8 +27,12 @@ class FlowFragment : Fragment() {
                 FlowApp(
                     currentTheme = ThemeMode.SYSTEM,
                     customThemeColors = CustomThemeColors.default(),
+                    systemLightThemeMode = ThemeMode.LIGHT,
+                    systemDarkThemeMode = ThemeMode.DARK,
                     onThemeChange = {},
-                    onCustomThemeColorsChange = {}
+                    onCustomThemeColorsChange = {},
+                    onSystemLightThemeChange = {},
+                    onSystemDarkThemeChange = {}
                 )
             }
         }

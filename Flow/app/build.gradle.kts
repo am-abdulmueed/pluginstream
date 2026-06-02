@@ -14,13 +14,13 @@ android {
 
     defaultConfig {
         minSdk = 23
-
         testInstrumentationRunner = "io.github.aedev.flow.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
         
         buildConfigField("String", "VERSION_NAME", "\"2.1.0\"")
+        buildConfigField("int", "VERSION_CODE", "15")
 
         // Support all architectures for maximum device compatibility
         ndk {
@@ -29,6 +29,19 @@ android {
         
         // Enable multidex for older devices
         multiDexEnabled = true
+    }
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("github") {
+            dimension = "version"
+            isDefault = true
+            buildConfigField("Boolean", "UPDATER_ENABLED", "true")
+        }
+        create("foss") {
+            dimension = "version"
+            buildConfigField("Boolean", "UPDATER_ENABLED", "false")
+        }
     }
 
     buildFeatures {
@@ -206,6 +219,7 @@ dependencies {
     implementation(libs.rxandroid)
 
     implementation(libs.work.runtime.ktx)
+    "githubImplementation"(libs.apkupdater)
     implementation(libs.androidx.multidex)
 
     implementation(libs.brotli) 

@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.aedev.flow.data.local.entity.WatchHistoryEntity
+import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -72,11 +73,12 @@ class ViewHistory private constructor(private val context: Context) {
         thumbnailUrl: String = "",
         channelName: String = "",
         channelId: String = "",
-        isMusic: Boolean = false
+        isMusic: Boolean = false,
+        isShort: Boolean = false
     ) {
         if (PlayerPreferences(context).isDeepFlowCurrentlyActive()) return
 
-        val thumbnail = thumbnailUrl.ifEmpty { "https://i.ytimg.com/vi/$videoId/hqdefault.jpg" }
+        val thumbnail = ThumbnailUrlResolver.normalizeVideoThumbnail(videoId, thumbnailUrl)
         dao.upsert(
             WatchHistoryEntity(
                 videoId      = videoId,
@@ -87,7 +89,8 @@ class ViewHistory private constructor(private val context: Context) {
                 thumbnailUrl = thumbnail,
                 channelName  = channelName,
                 channelId    = channelId,
-                isMusic      = isMusic
+                isMusic      = isMusic,
+                isShort      = isShort
             )
         )
     }
@@ -103,11 +106,12 @@ class ViewHistory private constructor(private val context: Context) {
         thumbnailUrl: String = "",
         channelName: String = "",
         channelId: String = "",
-        duration: Long = 0L
+        duration: Long = 0L,
+        isShort: Boolean = false
     ) {
         if (PlayerPreferences(context).isDeepFlowCurrentlyActive()) return
 
-        val thumbnail = thumbnailUrl.ifEmpty { "https://i.ytimg.com/vi/$videoId/hqdefault.jpg" }
+        val thumbnail = ThumbnailUrlResolver.normalizeVideoThumbnail(videoId, thumbnailUrl)
         val existingPosition = dao.getPosition(videoId) ?: 0L  // preserve saved progress
         dao.upsert(
             WatchHistoryEntity(
@@ -119,7 +123,8 @@ class ViewHistory private constructor(private val context: Context) {
                 thumbnailUrl = thumbnail,
                 channelName  = channelName,
                 channelId    = channelId,
-                isMusic      = false
+                isMusic      = false,
+                isShort      = isShort
             )
         )
     }
@@ -138,12 +143,11 @@ class ViewHistory private constructor(private val context: Context) {
                 duration     = entry.duration,
                 timestamp    = entry.timestamp,
                 title        = entry.title,
-                thumbnailUrl = entry.thumbnailUrl.ifEmpty {
-                    "https://i.ytimg.com/vi/${entry.videoId}/hqdefault.jpg"
-                },
+                thumbnailUrl = ThumbnailUrlResolver.normalizeVideoThumbnail(entry.videoId, entry.thumbnailUrl),
                 channelName  = entry.channelName,
                 channelId    = entry.channelId,
-                isMusic      = entry.isMusic
+                isMusic      = entry.isMusic,
+                isShort      = entry.isShort
             )
         }
         dao.insertAll(entities)
@@ -165,6 +169,10 @@ class ViewHistory private constructor(private val context: Context) {
         dao.clearAll()
     }
 
+    suspend fun clearShortsHistory() {
+        dao.clearShorts()
+    }
+
     // ── Reads ────────────────────────────────────────────────────────────────
 
     fun getPlaybackPosition(videoId: String): Flow<Long> =
@@ -184,6 +192,9 @@ class ViewHistory private constructor(private val context: Context) {
     /** Music history, newest first. */
     fun getMusicHistoryFlow(): Flow<List<VideoHistoryEntry>> =
         dao.getMusicHistory().map { list -> list.map { it.toDomain() } }
+
+    suspend fun getWatchedShortIdsAboveThreshold(minPercent: Float = 90f): Set<String> =
+        dao.getWatchedShortIdsAboveThreshold(minPercent).toHashSet()
 
     /** Efficient count without loading all rows — use this instead of list.size. */
     fun getVideoCount(): Flow<Int> = dao.getVideoCount()
@@ -225,8 +236,7 @@ class ViewHistory private constructor(private val context: Context) {
                 val duration = prefs[durationKey(videoId)]    ?: 0L
                 val ts       = prefs[timestampKey(videoId)]   ?: 0L
                 val title    = prefs[titleKey(videoId)]       ?: ""
-                val thumb    = prefs[thumbnailKey(videoId)]
-                    ?: "https://i.ytimg.com/vi/$videoId/hqdefault.jpg"
+                val thumb    = ThumbnailUrlResolver.normalizeVideoThumbnail(videoId, prefs[thumbnailKey(videoId)])
                 val chName   = prefs[channelNameKey(videoId)] ?: ""
                 val chId     = prefs[channelIdKey(videoId)]   ?: ""
                 val isMusic  = prefs[isMusicKey(videoId)]     ?: false
@@ -258,7 +268,8 @@ data class VideoHistoryEntry(
     val thumbnailUrl: String,
     val channelName: String = "",
     val channelId: String = "",
-    val isMusic: Boolean = false
+    val isMusic: Boolean = false,
+    val isShort: Boolean = false
 ) {
     val progressPercentage: Float
         get() = if (duration > 0) (position.toFloat() / duration.toFloat()) * 100f else 0f

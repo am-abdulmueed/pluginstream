@@ -1,6 +1,6 @@
 FLOW CHANGE LOG
 VERSION: 2.1.0
-DATE: 2026-04-24
+DATE: 2026-04-26
 
 LIBRARIES
 - Bump NewpipeExtractor to latest version (v0.26.1)
@@ -32,6 +32,10 @@ FEATURES
 - Add new subscription groups #288
 - Add new DeArrow indicator toggle #291
 - Add new in-channel video search #313
+- Add channel avatar expanded preview #318
+- Add new copy video and channel urls in video quick actions #325
+- Add new mark as watched quick access button #340
+- Add new Subscriptions export for newpipe #317
 
 IMPROVEMENTS
 - New miniplayer secondary action buttons layout #225
@@ -67,7 +71,11 @@ IMPROVEMENTS
 - Show Video download status
 - Improve Home feed and Subscription screen subs recency #311 
 - Improve comments UI features #318
-- Improve video player UI and handling #321
+- Improve video player UI and handling #321 #324
+- Improve sticky tabs in channels #322
+- Remove seek preview feature #334
+- Improve mini player scaling #330
+- Improve Splash screen colors
 
 FIXES AND STABILITY
 - Fix video player playback speed issue #232
@@ -95,3 +103,9 @@ FIXES AND STABILITY
 - Fix Permissions #279
 - Fix Music player UI colors #303
 - Fix Depricated DeArrow endpoint #320
+- Fix Video playback issues #324
+- Fix Pul-to-refresh in music screen #335 by @Amruth-hiremath
+- Fix Status bar colors #333
+- Fix Blurry app icon #336
+- Fix AV1 4K download #342
+- Fix Video crash #345

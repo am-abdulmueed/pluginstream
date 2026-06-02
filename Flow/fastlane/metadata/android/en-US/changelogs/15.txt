@@ -1,0 +1,11 @@
+#New
+- Playback speed memory, presets, slider, & 4x support
+- Subscription groups, filters, in-channel search, region picker
+- Deep Flow, themes, diagnostics, crash logs & backups
+- DeArrow badge, mark watched, NewPipe export, & card actions
+
+#Improved & Fixed
+- Better player UI,miniplayer,PIP & notifications
+- Better AV1 fetching,caching,muxing, progress, downloads
+- Better comments,sticky tabs,subs recency & avatars
+- Fixed search, shorts,music,icons, status bar, and video crashes.

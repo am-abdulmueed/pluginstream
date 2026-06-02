@@ -43,7 +43,9 @@ fun Modifier.videoPlayerControls(
     maxVolume: Int,
     audioManager: AudioManager?,
     activity: Activity?,
-    swipeGesturesEnabled: Boolean = true,
+    brightnessSwipeGesturesEnabled: Boolean = true,
+    volumeSwipeGesturesEnabled: Boolean = true,
+    allowVolumeBoost: Boolean = false,
     doubleTapSeekMs: Long = 10_000L,
     onExitFullscreen: (() -> Unit)? = null
 ): Modifier = composed {
@@ -67,7 +69,9 @@ fun Modifier.videoPlayerControls(
     val currentMaxVolume by rememberUpdatedState(maxVolume)
     val currentAudioManager by rememberUpdatedState(audioManager)
     val currentActivity by rememberUpdatedState(activity)
-    val currentSwipeGesturesEnabled by rememberUpdatedState(swipeGesturesEnabled)
+    val currentBrightnessSwipeGesturesEnabled by rememberUpdatedState(brightnessSwipeGesturesEnabled)
+    val currentVolumeSwipeGesturesEnabled by rememberUpdatedState(volumeSwipeGesturesEnabled)
+    val currentAllowVolumeBoost by rememberUpdatedState(allowVolumeBoost)
     val currentDoubleTapSeekMs by rememberUpdatedState(doubleTapSeekMs)
     val currentOnSeekAccumulate by rememberUpdatedState(onSeekAccumulate)
     val currentOnExitFullscreen by rememberUpdatedState(onExitFullscreen)
@@ -76,7 +80,12 @@ fun Modifier.videoPlayerControls(
     var accumulatedBackMs by remember { mutableStateOf(0L) }
     var lastForwardTapTime by remember { mutableStateOf(0L) }
     var lastBackTapTime by remember { mutableStateOf(0L) }
+    var pendingForwardTargetMs by remember { mutableStateOf<Long?>(null) }
+    var pendingBackTargetMs by remember { mutableStateOf<Long?>(null) }
     val accumulationWindowMs = 1000L
+
+    val lastBrightnessApplied = remember { floatArrayOf(-2f) }
+    val lastBrightnessAppliedAt = remember { longArrayOf(0L) }
 
     this
         .pointerInput(Unit) {
@@ -102,44 +111,66 @@ fun Modifier.videoPlayerControls(
                         currentOnShowSeekForwardChange(false)
                         accumulatedForwardMs = 0L
                         lastForwardTapTime = 0L
+                        pendingForwardTargetMs = null
 
-                        if (now - lastBackTapTime < accumulationWindowMs) {
+                        val continuingBackSeek = now - lastBackTapTime < accumulationWindowMs
+                        if (continuingBackSeek) {
                             accumulatedBackMs += currentDoubleTapSeekMs
                         } else {
                             accumulatedBackMs = currentDoubleTapSeekMs
+                            pendingBackTargetMs = null
                         }
                         lastBackTapTime = now
                         currentOnSeekAccumulate(-(accumulatedBackMs / 1000L).toInt())
                         currentOnShowSeekBackChange(true)
-                        val actualBackBase = EnhancedPlayerManager.getInstance().getPlayer()?.currentPosition
-                            ?: currentPositionValue
-                        EnhancedPlayerManager.getInstance().seekTo(
-                            (actualBackBase - currentDoubleTapSeekMs).coerceAtLeast(0)
-                        )
+                        val manager = EnhancedPlayerManager.getInstance()
+                        val player = manager.getPlayer()
+                        val isLive = manager.playerState.value.isLive || player?.isCurrentMediaItemLive == true
+                        val actualBackBase = player?.currentPosition ?: currentPositionValue
+                        val backBase = pendingBackTargetMs?.takeIf { continuingBackSeek } ?: actualBackBase
+                        val target = (backBase - currentDoubleTapSeekMs).coerceAtLeast(0)
+                        pendingBackTargetMs = target
+                        if (isLive) {
+                            manager.seekToLiveTimeline(target)
+                        } else {
+                            manager.seekTo(target)
+                        }
                     } else if (tapPosition > rightThreshold) {
                         // Seek forward — cancel any in-progress backward animation
                         currentOnShowSeekBackChange(false)
                         accumulatedBackMs = 0L
                         lastBackTapTime = 0L
+                        pendingBackTargetMs = null
 
-                        if (now - lastForwardTapTime < accumulationWindowMs) {
+                        val continuingForwardSeek = now - lastForwardTapTime < accumulationWindowMs
+                        if (continuingForwardSeek) {
                             accumulatedForwardMs += currentDoubleTapSeekMs
                         } else {
                             accumulatedForwardMs = currentDoubleTapSeekMs
+                            pendingForwardTargetMs = null
                         }
                         lastForwardTapTime = now
                         currentOnSeekAccumulate((accumulatedForwardMs / 1000L).toInt())
                         currentOnShowSeekForwardChange(true)
-                        val actualForwardBase = EnhancedPlayerManager.getInstance().getPlayer()?.currentPosition
-                            ?: currentPositionValue
-                        EnhancedPlayerManager.getInstance().seekTo(
-                            (actualForwardBase + currentDoubleTapSeekMs).coerceAtMost(currentDuration)
-                        )
+                        val manager = EnhancedPlayerManager.getInstance()
+                        val player = manager.getPlayer()
+                        val isLive = manager.playerState.value.isLive || player?.isCurrentMediaItemLive == true
+                        val actualForwardBase = player?.currentPosition ?: currentPositionValue
+                        val forwardBase = pendingForwardTargetMs?.takeIf { continuingForwardSeek } ?: actualForwardBase
+                        val target = (forwardBase + currentDoubleTapSeekMs).coerceAtMost(currentDuration)
+                        pendingForwardTargetMs = target
+                        if (isLive) {
+                            manager.seekToLiveTimeline(target)
+                        } else {
+                            manager.seekTo(target)
+                        }
                     } else {
                         // Center double tap - play/pause
                         val player = EnhancedPlayerManager.getInstance().getPlayer()
                         if (player != null) {
-                            if (player.isPlaying) {
+                            if (player.playbackState == androidx.media3.common.Player.STATE_ENDED) {
+                                EnhancedPlayerManager.getInstance().replay()
+                            } else if (player.isPlaying) {
                                 EnhancedPlayerManager.getInstance().pause()
                             } else {
                                 EnhancedPlayerManager.getInstance().play()
@@ -148,12 +179,10 @@ fun Modifier.videoPlayerControls(
                     }
                 },
                 onLongPress = { offset ->
-                    val screenWidth = size.width
-                    val tapPosition = offset.x
-                    
-                    if (tapPosition < screenWidth * 0.2f || tapPosition > screenWidth * 0.8f) {
-                    }
-                    
+                    val screenHeight = size.height
+                    val bottomExclusionZone = if (currentIsFullscreen) 80f else 120f
+                    if (offset.y > screenHeight - bottomExclusionZone) return@detectTapGestures
+
                     val player = EnhancedPlayerManager.getInstance().getPlayer()
                     if (player != null && !currentIsSpeedBoostActive) {
                         currentOnSpeedBoostChange(true)
@@ -249,8 +278,8 @@ fun Modifier.videoPlayerControls(
                                  if (dragAmount.y > 0) {
                                      exitDragAccum += dragAmount.y
                                  }
-                             } else if (screenHeight > 0 && currentSwipeGesturesEnabled) {
-                                 if (dragPosition < screenWidth / 2) {
+                             } else if (screenHeight > 0) {
+                                 if (dragPosition < screenWidth / 2 && currentBrightnessSwipeGesturesEnabled) {
                                      // Left side - brightness
                                      val sensitivity = 1.5f 
                                      val delta = -dragAmount.y / screenHeight * sensitivity
@@ -266,21 +295,31 @@ fun Modifier.videoPlayerControls(
                                      }
                                      
                                      currentOnBrightnessChange(newBrightness)
-                                     
-                                     try {
-                                         currentActivity?.window?.let { window ->
-                                            val layoutParams = window.attributes
-                                            layoutParams.screenBrightness = newBrightness
-                                            window.attributes = layoutParams
-                                         }
-                                     } catch (e: Exception) {}
+
+                                     val now = android.os.SystemClock.uptimeMillis()
+                                     val brightnessDelta = abs(newBrightness - lastBrightnessApplied[0])
+                                     val timeDelta = now - lastBrightnessAppliedAt[0]
+                                     // Apply window brightness only when the change is perceptible
+                                     // or 16 ms has elapsed; this keeps WindowManager relayouts off
+                                     // every drag tick so the video pipeline doesn't drop frames.
+                                     if (brightnessDelta > 0.004f || timeDelta >= 16L) {
+                                         try {
+                                             currentActivity?.window?.let { window ->
+                                                val layoutParams = window.attributes
+                                                layoutParams.screenBrightness = newBrightness
+                                                window.attributes = layoutParams
+                                             }
+                                             lastBrightnessApplied[0] = newBrightness
+                                             lastBrightnessAppliedAt[0] = now
+                                         } catch (e: Exception) {}
+                                     }
                                      currentOnShowBrightnessChange(true)
-                                 } else {
+                                 } else if (dragPosition >= screenWidth / 2 && currentVolumeSwipeGesturesEnabled) {
                                      // Right side - volume
                                      val sensitivity = 1.5f
                                      val delta = -dragAmount.y / screenHeight * sensitivity
                                      
-                                     val newVolumeLevel = (currentVolumeLevel + delta).coerceIn(0f, 2.0f)
+                                     val newVolumeLevel = (currentVolumeLevel + delta).coerceIn(0f, if (currentAllowVolumeBoost) 2.0f else 1.0f)
                                      currentOnVolumeChange(newVolumeLevel)
                                      
                                      if (newVolumeLevel <= 1.0f) {

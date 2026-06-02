@@ -5,10 +5,15 @@
     <color name="flow_secondary">#03DAC6</color>
     <color name="flow_red">#FF0000</color>
 
+    <color name="ic_launcher_background">#0F0F0F</color>
+
     <!-- App icon variant backgrounds -->
     <color name="icon_bg_amoled">#000000</color>
     <color name="icon_bg_monochrome">#FFFFFF</color>
     <color name="icon_bg_ghost">#121212</color>
     <color name="icon_bg_dynamic">#2D2D2D</color>
+    <color name="icon_bg_flow_light">#FFFFFF</color>
+    <color name="icon_bg_material_sky">#D7E3FF</color>
+    <color name="icon_bg_material_mint">#C7E8D4</color>
 </resources>
 

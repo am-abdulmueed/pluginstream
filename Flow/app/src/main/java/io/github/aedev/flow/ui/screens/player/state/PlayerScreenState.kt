@@ -4,12 +4,13 @@ import android.content.Context
 import android.media.AudioManager
 import androidx.compose.runtime.*
 import io.github.aedev.flow.player.seekbarpreview.SeekbarPreviewThumbnailHelper
-import io.github.aedev.flow.ui.components.SubtitleCue
+import io.github.aedev.flow.ui.components.CommentSortFilter
 import io.github.aedev.flow.ui.components.SubtitleStyle
 
 class PlayerScreenState {
     // UI Visibility States
     var showControls by mutableStateOf(true)
+    var isTouchLocked by mutableStateOf(false)
     var isFullscreen by mutableStateOf(false)
     var isInPipMode by mutableStateOf(false)
     var lastInteractionTimestamp by mutableLongStateOf(System.currentTimeMillis())
@@ -38,7 +39,7 @@ class PlayerScreenState {
     var showPlaylistQueueSheet by mutableStateOf(false)
     
     // Comment Sorting
-    var isTopComments by mutableStateOf(true)
+    var commentSortFilter by mutableStateOf(CommentSortFilter.TOP)
     
     // Gesture States
     var brightnessLevel by mutableFloatStateOf(0.5f)
@@ -55,7 +56,6 @@ class PlayerScreenState {
     
     // Subtitle States
     var subtitlesEnabled by mutableStateOf(false)
-    var currentSubtitles by mutableStateOf<List<SubtitleCue>>(emptyList())
     var selectedSubtitleUrl by mutableStateOf<String?>(null)
     var subtitleStyle by mutableStateOf(SubtitleStyle())
     
@@ -66,6 +66,8 @@ class PlayerScreenState {
     var zoomScale by mutableFloatStateOf(1f)
     var zoomOffsetX by mutableFloatStateOf(0f)
     var zoomOffsetY by mutableFloatStateOf(0f)
+    var showZoomIndicator by mutableStateOf(false)
+    var zoomIndicatorSequence by mutableIntStateOf(0)
 
     // Speed Control
     var isSpeedBoostActive by mutableStateOf(false)
@@ -81,10 +83,10 @@ class PlayerScreenState {
     fun resetForNewVideo() {
         lastInteractionTimestamp = System.currentTimeMillis()
         showControls = true
+        isTouchLocked = false
         currentPosition = 0L
         duration = 0L
         subtitlesEnabled = false
-        currentSubtitles = emptyList()
         selectedSubtitleUrl = null
         seekbarPreviewHelper = null
         showBrightnessOverlay = false
@@ -112,6 +114,21 @@ class PlayerScreenState {
         zoomScale = 1f
         zoomOffsetX = 0f
         zoomOffsetY = 0f
+        showZoomIndicator = false
+        zoomIndicatorSequence = 0
+    }
+
+    fun dismissMediaSheets() {
+        showCommentsSheet = false
+        showDescriptionSheet = false
+        showChaptersSheet = false
+        showPlaylistQueueSheet = false
+        showSettingsMenu = false
+        showQualitySelector = false
+        showAudioTrackSelector = false
+        showSubtitleSelector = false
+        showPlaybackSpeedSelector = false
+        showSubtitleStyleCustomizer = false
     }
     
     fun cycleResizeMode() {
@@ -122,16 +139,14 @@ class PlayerScreenState {
         isFullscreen = !isFullscreen
     }
     
-    fun enableSubtitles(url: String, subtitles: List<SubtitleCue>) {
+    fun enableSubtitles(url: String) {
         selectedSubtitleUrl = url
-        currentSubtitles = subtitles
-        subtitlesEnabled = subtitles.isNotEmpty()
+        subtitlesEnabled = true
     }
     
     fun disableSubtitles() {
         subtitlesEnabled = false
         selectedSubtitleUrl = null
-        currentSubtitles = emptyList()
     }
 
     fun onInteraction() {

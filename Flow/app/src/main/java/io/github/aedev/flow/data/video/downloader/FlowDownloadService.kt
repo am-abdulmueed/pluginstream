@@ -24,6 +24,7 @@ import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.repository.SponsorBlockRepository
 import io.github.aedev.flow.data.video.DownloadProgressUpdate
 import io.github.aedev.flow.data.video.VideoDownloadManager
+import io.github.aedev.flow.player.sabr.integration.SabrDownloadEngine
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -56,9 +57,10 @@ class FlowDownloadService : Service() {
     private val gson = Gson()
 
     private val activeMissions = ConcurrentHashMap<String, FlowDownloadMission>()
+    private val activeSabrEngines = ConcurrentHashMap<String, SabrDownloadEngine>()
     private val downloadJobs = ConcurrentHashMap<String, Job>()
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    
+
     // Room item IDs for each video's download items (videoId -> list of itemIds)
     private val itemIds = ConcurrentHashMap<String, MutableList<Int>>()
 
@@ -77,6 +79,9 @@ class FlowDownloadService : Service() {
 
         /** Audio-only download mode flag — if set, only download audio stream */
         const val EXTRA_AUDIO_ONLY = "audio_only"
+        const val EXTRA_AUDIO_EXTENSION = "audio_extension"
+        const val EXTRA_AUDIO_MIME_TYPE = "audio_mime_type"
+        const val EXTRA_IS_MUSIC = "is_music"
 
         /**
          * Optional video codec hint (e.g. "vp9", "vp8", "h264").
@@ -84,6 +89,64 @@ class FlowDownloadService : Service() {
          * instead of .mp4, since Android's MediaMuxer cannot mux VP9 into MPEG-4.
          */
         const val EXTRA_VIDEO_CODEC = "video_codec"
+        const val EXTRA_THREADS = "download_threads"
+
+        private const val EXTRA_SABR_STREAMING_URL = "sabr_streaming_url"
+        private const val EXTRA_SABR_AUDIO_ITAG = "sabr_audio_itag"
+        private const val EXTRA_SABR_AUDIO_LMT = "sabr_audio_lmt"
+        private const val EXTRA_SABR_VIDEO_ITAG = "sabr_video_itag"
+        private const val EXTRA_SABR_VIDEO_LMT = "sabr_video_lmt"
+        private const val EXTRA_SABR_PO_TOKEN = "sabr_po_token"
+        private const val EXTRA_SABR_VISITOR_ID = "sabr_visitor_id"
+        private const val EXTRA_SABR_DURATION_MS = "sabr_duration_ms"
+
+        fun startSabrDownload(
+            context: Context,
+            video: Video,
+            quality: String,
+            sabrStreamingUrl: String,
+            audioItag: Int,
+            audioLmt: Long,
+            videoItag: Int,
+            videoLmt: Long,
+            poToken: String = "",
+            visitorId: String = "",
+            durationMs: Long = 0,
+            audioOnly: Boolean = false,
+            videoCodec: String? = null,
+            audioExtension: String? = null,
+            audioMimeType: String? = null,
+            isMusic: Boolean = false
+        ) {
+            val intent = Intent(context, FlowDownloadService::class.java).apply {
+                action = ACTION_START_DOWNLOAD
+                putExtra("video_id", video.id)
+                putExtra("video_title", video.title)
+                putExtra("video_url", "sabr://${video.id}")
+                putExtra("video_quality", quality)
+                putExtra("video_thumbnail", video.thumbnailUrl)
+                putExtra("video_channel", video.channelName)
+                putExtra("video_duration", video.duration)
+                putExtra(EXTRA_AUDIO_ONLY, audioOnly)
+                putExtra(EXTRA_IS_MUSIC, isMusic)
+                putExtra(EXTRA_SABR_STREAMING_URL, sabrStreamingUrl)
+                putExtra(EXTRA_SABR_AUDIO_ITAG, audioItag)
+                putExtra(EXTRA_SABR_AUDIO_LMT, audioLmt)
+                putExtra(EXTRA_SABR_VIDEO_ITAG, videoItag)
+                putExtra(EXTRA_SABR_VIDEO_LMT, videoLmt)
+                putExtra(EXTRA_SABR_PO_TOKEN, poToken)
+                putExtra(EXTRA_SABR_VISITOR_ID, visitorId)
+                putExtra(EXTRA_SABR_DURATION_MS, durationMs)
+                if (videoCodec != null) putExtra(EXTRA_VIDEO_CODEC, videoCodec)
+                if (audioExtension != null) putExtra(EXTRA_AUDIO_EXTENSION, audioExtension)
+                if (audioMimeType != null) putExtra(EXTRA_AUDIO_MIME_TYPE, audioMimeType)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        }
 
         fun startDownload(
             context: Context,
@@ -93,7 +156,11 @@ class FlowDownloadService : Service() {
             audioUrl: String? = null,
             audioOnly: Boolean = false,
             userAgent: String? = null,
-            videoCodec: String? = null
+            videoCodec: String? = null,
+            audioExtension: String? = null,
+            audioMimeType: String? = null,
+            isMusic: Boolean = false,
+            threads: Int? = null
         ) {
             val intent = Intent(context, FlowDownloadService::class.java).apply {
                 action = ACTION_START_DOWNLOAD
@@ -107,7 +174,11 @@ class FlowDownloadService : Service() {
                 putExtra("video_duration", video.duration)
                 putExtra("video_user_agent", userAgent)
                 putExtra(EXTRA_AUDIO_ONLY, audioOnly)
+                putExtra(EXTRA_IS_MUSIC, isMusic)
                 if (videoCodec != null) putExtra(EXTRA_VIDEO_CODEC, videoCodec)
+                if (audioExtension != null) putExtra(EXTRA_AUDIO_EXTENSION, audioExtension)
+                if (audioMimeType != null) putExtra(EXTRA_AUDIO_MIME_TYPE, audioMimeType)
+                if (threads != null) putExtra(EXTRA_THREADS, threads)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
@@ -119,6 +190,14 @@ class FlowDownloadService : Service() {
         fun pauseDownload(context: Context, videoId: String) {
             val intent = Intent(context, FlowDownloadService::class.java).apply {
                 action = ACTION_PAUSE_DOWNLOAD
+                putExtra("video_id", videoId)
+            }
+            context.startService(intent)
+        }
+
+        fun resumeDownload(context: Context, videoId: String) {
+            val intent = Intent(context, FlowDownloadService::class.java).apply {
+                action = ACTION_RESUME_DOWNLOAD
                 putExtra("video_id", videoId)
             }
             context.startService(intent)
@@ -166,11 +245,34 @@ class FlowDownloadService : Service() {
                 val userAgent = intent.getStringExtra("video_user_agent")
                 val audioOnly = intent.getBooleanExtra(EXTRA_AUDIO_ONLY, false)
                 val videoCodec = intent.getStringExtra(EXTRA_VIDEO_CODEC)
+                val audioExtension = intent.getStringExtra(EXTRA_AUDIO_EXTENSION)
+                val audioMimeType = intent.getStringExtra(EXTRA_AUDIO_MIME_TYPE)
+                val isMusic = intent.getBooleanExtra(EXTRA_IS_MUSIC, false)
+                val threadsOverride = intent.getIntExtra(EXTRA_THREADS, 0).takeIf { it > 0 }
 
-                Log.d(TAG, "onStartCommand: handleStartDownload for '$title', audioOnly=$audioOnly, codec=$videoCodec, UA=$userAgent")
+                val sabrStreamingUrl = intent.getStringExtra(EXTRA_SABR_STREAMING_URL)
+                val sabrAudioItag = intent.getIntExtra(EXTRA_SABR_AUDIO_ITAG, 0)
+                val sabrAudioLmt = intent.getLongExtra(EXTRA_SABR_AUDIO_LMT, 0)
+                val sabrVideoItag = intent.getIntExtra(EXTRA_SABR_VIDEO_ITAG, 0)
+                val sabrVideoLmt = intent.getLongExtra(EXTRA_SABR_VIDEO_LMT, 0)
+                val sabrPoToken = intent.getStringExtra(EXTRA_SABR_PO_TOKEN) ?: ""
+                val sabrVisitorId = intent.getStringExtra(EXTRA_SABR_VISITOR_ID) ?: ""
+                val sabrDurationMs = intent.getLongExtra(EXTRA_SABR_DURATION_MS, 0)
+
+                Log.d(TAG, "onStartCommand: handleStartDownload for '$title', audioOnly=$audioOnly, codec=$videoCodec, sabr=${!sabrStreamingUrl.isNullOrEmpty()}")
                 handleStartDownload(
                     videoId, title, url, audioUrl, quality,
-                    thumbnail, channel, duration, audioOnly, userAgent, videoCodec
+                    thumbnail, channel, duration, audioOnly, userAgent, videoCodec,
+                    audioExtension, audioMimeType, isMusic,
+                    threadsOverride = threadsOverride,
+                    sabrStreamingUrl = sabrStreamingUrl,
+                    sabrAudioItag = sabrAudioItag,
+                    sabrAudioLmt = sabrAudioLmt,
+                    sabrVideoItag = sabrVideoItag,
+                    sabrVideoLmt = sabrVideoLmt,
+                    sabrPoToken = sabrPoToken,
+                    sabrVisitorId = sabrVisitorId,
+                    sabrDurationMs = sabrDurationMs
                 )
             }
             ACTION_PAUSE_DOWNLOAD -> {
@@ -195,22 +297,52 @@ class FlowDownloadService : Service() {
         videoId: String, title: String, url: String, audioUrl: String?,
         quality: String, thumbnail: String, channel: String,
         duration: Int, audioOnly: Boolean, userAgent: String?,
-        videoCodec: String? = null
+        videoCodec: String? = null,
+        audioExtension: String? = null,
+        audioMimeType: String? = null,
+        isMusic: Boolean = false,
+        threadsOverride: Int? = null,
+        sabrStreamingUrl: String? = null,
+        sabrAudioItag: Int = 0,
+        sabrAudioLmt: Long = 0,
+        sabrVideoItag: Int = 0,
+        sabrVideoLmt: Long = 0,
+        sabrPoToken: String = "",
+        sabrVisitorId: String = "",
+        sabrDurationMs: Long = 0
     ) {
         try {
             Log.d(TAG, "handleStartDownload: Checking directories...")
             val fileType = if (audioOnly) DownloadFileType.AUDIO else DownloadFileType.VIDEO
-            val isWebMCodec = videoCodec?.lowercase()?.let { it == "vp9" || it == "vp8" } ?: false
-            val isAv1Codec = videoCodec?.lowercase() == "av1"
+            val codecHint = videoCodec?.trim()?.lowercase()
+            val isWebMCodec = codecHint?.let {
+                it == "vp9" || it == "vp8" || it.startsWith("vp09") || it.startsWith("vp08")
+            } ?: false
+            val isAv1Codec = codecHint?.let { it == "av1" || it.startsWith("av01") || it.startsWith("av1") } ?: false
             val av1NeedsMkv = isAv1Codec
+            val normalizedAudioExtension = audioExtension
+                ?.trim()
+                ?.lowercase()
+                ?.trimStart('.')
+                ?.takeIf { it.isNotBlank() }
+                ?: "m4a"
+            val normalizedAudioMimeType = audioMimeType
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
+                ?: "audio/mp4"
             val extension = when {
-                audioOnly  -> "m4a"
+                audioOnly  -> normalizedAudioExtension
                 isWebMCodec -> "webm"
                 av1NeedsMkv -> "mkv"
                 else -> "mp4"
             }
             downloadManager.customDownloadPath = kotlinx.coroutines.runBlocking(Dispatchers.IO) {
-                preferences.downloadLocation.firstOrNull()
+                if (isMusic) {
+                    preferences.musicDownloadLocation.firstOrNull()
+                        ?: preferences.downloadLocation.firstOrNull()
+                } else {
+                    preferences.downloadLocation.firstOrNull()
+                }
             }
             val downloadDir = downloadManager.getDownloadDir(fileType)
             Log.d(TAG, "handleStartDownload: downloadDir=${downloadDir.absolutePath}, exists=${downloadDir.exists()}, canWrite=${downloadDir.canWrite()}")
@@ -223,16 +355,18 @@ class FlowDownloadService : Service() {
                 id = videoId, title = title, channelName = channel, channelId = "local",
                 thumbnailUrl = thumbnail, duration = duration, viewCount = 0,
                 uploadDate = System.currentTimeMillis().toString(),
-                description = "Downloaded locally"
+                description = "Downloaded locally",
+                isMusic = isMusic
             )
 
             val effectiveUrl = if (audioOnly && audioUrl != null) audioUrl else url
             val effectiveAudioUrl = if (audioOnly) null else audioUrl
 
-            val threadCount = kotlinx.coroutines.runBlocking(Dispatchers.IO) {
-                preferences.downloadThreads.firstOrNull() ?: 3
-            }
-            Log.d(TAG, "handleStartDownload: Using $threadCount download threads")
+            val threadCount = threadsOverride
+                ?: kotlinx.coroutines.runBlocking(Dispatchers.IO) {
+                    preferences.downloadThreads.firstOrNull() ?: 3
+                }
+            Log.d(TAG, "handleStartDownload: Using $threadCount download threads${if (threadsOverride != null) " (per-download override)" else ""}")
 
             val mission = if (userAgent != null) {
                 FlowDownloadMission(
@@ -288,7 +422,8 @@ class FlowDownloadService : Service() {
                         items.add(DownloadItemEntity(
                             videoId = videoId, fileType = DownloadFileType.AUDIO,
                             fileName = fileName, filePath = savePath,
-                            format = "m4a", quality = quality,
+                            format = normalizedAudioExtension, quality = quality,
+                            mimeType = normalizedAudioMimeType,
                             status = DownloadItemStatus.PENDING
                         ))
                     } else {
@@ -321,8 +456,24 @@ class FlowDownloadService : Service() {
                         return@launch
                     }
 
-                    Log.d(TAG, "Executing download...")
-                    executeDownload(mission, videoId, audioOnly)
+                    val isSabrDownload = !sabrStreamingUrl.isNullOrEmpty() && sabrAudioItag > 0
+                    if (isSabrDownload) {
+                        Log.d(TAG, "Executing SABR download...")
+                        executeSabrDownload(
+                            mission, videoId, audioOnly, normalizedAudioMimeType,
+                            sabrStreamingUrl = sabrStreamingUrl!!,
+                            sabrAudioItag = sabrAudioItag,
+                            sabrAudioLmt = sabrAudioLmt,
+                            sabrVideoItag = sabrVideoItag,
+                            sabrVideoLmt = sabrVideoLmt,
+                            sabrPoToken = sabrPoToken,
+                            sabrVisitorId = sabrVisitorId,
+                            sabrDurationMs = sabrDurationMs
+                        )
+                    } else {
+                        Log.d(TAG, "Executing download...")
+                        executeDownload(mission, videoId, audioOnly, normalizedAudioMimeType)
+                    }
                 } catch (e: Exception) {
                     if (e is kotlinx.coroutines.CancellationException) throw e
                     Log.e(TAG, "Error in download job for $videoId", e)
@@ -339,7 +490,12 @@ class FlowDownloadService : Service() {
         }
     }
 
-    private suspend fun executeDownload(mission: FlowDownloadMission, videoId: String, audioOnly: Boolean) {
+    private suspend fun executeDownload(
+        mission: FlowDownloadMission,
+        videoId: String,
+        audioOnly: Boolean,
+        audioMimeType: String = "audio/mp4"
+    ) {
         Log.d(TAG, "executeDownload: Starting execution for $videoId. AudioOnly=$audioOnly")
         
         try {
@@ -460,7 +616,7 @@ class FlowDownloadService : Service() {
                     
                     try {
                         val mimeType = when {
-                            audioOnly -> "audio/mp4"
+                            audioOnly -> audioMimeTypeForPath(mission.savePath, audioMimeType)
                             mission.savePath.endsWith(".webm") -> "video/webm"
                             mission.savePath.endsWith(".mkv")  -> "video/x-matroska"
                             else -> "video/mp4"
@@ -550,6 +706,209 @@ class FlowDownloadService : Service() {
         }
     }
 
+    private suspend fun executeSabrDownload(
+        mission: FlowDownloadMission,
+        videoId: String,
+        audioOnly: Boolean,
+        audioMimeType: String = "audio/mp4",
+        sabrStreamingUrl: String,
+        sabrAudioItag: Int,
+        sabrAudioLmt: Long,
+        sabrVideoItag: Int,
+        sabrVideoLmt: Long,
+        sabrPoToken: String,
+        sabrVisitorId: String,
+        sabrDurationMs: Long
+    ) {
+        Log.d(TAG, "executeSabrDownload: Starting for $videoId, audioOnly=$audioOnly")
+
+        try {
+            updateAllItemStatuses(videoId, DownloadItemStatus.DOWNLOADING)
+            mission.status = MissionStatus.RUNNING
+
+            val engine = SabrDownloadEngine()
+            activeSabrEngines[videoId] = engine
+
+            val videoTmp = "${mission.savePath}.video.tmp"
+            val audioTmp = "${mission.savePath}.audio.tmp"
+
+            val progressJob = serviceScope.launch {
+                while (mission.status == MissionStatus.RUNNING) {
+                    val ids = itemIds[videoId]
+                    if (!ids.isNullOrEmpty()) {
+                        downloadManager.emitProgress(
+                            DownloadProgressUpdate(
+                                videoId = videoId,
+                                itemId = ids.first(),
+                                downloadedBytes = engine.downloadedVideoBytes.get() + engine.downloadedAudioBytes.get(),
+                                totalBytes = mission.totalBytes.coerceAtLeast(1),
+                                status = DownloadItemStatus.DOWNLOADING
+                            )
+                        )
+                    }
+                    updateNotification(mission, videoId)
+                    delay(500L)
+                }
+            }
+
+            val downloadSuccess = engine.download(
+                streamingUrl = sabrStreamingUrl,
+                videoId = videoId,
+                audioItag = sabrAudioItag,
+                audioLmt = sabrAudioLmt,
+                videoItag = sabrVideoItag,
+                videoLmt = sabrVideoLmt,
+                poToken = sabrPoToken,
+                visitorId = sabrVisitorId,
+                ustreamerConfig = ByteArray(0),
+                durationMs = sabrDurationMs,
+                videoOutputPath = videoTmp,
+                audioOutputPath = audioTmp,
+                audioOnly = audioOnly
+            ) { downloaded, estimated ->
+                mission.downloadedBytesAtomic.set(if (audioOnly) 0 else engine.downloadedVideoBytes.get())
+                mission.audioDownloadedBytesAtomic.set(engine.downloadedAudioBytes.get())
+                if (estimated > 0) mission.totalBytes = estimated
+            }
+
+            progressJob.cancel()
+            activeSabrEngines.remove(videoId)
+
+            if (downloadSuccess) {
+                var finalSuccess = true
+
+                if (!audioOnly) {
+                    Log.d(TAG, "executeSabrDownload: Muxing SABR output...")
+                    val ids = itemIds[videoId]
+                    if (!ids.isNullOrEmpty()) {
+                        downloadManager.emitProgress(
+                            DownloadProgressUpdate(
+                                videoId = videoId,
+                                itemId = ids.first(),
+                                downloadedBytes = engine.downloadedVideoBytes.get() + engine.downloadedAudioBytes.get(),
+                                totalBytes = engine.downloadedVideoBytes.get() + engine.downloadedAudioBytes.get(),
+                                status = DownloadItemStatus.DOWNLOADING,
+                                isMerging = true
+                            )
+                        )
+                    }
+                    mission.error = "Merging audio & video..."
+                    updateNotification(mission, videoId, isMuxing = true)
+
+                    val prevPriority = android.os.Process.getThreadPriority(android.os.Process.myTid())
+                    android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_FOREGROUND)
+
+                    val muxSuccess = try {
+                        FlowStreamMuxer.mux(videoTmp, audioTmp, mission.savePath)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "executeSabrDownload: Muxing failed", e)
+                        false
+                    } finally {
+                        android.os.Process.setThreadPriority(prevPriority)
+                    }
+
+                    if (muxSuccess) {
+                        File(videoTmp).delete()
+                        File(audioTmp).delete()
+                    } else {
+                        Log.e(TAG, "executeSabrDownload: Mux failed")
+                        finalSuccess = false
+                        mission.status = MissionStatus.FAILED
+                        mission.error = "Muxing failed — try re-downloading."
+                        updateAllItemStatuses(videoId, DownloadItemStatus.FAILED)
+                        listOf(videoTmp, audioTmp, mission.savePath).forEach { path ->
+                            try { File(path).takeIf { it.exists() }?.delete() } catch (_: Exception) {}
+                        }
+                    }
+                } else {
+                    File(audioTmp).renameTo(File(mission.savePath))
+                }
+
+                if (finalSuccess) {
+                    mission.status = MissionStatus.FINISHED
+                    mission.finishTime = System.currentTimeMillis()
+                    val fileSize = File(mission.savePath).length()
+
+                    val ids = itemIds[videoId]
+                    if (!ids.isNullOrEmpty()) {
+                        downloadManager.updateItemFull(ids.first(), fileSize, fileSize, DownloadItemStatus.COMPLETED)
+                    }
+
+                    try {
+                        val mimeType = when {
+                            audioOnly -> audioMimeTypeForPath(mission.savePath, audioMimeType)
+                            mission.savePath.endsWith(".webm") -> "video/webm"
+                            mission.savePath.endsWith(".mkv") -> "video/x-matroska"
+                            else -> "video/mp4"
+                        }
+                        downloadManager.scanFile(mission.savePath, mimeType)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "executeSabrDownload: MediaScanner failed (non-fatal)", e)
+                    }
+
+                    val ids2 = itemIds[videoId]
+                    if (!ids2.isNullOrEmpty()) {
+                        downloadManager.emitProgress(
+                            DownloadProgressUpdate(
+                                videoId = videoId,
+                                itemId = ids2.first(),
+                                downloadedBytes = fileSize,
+                                totalBytes = fileSize,
+                                status = DownloadItemStatus.COMPLETED
+                            )
+                        )
+                    }
+
+                    stopForeground(true)
+                    val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    nm.notify(getNotificationId(videoId), createNotification(mission, videoId, isComplete = true))
+
+                    try {
+                        val segments = sponsorBlockRepository.getSegments(videoId)
+                        if (segments.isNotEmpty()) {
+                            downloadManager.saveSponsorBlockData(videoId, gson.toJson(segments))
+                            Log.d(TAG, "Saved ${segments.size} SponsorBlock segments for $videoId")
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "SponsorBlock fetch failed (non-fatal)", e)
+                    }
+                } else {
+                    stopForeground(true)
+                    updateNotification(mission, videoId)
+                }
+            } else {
+                mission.status = MissionStatus.FAILED
+                mission.error = "SABR download failed"
+                updateAllItemStatuses(videoId, DownloadItemStatus.FAILED)
+                stopForeground(false)
+                updateNotification(mission, videoId)
+                listOf("${mission.savePath}.video.tmp", "${mission.savePath}.audio.tmp").forEach { path ->
+                    try { File(path).takeIf { it.exists() }?.delete() } catch (_: Exception) {}
+                }
+            }
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Log.e(TAG, "executeSabrDownload: Critical error", e)
+            mission.status = MissionStatus.FAILED
+            mission.error = "SABR download failed. Please try again."
+            updateAllItemStatuses(videoId, DownloadItemStatus.FAILED)
+            stopForeground(false)
+            updateNotification(mission, videoId)
+        } finally {
+            activeSabrEngines.remove(videoId)
+            val currentStatus = activeMissions[videoId]?.status
+            if (currentStatus != MissionStatus.PAUSED) {
+                activeMissions.remove(videoId)
+                itemIds.remove(videoId)
+            }
+            downloadJobs.remove(videoId)
+        }
+
+        if (activeMissions.isEmpty()) {
+            stopSelf()
+        }
+    }
+
     private fun handlePause(videoId: String) {
         val mission = activeMissions[videoId] ?: run {
             Log.w(TAG, "handlePause: No active mission for $videoId")
@@ -561,6 +920,8 @@ class FlowDownloadService : Service() {
         }
         Log.d(TAG, "handlePause: Setting status to PAUSED for $videoId")
         mission.status = MissionStatus.PAUSED
+
+        activeSabrEngines.remove(videoId)?.cancel()
 
         val calls = mission.activeCalls.toList()
         mission.activeCalls.clear()
@@ -615,7 +976,9 @@ class FlowDownloadService : Service() {
             startForeground(notificationId, notification)
         }
 
-        val audioOnly = mission.audioUrl == null && mission.savePath.endsWith(".m4a")
+        val audioOnly = kotlinx.coroutines.runBlocking(Dispatchers.IO) {
+            downloadManager.getDownloadWithItems(videoId)?.isAudioOnly
+        } ?: (mission.audioUrl == null && mission.savePath.endsWith(".m4a", ignoreCase = true))
         val previousJob = downloadJobs[videoId]
         val job = serviceScope.launch {
             previousJob?.join()
@@ -627,6 +990,8 @@ class FlowDownloadService : Service() {
     private fun handleCancel(videoId: String) {
         val mission = activeMissions[videoId]
         mission?.status = MissionStatus.FAILED
+
+        activeSabrEngines.remove(videoId)?.cancel()
 
         mission?.let { m ->
             val calls = m.activeCalls.toList()
@@ -664,6 +1029,16 @@ class FlowDownloadService : Service() {
         if (activeMissions.isEmpty()) {
             stopForeground(true)
             stopSelf()
+        }
+    }
+
+    private fun audioMimeTypeForPath(path: String, fallback: String): String {
+        return when {
+            path.endsWith(".webm", ignoreCase = true) -> "audio/webm"
+            path.endsWith(".ogg", ignoreCase = true) -> "audio/ogg"
+            path.endsWith(".opus", ignoreCase = true) -> "audio/ogg"
+            path.endsWith(".mp3", ignoreCase = true) -> "audio/mpeg"
+            else -> fallback
         }
     }
 

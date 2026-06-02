@@ -21,9 +21,14 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileDownload
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Psychology
+import androidx.compose.material.icons.outlined.QueueMusic
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -55,6 +61,7 @@ import io.github.aedev.flow.R
 import io.github.aedev.flow.data.local.ChannelSubscription
 import io.github.aedev.flow.data.local.SubscriptionRepository
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
+import io.github.aedev.flow.data.recommendation.NeuroTopicCatalog
 import io.github.aedev.flow.data.recommendation.TopicCategory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -66,8 +73,10 @@ import org.schabi.newpipe.extractor.channel.ChannelInfoItem
 import androidx.activity.ComponentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.aedev.flow.ui.components.topicCategoryIcon
 import io.github.aedev.flow.ui.screens.settings.ImportViewModel
 import io.github.aedev.flow.ui.screens.settings.ImportProgressBanner
+import io.github.aedev.flow.data.local.BackupRepository
 
 // ─────────────────────────────────────────────────────────────
 // Constants & types
@@ -109,6 +118,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
     val haptic = LocalHapticFeedback.current
 
     val subscriptionRepo = remember { SubscriptionRepository.getInstance(context) }
+    val backupRepo = remember { BackupRepository(context) }
     val importViewModel: ImportViewModel = activity?.let { hiltViewModel(it) } ?: hiltViewModel()
 
     var currentStep by remember { mutableStateOf(OnboardingStep.INTERESTS) }
@@ -116,7 +126,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
     // Step 1 — interests
     var selectedTopics by remember { mutableStateOf<Set<String>>(emptySet()) }
     var visibleCategories by remember { mutableStateOf(0) }
-    val totalCategories = FlowNeuroEngine.TOPIC_CATEGORIES.size
+    val totalCategories = NeuroTopicCatalog.TOPIC_CATEGORIES.size
 
     LaunchedEffect(Unit) {
         for (i in 1..totalCategories) {
@@ -140,7 +150,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
     LaunchedEffect(importState) {
         when (val s = importState) {
             is ImportViewModel.State.Success -> {
-                importMessage = if (s.count > 0)
+                importMessage = s.message ?: if ((s.count ?: 0) > 0)
                     "Imported ${s.count} ${s.label.lowercase()}"
                 else
                     "${s.label} imported"
@@ -165,6 +175,24 @@ fun OnboardingScreen(onComplete: () -> Unit) {
         contract = ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { importViewModel.importNewPipe(it) } }
 
+    val flowImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val result = backupRepo.importData(it)
+                importMessage = if (result.isSuccess) {
+                    context.getString(R.string.import_flow_backup_success)
+                } else {
+                    context.getString(
+                        R.string.import_flow_backup_failed_template,
+                        result.exceptionOrNull()?.message ?: "unknown"
+                    )
+                }
+            }
+        }
+    }
+
     val youtubeImportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { importViewModel.importYouTube(it) } }
@@ -173,13 +201,90 @@ fun OnboardingScreen(onComplete: () -> Unit) {
         contract = ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { importViewModel.importYouTubeWatchHistory(it) } }
 
+    val freeTubeHistoryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri -> uri?.let { importViewModel.importFreeTubeWatchHistory(it) } }
+
+    val newPipeHistoryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri -> uri?.let { importViewModel.importNewPipeWatchHistory(it) } }
+
     val libreTubeImportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { importViewModel.importLibreTube(it) } }
 
+    val masterBackupImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri -> uri?.let { importViewModel.importMasterBackup(it) } }
+
     val metrolistImportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { importViewModel.importMetrolist(it) } }
+
+    val newPipePlaylistImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri -> uri?.let { importViewModel.importNewPipePlaylists(it) } }
+
+    val libreTubePlaylistImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri -> uri?.let { importViewModel.importLibreTubePlaylists(it) } }
+
+    val youtubeTakeoutImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri -> uri?.let { importViewModel.importYouTubeTakeout(it) } }
+
+    val youtubePlaylistImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val result = backupRepo.importYouTubePlaylist(it)
+                importMessage = if (result.isSuccess) {
+                    val (name, count) = result.getOrNull()!!
+                    context.getString(R.string.import_yt_playlist_success_template, name, count)
+                } else {
+                    context.getString(
+                        R.string.import_yt_playlist_failed_template,
+                        result.exceptionOrNull()?.message ?: "unknown"
+                    )
+                }
+            }
+        }
+    }
+
+    val youtubeMusicPlaylistImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val result = backupRepo.importYouTubePlaylist(it, isMusic = true)
+                importMessage = if (result.isSuccess) {
+                    val (name, count) = result.getOrNull()!!
+                    context.getString(R.string.import_yt_playlist_success_template, name, count)
+                } else {
+                    context.getString(
+                        R.string.import_yt_playlist_failed_template,
+                        result.exceptionOrNull()?.message ?: "unknown"
+                    )
+                }
+            }
+        }
+    }
+
+    val importEngineLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val success = context.contentResolver.openInputStream(it)?.use { input ->
+                    FlowNeuroEngine.importBrainFromStream(context, input)
+                } ?: false
+                importMessage = context.getString(
+                    if (success) R.string.import_engine_success else R.string.import_engine_failed
+                )
+            }
+        }
+    }
 
     fun finish() {
         scope.launch {
@@ -292,6 +397,15 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 )
                 OnboardingStep.IMPORT -> ImportStep(
                     importState = importState,
+                    onImportFlowBackup = {
+                        flowImportLauncher.launch(arrayOf("application/json"))
+                    },
+                    onImportMasterBackup = {
+                        masterBackupImportLauncher.launch(arrayOf("application/zip", "application/octet-stream"))
+                    },
+                    onImportEngineData = {
+                        importEngineLauncher.launch(arrayOf("application/json"))
+                    },
                     onImportNewPipe = {
                         newPipeImportLauncher.launch(arrayOf("application/json"))
                     },
@@ -305,11 +419,36 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                             arrayOf("text/html", "application/octet-stream", "*/*")
                         )
                     },
+                    onImportFreeTubeHistory = {
+                        freeTubeHistoryLauncher.launch(
+                            arrayOf("application/json", "text/plain", "application/octet-stream", "*/*")
+                        )
+                    },
+                    onImportNewPipeHistory = {
+                        newPipeHistoryLauncher.launch(
+                            arrayOf("application/zip", "application/octet-stream", "application/x-sqlite3", "*/*")
+                        )
+                    },
                     onImportLibreTube = {
                         libreTubeImportLauncher.launch(arrayOf("application/json"))
                     },
                     onImportMetrolist = {
                         metrolistImportLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*"))
+                    },
+                    onImportNewPipePlaylists = {
+                        newPipePlaylistImportLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*"))
+                    },
+                    onImportLibreTubePlaylists = {
+                        libreTubePlaylistImportLauncher.launch(arrayOf("application/json"))
+                    },
+                    onImportYouTubeTakeout = {
+                        youtubeTakeoutImportLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*"))
+                    },
+                    onImportYouTubePlaylist = {
+                        youtubePlaylistImportLauncher.launch(arrayOf("text/comma-separated-values", "text/csv", "text/plain"))
+                    },
+                    onImportYouTubeMusicPlaylist = {
+                        youtubeMusicPlaylistImportLauncher.launch(arrayOf("text/comma-separated-values", "text/csv", "text/plain"))
                     }
                 )
             }
@@ -496,10 +635,10 @@ private fun InterestsStep(
         }
 
         items(
-            items = FlowNeuroEngine.TOPIC_CATEGORIES,
+            items = NeuroTopicCatalog.TOPIC_CATEGORIES,
             key = { it.name }
         ) { category ->
-            val index = FlowNeuroEngine.TOPIC_CATEGORIES.indexOf(category)
+            val index = NeuroTopicCatalog.TOPIC_CATEGORIES.indexOf(category)
             AnimatedVisibility(
                 visible = index < visibleCategories,
                 enter = fadeIn(tween(280)) + slideInVertically(tween(300)) { it / 4 },
@@ -739,11 +878,21 @@ private fun ChannelResultRow(
 @Composable
 private fun ImportStep(
     importState: ImportViewModel.State,
+    onImportFlowBackup: () -> Unit,
+    onImportMasterBackup: () -> Unit,
+    onImportEngineData: () -> Unit,
     onImportNewPipe: () -> Unit,
     onImportYouTube: () -> Unit,
     onImportYouTubeHistory: () -> Unit,
+    onImportFreeTubeHistory: () -> Unit,
+    onImportNewPipeHistory: () -> Unit,
     onImportLibreTube: () -> Unit,
-    onImportMetrolist: () -> Unit
+    onImportMetrolist: () -> Unit,
+    onImportNewPipePlaylists: () -> Unit,
+    onImportLibreTubePlaylists: () -> Unit,
+    onImportYouTubeTakeout: () -> Unit,
+    onImportYouTubePlaylist: () -> Unit,
+    onImportYouTubeMusicPlaylist: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -759,20 +908,48 @@ private fun ImportStep(
         item { ImportProgressBanner(importState) }
 
         item {
-            Text(
-                text = "Subscriptions",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+            ImportSectionLabel(title = "Backup & Restore")
+        }
+
+        item {
+            ImportCard(
+                painter = rememberVectorPainter(Icons.Default.Restore),
+                title = stringResource(R.string.import_flow_backup_item_title),
+                description = stringResource(R.string.import_flow_backup_desc),
+                iconTint = MaterialTheme.colorScheme.primary,
+                onClick = onImportFlowBackup
             )
+        }
+
+        item {
+            ImportCard(
+                painter = rememberVectorPainter(Icons.Outlined.Archive),
+                title = stringResource(R.string.import_master_backup_title),
+                description = stringResource(R.string.import_master_backup_desc),
+                iconTint = MaterialTheme.colorScheme.primary,
+                onClick = onImportMasterBackup
+            )
+        }
+
+        item {
+            ImportCard(
+                painter = rememberVectorPainter(Icons.Outlined.Psychology),
+                title = stringResource(R.string.import_engine_data),
+                description = stringResource(R.string.import_engine_data_desc),
+                iconTint = MaterialTheme.colorScheme.primary,
+                onClick = onImportEngineData
+            )
+        }
+
+        item {
+            ImportSectionLabel(title = stringResource(R.string.import_subscriptions_section_title))
         }
 
         item {
             ImportCard(
                 painter = painterResource(id = R.drawable.ic_newpipe),
                 title = stringResource(R.string.import_from_newpipe),
-                description = "Import your NewPipe subscriptions from a JSON backup file.",
+                description = stringResource(R.string.import_from_newpipe_desc),
                 onClick = onImportNewPipe
             )
         }
@@ -781,7 +958,7 @@ private fun ImportStep(
             ImportCard(
                 painter = painterResource(id = R.drawable.ic_youtube),
                 title = stringResource(R.string.import_from_youtube),
-                description = "Import your YouTube subscriptions from a Google Takeout CSV file.",
+                description = stringResource(R.string.import_from_youtube_desc),
                 onClick = onImportYouTube
             )
         }
@@ -790,37 +967,21 @@ private fun ImportStep(
             ImportCard(
                 painter = painterResource(id = R.drawable.ic_libretube),
                 title = stringResource(R.string.import_from_libretube),
-                description = "Import your LibreTube subscriptions from a backup JSON file.",
+                description = stringResource(R.string.import_from_libretube_desc),
                 onClick = onImportLibreTube
             )
         }
 
         item {
-            Text(
-                text = "Music playlists",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
-            )
+            ImportSectionLabel(title = stringResource(R.string.import_history_section_title))
         }
 
         item {
             ImportCard(
-                painter = painterResource(id = R.drawable.ic_metrolist),
-                title = stringResource(R.string.import_from_metrolist),
-                description = "Import your Metrolist music playlists from a backup ZIP file.",
-                onClick = onImportMetrolist
-            )
-        }
-
-        item {
-            Text(
-                text = "Watch history",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
+                painter = painterResource(id = R.drawable.ic_youtube),
+                title = stringResource(R.string.import_yt_takeout_all),
+                description = stringResource(R.string.import_yt_takeout_all_desc),
+                onClick = onImportYouTubeTakeout
             )
         }
 
@@ -833,8 +994,92 @@ private fun ImportStep(
             )
         }
 
+        item {
+            ImportCard(
+                painter = rememberVectorPainter(Icons.Outlined.History),
+                title = stringResource(R.string.import_freetube_history),
+                description = stringResource(R.string.import_freetube_history_desc),
+                iconTint = MaterialTheme.colorScheme.primary,
+                onClick = onImportFreeTubeHistory
+            )
+        }
+
+        item {
+            ImportCard(
+                painter = painterResource(id = R.drawable.ic_newpipe),
+                title = stringResource(R.string.import_newpipe_history),
+                description = stringResource(R.string.import_newpipe_history_desc),
+                onClick = onImportNewPipeHistory
+            )
+        }
+
+        item {
+            ImportSectionLabel(title = stringResource(R.string.import_playlists_section_title))
+        }
+
+        item {
+            ImportCard(
+                painter = painterResource(id = R.drawable.ic_newpipe),
+                title = stringResource(R.string.import_newpipe_playlists),
+                description = stringResource(R.string.import_newpipe_playlists_desc),
+                onClick = onImportNewPipePlaylists
+            )
+        }
+
+        item {
+            ImportCard(
+                painter = painterResource(id = R.drawable.ic_libretube),
+                title = stringResource(R.string.import_libretube_playlists),
+                description = stringResource(R.string.import_libretube_playlists_desc),
+                onClick = onImportLibreTubePlaylists
+            )
+        }
+
+        item {
+            ImportCard(
+                painter = painterResource(id = R.drawable.ic_youtube),
+                title = stringResource(R.string.import_yt_playlist),
+                description = stringResource(R.string.import_yt_playlist_desc),
+                onClick = onImportYouTubePlaylist
+            )
+        }
+
+        item {
+            ImportSectionLabel(title = stringResource(R.string.import_music_apps_section_title))
+        }
+
+        item {
+            ImportCard(
+                painter = painterResource(id = R.drawable.ic_metrolist),
+                title = stringResource(R.string.import_from_metrolist),
+                description = stringResource(R.string.import_from_metrolist_desc),
+                onClick = onImportMetrolist
+            )
+        }
+
+        item {
+            ImportCard(
+                painter = rememberVectorPainter(Icons.Outlined.QueueMusic),
+                title = stringResource(R.string.import_yt_music_playlist),
+                description = stringResource(R.string.import_yt_music_playlist_desc),
+                iconTint = MaterialTheme.colorScheme.primary,
+                onClick = onImportYouTubeMusicPlaylist
+            )
+        }
+
         item { Spacer(Modifier.height(8.dp)) }
     }
+}
+
+@Composable
+private fun ImportSectionLabel(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
+    )
 }
 
 @Composable
@@ -842,6 +1087,7 @@ private fun ImportCard(
     painter: androidx.compose.ui.graphics.painter.Painter,
     title: String,
     description: String,
+    iconTint: Color = Color.Unspecified,
     onClick: () -> Unit
 ) {
     Surface(
@@ -867,7 +1113,7 @@ private fun ImportCard(
                         painter = painter,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = Color.Unspecified
+                        tint = iconTint
                     )
                 }
             }
@@ -959,10 +1205,13 @@ private fun CategoryCard(
                     .padding(vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = category.icon,
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(end = 10.dp)
+                Icon(
+                    imageVector = topicCategoryIcon(category.icon),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 10.dp)
+                        .size(22.dp),
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(

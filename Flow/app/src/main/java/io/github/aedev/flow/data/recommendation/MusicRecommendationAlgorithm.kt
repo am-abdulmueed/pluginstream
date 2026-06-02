@@ -60,11 +60,17 @@ class MusicRecommendationAlgorithm @Inject constructor(
 
 
 
+    private val cachePrefs by lazy {
+        context.getSharedPreferences("music_home_cache_prefs", Context.MODE_PRIVATE)
+    }
+
     suspend fun loadMusicHome(): Pair<List<MusicSection>, String?> = withContext(Dispatchers.IO) {
+        val lastCacheTime = cachePrefs.getLong("last_cache_time", 0L)
+        val isCacheExpired = System.currentTimeMillis() - lastCacheTime > 4 * 60 * 60 * 1000L // 4 hours
+        
         val cachedSections = cacheDao.getMusicHomeSections().firstOrNull()
         if (cachedSections != null && cachedSections.isNotEmpty()) {
-            Log.d(TAG, "Loaded ${cachedSections.size} sections from cache")
-            // Deserialize and return immediately
+            Log.d(TAG, "Loaded ${cachedSections.size} sections from cache (${if (isCacheExpired) "stale" else "fresh"})")
             val musicSections = cachedSections.map { entity ->
                 MusicSection(
                     title = entity.title,
@@ -75,7 +81,8 @@ class MusicRecommendationAlgorithm @Inject constructor(
             return@withContext musicSections to null
         }
 
-        return@withContext fetchAndCacheHome()
+        val networkResult = fetchAndCacheHome()
+        return@withContext networkResult
     }
 
     /**
@@ -133,6 +140,7 @@ class MusicRecommendationAlgorithm @Inject constructor(
                 }
                 cacheDao.clearMusicHomeCache()
                 cacheDao.insertMusicHomeSections(entities)
+                cachePrefs.edit().putLong("last_cache_time", System.currentTimeMillis()).apply()
                 
                 homePage.chips?.let { chips ->
                     val chipEntities = chips.mapIndexed { index, chip ->
@@ -170,6 +178,7 @@ class MusicRecommendationAlgorithm @Inject constructor(
             obj.put("views", track.views)
             obj.put("album", track.album)
             obj.put("expl", track.isExplicit)
+            obj.put("vid", track.isVideoSong)
             jsonArray.put(obj)
         }
         return jsonArray.toString()
@@ -190,7 +199,8 @@ class MusicRecommendationAlgorithm @Inject constructor(
                     channelId = obj.optString("cid"),
                     views = obj.optLong("views"),
                     album = obj.optString("album"),
-                    isExplicit = obj.optBoolean("expl")
+                    isExplicit = obj.optBoolean("expl"),
+                    isVideoSong = obj.optBoolean("vid", false)
                 ))
             }
         } catch (e: Exception) {
@@ -218,7 +228,10 @@ class MusicRecommendationAlgorithm @Inject constructor(
                 }
                 
                 if (quickPicks != null) {
-                    val tracks = quickPicks.items.filterIsInstance<SongItem>().map { mapSongItem(it) }
+                    val tracks = quickPicks.items
+                        .filterIsInstance<SongItem>()
+                        .filterNot { it.isVideoSong }
+                        .map { mapSongItem(it) }
                     if (tracks.isNotEmpty()) {
                         Log.d(TAG, "Using Home Page Quick Picks: ${tracks.size}")
                         return@withContext tracks.take(limit)
@@ -354,7 +367,7 @@ class MusicRecommendationAlgorithm @Inject constructor(
         seenIds: MutableSet<String>
     ) {
         synchronized(seenIds) {
-            if (song.id !in seenIds) {
+            if (song.id !in seenIds && !song.isVideoSong) {
                 seenIds.add(song.id)
                 candidates.add(mapSongItem(song))
             }
@@ -371,7 +384,8 @@ class MusicRecommendationAlgorithm @Inject constructor(
             channelId = song.artists.firstOrNull()?.id ?: "",
             views = parseViewCount(song.viewCountText),
             album = song.album?.name ?: "",
-            isExplicit = song.explicit
+            isExplicit = song.explicit,
+            isVideoSong = song.isVideoSong
         )
     }
 
@@ -382,6 +396,7 @@ class MusicRecommendationAlgorithm @Inject constructor(
             if (searchResults != null) {
                 return@withContext searchResults.items
                     .filterIsInstance<SongItem>()
+                    .filterNot { it.isVideoSong }
                     .map { mapSongItem(it) }
             }
         } catch (e: Exception) {

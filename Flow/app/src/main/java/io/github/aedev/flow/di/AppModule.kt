@@ -1,7 +1,6 @@
 package io.github.aedev.flow.di
 
 import android.content.Context
-import android.util.Log
 import io.github.aedev.flow.BuildConfig
 import io.github.aedev.flow.innertube.YouTube
 import coil3.ImageLoader

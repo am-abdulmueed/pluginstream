@@ -22,13 +22,13 @@ interface PlaylistDao {
     @Query("SELECT playlists.*, COUNT(playlist_video_cross_ref.videoId) as video_count FROM playlists LEFT JOIN playlist_video_cross_ref ON playlists.id = playlist_video_cross_ref.playlistId WHERE isMusic = 1 GROUP BY playlists.id ORDER BY createdAt DESC")
     fun getMusicPlaylistsWithCount(): Flow<List<PlaylistWithCount>>
 
-    @Query("SELECT playlists.*, COUNT(playlist_video_cross_ref.videoId) as video_count FROM playlists LEFT JOIN playlist_video_cross_ref ON playlists.id = playlist_video_cross_ref.playlistId WHERE isMusic = 0 GROUP BY playlists.id ORDER BY createdAt DESC")
+    @Query("SELECT playlists.*, COUNT(playlist_video_cross_ref.videoId) as video_count FROM playlists LEFT JOIN playlist_video_cross_ref ON playlists.id = playlist_video_cross_ref.playlistId WHERE isMusic = 0 AND playlists.id NOT IN ('watch_later', 'saved_shorts') GROUP BY playlists.id ORDER BY createdAt DESC")
     fun getVideoPlaylistsWithCount(): Flow<List<PlaylistWithCount>>
 
-    @Query("SELECT playlists.*, COUNT(playlist_video_cross_ref.videoId) as video_count FROM playlists LEFT JOIN playlist_video_cross_ref ON playlists.id = playlist_video_cross_ref.playlistId WHERE isMusic = 0 AND isUserCreated = 1 GROUP BY playlists.id ORDER BY createdAt DESC")
+    @Query("SELECT playlists.*, COUNT(playlist_video_cross_ref.videoId) as video_count FROM playlists LEFT JOIN playlist_video_cross_ref ON playlists.id = playlist_video_cross_ref.playlistId WHERE isMusic = 0 AND isUserCreated = 1 AND playlists.id NOT IN ('watch_later', 'saved_shorts') GROUP BY playlists.id ORDER BY createdAt DESC")
     fun getUserCreatedVideoPlaylistsWithCount(): Flow<List<PlaylistWithCount>>
 
-    @Query("SELECT playlists.*, COUNT(playlist_video_cross_ref.videoId) as video_count FROM playlists LEFT JOIN playlist_video_cross_ref ON playlists.id = playlist_video_cross_ref.playlistId WHERE isMusic = 0 AND isUserCreated = 0 GROUP BY playlists.id ORDER BY createdAt DESC")
+    @Query("SELECT playlists.*, COUNT(playlist_video_cross_ref.videoId) as video_count FROM playlists LEFT JOIN playlist_video_cross_ref ON playlists.id = playlist_video_cross_ref.playlistId WHERE isMusic = 0 AND isUserCreated = 0 AND playlists.id NOT IN ('watch_later', 'saved_shorts') GROUP BY playlists.id ORDER BY createdAt DESC")
     fun getSavedVideoPlaylistsWithCount(): Flow<List<PlaylistWithCount>>
 
     @Query("SELECT playlists.*, COUNT(playlist_video_cross_ref.videoId) as video_count FROM playlists LEFT JOIN playlist_video_cross_ref ON playlists.id = playlist_video_cross_ref.playlistId WHERE isMusic = 1 AND isUserCreated = 1 GROUP BY playlists.id ORDER BY createdAt DESC")
@@ -58,6 +58,9 @@ interface PlaylistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlaylistVideoCrossRef(crossRef: PlaylistVideoCrossRef)
 
+    @Query("UPDATE playlist_video_cross_ref SET position = :position WHERE playlistId = :playlistId AND videoId = :videoId")
+    suspend fun updatePlaylistVideoPosition(playlistId: String, videoId: String, position: Long)
+
     @Query("DELETE FROM playlist_video_cross_ref WHERE playlistId = :playlistId AND videoId = :videoId")
     suspend fun removeVideoFromPlaylist(playlistId: String, videoId: String)
 
@@ -71,6 +74,13 @@ interface PlaylistDao {
     @Query("SELECT COUNT(*) FROM playlist_video_cross_ref WHERE playlistId = :playlistId AND videoId = :videoId")
     suspend fun isVideoInPlaylist(playlistId: String, videoId: String): Int
 
+    @Query("""
+        SELECT COUNT(*) FROM playlist_video_cross_ref r
+        INNER JOIN playlists p ON p.id = r.playlistId
+        WHERE r.videoId = :videoId AND p.isMusic = 0
+    """)
+    fun getVideoPlaylistMembershipCount(videoId: String): Flow<Int>
+
     @Query("SELECT COUNT(*) FROM playlists WHERE id = :id AND isUserCreated = 0")
     suspend fun isSavedExternalPlaylist(id: String): Int
 
@@ -79,6 +89,12 @@ interface PlaylistDao {
 
     @Query("SELECT * FROM playlist_video_cross_ref")
     suspend fun getAllPlaylistVideoCrossRefs(): List<PlaylistVideoCrossRef>
+
+    @Query("UPDATE playlists SET thumbnailUrl = :thumbnailUrl WHERE id = :id")
+    suspend fun updatePlaylistThumbnail(id: String, thumbnailUrl: String)
+
+    @Query("SELECT v.thumbnailUrl FROM videos v INNER JOIN playlist_video_cross_ref r ON v.id = r.videoId WHERE r.playlistId = :playlistId ORDER BY r.position ASC LIMIT 1")
+    suspend fun getFirstVideoThumbnail(playlistId: String): String?
 
     /** Returns stub VideoEntities (empty title) that live inside music playlists. Used for background enrichment. */
     @Query("""

@@ -18,7 +18,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,8 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.aedev.flow.R
 import io.github.aedev.flow.player.error.PlayerDiagnostics
+import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.PlayerRelatedCardStyle
 import io.github.aedev.flow.data.model.Video
+import io.github.aedev.flow.data.model.DeArrowResult
+import io.github.aedev.flow.data.repository.DeArrowRepository
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.ui.components.CommentsPreview
 import io.github.aedev.flow.ui.components.CompactVideoCard
@@ -37,6 +43,7 @@ import io.github.aedev.flow.ui.components.VideoCardFullWidth
 import io.github.aedev.flow.ui.screens.player.VideoPlayerUiState
 import io.github.aedev.flow.ui.screens.player.VideoPlayerViewModel
 import io.github.aedev.flow.data.model.Comment
+import io.github.aedev.flow.ui.components.AddToPlaylistDialog
 import io.github.aedev.flow.ui.components.VideoInfoSection
 import io.github.aedev.flow.ui.screens.player.state.PlayerScreenState
 import kotlinx.coroutines.CoroutineScope
@@ -49,11 +56,52 @@ fun VideoInfoContent(
     viewModel: VideoPlayerViewModel,
     screenState: PlayerScreenState,
     comments: List<Comment>,
+    commentsEnabled: Boolean = true,
+    showCommentsPreview: Boolean = true,
     context: Context,
     scope: CoroutineScope,
     snackbarHostState: SnackbarHostState,
     onChannelClick: (String) -> Unit
 ) {
+    var showAddToPlaylistDialog by remember(video.id) { mutableStateOf(false) }
+    val playerPrefs = remember { PlayerPreferences(context) }
+    val deArrowEnabled by playerPrefs.deArrowEnabled.collectAsState(initial = false)
+    val deArrowResult by produceState<DeArrowResult?>(
+        initialValue = null,
+        key1 = video.id,
+        key2 = deArrowEnabled
+    ) {
+        value = if (deArrowEnabled) DeArrowRepository.getDeArrowResult(video.id) else null
+    }
+    val resolvedVideoTitle = deArrowResult?.title ?: uiState.streamInfo?.name ?: video.title
+    val dialogVideo = remember(video, uiState.streamInfo, uiState.channelAvatarUrl, resolvedVideoTitle) {
+        uiState.streamInfo?.let { streamInfo ->
+            Video(
+                id = streamInfo.id ?: video.id,
+                title = resolvedVideoTitle,
+                channelName = streamInfo.uploaderName ?: video.channelName,
+                channelId = streamInfo.uploaderUrl?.substringAfterLast("/") ?: video.channelId,
+                thumbnailUrl = streamInfo.thumbnails.maxByOrNull { it.height }?.url ?: video.thumbnailUrl,
+                duration = streamInfo.duration.toInt(),
+                viewCount = streamInfo.viewCount,
+                likeCount = streamInfo.likeCount,
+                uploadDate = streamInfo.textualUploadDate ?: streamInfo.uploadDate?.run {
+                    try {
+                        val date = java.util.Date.from(offsetDateTime().toInstant())
+                        val sdf = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault())
+                        sdf.format(date)
+                    } catch (e: Exception) {
+                        video.uploadDate
+                    }
+                } ?: video.uploadDate,
+                description = streamInfo.description?.content ?: video.description,
+                channelThumbnailUrl = uiState.channelAvatarUrl ?: video.channelThumbnailUrl,
+                timestamp = video.timestamp,
+                isMusic = video.isMusic
+            )
+        } ?: video
+    }
+
     // ── Error details panel ─────────────────────────────────────────────────
     if (uiState.error != null) {
         Surface(
@@ -147,10 +195,19 @@ fun VideoInfoContent(
 
     val downloadedVideoIds by viewModel.downloadedVideoIds.collectAsState()
     val isVideoDownloaded = remember(downloadedVideoIds, video.id) { downloadedVideoIds.contains(video.id) }
+    val isVideoSaved by remember(video.id) { viewModel.isVideoSavedToAnyPlaylist(video.id) }
+        .collectAsState(initial = false)
+
+    if (showAddToPlaylistDialog) {
+        AddToPlaylistDialog(
+            video = dialogVideo,
+            onDismiss = { showAddToPlaylistDialog = false }
+        )
+    }
 
     VideoInfoSection(
         video = video,
-        title = uiState.streamInfo?.name ?: video.title,
+        title = resolvedVideoTitle,
         viewCount = uiState.streamInfo?.viewCount ?: video.viewCount,
         uploadDate = uiState.streamInfo?.uploadDate?.let { 
             try { 
@@ -176,7 +233,7 @@ fun VideoInfoContent(
                 "LIKED" -> viewModel.removeLikeState(video.id)
                 else -> viewModel.likeVideo(
                     video.id,
-                    streamInfo?.name ?: video.title,
+                    resolvedVideoTitle,
                     thumbnailUrl,
                     streamInfo?.uploaderName ?: video.channelName
                 )
@@ -242,16 +299,17 @@ fun VideoInfoContent(
                 onChannelClick(channelIdSafe)
             } ?: onChannelClick(video.channelId)
         },
-        onSaveClick = { screenState.showQuickActions = true },
+        onSaveClick = { showAddToPlaylistDialog = true },
         onShareClick = {
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT, video.title)
-                putExtra(Intent.EXTRA_TEXT, context.getString(R.string.check_out_video_template, video.title, video.id))
+                putExtra(Intent.EXTRA_SUBJECT, resolvedVideoTitle)
+                putExtra(Intent.EXTRA_TEXT, context.getString(R.string.check_out_video_template, resolvedVideoTitle, video.id))
             }
             context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.share_video)))
         },
         onDownloadClick = { screenState.showDownloadDialog = true },
+        isSaved = isVideoSaved,
         isDownloaded = isVideoDownloaded,
         onBackgroundPlayClick = { viewModel.startBackgroundService() },
         onCopyLinkClick = {
@@ -271,12 +329,14 @@ fun VideoInfoContent(
         onDescriptionClick = { screenState.showDescriptionSheet = true }
     )
 
-    // Comments Preview
-    CommentsPreview(
-        latestComment = comments.firstOrNull()?.text,
-        authorAvatar = comments.firstOrNull()?.authorThumbnail,
-        onClick = { screenState.showCommentsSheet = true }
-    )
+    if (commentsEnabled) {
+        CommentsPreview(
+            latestComment = if (showCommentsPreview) comments.firstOrNull()?.text else null,
+            authorAvatar = if (showCommentsPreview) comments.firstOrNull()?.authorThumbnail else null,
+            showPreviewText = showCommentsPreview,
+            onClick = { screenState.showCommentsSheet = true }
+        )
+    }
 }
 
 /**
@@ -285,6 +345,7 @@ fun VideoInfoContent(
 fun LazyListScope.relatedVideosContent(
     relatedVideos: List<Video>,
     onVideoClick: (Video) -> Unit,
+    onChannelClick: (String) -> Unit,
     cardStyle: PlayerRelatedCardStyle = PlayerRelatedCardStyle.FULL_WIDTH
 ) {
     // Header
@@ -305,11 +366,13 @@ fun LazyListScope.relatedVideosContent(
         when (cardStyle) {
             PlayerRelatedCardStyle.COMPACT -> CompactVideoCard(
                 video = relatedVideo,
-                onClick = { onVideoClick(relatedVideo) }
+                onClick = { onVideoClick(relatedVideo) },
+                onChannelClick = onChannelClick
             )
             PlayerRelatedCardStyle.FULL_WIDTH -> VideoCardFullWidth(
                 video = relatedVideo,
-                onClick = { onVideoClick(relatedVideo) }
+                onClick = { onVideoClick(relatedVideo) },
+                onChannelClick = onChannelClick
             )
         }
     }
@@ -322,6 +385,7 @@ fun LazyListScope.relatedVideosGridContent(
     relatedVideos: List<Video>,
     columns: Int,
     onVideoClick: (Video) -> Unit,
+    onChannelClick: (String) -> Unit,
     cardStyle: PlayerRelatedCardStyle = PlayerRelatedCardStyle.FULL_WIDTH
 ) {
     item {
@@ -348,11 +412,13 @@ fun LazyListScope.relatedVideosGridContent(
                     when (cardStyle) {
                         PlayerRelatedCardStyle.COMPACT -> CompactVideoCard(
                             video = video,
-                            onClick = { onVideoClick(video) }
+                            onClick = { onVideoClick(video) },
+                            onChannelClick = onChannelClick
                         )
                         PlayerRelatedCardStyle.FULL_WIDTH -> VideoCardFullWidth(
                             video = video,
-                            onClick = { onVideoClick(video) }
+                            onClick = { onVideoClick(video) },
+                            onChannelClick = onChannelClick
                         )
                     }
                 }

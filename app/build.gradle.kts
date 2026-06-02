@@ -95,6 +95,8 @@ android {
 
         manifestPlaceholders["target_sdk_version"] = libs.versions.targetSdk.get()
 
+        missingDimensionStrategy("version", "github")
+
         // Reads local.properties
         val localProperties = gradleLocalProperties(rootDir, project.providers)
 

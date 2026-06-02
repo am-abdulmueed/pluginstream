@@ -29,8 +29,6 @@ import io.github.aedev.flow.ui.screens.playlists.PlaylistInfo
 fun MusicPlaylistsScreen(
     onBackClick: () -> Unit,
     onPlaylistClick: (PlaylistInfo) -> Unit,
-    onNavigateToLikedMusic: () -> Unit,
-    onNavigateToMusicHistory: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MusicPlaylistsViewModel = hiltViewModel()
 ) {
@@ -40,22 +38,11 @@ fun MusicPlaylistsScreen(
     var playlistToDelete by remember { mutableStateOf<PlaylistInfo?>(null) }
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        text = stringResource(R.string.screen_title_music_library),
-                        style = MaterialTheme.typography.headlineMedium
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.Filled.ArrowBack, stringResource(R.string.btn_back))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+            MusicPlaylistLibraryTopBar(
+                title = stringResource(R.string.screen_title_music_library),
+                onBackClick = onBackClick
             )
         },
         floatingActionButton = {
@@ -86,24 +73,6 @@ fun MusicPlaylistsScreen(
                 ) {
                     item {
                         MusicLibrarySectionHeader(stringResource(R.string.header_your_collection))
-                    }
-                    
-                    item {
-                        MusicLibraryCard(
-                            icon = Icons.Default.Favorite,
-                            title = stringResource(R.string.liked_music),
-                            subtitle = stringResource(R.string.subtitle_liked_music),
-                            onClick = onNavigateToLikedMusic
-                        )
-                    }
-
-                    item {
-                        MusicLibraryCard(
-                            icon = Icons.Default.History,
-                            title = stringResource(R.string.library_history_label),
-                            subtitle = stringResource(R.string.subtitle_history),
-                            onClick = onNavigateToMusicHistory
-                        )
                     }
                     
                     item {
@@ -147,7 +116,7 @@ fun MusicPlaylistsScreen(
                                 onClick = { onPlaylistClick(playlist) },
                                 onDownload = {},
                                 onRename = {},
-                                onDelete = {}
+                                onDelete = { playlistToDelete = playlist }
                             )
                         }
                     }
@@ -198,6 +167,35 @@ fun MusicPlaylistsScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun MusicPlaylistLibraryTopBar(
+    title: String,
+    onBackClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.Default.ArrowBack, stringResource(R.string.btn_back))
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 

@@ -1,11 +1,17 @@
 package io.github.aedev.flow.ui.components
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
+import android.widget.Toast
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
@@ -43,9 +49,11 @@ import io.github.aedev.flow.ui.theme.extendedColors
 import io.github.aedev.flow.utils.formatSubscriberCount
 import io.github.aedev.flow.utils.formatViewCount
 import io.github.aedev.flow.utils.formatRichText
+import io.github.aedev.flow.utils.DateContext
 import io.github.aedev.flow.R
 import androidx.compose.ui.res.stringResource
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoInfoSection(
     video: Video,
@@ -74,6 +82,7 @@ fun VideoInfoSection(
     onCopyLinkClick: () -> Unit = {},
     onCopyLinkAtTimeClick: () -> Unit = {},
     onDescriptionClick: () -> Unit,
+    isSaved: Boolean = false,
     isDownloaded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -87,6 +96,7 @@ fun VideoInfoSection(
         val prefs = remember { PlayerPreferences(context) }
         val titleMaxLinesPref by prefs.videoTitleMaxLines.collectAsState(initial = 1)
         val titleMaxLines = if (titleMaxLinesPref <= 0) Int.MAX_VALUE else titleMaxLinesPref
+        val dateSettings = rememberDateDisplaySettings()
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(
@@ -96,7 +106,15 @@ fun VideoInfoSection(
             ),
             color = MaterialTheme.colorScheme.onBackground,
             maxLines = titleMaxLines,
-            overflow = if (titleMaxLinesPref <= 0) TextOverflow.Clip else TextOverflow.Ellipsis
+            overflow = if (titleMaxLinesPref <= 0) TextOverflow.Clip else TextOverflow.Ellipsis,
+            modifier = Modifier.combinedClickable(
+                onClick = {},
+                onLongClick = {
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("Video Title", title))
+                    Toast.makeText(context, context.getString(R.string.title_copied), Toast.LENGTH_SHORT).show()
+                }
+            )
         )
         
         // View count and date in a subtle row below title
@@ -119,7 +137,7 @@ fun VideoInfoSection(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = uploadDate,
+                    text = dateSettings.format(uploadDate, DateContext.WATCH, video.timestamp),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -210,6 +228,7 @@ fun VideoInfoSection(
             onBackgroundPlayClick = onBackgroundPlayClick,
             onCopyLinkClick = onCopyLinkClick,
             onCopyLinkAtTimeClick = onCopyLinkAtTimeClick,
+            isSaved = isSaved,
             isDownloaded = isDownloaded
         )
     }
@@ -219,6 +238,7 @@ fun VideoInfoSection(
 fun CommentsPreview(
     latestComment: String?,
     authorAvatar: String?,
+    showPreviewText: Boolean = true,
     onClick: () -> Unit
 ) {
     Surface(
@@ -239,7 +259,7 @@ fun CommentsPreview(
                 )
             }
             
-            if (!latestComment.isNullOrBlank()) {
+            if (showPreviewText && !latestComment.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     AsyncImage(
@@ -270,7 +290,7 @@ fun CommentsPreview(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-            } else {
+            } else if (showPreviewText) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Add a comment...",
@@ -400,6 +420,7 @@ fun VideoActionRow(
     onBackgroundPlayClick: () -> Unit,
     onCopyLinkClick: () -> Unit = {},
     onCopyLinkAtTimeClick: () -> Unit = {},
+    isSaved: Boolean = false,
     isDownloaded: Boolean = false
 ) {
     LazyRow(
@@ -418,9 +439,10 @@ fun VideoActionRow(
         
         item {
             ActionChip(
-                icon = Icons.Outlined.BookmarkBorder,
-                label = stringResource(R.string.save),
-                onClick = onSaveClick
+                icon = if (isSaved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                label = if (isSaved) stringResource(R.string.saved) else stringResource(R.string.save),
+                onClick = onSaveClick,
+                tint = if (isSaved) MaterialTheme.colorScheme.primary else null
             )
         }
         

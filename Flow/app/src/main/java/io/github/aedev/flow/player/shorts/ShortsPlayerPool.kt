@@ -19,6 +19,8 @@ import androidx.media3.exoplayer.trackselection.AdaptiveTrackSelection
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.upstream.DefaultAllocator
 import io.github.aedev.flow.data.local.PlayerPreferences
+import io.github.aedev.flow.player.config.PlayerConfig
+import io.github.aedev.flow.player.datasource.YouTubeHttpDataSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -54,12 +56,11 @@ class ShortsPlayerPool private constructor() {
         private const val TAG = "ShortsPlayerPool"
         private const val POOL_SIZE = 3
 
-        // Tuned for Shorts: Faster start (1s min buffer), keep max buffer healthy
-        private const val MIN_BUFFER_MS = 5_000 
-        private const val MAX_BUFFER_MS = 25_000
-        private const val BUFFER_FOR_PLAYBACK_MS = 1_000
-        private const val BUFFER_FOR_REBUFFER_MS = 2_000
-        private const val BACK_BUFFER_MS = 5_000
+        private const val MIN_BUFFER_MS = 1_500
+        private const val MAX_BUFFER_MS = 12_000
+        private const val BUFFER_FOR_PLAYBACK_MS = 250
+        private const val BUFFER_FOR_REBUFFER_MS = 750
+        private const val BACK_BUFFER_MS = 2_000
 
         @Volatile
         private var instance: ShortsPlayerPool? = null
@@ -84,7 +85,8 @@ class ShortsPlayerPool private constructor() {
     private var isInitialized = false
     private var dataSourceFactory: DefaultDataSource.Factory? = null
     private var preferredAudioLanguage: String = "original"
-    private var shortsPlaybackMode: String = "loop" 
+    private var shortsPlaybackMode: String = "loop"
+    private var basePlaybackSpeed: Float = 1f
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -96,7 +98,7 @@ class ShortsPlayerPool private constructor() {
         if (isInitialized) return
 
         Log.d(TAG, "Initializing 3-player pool for Shorts")
-        dataSourceFactory = DefaultDataSource.Factory(context)
+        dataSourceFactory = DefaultDataSource.Factory(context, YouTubeHttpDataSource.Factory())
 
         // Observe audio language preference
         scope.launch {
@@ -154,7 +156,7 @@ class ShortsPlayerPool private constructor() {
             )
             .setBackBuffer(BACK_BUFFER_MS, true)
             .setPrioritizeTimeOverSizeThresholds(true)
-            .setTargetBufferBytes(C.LENGTH_UNSET)
+            .setTargetBufferBytes(PlayerConfig.SHORTS_TARGET_BUFFER_BYTES)
             .build()
 
         val trackSelector = DefaultTrackSelector(
@@ -405,7 +407,10 @@ class ShortsPlayerPool private constructor() {
     }
 
     fun play() {
-        findActivePlayer()?.playWhenReady = true
+        findActivePlayer()?.let { player ->
+            player.setPlaybackSpeed(basePlaybackSpeed)
+            player.playWhenReady = true
+        }
     }
 
     fun pause() {
@@ -426,8 +431,15 @@ class ShortsPlayerPool private constructor() {
     }
 
     fun resetPlaybackSpeed() {
-        findActivePlayer()?.setPlaybackSpeed(1f)
+        findActivePlayer()?.setPlaybackSpeed(basePlaybackSpeed)
     }
+
+    fun setBasePlaybackSpeed(speed: Float) {
+        basePlaybackSpeed = speed
+        findActivePlayer()?.setPlaybackSpeed(speed)
+    }
+
+    fun getBasePlaybackSpeed(): Float = basePlaybackSpeed
 
     /** Pause ALL players */
     fun pauseAll() {

@@ -1,5 +1,7 @@
 package io.github.aedev.flow.innertube
 
+import io.github.aedev.flow.FlowApplication
+import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.innertube.models.Context
 import io.github.aedev.flow.innertube.models.MediaInfo
 import io.github.aedev.flow.innertube.models.ReturnYouTubeDislikeResponse
@@ -23,6 +25,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.util.encodeBase64
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import java.net.Proxy
@@ -40,10 +43,15 @@ import okhttp3.OkHttpClient
 class InnerTube {
     private var httpClient = createClient()
 
-    var locale = YouTubeLocale(
-        gl = Locale.getDefault().country,
-        hl = Locale.getDefault().language.ifEmpty { "en" }
+    var locale = sanitizeLocale(
+        YouTubeLocale(
+            gl = Locale.getDefault().country,
+            hl = Locale.getDefault().toLanguageTag()
+        )
     )
+        set(value) {
+            field = sanitizeLocale(value)
+        }
     var visitorData: String? = null
     var dataSyncId: String? = null
     var cookie: String? = null
@@ -61,8 +69,43 @@ class InnerTube {
         }
     
     var proxyAuth: String? = null
+        set(value) {
+            field = value
+            httpClient.close()
+            httpClient = createClient()
+        }
 
     var useLoginForBrowse: Boolean = false
+
+    private fun sanitizeLocale(value: YouTubeLocale): YouTubeLocale =
+        YouTubeLocale(
+            gl = sanitizeCountryCode(value.gl),
+            hl = sanitizeLanguageCode(value.hl),
+        )
+
+    private fun sanitizeCountryCode(value: String): String {
+        val normalized = value.trim().uppercase(Locale.US)
+        return if (normalized.matches(Regex("[A-Z]{2}"))) {
+            normalized
+        } else {
+            Locale.getDefault().country
+                .trim()
+                .uppercase(Locale.US)
+                .takeIf { it.matches(Regex("[A-Z]{2}")) }
+                ?: "US"
+        }
+    }
+
+    private fun sanitizeLanguageCode(value: String): String {
+        val trimmed = value.trim()
+        val candidate = if (trimmed.isBlank() || trimmed.equals("system", ignoreCase = true)) {
+            Locale.getDefault().toLanguageTag()
+        } else {
+            trimmed.replace('_', '-')
+        }
+        val tag = Locale.forLanguageTag(candidate).toLanguageTag()
+        return tag.takeUnless { it.isBlank() || it.equals("und", ignoreCase = true) } ?: "en"
+    }
 
     @OptIn(ExperimentalSerializationApi::class)
     private fun createClient() = HttpClient(OkHttp) {
@@ -259,18 +302,53 @@ class InnerTube {
         }
     }
 
+    /**
+     * Browse a YouTube channel tab through the YouTube.com WEB /browse endpoint.
+     *
+     * Initial calls pass [channelId] and [params]; continuation calls pass only
+     * [continuation].
+     */
+    suspend fun channelBrowse(
+        client: YouTubeClient,
+        channelId: String? = null,
+        params: String? = null,
+        continuation: String? = null,
+    ) = withRetry {
+        httpClient.post("https://www.youtube.com/youtubei/v1/browse") {
+            headers {
+                append("X-YouTube-Client-Name", client.clientId)
+                append("X-YouTube-Client-Version", client.clientVersion)
+                append("X-Origin", "https://www.youtube.com")
+                append("Referer", "https://www.youtube.com/")
+                visitorData?.let { append("X-Goog-Visitor-Id", it) }
+            }
+            contentType(io.ktor.http.ContentType.Application.Json)
+            userAgent(client.userAgent)
+            parameter("prettyPrint", false)
+            setBody(
+                BrowseBody(
+                    context = client.toContext(locale, visitorData, null),
+                    browseId = if (continuation == null) channelId else null,
+                    params = if (continuation == null) params else null,
+                    continuation = continuation,
+                )
+            )
+        }
+    }
+
     suspend fun player(
         client: YouTubeClient,
         videoId: String,
         playlistId: String?,
         signatureTimestamp: Int?,
         poToken: String? = null,
+        localeOverride: YouTubeLocale? = null,
     ) = withRetry {
         httpClient.post("player") {
             ytClient(client, setLogin = true)
             setBody(
                 PlayerBody(
-                    context = client.toContext(locale, visitorData, dataSyncId).let {
+                    context = client.toContext(localeOverride ?: locale, visitorData, dataSyncId).let {
                         if (client.isEmbedded) {
                             it.copy(
                                 thirdParty = Context.ThirdParty(
@@ -289,6 +367,44 @@ class InnerTube {
                         )
                     } else null,
                 serviceIntegrityDimensions = poToken?.let { PlayerBody.ServiceIntegrityDimensions(it) },
+                )
+            )
+        }
+    }
+
+    suspend fun playerWeb(
+        videoId: String,
+        signatureTimestamp: Int?,
+        poToken: String?,
+        visitorData: String?,
+        locale: YouTubeLocale,
+    ) = withRetry {
+        val client = YouTubeClient.WEB
+        httpClient.post("https://www.youtube.com/youtubei/v1/player") {
+            headers {
+                append("X-Goog-Api-Format-Version", "1")
+                append("X-YouTube-Client-Name", client.clientId)
+                append("X-YouTube-Client-Version", client.clientVersion)
+                append("X-Origin", "https://www.youtube.com")
+                append("Referer", "https://www.youtube.com/")
+                visitorData?.let { append("X-Goog-Visitor-Id", it) }
+            }
+            contentType(ContentType.Application.Json)
+            userAgent(client.userAgent)
+            parameter("prettyPrint", false)
+            setBody(
+                PlayerBody(
+                    context = client.toContext(locale, visitorData, null),
+                    videoId = videoId,
+                    playlistId = null,
+                    playbackContext = if (signatureTimestamp != null) {
+                        PlayerBody.PlaybackContext(
+                            PlayerBody.PlaybackContext.ContentPlaybackContext(signatureTimestamp)
+                        )
+                    } else null,
+                    serviceIntegrityDimensions = poToken?.let { PlayerBody.ServiceIntegrityDimensions(it) },
+                    contentCheckOk = true,
+                    racyCheckOk = true,
                 )
             )
         }
@@ -744,8 +860,13 @@ class InnerTube {
                         it?.videoPrimaryInfoRenderer != null
                     }?.videoPrimaryInfoRenderer
 
+            val rytdEnabled = PlayerPreferences(FlowApplication.appContext).rytdEnabled.first()
             val returnYouTubeDislikeResponse =
-                returnYouTubeDislike(videoId).body<ReturnYouTubeDislikeResponse>()
+                if (rytdEnabled) {
+                    returnYouTubeDislike(videoId).body<ReturnYouTubeDislikeResponse>()
+                } else {
+                    null
+                }
 
             val bestAudio = playerResponse.streamingData?.adaptiveFormats?.filter { it.isAudio }?.maxByOrNull { it.bitrate }
                 ?: playerResponse.streamingData?.formats?.filter { it.isAudio }?.maxByOrNull { it.bitrate }
@@ -789,9 +910,11 @@ class InnerTube {
                         ?.subscriberCountText
                         ?.simpleText?.split(" ")?.firstOrNull(),
                 uploadDate = baseForTitle?.dateText?.simpleText,
-                viewCount = returnYouTubeDislikeResponse.viewCount,
-                like = returnYouTubeDislikeResponse.likes,
-                dislike = returnYouTubeDislikeResponse.dislikes,
+                viewCount = returnYouTubeDislikeResponse?.viewCount,
+                like = returnYouTubeDislikeResponse?.likes,
+                dislike = returnYouTubeDislikeResponse?.dislikes,
+                durationSeconds = playerResponse.videoDetails?.lengthSeconds?.toIntOrNull()
+                    ?: bestAudio?.approxDurationMs?.toLongOrNull()?.div(1000L)?.toInt(),
                 mimeType = bestAudio?.mimeType,
                 bitrate = bestAudio?.bitrate?.toLong(),
                 sampleRate = bestAudio?.audioSampleRate,

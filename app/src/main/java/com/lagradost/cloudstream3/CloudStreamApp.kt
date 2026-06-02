@@ -77,6 +77,7 @@ class CloudStreamApp : FlowApplication(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
+        context = this
         // If we want to initialize Coil as early as possible, maybe when
         // loading an image or GIF in a splash screen activity.
         // buildImageLoader(applicationContext)
@@ -98,7 +99,7 @@ class CloudStreamApp : FlowApplication(), SingletonImageLoader.Factory {
         }
     }
 
-    override fun attachBaseContext(base: Context?) {
+    override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
         context = base
         // This can be removed without deprecation after next stable

@@ -36,14 +36,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.aedev.flow.BuildConfig
+import io.github.aedev.flow.data.local.DEEP_FLOW_NEVER_EXPIRES_HOURS
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
 import io.github.aedev.flow.data.recommendation.UserBrain
+import io.github.aedev.flow.network.AppProxyManager
+import io.github.aedev.flow.player.DeepFlowManager
 import io.github.aedev.flow.ui.theme.ThemeMode
 import io.github.aedev.flow.ui.theme.extendedColors
 import io.github.aedev.flow.data.local.PlayerPreferences
+import io.github.aedev.flow.utils.AppLanguageManager
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -65,18 +68,24 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAppearance: () -> Unit,
     onNavigateToPlayerAppearance: () -> Unit,
+    onNavigateToDonations: () -> Unit,
     onNavigateToPersonality: () -> Unit,
     onNavigateToDownloads: () -> Unit,
     onNavigateToTimeManagement: () -> Unit,
     onNavigateToImport: () -> Unit,
     onNavigateToPlayerSettings: () -> Unit,
+    onNavigateToProxySettings: () -> Unit,
     onNavigateToVideoQuality: () -> Unit,
     onNavigateToShortsQuality: () -> Unit,
     onNavigateToContentSettings: () -> Unit,
+    onNavigateToDateTimeSettings: () -> Unit,
     onNavigateToBufferSettings: () -> Unit,
     onNavigateToSearchHistory: () -> Unit,
+    onNavigateToAbout: () -> Unit,
     onNavigateToUserPreferences: () -> Unit,
     onNavigateToNotifications: () -> Unit,
+    onNavigateToAppIconPicker: () -> Unit,
+    onNavigateToDiagnostics: () -> Unit,
     onNavigateToAutoBackup: () -> Unit,
     onNavigateToExport: () -> Unit,
     onNavigateToSponsorBlockSettings: () -> Unit,
@@ -96,6 +105,7 @@ fun SettingsScreen(
     }
     
     var showRegionDialog by remember { mutableStateOf(false) }
+    var showAppLanguageDialog by remember { mutableStateOf(false) }
     var showResetBrainDialog by remember { mutableStateOf(false) }
     // Update checker state (github flavor only)
     var isCheckingUpdate by remember { mutableStateOf(false) }
@@ -104,6 +114,7 @@ fun SettingsScreen(
     
     // Player preferences states
     val currentRegion by playerPreferences.trendingRegion.collectAsState(initial = "US")
+    val currentAppLanguage by playerPreferences.appLanguage.collectAsState(initial = AppLanguageManager.SYSTEM_DEFAULT)
 
     // Deep Flow state
     val deepFlowActive by playerPreferences.deepFlowActive.collectAsState(initial = false)
@@ -112,7 +123,7 @@ fun SettingsScreen(
     var showDeepFlowDurationDialog by remember { mutableStateOf(false) }
 
     val deepFlowRemainingLabel: String? = remember(deepFlowActive, deepFlowActivatedAt, deepFlowExpireHours) {
-        if (!deepFlowActive || deepFlowActivatedAt == 0L) return@remember null
+        if (!deepFlowActive || deepFlowActivatedAt == 0L || deepFlowExpireHours == DEEP_FLOW_NEVER_EXPIRES_HOURS) return@remember null
         val expiresAt = deepFlowActivatedAt + deepFlowExpireHours * 3_600_000L
         val remainingMs = expiresAt - System.currentTimeMillis()
         if (remainingMs <= 0) return@remember null
@@ -120,20 +131,18 @@ fun SettingsScreen(
         if (remainingMins < 60) "${remainingMins}m" else "${remainingMins / 60}h ${remainingMins % 60}m"
     }
 
-    LaunchedEffect(deepFlowActive, deepFlowActivatedAt, deepFlowExpireHours) {
-        if (!deepFlowActive || deepFlowActivatedAt == 0L) return@LaunchedEffect
-        val expiresAt = deepFlowActivatedAt + deepFlowExpireHours * 3_600_000L
-        val remainingMs = expiresAt - System.currentTimeMillis()
-        if (remainingMs <= 0L) {
-            playerPreferences.setDeepFlowActive(false)
-            return@LaunchedEffect
-        }
-        delay(remainingMs)
-        playerPreferences.setDeepFlowActive(false)
-    }
-
     // Optimize Region Dialog: compute list only once
     val regionList = remember { REGION_NAMES.toList() }
+    val appLanguageOptions = remember { AppLanguageManager.getSupportedLanguages() }
+    val currentAppLanguageLabel = remember(currentAppLanguage, appLanguageOptions) {
+        val normalizedLanguage = AppLanguageManager.normalizeLanguageTag(currentAppLanguage)
+        if (normalizedLanguage == AppLanguageManager.SYSTEM_DEFAULT) {
+            context.getString(io.github.aedev.flow.R.string.settings_language_system_default)
+        } else {
+            appLanguageOptions.firstOrNull { it.tag == normalizedLanguage }?.localizedName
+                ?: AppLanguageManager.getLanguageLabel(normalizedLanguage)
+        }
+    }
 
     // Search state
     var searchQuery by remember { mutableStateOf("") }
@@ -144,67 +153,66 @@ fun SettingsScreen(
     }
     BackHandler(enabled = isSearchActive) { isSearchActive = false; searchQuery = "" }
 
-    // Check for updates - Disabled (using as module)
     val onCheckForUpdatesClick: () -> Unit = {
-        // if (BuildConfig.UPDATER_ENABLED && !isCheckingUpdate) {
-        //     isCheckingUpdate = true
-        //     coroutineScope.launch(Dispatchers.IO) {
-        //         try {
-        //             val client = OkHttpClient()
-        //             val request = Request.Builder()
-        //                 .url("https://api.github.com/repos/A-EDev/Flow/releases/latest")
-        //                 .header("Accept", "application/vnd.github.v3+json")
-        //                 .build()
-        //             val response = client.newCall(request).execute()
-        //             withContext(Dispatchers.Main) {
-        //                 isCheckingUpdate = false
-        //                 if (response.isSuccessful) {
-        //                     val body = response.body?.string()
-        //                     if (body != null) {
-        //                         val json = JsonParser.parseString(body).asJsonObject
-        //                         val latestTag = json.get("tag_name").asString
-        //                         val cleanLatest = latestTag.removePrefix("v")
-        //                         val cleanCurrent = BuildConfig.VERSION_NAME.removePrefix("v")
-        //                         val latestParts = cleanLatest.split(".").mapNotNull { it.toIntOrNull() }
-        //                         val currentParts = cleanCurrent.split(".").mapNotNull { it.toIntOrNull() }
-        //                         var isNewer = false
-        //                         val size = maxOf(latestParts.size, currentParts.size)
-        //                         for (i in 0 until size) {
-        //                             val l = latestParts.getOrNull(i) ?: 0
-        //                             val c = currentParts.getOrNull(i) ?: 0
-        //                             if (l > c) { isNewer = true; break }
-        //                             if (l < c) break
-        //                         }
-        //                         if (isNewer) {
-        //                             updateAvailableTag = latestTag
-        //                         } else {
-        //                             android.widget.Toast.makeText(
-        //                                 context,
-        //                                 context.getString(io.github.aedev.flow.R.string.flow_is_up_to_date),
-        //                                 android.widget.Toast.LENGTH_SHORT
-        //                             ).show()
-        //                         }
-        //                     }
-        //                 } else {
-        //                     android.widget.Toast.makeText(
-        //                         context,
-        //                         context.getString(io.github.aedev.flow.R.string.update_check_failed),
-        //                         android.widget.Toast.LENGTH_SHORT
-        //                     ).show()
-        //                 }
-        //             }
-        //         } catch (e: Exception) {
-        //             withContext(Dispatchers.Main) {
-        //                 isCheckingUpdate = false
-        //                 android.widget.Toast.makeText(
-        //                     context,
-        //                     context.getString(io.github.aedev.flow.R.string.update_check_failed),
-        //                     android.widget.Toast.LENGTH_SHORT
-        //                 ).show()
-        //             }
-        //         }
-        //     }
-        // }
+        if (BuildConfig.UPDATER_ENABLED && !isCheckingUpdate) {
+            isCheckingUpdate = true
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    val client = AppProxyManager.applyTo(OkHttpClient.Builder()).build()
+                    val request = Request.Builder()
+                        .url("https://api.github.com/repos/A-EDev/Flow/releases/latest")
+                        .header("Accept", "application/vnd.github.v3+json")
+                        .build()
+                    val response = client.newCall(request).execute()
+                    withContext(Dispatchers.Main) {
+                        isCheckingUpdate = false
+                        if (response.isSuccessful) {
+                            val body = response.body?.string()
+                            if (body != null) {
+                                val json = JsonParser.parseString(body).asJsonObject
+                                val latestTag = json.get("tag_name").asString
+                                val cleanLatest = latestTag.removePrefix("v")
+                                val cleanCurrent = BuildConfig.VERSION_NAME.removePrefix("v")
+                                val latestParts = cleanLatest.split(".").mapNotNull { it.toIntOrNull() }
+                                val currentParts = cleanCurrent.split(".").mapNotNull { it.toIntOrNull() }
+                                var isNewer = false
+                                val size = maxOf(latestParts.size, currentParts.size)
+                                for (i in 0 until size) {
+                                    val l = latestParts.getOrNull(i) ?: 0
+                                    val c = currentParts.getOrNull(i) ?: 0
+                                    if (l > c) { isNewer = true; break }
+                                    if (l < c) break
+                                }
+                                if (isNewer) {
+                                    updateAvailableTag = latestTag
+                                } else {
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        context.getString(io.github.aedev.flow.R.string.flow_is_up_to_date),
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        } else {
+                            android.widget.Toast.makeText(
+                                context,
+                                context.getString(io.github.aedev.flow.R.string.update_check_failed),
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        isCheckingUpdate = false
+                        android.widget.Toast.makeText(
+                            context,
+                            context.getString(io.github.aedev.flow.R.string.update_check_failed),
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
     }
 
     // Section label strings for the search index
@@ -213,15 +221,19 @@ fun SettingsScreen(
     val secContentPlayback = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_content_playback)
     val secNotifications = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_notifications)
     val secDataManagement = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_data_management)
+    val secAbout = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_about)
 
     val allSettingsEntries = listOf(
         SettingSearchEntry(Icons.Outlined.Psychology, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.flow_control_center), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.neural_interest_map_subtitle), secFlowEngine, onNavigateToPersonality),
         SettingSearchEntry(Icons.Outlined.Palette, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_theme), "", secAppearance, onNavigateToAppearance),
-
+        SettingSearchEntry(Icons.Outlined.Language, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_language), currentAppLanguageLabel, secAppearance) { showAppLanguageDialog = true },
+        SettingSearchEntry(Icons.Outlined.AppShortcut, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon_subtitle), secAppearance, onNavigateToAppIconPicker),
         SettingSearchEntry(Icons.Outlined.Tune, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_appearance), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_appearance_subtitle), secAppearance, onNavigateToPlayerAppearance),
         SettingSearchEntry(Icons.Outlined.GridView, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_display), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_display_subtitle), secAppearance, onNavigateToContentSettings),
+        SettingSearchEntry(Icons.Outlined.Schedule, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_datetime), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_datetime_subtitle), secAppearance, onNavigateToDateTimeSettings),
         SettingSearchEntry(Icons.Outlined.FilterAlt, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_prefs), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_prefs_subtitle), secContentPlayback, onNavigateToUserPreferences),
         SettingSearchEntry(Icons.Outlined.PlayCircle, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_subtitle), secContentPlayback, onNavigateToPlayerSettings),
+        SettingSearchEntry(Icons.Outlined.Public, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_proxy), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_proxy_subtitle), secContentPlayback, onNavigateToProxySettings),
         SettingSearchEntry(io.github.aedev.flow.R.drawable.ic_block, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.sb_settings_title), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.sb_settings_subtitle), secContentPlayback, onNavigateToSponsorBlockSettings),
         SettingSearchEntry(Icons.Outlined.HighQuality, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_quality), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_quality_subtitle), secContentPlayback, onNavigateToVideoQuality),
         SettingSearchEntry(Icons.Outlined.Slideshow, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.shorts_quality_settings_title), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.shorts_quality_settings_subtitle), secContentPlayback, onNavigateToShortsQuality),
@@ -234,9 +246,12 @@ fun SettingsScreen(
         SettingSearchEntry(Icons.Outlined.FileUpload, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_export_data), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_export_data_subtitle), secDataManagement, onNavigateToExport),
         SettingSearchEntry(Icons.Outlined.FileDownload, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_import_data), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_import_data_subtitle), secDataManagement, onNavigateToImport),
         SettingSearchEntry(Icons.Outlined.Schedule, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.auto_backup_title), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.auto_backup_subtitle), secDataManagement, onNavigateToAutoBackup),
-
-
-    )
+        SettingSearchEntry(Icons.Outlined.Info, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_about_flow), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_about_flow_subtitle), secAbout, onNavigateToAbout),
+        SettingSearchEntry(Icons.Outlined.BugReport, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics_subtitle), secAbout, onNavigateToDiagnostics),
+        SettingSearchEntry(Icons.Outlined.VolunteerActivism, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support_subtitle), secAbout, onNavigateToDonations)
+    ) + if (BuildConfig.UPDATER_ENABLED) listOf(
+        SettingSearchEntry(Icons.Outlined.Update, androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates), androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates_subtitle), secAbout, onCheckForUpdatesClick)
+    ) else emptyList()
     val filteredEntries = if (searchQuery.isBlank()) emptyList() else allSettingsEntries.filter { entry ->
         entry.title.contains(searchQuery, ignoreCase = true) ||
         entry.subtitle.contains(searchQuery, ignoreCase = true) ||
@@ -244,6 +259,7 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -526,7 +542,7 @@ item {
                             .fillMaxWidth()
                             .clickable {
                                 coroutineScope.launch {
-                                    playerPreferences.setDeepFlowActive(!deepFlowActive)
+                                    DeepFlowManager.toggle(context)
                                 }
                             }
                             .padding(16.dp),
@@ -566,13 +582,16 @@ item {
                                 }
                             }
                             Text(
-                                text = if (deepFlowActive && deepFlowRemainingLabel != null)
-                                    androidx.compose.ui.res.stringResource(
+                                text = when {
+                                    deepFlowActive && deepFlowRemainingLabel != null -> androidx.compose.ui.res.stringResource(
                                         io.github.aedev.flow.R.string.deep_flow_expires_in,
                                         deepFlowRemainingLabel
                                     )
-                                else
-                                    androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_mode_subtitle),
+                                    deepFlowActive && deepFlowExpireHours == DEEP_FLOW_NEVER_EXPIRES_HOURS -> androidx.compose.ui.res.stringResource(
+                                        io.github.aedev.flow.R.string.deep_flow_active_until_disabled
+                                    )
+                                    else -> androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_mode_subtitle)
+                                },
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -581,7 +600,7 @@ item {
                             checked = deepFlowActive,
                             onCheckedChange = { enabled ->
                                 coroutineScope.launch {
-                                    playerPreferences.setDeepFlowActive(enabled)
+                                    DeepFlowManager.setEnabled(context, enabled)
                                 }
                             }
                         )
@@ -612,8 +631,18 @@ item {
                             Text(
                                 text = androidx.compose.ui.res.stringResource(
                                     io.github.aedev.flow.R.string.deep_flow_expire_duration_subtitle,
-                                    deepFlowExpireHours.let { h ->
-                                        if (h == 1) "1 hour" else "$h hours"
+                                    deepFlowExpireHours.let { hours ->
+                                        when (hours) {
+                                            DEEP_FLOW_NEVER_EXPIRES_HOURS -> context.getString(io.github.aedev.flow.R.string.deep_flow_duration_never)
+                                            1 -> context.getString(io.github.aedev.flow.R.string.deep_flow_duration_1h)
+                                            2 -> context.getString(io.github.aedev.flow.R.string.deep_flow_duration_2h)
+                                            4 -> context.getString(io.github.aedev.flow.R.string.deep_flow_duration_4h)
+                                            6 -> context.getString(io.github.aedev.flow.R.string.deep_flow_duration_6h)
+                                            8 -> context.getString(io.github.aedev.flow.R.string.deep_flow_duration_8h)
+                                            12 -> context.getString(io.github.aedev.flow.R.string.deep_flow_duration_12h)
+                                            24 -> context.getString(io.github.aedev.flow.R.string.deep_flow_duration_24h)
+                                            else -> "$hours hours"
+                                        }
                                     }
                                 ),
                                 style = MaterialTheme.typography.bodyMedium,
@@ -643,7 +672,20 @@ item {
                         onClick = onNavigateToAppearance
                     )
                     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-
+                    SettingsItem(
+                        icon = Icons.Outlined.Language,
+                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_language),
+                        subtitle = currentAppLanguageLabel,
+                        onClick = { showAppLanguageDialog = true }
+                    )
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    SettingsItem(
+                        icon = Icons.Outlined.AppShortcut,
+                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon),
+                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_icon_subtitle),
+                        onClick = onNavigateToAppIconPicker
+                    )
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                     SettingsItem(
                         icon = Icons.Outlined.Tune,
                         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_appearance),
@@ -656,6 +698,13 @@ item {
                          title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_display),
                          subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_content_display_subtitle),
                          onClick = onNavigateToContentSettings
+                    )
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    SettingsItem(
+                         icon = Icons.Outlined.Schedule,
+                         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_datetime),
+                         subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_datetime_subtitle),
+                         onClick = onNavigateToDateTimeSettings
                     )
                 }
             }
@@ -679,6 +728,13 @@ item {
                          title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player),
                          subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_player_subtitle),
                          onClick = onNavigateToPlayerSettings
+                    )
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    SettingsItem(
+                        icon = Icons.Outlined.Public,
+                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_proxy),
+                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_proxy_subtitle),
+                        onClick = onNavigateToProxySettings
                     )
                     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                     SettingsItem(
@@ -785,13 +841,61 @@ item {
                 }
             }
             
-
+            // =================================================
+            // ABOUT
+            // =================================================
+            item { SectionHeader(text = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_about)) }
+            item {
+                SettingsGroup {
+                    SettingsItem(
+                        icon = Icons.Outlined.Info,
+                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_about_flow),
+                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_about_flow_subtitle),
+                        onClick = onNavigateToAbout
+                    )
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    SettingsItem(
+                        icon = Icons.Outlined.BugReport,
+                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics),
+                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_diagnostics_subtitle),
+                        onClick = onNavigateToDiagnostics
+                    )
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    if (BuildConfig.UPDATER_ENABLED) {
+                        SettingsItem(
+                            icon = if (isCheckingUpdate) Icons.Outlined.Sync else Icons.Outlined.Update,
+                            title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates),
+                            subtitle = if (isCheckingUpdate)
+                                androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.checking_for_updates)
+                            else
+                                androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.check_for_updates_subtitle),
+                            onClick = onCheckForUpdatesClick
+                        )
+                        HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    }
+                    SettingsItem(
+                        icon = Icons.Outlined.VolunteerActivism,
+                        title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support),
+                        subtitle = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_support_subtitle),
+                        onClick = onNavigateToDonations
+                    )
+                }
+            }
         }
         }
     }
 
     if (showDeepFlowDurationDialog) {
-        val durationOptions = listOf(1 to "1 hour", 2 to "2 hours", 4 to "4 hours", 6 to "6 hours", 8 to "8 hours", 12 to "12 hours", 24 to "24 hours")
+        val durationOptions = listOf(
+            DEEP_FLOW_NEVER_EXPIRES_HOURS to androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_duration_never),
+            1 to androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_duration_1h),
+            2 to androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_duration_2h),
+            4 to androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_duration_4h),
+            6 to androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_duration_6h),
+            8 to androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_duration_8h),
+            12 to androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_duration_12h),
+            24 to androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.deep_flow_duration_24h)
+        )
         AlertDialog(
             onDismissRequest = { showDeepFlowDurationDialog = false },
             icon = { Icon(Icons.Outlined.Timer, null, tint = MaterialTheme.colorScheme.primary) },
@@ -869,37 +973,140 @@ item {
         )
     }
 
-    // Update Available Dialog - Disabled (using as module)
-    // if (BuildConfig.UPDATER_ENABLED) {
-    //     val tag = updateAvailableTag
-    //     if (tag != null) {
-    //         AlertDialog(
-    //             onDismissRequest = { updateAvailableTag = null },
-    //             icon = { Icon(Icons.Outlined.Update, null, tint = MaterialTheme.colorScheme.primary) },
-    //             title = { Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.new_update_available), fontWeight = FontWeight.Bold) },
-    //             text = {
-    //                 Text(
-    //                     androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.update_available_template, tag),
-    //                     style = MaterialTheme.typography.bodyMedium
-    //                 )
-    //             },
-    //             confirmButton = {
-    //                 Button(onClick = {
-    //                     updateAvailableTag = null
-    //                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/A-EDev/Flow/releases/latest"))
-    //                     context.startActivity(intent)
-    //                 }) {
-    //                     Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.download))
-    //                 }
-    //             },
-    //             dismissButton = {
-    //                 TextButton(onClick = { updateAvailableTag = null }) {
-    //                     Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.cancel))
-    //                 }
-    //             }
-    //         )
-    //     }
-    // }
+    // Update Available Dialog (github flavor only)
+    if (BuildConfig.UPDATER_ENABLED) {
+        val tag = updateAvailableTag
+        if (tag != null) {
+            AlertDialog(
+                onDismissRequest = { updateAvailableTag = null },
+                icon = { Icon(Icons.Outlined.Update, null, tint = MaterialTheme.colorScheme.primary) },
+                title = { Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.new_update_available), fontWeight = FontWeight.Bold) },
+                text = {
+                    Text(
+                        androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.update_available_template, tag),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        updateAvailableTag = null
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/A-EDev/Flow/releases/latest"))
+                        context.startActivity(intent)
+                    }) {
+                        Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.download))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { updateAvailableTag = null }) {
+                        Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.cancel))
+                    }
+                }
+            )
+        }
+    }
+
+    if (showAppLanguageDialog) {
+        var languageSearchQuery by remember { mutableStateOf("") }
+        val normalizedCurrentLanguage = remember(currentAppLanguage) {
+            AppLanguageManager.normalizeLanguageTag(currentAppLanguage)
+        }
+        val filteredLanguages = remember(languageSearchQuery, appLanguageOptions) {
+            if (languageSearchQuery.isBlank()) {
+                appLanguageOptions
+            } else {
+                appLanguageOptions.filter { option ->
+                    option.nativeName.contains(languageSearchQuery, ignoreCase = true) ||
+                        option.localizedName.contains(languageSearchQuery, ignoreCase = true) ||
+                        option.tag.contains(languageSearchQuery, ignoreCase = true)
+                }
+            }
+        }
+        AlertDialog(
+            onDismissRequest = { showAppLanguageDialog = false },
+            title = { Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_language_dialog_title)) },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = languageSearchQuery,
+                        onValueChange = { languageSearchQuery = it },
+                        placeholder = { Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.search_hint)) },
+                        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    LazyColumn(Modifier.heightIn(max = 320.dp)) {
+                        item {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            playerPreferences.setAppLanguage(AppLanguageManager.SYSTEM_DEFAULT)
+                                            AppLanguageManager.saveLanguageTag(context, AppLanguageManager.SYSTEM_DEFAULT)
+                                            showAppLanguageDialog = false
+                                            AppLanguageManager.activityContext(context)?.recreate()
+                                        }
+                                    }
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = normalizedCurrentLanguage == AppLanguageManager.SYSTEM_DEFAULT,
+                                    onClick = null
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Column {
+                                    Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_language_system_default))
+                                    Text(
+                                        text = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_language_subtitle),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                        items(filteredLanguages.size) { index ->
+                            val option = filteredLanguages[index]
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            playerPreferences.setAppLanguage(option.tag)
+                                            AppLanguageManager.saveLanguageTag(context, option.tag)
+                                            showAppLanguageDialog = false
+                                            AppLanguageManager.activityContext(context)?.recreate()
+                                        }
+                                    }
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(selected = normalizedCurrentLanguage == option.tag, onClick = null)
+                                Spacer(Modifier.width(8.dp))
+                                Column {
+                                    Text(option.nativeName)
+                                    if (option.localizedName != option.nativeName) {
+                                        Text(
+                                            text = option.localizedName,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showAppLanguageDialog = false }) {
+                    Text(androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.cancel))
+                }
+            }
+        )
+    }
 
     // Region Selection Dialog
     if (showRegionDialog) {
@@ -1039,6 +1246,7 @@ private fun getThemeNameRes(theme: ThemeMode): Int {
         ThemeMode.SYSTEM -> io.github.aedev.flow.R.string.theme_name_system_default
         ThemeMode.MONOCHROME -> io.github.aedev.flow.R.string.theme_name_monochrome
         ThemeMode.CUSTOM -> io.github.aedev.flow.R.string.theme_name_custom
+        ThemeMode.MATERIAL_YOU -> io.github.aedev.flow.R.string.theme_name_material_you
     }
 }
 

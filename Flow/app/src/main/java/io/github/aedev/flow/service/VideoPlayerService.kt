@@ -24,8 +24,12 @@ import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.data.model.Video
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
+import android.app.ActivityManager
+import android.content.ComponentCallbacks2
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.net.wifi.WifiManager
+import android.os.Process
 import android.os.PowerManager
 
 /**
@@ -41,6 +45,8 @@ class VideoPlayerService : Service() {
     
     private var wakeLock: PowerManager.WakeLock? = null
     private var wifiLock: WifiManager.WifiLock? = null
+    private var hasStartedForeground = false
+    private var isPlaybackActive = false
 
     /**
      * Coroutine job that releases WakeLock/WifiLock after a 30-second grace period.
@@ -59,6 +65,7 @@ class VideoPlayerService : Service() {
         private const val NOTIFICATION_ID = 1002
         private const val CHANNEL_ID = "video_playback_channel"
         private const val CHANNEL_NAME = "Video Playback"
+        private const val NOTIFICATION_ART_MAX_PX = 512
         
         const val ACTION_PLAY_PAUSE = "io.github.aedev.flow.video.ACTION_PLAY_PAUSE"
         const val ACTION_NEXT = "io.github.aedev.flow.video.ACTION_NEXT"
@@ -100,7 +107,11 @@ class VideoPlayerService : Service() {
             )
             setCallback(object : MediaSessionCompat.Callback() {
                 override fun onPlay() {
-                    EnhancedPlayerManager.getInstance().play()
+                    if (EnhancedPlayerManager.getInstance().playerState.value.hasEnded) {
+                        EnhancedPlayerManager.getInstance().replay()
+                    } else {
+                        EnhancedPlayerManager.getInstance().play()
+                    }
                 }
                 
                 override fun onPause() {
@@ -171,61 +182,90 @@ class VideoPlayerService : Service() {
         serviceScope.launch {
             EnhancedPlayerManager.getInstance().playerState.collectLatest { state ->
                 isPlaying = state.isPlaying
-                val isPlaybackActive = state.isPlaying || state.isBuffering
-                
-                if (isPlaybackActive) {
-                    lockReleaseJob?.cancel()
-                    lockReleaseJob = null
-                    acquireLocks()
-                } else {
-                    lockReleaseJob?.cancel()
-                    lockReleaseJob = serviceScope.launch {
-                        delay(30_000L)
-                        releaseLocks()
+                isPlaybackActive = state.isPlaying || state.isBuffering || state.playWhenReady
+
+                val globalVideo = GlobalPlayerState.currentVideo.value
+                if (globalVideo != null) {
+                    val incoming = Video(
+                        id = globalVideo.id,
+                        title = globalVideo.title,
+                        channelName = globalVideo.channelName,
+                        channelId = globalVideo.channelId,
+                        thumbnailUrl = globalVideo.thumbnailUrl,
+                        duration = globalVideo.duration,
+                        viewCount = globalVideo.viewCount,
+                        uploadDate = globalVideo.uploadDate
+                    )
+                    val merged = mergeVideoMetadata(currentVideo, incoming)
+                    val thumbnailChanged = merged.thumbnailUrl != currentVideo?.thumbnailUrl
+                    currentVideo = merged
+                    if (thumbnailChanged) {
+                        thumbnailLoadJob?.cancel()
+                        thumbnailLoadJob = null
+                        cachedThumbnailUrl = null
+                        cachedThumbnailBitmap = null
                     }
                 }
+
+                updateLocks(isPlaybackActive)
                 
                 updatePlaybackState(state.isPlaying, EnhancedPlayerManager.getInstance().getCurrentPosition())
-                
-                // Stop service if playback ended
-                if (state.hasEnded) {
-                    stopPlayback()
-                }
-                
+
                 updateNotification()
             }
         }
     }
     
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && intent != null) {
-            try {
-                val title = intent.getStringExtra(EXTRA_VIDEO_TITLE)
-                val channel = intent.getStringExtra(EXTRA_VIDEO_CHANNEL)
-                startForeground(NOTIFICATION_ID, createPlaceholderNotification(title, channel))
-            } catch (e: Exception) {
-                Log.w("VideoPlayerService", "Immediate foreground start failed", e)
-            }
+        val requestedVideoId = intent?.getStringExtra(EXTRA_VIDEO_ID)
+        val requestedTitle = intent?.getStringExtra(EXTRA_VIDEO_TITLE)
+        val requestedChannel = intent?.getStringExtra(EXTRA_VIDEO_CHANNEL)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !hasStartedForeground) {
+            val started = startForegroundSafely(
+                createPlaceholderNotification(requestedTitle, requestedChannel),
+                startId
+            )
+            if (!started) return START_NOT_STICKY
         }
-        
+
+        intent?.let { handleIntent(it) }
+        if (intent?.action == ACTION_STOP || intent?.action == ACTION_CLOSE) {
+            return START_NOT_STICKY
+        }
+        EnhancedPlayerManager.getInstance().playerState.value.let { state ->
+            isPlaying = state.isPlaying
+            isPlaybackActive = state.isPlaying || state.isBuffering || state.playWhenReady
+            updateLocks(isPlaybackActive)
+        }
+
         // Re-assert this session as the most recently active one whenever a new video
         // is started. Toggling isActive forces the system to re-register the session
         // timestamp so it beats Media3MusicService in media-button routing priority.
-        if (intent?.getStringExtra(EXTRA_VIDEO_ID) != null) {
+        if (requestedVideoId != null) {
             mediaSession.isActive = false
             mediaSession.isActive = true
         }
 
-        intent?.let { handleIntent(it) }
         MediaButtonReceiver.handleIntent(mediaSession, intent)
 
-        return START_NOT_STICKY
+        return START_STICKY
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN && isPlaybackActive) {
+            updateLocks(true)
+            updateNotification()
+        }
     }
     
     private fun handleIntent(intent: Intent) {
         when (intent.action) {
             ACTION_PLAY_PAUSE -> {
-                if (isPlaying) {
+                if (EnhancedPlayerManager.getInstance().playerState.value.hasEnded) {
+                    EnhancedPlayerManager.getInstance().replay()
+                } else if (isPlaying) {
                     EnhancedPlayerManager.getInstance().pause()
                 } else {
                     EnhancedPlayerManager.getInstance().play()
@@ -245,10 +285,10 @@ class VideoPlayerService : Service() {
                 val channel = intent.getStringExtra(EXTRA_VIDEO_CHANNEL)
                 val thumbnail = intent.getStringExtra(EXTRA_VIDEO_THUMBNAIL)
                 
-                if (videoId != null && title != null) {
-                    currentVideo = Video(
+                if (videoId != null) {
+                    val incoming = Video(
                         id = videoId,
-                        title = title,
+                        title = title.orEmpty(),
                         channelName = channel ?: "",
                         channelId = "",
                         thumbnailUrl = thumbnail ?: "",
@@ -256,8 +296,11 @@ class VideoPlayerService : Service() {
                         viewCount = 0L,
                         uploadDate = ""
                     )
-                    if (cachedThumbnailUrl != thumbnail) {
-                        cachedThumbnailUrl = thumbnail
+                    val merged = mergeVideoMetadata(currentVideo, incoming)
+                    val thumbnailChanged = merged.thumbnailUrl != currentVideo?.thumbnailUrl
+                    currentVideo = merged
+                    if (thumbnailChanged) {
+                        cachedThumbnailUrl = merged.thumbnailUrl
                         cachedThumbnailBitmap = null
                         thumbnailLoadJob?.cancel()
                         thumbnailLoadJob = null
@@ -278,10 +321,18 @@ class VideoPlayerService : Service() {
      * and the service was not started in a sticky fashion.
      */
     override fun onTaskRemoved(rootIntent: Intent?) {
-        if (isPlaying) {
+        if (GlobalPlayerState.isInPipMode.value) {
+            GlobalPlayerState.requestDismiss()
+            stopPlayback()
+            return
+        }
+
+        if (isPlaybackActive) {
+            updateLocks(true)
             updateNotification()
         }
     }
+    private var isStoppingPlayback = false
     
     override fun onDestroy() {
         Log.d("VideoPlayerService", "onDestroy() called")
@@ -289,7 +340,7 @@ class VideoPlayerService : Service() {
         lockReleaseJob = null
         thumbnailLoadJob?.cancel()
         thumbnailLoadJob = null
-        stopPlayback()
+        teardownPlaybackUi()
         releaseLocks()
         mediaSession.isActive = false
         mediaSession.release()
@@ -357,8 +408,38 @@ class VideoPlayerService : Service() {
         return builder.build()
     }
 
+    private fun mergeVideoMetadata(existing: Video?, incoming: Video): Video {
+        if (existing == null || existing.id != incoming.id) return incoming.sanitizedForNotification()
+
+        return existing.copy(
+            title = incoming.title.takeIf { it.isUsefulTitle() } ?: existing.title,
+            channelName = incoming.channelName.takeIf { it.isUsefulText() } ?: existing.channelName,
+            channelId = incoming.channelId.takeIf { it.isUsefulText() } ?: existing.channelId,
+            thumbnailUrl = incoming.thumbnailUrl.takeIf { it.isUsefulText() } ?: existing.thumbnailUrl,
+            duration = incoming.duration.takeIf { it > 0 } ?: existing.duration,
+            viewCount = incoming.viewCount.takeIf { it > 0L } ?: existing.viewCount,
+            uploadDate = incoming.uploadDate.takeIf { it.isUsefulText() } ?: existing.uploadDate,
+            description = incoming.description.takeIf { it.isUsefulText() } ?: existing.description,
+            channelThumbnailUrl = incoming.channelThumbnailUrl.takeIf { it.isUsefulText() } ?: existing.channelThumbnailUrl,
+            tags = incoming.tags.takeIf { it.isNotEmpty() } ?: existing.tags
+        ).sanitizedForNotification()
+    }
+
+    private fun Video.sanitizedForNotification(): Video = copy(
+        title = title.takeIf { it.isUsefulTitle() } ?: "Flow Player",
+        channelName = channelName.takeIf { it.isUsefulText() } ?: "Preparing playback..."
+    )
+
+    private fun String?.isUsefulText(): Boolean = !this.isNullOrBlank()
+
+    private fun String?.isUsefulTitle(): Boolean {
+        val value = this?.trim().orEmpty()
+        if (value.isBlank()) return false
+        return value !in setOf("Loading...", "Loading…", "Playing…", "Preparing playback...", "Flow Player")
+    }
+
     /**
-     * Build candidate thumbnail URLs in descending resolution order.
+     * Build candidate thumbnail URLs for notification artwork.
      * Extracts the video ID so each URL is a clean, predictable path.
      */
     private fun buildThumbnailCandidates(originalUrl: String): List<String> {
@@ -367,9 +448,10 @@ class VideoPlayerService : Service() {
             val videoId = Regex("(?:vi|vi_webp)/([a-zA-Z0-9_-]+)/").find(originalUrl)
                 ?.groupValues?.getOrNull(1)
             if (videoId != null) {
-                candidates.add("https://i.ytimg.com/vi/$videoId/maxresdefault.jpg") // 1280×720
-                candidates.add("https://i.ytimg.com/vi/$videoId/sddefault.jpg")     // 640×480
+                candidates.add("https://i.ytimg.com/vi/$videoId/hq720.jpg")
                 candidates.add("https://i.ytimg.com/vi/$videoId/hqdefault.jpg")     // 480×360
+                candidates.add("https://i.ytimg.com/vi/$videoId/mqdefault.jpg")     // 320×180
+                candidates.add("https://i.ytimg.com/vi/$videoId/default.jpg")       // 120×90
             }
         }
         if (originalUrl !in candidates) candidates.add(originalUrl)
@@ -377,36 +459,35 @@ class VideoPlayerService : Service() {
     }
 
     /**
-     * Load the best available thumbnail via Coil (proper HTTP headers, disk cache).
-     * Falls back down the resolution ladder on any failure.
-     * Scales the result up to at least [minPx] so FHD+ notification panels
-     * don't upscale a tiny bitmap and look blurry.
+     * Load notification artwork via Coil (proper HTTP headers, disk cache).
+     * Falls back down the resolution ladder on any failure and normalizes
+     * dimensions so OEM SystemUI code paths don't silently drop oversized bitmaps.
      */
     private suspend fun loadBestThumbnail(originalUrl: String): Bitmap? = withContext(Dispatchers.IO) {
         for (url in buildThumbnailCandidates(originalUrl)) {
             val request = ImageRequest.Builder(applicationContext)
                 .data(url)
                 .allowHardware(false)
+                .size(NOTIFICATION_ART_MAX_PX)
                 .build()
             val bitmap = when (val result = applicationContext.imageLoader.execute(request)) {
                 is coil3.request.SuccessResult -> (result.image.asDrawable(applicationContext.resources) as? BitmapDrawable)?.bitmap
                 else -> null
             }
-            if (bitmap != null) return@withContext ensureMinSize(bitmap, 512)
+            if (bitmap != null) return@withContext resizeForNotification(bitmap)
         }
         null
     }
 
     /**
-     * Scale [bitmap] up so its shorter side is at least [minPx] pixels.
-     * Uses bilinear filtering to avoid blocky upscaling artefacts.
-     * Returns the original unchanged if it's already large enough.
+     * Keep notification artwork within a safe size for binder transport and OEM SystemUI.
      */
-    private fun ensureMinSize(bitmap: Bitmap, minPx: Int): Bitmap {
+    private fun resizeForNotification(bitmap: Bitmap, maxPx: Int = NOTIFICATION_ART_MAX_PX): Bitmap {
         val w = bitmap.width
         val h = bitmap.height
-        if (w >= minPx && h >= minPx) return bitmap
-        val scale = minPx.toFloat() / minOf(w, h)
+        val longestSide = maxOf(w, h)
+        if (longestSide <= maxPx) return bitmap
+        val scale = maxPx.toFloat() / longestSide.toFloat()
         val newW = (w * scale).toInt()
         val newH = (h * scale).toInt()
         return Bitmap.createScaledBitmap(bitmap, newW, newH, true)
@@ -496,6 +577,7 @@ class VideoPlayerService : Service() {
             .setDeleteIntent(closeIntent)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(isPlaybackActive)
             .setOnlyAlertOnce(true)
             .setShowWhen(false)
              // Add Previous Action
@@ -525,11 +607,45 @@ class VideoPlayerService : Service() {
                     .setShowActionsInCompactView(0, 1, 2)
             )
             .build()
-        
-        startForeground(NOTIFICATION_ID, notification)
+
+        if (!hasStartedForeground && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundSafely(notification)
+        } else {
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        }
+    }
+
+    private fun startForegroundSafely(notification: Notification, startId: Int? = null): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                )
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+            hasStartedForeground = true
+            true
+        } catch (e: Exception) {
+            Log.e("VideoPlayerService", "Failed to promote video service to foreground", e)
+            if (startId != null) {
+                stopSelf(startId)
+            } else {
+                stopSelf()
+            }
+            false
+        }
     }
 
     private fun createPlaceholderNotification(title: String? = null, channel: String? = null): Notification {
+        val closeIntent = PendingIntent.getService(
+            this,
+            5,
+            Intent(this, VideoPlayerService::class.java).apply { action = ACTION_CLOSE },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title?.takeIf { it.isNotEmpty() } ?: "Flow Player")
             .setContentText(channel?.takeIf { it.isNotEmpty() } ?: "Preparing playback...")
@@ -537,6 +653,8 @@ class VideoPlayerService : Service() {
             .setSmallIcon(R.drawable.ic_notification_logo)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
+            .setDeleteIntent(closeIntent)
+            .addAction(R.drawable.ic_close, "Close", closeIntent)
             .build()
     }
     
@@ -548,18 +666,69 @@ class VideoPlayerService : Service() {
             wifiLock?.acquire()
         }
     }
-    
-    private fun releaseLocks() {
+
+    private fun updateLocks(isPlaybackActive: Boolean) {
+        lockReleaseJob?.cancel()
+        lockReleaseJob = null
+
+        if (isPlaybackActive) {
+            acquireLocks()
+            return
+        }
+
+        lockReleaseJob = serviceScope.launch {
+            delay(30_000L)
+            releaseLocks()
+        }
+    }
+
+    private fun releaseWakeLock() {
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }
+    }
+
+    private fun releaseWifiLock() {
         if (wifiLock?.isHeld == true) {
             wifiLock?.release()
         }
     }
+
+    private fun releaseLocks() {
+        releaseWakeLock()
+        releaseWifiLock()
+    }
+
+    private fun isAppInForeground(): Boolean {
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager ?: return false
+        val runningProcess = activityManager.runningAppProcesses?.firstOrNull { it.pid == Process.myPid() }
+        return when (runningProcess?.importance) {
+            ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND,
+            ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE -> true
+            else -> false
+        }
+    }
+
+    private fun teardownPlaybackUi() {
+        currentVideo = null
+        cachedThumbnailUrl = null
+        cachedThumbnailBitmap = null
+        mediaSession.setPlaybackState(
+            PlaybackStateCompat.Builder()
+                .setState(PlaybackStateCompat.STATE_STOPPED, 0L, 0f)
+                .build()
+        )
+        mediaSession.setMetadata(null)
+        mediaSession.isActive = false
+        notificationManager.cancel(NOTIFICATION_ID)
+    }
     
     private fun stopPlayback() {
+        if (isStoppingPlayback) return
+        isStoppingPlayback = true
+        teardownPlaybackUi()
         EnhancedPlayerManager.getInstance().stop()
+        hasStartedForeground = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {

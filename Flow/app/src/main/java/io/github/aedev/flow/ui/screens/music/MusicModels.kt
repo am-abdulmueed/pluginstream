@@ -1,5 +1,7 @@
 package io.github.aedev.flow.ui.screens.music
 
+import io.github.aedev.flow.utils.ThumbnailUrlResolver
+
 enum class MusicItemType { SONG, ALBUM, PLAYLIST, ARTIST }
 
 data class MusicTrack(
@@ -13,18 +15,31 @@ data class MusicTrack(
     val album: String = "",
     val channelId: String = "",
     val isExplicit: Boolean? = false,
+    val isVideoSong: Boolean = false,
     val albumId: String? = null,
     val artists: List<MusicArtist> = emptyList(),
     val itemType: MusicItemType = MusicItemType.SONG
 ) {
     val highResThumbnailUrl: String
-        get() = thumbnailUrl.replace(Regex("w\\d+-h\\d+"), "w1000-h1000")
-            .replace(Regex("(hqdefault|mqdefault|sddefault|default)\\.jpg"), "hq720.jpg")
+        get() = ThumbnailUrlResolver.resolveMusicThumbnail(videoId, thumbnailUrl, 1080)
+
+    val listThumbnailUrl: String
+        get() = ThumbnailUrlResolver.resolveMusicThumbnail(videoId, thumbnailUrl, 256)
 }
 
 data class MusicArtist(
     val name: String,
     val id: String? = null
+)
+
+data class DailyDiscoverItem(
+    val seed: MusicTrack,
+    val recommendation: MusicTrack
+)
+
+data class CommunityMusicPlaylist(
+    val playlist: MusicPlaylist,
+    val tracks: List<MusicTrack>
 )
 
 data class MusicPlaylist(

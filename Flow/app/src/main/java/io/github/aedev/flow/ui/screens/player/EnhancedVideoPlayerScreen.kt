@@ -57,6 +57,8 @@ fun EnhancedVideoPlayerScreen(
     
     val preferences = remember { PlayerPreferences(context) }
     val showRelatedVideos by preferences.showRelatedVideos.collectAsState(initial = true)
+    val commentsEnabled by preferences.commentsEnabled.collectAsState(initial = true)
+    val showCommentsPreview by preferences.commentsPreviewEnabled.collectAsState(initial = true)
     val relatedCardStyle by preferences.playerRelatedCardStyle.collectAsState(initial = PlayerRelatedCardStyle.FULL_WIDTH)
     Box(
         modifier = Modifier
@@ -93,6 +95,8 @@ fun EnhancedVideoPlayerScreen(
                             viewModel = viewModel,
                             screenState = screenState,
                             comments = comments,
+                            commentsEnabled = commentsEnabled,
+                            showCommentsPreview = showCommentsPreview,
                             context = context,
                             scope = scope,
                             snackbarHostState = snackbarHostState,
@@ -107,6 +111,7 @@ fun EnhancedVideoPlayerScreen(
                             relatedVideosContent(
                                 relatedVideos = uiState.relatedVideos,
                                 onVideoClick = onVideoClick,
+                                onChannelClick = onChannelClick,
                                 cardStyle = relatedCardStyle
                             )
                         }
@@ -127,6 +132,8 @@ fun EnhancedVideoPlayerScreen(
                                     viewModel = viewModel,
                                     screenState = screenState,
                                     comments = comments,
+                                    commentsEnabled = commentsEnabled,
+                                    showCommentsPreview = showCommentsPreview,
                                     context = context,
                                     scope = scope,
                                     snackbarHostState = snackbarHostState,
@@ -139,12 +146,14 @@ fun EnhancedVideoPlayerScreen(
                                         relatedVideos = uiState.relatedVideos,
                                         columns = 2,
                                         onVideoClick = onVideoClick,
+                                        onChannelClick = onChannelClick,
                                         cardStyle = relatedCardStyle
                                     )
                                 } else {
                                     relatedVideosContent(
                                         relatedVideos = uiState.relatedVideos,
                                         onVideoClick = onVideoClick,
+                                        onChannelClick = onChannelClick,
                                         cardStyle = relatedCardStyle
                                     )
                                 }
@@ -159,7 +168,7 @@ fun EnhancedVideoPlayerScreen(
             val queueVideos by EnhancedPlayerManager.getInstance().queueVideos.collectAsStateWithLifecycle(initialValue = emptyList())
             val currentQueueIndex by EnhancedPlayerManager.getInstance().currentQueueIndexState.collectAsStateWithLifecycle(initialValue = -1)
 
-            if (playerState.queueTitle != null && queueVideos.isNotEmpty()) {
+            if ((playerState.queueTitle != null && queueVideos.isNotEmpty()) || (playerState.queueTitle == null && queueVideos.size > 1)) {
                 val nextVideoTitle = if (currentQueueIndex < queueVideos.size - 1) {
                     queueVideos[currentQueueIndex + 1].title
                 } else {

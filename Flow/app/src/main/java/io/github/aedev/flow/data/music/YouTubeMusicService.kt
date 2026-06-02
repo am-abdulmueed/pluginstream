@@ -1,10 +1,14 @@
 package io.github.aedev.flow.data.music
 
 import android.util.Log
+import io.github.aedev.flow.FlowApplication
+import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.ui.screens.music.MusicTrack
 import io.github.aedev.flow.innertube.YouTube
 import io.github.aedev.flow.innertube.models.SongItem
+import io.github.aedev.flow.player.stream.AudioStreamSelector
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
@@ -237,9 +241,16 @@ object YouTubeMusicService {
     suspend fun getBestAudioStream(videoId: String): Pair<org.schabi.newpipe.extractor.stream.AudioStream, Long>? = withContext(Dispatchers.IO) {
         try {
             val streamInfo = getStreamInfo(videoId) ?: return@withContext null
-            val audioStream = streamInfo.audioStreams
-                ?.filter { !it.url.isNullOrEmpty() }
-                ?.maxByOrNull { it.averageBitrate }
+            val preferences = PlayerPreferences(FlowApplication.appContext)
+            val preferredAudioLanguage = preferences.preferredAudioLanguage.first()
+            val preferredMusicAudioQuality = preferences.musicAudioQuality.first()
+            val audioStream = AudioStreamSelector.selectPreferredAudioStream(
+                streams = streamInfo.audioStreams
+                    ?.filter { !it.url.isNullOrEmpty() }
+                    ?: emptyList(),
+                preferredAudioLanguage = preferredAudioLanguage,
+                preferredMusicAudioQuality = preferredMusicAudioQuality
+            )
             
             if (audioStream != null) {
                 Pair(audioStream, streamInfo.duration)
@@ -256,9 +267,16 @@ object YouTubeMusicService {
     suspend fun getAudioUrl(videoId: String): String? = withContext(Dispatchers.IO) {
         try {
             val streamInfo = getStreamInfo(videoId)
-            val audioStream = streamInfo?.audioStreams
-                ?.filter { !it.url.isNullOrEmpty() }
-                ?.maxByOrNull { it.averageBitrate }
+            val preferences = PlayerPreferences(FlowApplication.appContext)
+            val preferredAudioLanguage = preferences.preferredAudioLanguage.first()
+            val preferredMusicAudioQuality = preferences.musicAudioQuality.first()
+            val audioStream = AudioStreamSelector.selectPreferredAudioStream(
+                streams = streamInfo?.audioStreams
+                    ?.filter { !it.url.isNullOrEmpty() }
+                    ?: emptyList(),
+                preferredAudioLanguage = preferredAudioLanguage,
+                preferredMusicAudioQuality = preferredMusicAudioQuality
+            )
             
             audioStream?.url
         } catch (e: Exception) {
@@ -410,18 +428,25 @@ object YouTubeMusicService {
             views = 0,
             album = item.album?.name ?: "",
             channelId = item.artists.firstOrNull()?.id ?: "",
-            isExplicit = item.explicit
+            isExplicit = item.explicit,
+            isVideoSong = item.isVideoSong
         )
     }
 
     /**
      * Get related/similar music tracks
      */
-    suspend fun getRelatedMusic(videoId: String, limit: Int = 20): List<MusicTrack> = withContext(Dispatchers.IO) {
+    suspend fun getRelatedMusic(videoId: String, limit: Int = 20, audioOnly: Boolean = false): List<MusicTrack> = withContext(Dispatchers.IO) {
         try {
-            val innertubeRelated = io.github.aedev.flow.data.newmusic.InnertubeMusicService.getRelatedMusic(videoId)
+            val innertubeRelated = io.github.aedev.flow.data.newmusic.InnertubeMusicService.getRelatedMusic(videoId, audioOnly)
             if (innertubeRelated.isNotEmpty()) {
-                return@withContext innertubeRelated.take(limit)
+                return@withContext innertubeRelated
+                    .filterNot { audioOnly && it.isVideoSong }
+                    .take(limit)
+            }
+
+            if (audioOnly) {
+                return@withContext emptyList()
             }
             
             val streamInfo = getStreamInfo(videoId)
@@ -429,7 +454,8 @@ object YouTubeMusicService {
                 ?.filterIsInstance<StreamInfoItem>()
                 ?.filter { isMusicContent(it) }
                 ?.take(limit)
-                ?.mapNotNull { convertToMusicTrack(it) } ?: emptyList()
+                ?.mapNotNull { convertToMusicTrack(it) }
+                ?.filterNot { audioOnly && it.isVideoSong } ?: emptyList()
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching related music", e)
             emptyList()
@@ -506,7 +532,7 @@ object YouTubeMusicService {
                         title = item.name,
                         thumbnailUrl = item.thumbnails.maxByOrNull { it.height }?.url ?: "",
                         trackCount = item.streamCount.toInt(),
-                        author = item.uploaderName
+                        author = item.uploaderName ?: "Unknown Artist"
                     )
                 }
         } catch (e: Exception) {

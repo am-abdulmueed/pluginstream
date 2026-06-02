@@ -2,8 +2,10 @@ package io.github.aedev.flow.data.download
 
 import android.content.Context
 import android.util.Log
+import androidx.media3.common.C
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSink
 import androidx.media3.datasource.cache.CacheDataSource
@@ -15,7 +17,7 @@ import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import io.github.aedev.flow.service.ExoDownloadService
 import io.github.aedev.flow.di.DownloadCache
 import io.github.aedev.flow.di.PlayerCache
-import io.github.aedev.flow.innertube.YouTube
+import io.github.aedev.flow.network.AppProxyManager
 import io.github.aedev.flow.utils.MusicPlayerUtils
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +44,7 @@ class DownloadUtil @Inject constructor(
     companion object {
         private const val TAG = "DownloadUtil"
         private const val CHUNK_LENGTH = 512 * 1024L // 512KB for cache check
+        private val URL_RANGE_PARAM_REGEX = Regex("""([?&])range=\d+-\d*(&?)""")
     }
 
     private val songUrlCache = java.util.concurrent.ConcurrentHashMap<String, Triple<String, String, Long>>()
@@ -50,39 +53,35 @@ class DownloadUtil @Inject constructor(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val downloads = MutableStateFlow<Map<String, Download>>(emptyMap())
 
-    private val okHttpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .proxy(YouTube.proxy)
-            .proxyAuthenticator { _, response ->
-                YouTube.proxyAuth?.let { auth ->
-                    response.request.newBuilder()
-                        .header("Proxy-Authorization", auth)
-                        .build()
-                } ?: response.request
-            }
+    private val okHttpClient: OkHttpClient
+        get() = AppProxyManager.applyTo(OkHttpClient.Builder())
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .build()
-    }
 
     /**
      * DataSource factory for DOWNLOADS - writes to downloadCache.
      * Used by DownloadManager for downloading tracks for offline playback.
      */
-    val dataSourceFactory: ResolvingDataSource.Factory = ResolvingDataSource.Factory(
-        CacheDataSource.Factory()
-            .setCache(downloadCache)
-            .setCacheWriteDataSinkFactory(CacheDataSink.Factory().setCache(downloadCache))
-            .setUpstreamDataSourceFactory(OkHttpDataSource.Factory(okHttpClient))
-            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-    ) { dataSpec ->
-        resolveDataSpec(dataSpec, "Download")
-    }
+    val dataSourceFactory: ResolvingDataSource.Factory
+        get() = ResolvingDataSource.Factory(
+            CacheDataSource.Factory()
+                .setCache(downloadCache)
+                .setCacheWriteDataSinkFactory(CacheDataSink.Factory().setCache(downloadCache))
+                .setUpstreamDataSourceFactory(OkHttpDataSource.Factory(okHttpClient))
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+        ) { dataSpec ->
+            resolveDataSpec(dataSpec, "Download")
+        }
 
     /**
      * Resolve DataSpec by looking up cached URL or fetching from network.
      */
     private fun resolveDataSpec(dataSpec: DataSpec, source: String): DataSpec {
+        if (dataSpec.uri.scheme in setOf("file", "content", "android.resource")) {
+            return dataSpec
+        }
+
         val mediaId = dataSpec.key ?: error("No media id (key) in dataSpec")
 
         Log.d(TAG, "[$source] Resolving for $mediaId")
@@ -149,13 +148,19 @@ class DownloadUtil @Inject constructor(
 
         val playerCacheFactory = CacheDataSource.Factory()
             .setCache(playerCache)
-            .setUpstreamDataSourceFactory(OkHttpDataSource.Factory(okHttpClient))
+            .setUpstreamDataSourceFactory(
+                DefaultDataSource.Factory(context, OkHttpDataSource.Factory(okHttpClient))
+            )
             .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
 
         val cachedDataSourceFactory = downloadCacheFactory
             .setUpstreamDataSourceFactory(playerCacheFactory)
 
         return ResolvingDataSource.Factory(cachedDataSourceFactory) { dataSpec ->
+            if (dataSpec.uri.scheme in setOf("file", "content", "android.resource")) {
+                return@Factory dataSpec
+            }
+
             val mediaId = dataSpec.key ?: error("No media id (key) in dataSpec")
 
             try {
@@ -179,11 +184,7 @@ class DownloadUtil @Inject constructor(
 
             songUrlCache[mediaId]?.takeIf { it.third > System.currentTimeMillis() }?.let { (url, ua, _) ->
                 Log.d(TAG, "[Player] Using cached URL for $mediaId")
-                return@Factory dataSpec.buildUpon()
-                    .setUri(url.toUri())
-                    .setHttpRequestHeaders(mapOf("User-Agent" to ua))
-                    .setLength(CHUNK_LENGTH)
-                    .build()
+                return@Factory buildPlaybackDataSpec(dataSpec, url, ua)
             }
 
             val playbackData = runBlocking(Dispatchers.IO) {
@@ -197,12 +198,36 @@ class DownloadUtil @Inject constructor(
             songUrlCache[mediaId] = Triple(streamUrl, userAgent, expiration)
             Log.d(TAG, "[Player] Resolved $mediaId via ${playbackData.usedClient.clientName}")
 
-            dataSpec.buildUpon()
-                .setUri(streamUrl.toUri())
-                .setHttpRequestHeaders(mapOf("User-Agent" to userAgent))
-                .setLength(CHUNK_LENGTH)
-                .build()
+            buildPlaybackDataSpec(dataSpec, streamUrl, userAgent)
         }
+    }
+
+    private fun buildPlaybackDataSpec(dataSpec: DataSpec, streamUrl: String, userAgent: String): DataSpec {
+        val requestLength = when {
+            dataSpec.length > 0 -> dataSpec.length
+            dataSpec.length == C.LENGTH_UNSET.toLong() -> CHUNK_LENGTH
+            else -> CHUNK_LENGTH
+        }
+
+        return dataSpec.buildUpon()
+            .setUri(removeRangeParameter(streamUrl).toUri())
+            .setHttpRequestHeaders(mapOf("User-Agent" to userAgent))
+            .setLength(requestLength)
+            .build()
+    }
+
+    private fun removeRangeParameter(url: String): String {
+        val withoutRange = URL_RANGE_PARAM_REGEX.replace(url) { match ->
+            val prefix = match.groupValues[1]
+            val hasTrailingParam = match.groupValues[2].isNotEmpty()
+            when {
+                prefix == "?" && hasTrailingParam -> "?"
+                prefix == "?" -> ""
+                hasTrailingParam -> "&"
+                else -> ""
+            }
+        }
+        return withoutRange.trimEnd('?', '&')
     }
 
     /**

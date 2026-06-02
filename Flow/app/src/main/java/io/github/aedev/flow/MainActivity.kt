@@ -22,13 +22,14 @@ import io.github.aedev.flow.ui.FlowApp
 import io.github.aedev.flow.ui.theme.FlowTheme
 import io.github.aedev.flow.ui.theme.ThemeMode
 import io.github.aedev.flow.ui.theme.CustomThemeColors
-// import io.github.aedev.flow.updater.ApkUpdateHelper // Disabled - using as module
+import io.github.aedev.flow.updater.ApkUpdateHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
 import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -38,10 +39,16 @@ import io.github.aedev.flow.ui.screens.CrashReporterScreen
 import io.github.aedev.flow.utils.FlowCrashHandler
 import io.github.aedev.flow.utils.UpdateManager
 import io.github.aedev.flow.utils.UpdateInfo
+import io.github.aedev.flow.network.AppProxyManager
+import io.github.aedev.flow.player.PictureInPictureHelper
 import io.github.aedev.flow.ui.components.UpdateDialog
 import io.github.aedev.flow.BuildConfig
 import androidx.activity.SystemBarStyle
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import io.github.aedev.flow.utils.AppLanguageManager
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -57,8 +64,19 @@ class MainActivity : ComponentActivity() {
     // Cached auto-PiP preference
     private var cachedAutoPipEnabled = false
 
+    // Cached background-play preference
+    private var cachedBackgroundPlayEnabled = false
+
     // Cached shorts background-play preference (default OFF — pause on background)
     private var cachedShortsBackgroundPlay = false
+
+    private var pipDismissCheckJob: Job? = null
+    private var pendingAutoPip = false
+
+    override fun attachBaseContext(newBase: Context) {
+        val selectedLanguage = AppLanguageManager.loadSelectedLanguageTag(newBase)
+        super.attachBaseContext(AppLanguageManager.wrapContext(newBase, selectedLanguage))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // the OS-level splash screen (camouflaged to match Compose splash background)
@@ -78,6 +96,10 @@ class MainActivity : ComponentActivity() {
                 android.graphics.Color.TRANSPARENT
             )
         )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+            window.isStatusBarContrastEnforced = false
+        }
         
         // Initialize global player state
         GlobalPlayerState.initialize(applicationContext)
@@ -87,6 +109,13 @@ class MainActivity : ComponentActivity() {
             io.github.aedev.flow.data.local.PlayerPreferences(applicationContext)
                 .autoPipEnabled
                 .collect { enabled -> cachedAutoPipEnabled = enabled }
+        }
+
+        // Keep background-play preference cached so lifecycle callbacks can read it synchronously
+        lifecycleScope.launch {
+            io.github.aedev.flow.data.local.PlayerPreferences(applicationContext)
+                .backgroundPlayEnabled
+                .collect { enabled -> cachedBackgroundPlayEnabled = enabled }
         }
 
         // Keep shorts background-play preference cached so onStop can read it synchronously
@@ -102,19 +131,25 @@ class MainActivity : ComponentActivity() {
         }
 
         val dataManager = LocalDataManager(applicationContext)
+        val initialThemeMode = runBlocking { dataManager.themeMode.first() }
+        val initialCustomThemeColors = runBlocking { dataManager.customThemeColors.first() }
+        val initialSystemLightThemeMode = runBlocking { dataManager.systemLightThemeMode.first() }
+        val initialSystemDarkThemeMode = runBlocking { dataManager.systemDarkThemeMode.first() }
 
         handleIntent(intent)
 
         
-        // Check for updates - Disabled (using as module in PluginStream)
-        // if (!BuildConfig.DEBUG && BuildConfig.UPDATER_ENABLED) {
-        //     checkForUpdates(dataManager)
-        // }
+        // Check for updates (only in release builds, only in github flavor)
+        if (!BuildConfig.DEBUG && BuildConfig.UPDATER_ENABLED) {
+            checkForUpdates(dataManager)
+        }
 
         setContent {
             val scope = rememberCoroutineScope()
-            var themeMode by remember { mutableStateOf(ThemeMode.LIGHT) }
-            var customThemeColors by remember { mutableStateOf(CustomThemeColors.default()) }
+            var themeMode by remember { mutableStateOf(initialThemeMode) }
+            var customThemeColors by remember { mutableStateOf(initialCustomThemeColors) }
+            var systemLightThemeMode by remember { mutableStateOf(initialSystemLightThemeMode) }
+            var systemDarkThemeMode by remember { mutableStateOf(initialSystemDarkThemeMode) }
             // State to control splash visibility
             var showSplash by remember { mutableStateOf(true) }
 
@@ -127,7 +162,12 @@ class MainActivity : ComponentActivity() {
             }
 
             if (pendingCrashLog != null) {
-                FlowTheme(themeMode = themeMode, customThemeColors = customThemeColors) {
+                FlowTheme(
+                    themeMode = themeMode,
+                    customThemeColors = customThemeColors,
+                    systemLightThemeMode = systemLightThemeMode,
+                    systemDarkThemeMode = systemDarkThemeMode
+                ) {
                     CrashReporterScreen(
                         crashLog = pendingCrashLog!!,
                         onClearAndRestart = {
@@ -141,19 +181,19 @@ class MainActivity : ComponentActivity() {
 
             var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
             
-            // Check for updates ONCE on launch - Disabled (using as module)
-            // LaunchedEffect(Unit) {
-            //     if (BuildConfig.DEBUG || !BuildConfig.UPDATER_ENABLED) return@LaunchedEffect
-            //     val lastCheck = dataManager.lastUpdateCheck.first()
-            //     val currentTime = System.currentTimeMillis()
-            //     if (currentTime - lastCheck < 24 * 60 * 60 * 1000L) return@LaunchedEffect
+            // Check for updates ONCE on launch — skip debug/foss builds, enforce 24h cooldown
+            LaunchedEffect(Unit) {
+                if (BuildConfig.DEBUG || !BuildConfig.UPDATER_ENABLED) return@LaunchedEffect
+                val lastCheck = dataManager.lastUpdateCheck.first()
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - lastCheck < 24 * 60 * 60 * 1000L) return@LaunchedEffect
 
-            //     val info = UpdateManager.checkForUpdate(BuildConfig.VERSION_NAME)
-            //     dataManager.setLastUpdateCheck(currentTime)
-            //     if (info != null && info.isNewer) {
-            //         updateInfo = info
-            //     }
-            // }
+                val info = UpdateManager.checkForUpdate(BuildConfig.VERSION_NAME)
+                dataManager.setLastUpdateCheck(currentTime)
+                if (info != null && info.isNewer) {
+                    updateInfo = info
+                }
+            }
 
             // Load theme preference and keep it reactive
             LaunchedEffect(Unit) {
@@ -167,34 +207,51 @@ class MainActivity : ComponentActivity() {
                     customThemeColors = colors
                 }
             }
+
+            LaunchedEffect(Unit) {
+                dataManager.systemLightThemeMode.collect { mode ->
+                    systemLightThemeMode = mode
+                }
+            }
+
+            LaunchedEffect(Unit) {
+                dataManager.systemDarkThemeMode.collect { mode ->
+                    systemDarkThemeMode = mode
+                }
+            }
             
             // Initialize Flow Neuro Engine
             LaunchedEffect(Unit) {
                 io.github.aedev.flow.data.recommendation.FlowNeuroEngine.initialize(applicationContext)
             }
 
-            FlowTheme(themeMode = themeMode, customThemeColors = customThemeColors) {
-                // Show Dialog Overlay if update exists - Disabled (using as module)
-                // if (BuildConfig.UPDATER_ENABLED && updateInfo != null) {
-                //     UpdateDialog(
-                //         updateInfo = updateInfo!!,
-                //         onDismiss = { updateInfo = null },
-                //         onUpdate = {
-                //             UpdateManager.triggerDownload(context, updateInfo!!.downloadUrl)
-                //             updateInfo = null
-                //         }
-                //     )
-                // }
+            FlowTheme(
+                themeMode = themeMode,
+                customThemeColors = customThemeColors,
+                systemLightThemeMode = systemLightThemeMode,
+                systemDarkThemeMode = systemDarkThemeMode
+            ) {
+                // Show Dialog Overlay if update exists (github flavor only)
+                if (BuildConfig.UPDATER_ENABLED && updateInfo != null) {
+                    UpdateDialog(
+                        updateInfo = updateInfo!!,
+                        onDismiss = { updateInfo = null },
+                        onUpdate = {
+                            UpdateManager.triggerDownload(context, updateInfo!!.downloadUrl)
+                            updateInfo = null
+                        }
+                    )
+                }
 
-                // Handle update from notification - Disabled (using as module)
-                // if (BuildConfig.UPDATER_ENABLED) {
-                //     val pendingUpdate by this@MainActivity.pendingUpdateInfo
-                //     LaunchedEffect(pendingUpdate) {
-                //         if (pendingUpdate != null) {
-                //             updateInfo = pendingUpdate
-                //         }
-                //     }
-                // }
+                // Handle update from notification (github flavor only)
+                if (BuildConfig.UPDATER_ENABLED) {
+                    val pendingUpdate by this@MainActivity.pendingUpdateInfo
+                    LaunchedEffect(pendingUpdate) {
+                        if (pendingUpdate != null) {
+                            updateInfo = pendingUpdate
+                        }
+                    }
+                }
 
                 // Request notification permission for Android 13+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -229,6 +286,8 @@ class MainActivity : ComponentActivity() {
                     FlowApp(
                         currentTheme = themeMode,
                         customThemeColors = customThemeColors,
+                        systemLightThemeMode = systemLightThemeMode,
+                        systemDarkThemeMode = systemDarkThemeMode,
                         onThemeChange = { newTheme ->
                             themeMode = newTheme
                             scope.launch {
@@ -239,6 +298,18 @@ class MainActivity : ComponentActivity() {
                             customThemeColors = colors
                             scope.launch {
                                 dataManager.setCustomThemeColors(colors)
+                            }
+                        },
+                        onSystemLightThemeChange = { newTheme ->
+                            systemLightThemeMode = newTheme
+                            scope.launch {
+                                dataManager.setSystemLightThemeMode(newTheme)
+                            }
+                        },
+                        onSystemDarkThemeChange = { newTheme ->
+                            systemDarkThemeMode = newTheme
+                            scope.launch {
+                                dataManager.setSystemDarkThemeMode(newTheme)
                             }
                         },
                         deeplinkVideoId = deeplinkVideoId,
@@ -262,9 +333,19 @@ class MainActivity : ComponentActivity() {
     }
     
     override fun onDestroy() {
+        val playerManager = io.github.aedev.flow.player.EnhancedPlayerManager.getInstance()
+        val playerState = playerManager.playerState.value
+        val shouldKeepBackgroundPlayback =
+            cachedBackgroundPlayEnabled &&
+                playerState.currentVideoId != null &&
+                (playerState.playWhenReady || playerState.isPlaying || playerState.isBuffering)
+
+        if (shouldKeepBackgroundPlayback) {
+            handOffVideoPlaybackToBackground()
+        } else if (!isChangingConfigurations) {
+            GlobalPlayerState.release()
+        }
         super.onDestroy()
-        // Release player when app is destroyed
-        GlobalPlayerState.release()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -340,10 +421,26 @@ class MainActivity : ComponentActivity() {
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: android.content.res.Configuration) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         GlobalPlayerState.setPipMode(isInPictureInPictureMode)
+        pendingAutoPip = false
+
+        pipDismissCheckJob?.cancel()
+        if (!isInPictureInPictureMode) {
+            pipDismissCheckJob = lifecycleScope.launch {
+                delay(350L)
+                val stillBackgrounded = !lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                if (stillBackgrounded && !isInPictureInPictureMode) {
+                    GlobalPlayerState.requestDismiss()
+                    io.github.aedev.flow.player.EnhancedPlayerManager.getInstance().stop()
+                    io.github.aedev.flow.player.EnhancedPlayerManager.getInstance().stopBackgroundService()
+                }
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        pendingAutoPip = false
+        pipDismissCheckJob?.cancel()
     }
 
     override fun onStop() {
@@ -352,6 +449,22 @@ class MainActivity : ComponentActivity() {
             requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             if (!cachedShortsBackgroundPlay) {
                 io.github.aedev.flow.player.shorts.ShortsPlayerPool.getInstance().pauseAll()
+            }
+
+            if (pendingAutoPip) {
+                lifecycleScope.launch {
+                    delay(800L)
+                    if (
+                        pendingAutoPip &&
+                        !isInPictureInPictureMode &&
+                        !lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                    ) {
+                        pendingAutoPip = false
+                        handleBackgroundPlaybackOnStop()
+                    }
+                }
+            } else {
+                handleBackgroundPlaybackOnStop()
             }
         }
     }
@@ -371,11 +484,67 @@ class MainActivity : ComponentActivity() {
         
         // Only enter PiP for video, not for music (which uses background service)
         if (isVideoPlaying && !isMusicPlaying && cachedAutoPipEnabled) {
-            enterPictureInPictureMode(
-                android.app.PictureInPictureParams.Builder()
-                    .setAspectRatio(android.util.Rational(16, 9))
-                    .build()
+            enterPlayerPictureInPictureMode(
+                aspectRatioWidth = 16,
+                aspectRatioHeight = 9,
+                isPlaying = true
             )
+        }
+    }
+
+    fun enterPlayerPictureInPictureMode(
+        aspectRatioWidth: Int = 16,
+        aspectRatioHeight: Int = 9,
+        isPlaying: Boolean = true
+    ): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
+
+        pendingAutoPip = true
+        val entered = PictureInPictureHelper.enterPipMode(
+            activity = this,
+            aspectRatioWidth = aspectRatioWidth,
+            aspectRatioHeight = aspectRatioHeight,
+            isPlaying = isPlaying,
+            autoEnterEnabled = false
+        )
+        if (!entered) {
+            pendingAutoPip = false
+        }
+        return entered
+    }
+
+    private fun handOffVideoPlaybackToBackground() {
+        val playerManager = io.github.aedev.flow.player.EnhancedPlayerManager.getInstance()
+        val playerState = playerManager.playerState.value
+        if (
+            playerState.currentVideoId != null &&
+            (playerState.playWhenReady || playerState.isPlaying || playerState.isBuffering)
+        ) {
+            val video = GlobalPlayerState.currentVideo.value
+            playerManager.startBackgroundService(
+                videoId = video?.id ?: playerState.currentVideoId,
+                title = video?.title?.ifEmpty { "Playing..." } ?: "Playing...",
+                channel = video?.channelName ?: "",
+                thumbnail = video?.thumbnailUrl ?: ""
+            )
+            playerManager.continueVideoPlaybackInBackground()
+        }
+    }
+
+    private fun handleBackgroundPlaybackOnStop() {
+        val playerManager = io.github.aedev.flow.player.EnhancedPlayerManager.getInstance()
+        val playerState = playerManager.playerState.value
+        val hasActiveVideo =
+            playerState.currentVideoId != null &&
+                (playerState.playWhenReady || playerState.isPlaying || playerState.isBuffering)
+
+        if (!hasActiveVideo) return
+
+        if (cachedBackgroundPlayEnabled) {
+            handOffVideoPlaybackToBackground()
+        } else {
+            playerManager.pause()
+            playerManager.stopBackgroundService()
         }
     }
 
@@ -390,7 +559,7 @@ class MainActivity : ComponentActivity() {
                     return@launch
                 }
 
-                val client = OkHttpClient()
+                val client = AppProxyManager.applyTo(OkHttpClient.Builder()).build()
                 val request = Request.Builder()
                     .url("https://api.github.com/repos/A-EDev/Flow/releases/latest")
                     .header("Accept", "application/vnd.github.v3+json")
@@ -415,7 +584,7 @@ class MainActivity : ComponentActivity() {
                                     .setTitle("Update Available")
                                     .setMessage("A new version of Flow is available ($latestTag). Download the latest APK?")
                                     .setPositiveButton("Download") { _, _ ->
-                                        // ApkUpdateHelper.requestDownload(this@MainActivity, "https://github.com/A-EDev/Flow/releases/latest") // Disabled
+                                        ApkUpdateHelper.requestDownload(this@MainActivity, "https://github.com/A-EDev/Flow/releases/latest")
                                     }
                                     .setNegativeButton("Later", null)
                                     .show()

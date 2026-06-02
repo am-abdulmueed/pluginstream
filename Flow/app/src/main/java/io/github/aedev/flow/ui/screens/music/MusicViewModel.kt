@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.aedev.flow.data.music.MusicCache
+import io.github.aedev.flow.data.music.DownloadManager
 import io.github.aedev.flow.data.music.YouTubeMusicService
 import io.github.aedev.flow.data.recommendation.MusicRecommendationAlgorithm
 import io.github.aedev.flow.data.recommendation.MusicSection
@@ -32,6 +33,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
 import javax.inject.Inject
+import io.github.aedev.flow.data.local.LikedVideosRepository
+import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 
 @HiltViewModel
 class MusicViewModel @Inject constructor(
@@ -39,13 +42,51 @@ class MusicViewModel @Inject constructor(
     private val musicRecommendationAlgorithm: MusicRecommendationAlgorithm,
     private val subscriptionRepository: io.github.aedev.flow.data.local.SubscriptionRepository,
     private val playlistRepository: io.github.aedev.flow.data.music.PlaylistRepository,
-    private val localPlaylistRepository: io.github.aedev.flow.data.local.PlaylistRepository
+    private val localPlaylistRepository: io.github.aedev.flow.data.local.PlaylistRepository,
+    private val likedVideosRepository: LikedVideosRepository,
+    private val downloadManager: DownloadManager
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MusicUiState())
     val uiState: StateFlow<MusicUiState> = _uiState.asStateFlow()
 
+    private fun MusicTrack.isAudioMusicCandidate(): Boolean {
+        val usableDuration = duration == 0 || duration in 30..1200
+        return itemType == MusicItemType.SONG && !isVideoSong && videoId.isNotBlank() && usableDuration
+    }
+
+    private fun List<MusicTrack>.audioMusicOnly(): List<MusicTrack> =
+        filter { it.isAudioMusicCandidate() }.distinctBy { it.videoId }
+
     init {
         loadMusicContent()
+
+        viewModelScope.launch {
+            downloadManager.downloadedTracks.collect { tracks ->
+                _uiState.update { state ->
+                    state.copy(downloadedTrackIds = tracks.map { it.track.videoId }.toSet())
+                }
+            }
+        }
+        
+        viewModelScope.launch(PerformanceDispatcher.networkIO) {
+            var lastTrackId: String? = null
+            EnhancedMusicPlayerManager.currentTrack.collect { activeTrack ->
+                if (activeTrack != null && !activeTrack.videoId.isNullOrBlank()) {
+                    if (activeTrack.videoId != lastTrackId) {
+                        lastTrackId = activeTrack.videoId
+                        try {
+                            val related = YouTubeMusicService.getRelatedMusic(activeTrack.videoId, 24, audioOnly = true)
+                                .audioMusicOnly()
+                            if (related.isNotEmpty()) {
+                                _uiState.update { it.copy(forYouTracks = related) }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("MusicViewModel", "Error updating dynamic Quick Picks", e)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -133,7 +174,7 @@ class MusicViewModel @Inject constructor(
                 processHomeSections(homeSections)
                 _uiState.update { it.copy(homeContinuation = homeContinuation) }
             } else if (_uiState.value.forYouTracks.isEmpty() && _uiState.value.dynamicSections.isEmpty()) {
-                 val recs = musicRecommendationAlgorithm.getRecommendations(20)
+                 val recs = musicRecommendationAlgorithm.getRecommendations(24).audioMusicOnly()
                  if (recs.isNotEmpty()) {
                      _uiState.update { it.copy(forYouTracks = recs) }
                  }
@@ -152,7 +193,13 @@ class MusicViewModel @Inject constructor(
             } ?: emptyList()
             
             if (history.isNotEmpty()) {
-                _uiState.update { it.copy(history = history) }
+                _uiState.update {
+                    it.copy(
+                        history = history,
+                        forYouTracks = if (it.forYouTracks.isEmpty()) history.audioMusicOnly().take(24) else it.forYouTracks,
+                        isLoading = false
+                    )
+                }
             }
         }
 
@@ -194,11 +241,40 @@ class MusicViewModel @Inject constructor(
 
         // 6. CONTENT: Featured Playlists
         viewModelScope.launch(PerformanceDispatcher.networkIO) {
-            withTimeoutOrNull(10_000L) {
+            withTimeoutOrNull(12_000L) {
                 try {
-                    val playlists = YouTubeMusicService.searchPlaylists("official music playlists 2025", 10)
+                    val history = try {
+                        playlistRepository.history.firstOrNull() ?: emptyList()
+                    } catch (e: Exception) { emptyList() }
+                    
+                    val query = if (history.isNotEmpty()) {
+                        val topArtists = history.groupBy { it.artist }
+                            .map { it.key to it.value.size }
+                            .sortedByDescending { it.second }
+                            .take(3)
+                            .map { it.first }
+                            .filter { !it.isNullOrBlank() }
+                            .shuffled()
+                        
+                        val selectedArtist = topArtists.firstOrNull()
+                        if (selectedArtist != null) {
+                            "$selectedArtist playlist"
+                        } else {
+                            "curated music playlists 2026"
+                        }
+                    } else {
+                        "curated music playlists 2026"
+                    }
+
+                    Log.d("MusicViewModel", "Personalized playlists query: $query")
+                    val playlists = YouTubeMusicService.searchPlaylists(query, 10)
                     if (playlists.isNotEmpty()) {
                         _uiState.update { it.copy(featuredPlaylists = playlists) }
+                    } else {
+                        val fallback = YouTubeMusicService.searchPlaylists("curated music playlists 2026", 10)
+                        if (fallback.isNotEmpty()) {
+                            _uiState.update { it.copy(featuredPlaylists = fallback) }
+                        }
                     }
                     Unit
                 } catch (e: Exception) {
@@ -271,6 +347,102 @@ class MusicViewModel @Inject constructor(
 
         // 9. DYNAMIC CONTENT: Similar To & Vibes
         loadDynamicContent()
+        
+        // 10. DAILY DISCOVER: seed-based carousel
+        viewModelScope.launch(PerformanceDispatcher.networkIO) {
+            loadDailyDiscover()
+        }
+
+        // 11. COMMUNITY: human-curated playlists based on listening history
+        viewModelScope.launch(PerformanceDispatcher.networkIO) {
+            loadCommunityPlaylists()
+        }
+    }
+
+    private suspend fun loadCommunityPlaylists() {
+        try {
+            val history = withContext(PerformanceDispatcher.diskIO) {
+                playlistRepository.history.firstOrNull() ?: emptyList()
+            }.audioMusicOnly()
+
+            val artistSeeds = history
+                .groupBy { it.artist }
+                .map { it.key to it.value.size }
+                .filter { it.first.isNotBlank() }
+                .sortedByDescending { it.second }
+                .take(8)
+                .map { it.first }
+
+            val trackSeeds = history
+                .distinctBy { it.videoId }
+                .take(6)
+
+            if (artistSeeds.isEmpty() && trackSeeds.isEmpty()) return
+
+            fun MusicPlaylist.isCommunityPlaylistCandidate(): Boolean {
+                val normalizedAuthor = author.trim()
+                return normalizedAuthor.isNotBlank() &&
+                    !normalizedAuthor.equals("YouTube", true) &&
+                    !normalizedAuthor.equals("YouTube Music", true) &&
+                    !id.startsWith("RD") &&
+                    !id.startsWith("OLAK")
+            }
+
+            val communityQueries = buildList {
+                artistSeeds.forEach { artist ->
+                    add("$artist playlist")
+                    add("$artist fan playlist")
+                    add("$artist mix")
+                }
+                trackSeeds.forEach { track ->
+                    val artist = track.artist.takeIf { it.isNotBlank() } ?: return@forEach
+                    add("${track.title} $artist playlist")
+                }
+            }.distinct().take(24)
+
+            val candidates = supervisorScope {
+                communityQueries.map { query ->
+                    async(PerformanceDispatcher.networkIO) {
+                        try {
+                            YouTubeMusicService.searchPlaylists(query, 6)
+                                .filter { it.isCommunityPlaylistCandidate() }
+                        } catch (e: Exception) {
+                            emptyList()
+                        }
+                    }
+                }.awaitAll().flatten().distinctBy { it.id }.shuffled().take(24)
+            }
+
+            val communityItems = supervisorScope {
+                candidates.map { playlist ->
+                    async(PerformanceDispatcher.networkIO) {
+                        try {
+                            val details = YouTubeMusicService.fetchPlaylistDetails(playlist.id)
+                            val tracks = details?.tracks.orEmpty().audioMusicOnly().take(4)
+                            if (tracks.isNotEmpty()) {
+                                CommunityMusicPlaylist(
+                                    playlist = playlist.copy(
+                                        trackCount = details?.trackCount ?: playlist.trackCount,
+                                        thumbnailUrl = playlist.thumbnailUrl.ifBlank { tracks.first().thumbnailUrl }
+                                    ),
+                                    tracks = tracks
+                                )
+                            } else {
+                                null
+                            }
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                }.awaitAll().filterNotNull().take(8)
+            }
+
+            if (communityItems.isNotEmpty()) {
+                _uiState.update { it.copy(communityPlaylists = communityItems) }
+            }
+        } catch (e: Exception) {
+            Log.e("MusicViewModel", "Error loading community playlists", e)
+        }
     }
 
     private fun loadDynamicContent() {
@@ -294,7 +466,8 @@ class MusicViewModel @Inject constructor(
                         val artistTrack = history.find { it.artist == artistName }
                         if (artistTrack != null && !artistTrack.channelId.isNullOrBlank()) {
                             try {
-                                val related = InnertubeMusicService.getRelatedMusic(artistTrack.videoId)
+                                val related = InnertubeMusicService.getRelatedMusic(artistTrack.videoId, audioOnly = true)
+                                    .audioMusicOnly()
                                 if (related.isNotEmpty()) {
                                     MusicSection(
                                         title = artistName,
@@ -302,7 +475,7 @@ class MusicViewModel @Inject constructor(
                                         thumbnailUrl = artistTrack.thumbnailUrl,
                                         seedId = artistTrack.channelId,
                                         isArtistSeed = true,
-                                        tracks = related.take(10)
+                                        tracks = related.take(12)
                                     )
                                 } else null
                             } catch (e: Exception) {
@@ -320,7 +493,8 @@ class MusicViewModel @Inject constructor(
                 if (recentTrack != null && similarSections.none { it.title == recentTrack.title || it.title == recentTrack.artist }) {
                     if (!recentTrack.videoId.isNullOrBlank()) {
                         try {
-                            val related = InnertubeMusicService.getRelatedMusic(recentTrack.videoId)
+                            val related = InnertubeMusicService.getRelatedMusic(recentTrack.videoId, audioOnly = true)
+                                .audioMusicOnly()
                             if (related.isNotEmpty()) {
                                 similarSections.add(
                                     MusicSection(
@@ -329,7 +503,7 @@ class MusicViewModel @Inject constructor(
                                         thumbnailUrl = recentTrack.thumbnailUrl,
                                         seedId = recentTrack.videoId,
                                         isArtistSeed = false,
-                                        tracks = related.take(10)
+                                        tracks = related.take(12)
                                     )
                                 )
                             }
@@ -376,7 +550,7 @@ class MusicViewModel @Inject constructor(
     }
 
     fun loadMorePlaylistTracks() {
-        val currentPlaylist = _uiState.value.selectedPlaylist ?: return
+        val currentPlaylist = _uiState.value.selectedPlaylist ?: _uiState.value.playlistDetails ?: return
         val continuation = currentPlaylist.continuation ?: return
         if (_uiState.value.isMoreLoading) return
 
@@ -393,6 +567,7 @@ class MusicViewModel @Inject constructor(
                     )
                     state.copy(
                         selectedPlaylist = updatedPlaylist,
+                        playlistDetails = updatedPlaylist,
                         isMoreLoading = false
                     )
                 }
@@ -442,16 +617,25 @@ class MusicViewModel @Inject constructor(
             it.title.contains("Start radio", true) ||
             it.title.contains("Recommended", true) ||
             it.title.contains("Mixed for you", true)
-        }?.tracks ?: musicRecommendationAlgorithm.getRecommendations(20)
+        }?.tracks?.audioMusicOnly().orEmpty()
 
         val recommended = sections.find {
             it.title.contains("Mixed for you", true) || 
             it.title.contains("Recommended", true) ||
             it.title.contains("Listen again", true)
-        }?.tracks ?: musicRecommendationAlgorithm.getRecommendations(30)
+        }?.tracks?.audioMusicOnly().orEmpty()
+
+        val musicVideosForYou = sections.find {
+            it.title.contains("Music videos for you", true)
+        }?.tracks ?: emptyList()
 
         val musicVideos = sections.find { 
             it.title.contains("Music videos", true) || it.title.contains("Videos", true)
+        }?.tracks ?: musicVideosForYou
+
+        val livePerformances = sections.find {
+            it.title.contains("Live performances", true) ||
+                (it.title.contains("Live", true) && it.title.contains("performance", true))
         }?.tracks ?: emptyList()
 
         val longListens = sections.find { 
@@ -460,13 +644,15 @@ class MusicViewModel @Inject constructor(
 
         val listenAgain = sections.find { 
             it.title.contains("Listen again", true) 
-        }?.tracks ?: emptyList()
+        }?.tracks?.audioMusicOnly() ?: emptyList()
 
-        _uiState.update { it.copy(
-            forYouTracks = quickPicks,
-            recommendedTracks = recommended,
+        _uiState.update { currentState -> currentState.copy(
+            forYouTracks = quickPicks.ifEmpty { currentState.forYouTracks },
+            recommendedTracks = recommended.ifEmpty { currentState.recommendedTracks },
             listenAgain = listenAgain,
             musicVideos = musicVideos,
+            musicVideosForYou = musicVideosForYou,
+            livePerformances = livePerformances,
             longListens = longListens,
             dynamicSections = sections
         ) }
@@ -592,6 +778,7 @@ class MusicViewModel @Inject constructor(
     }
 
     fun refresh() {
+        _uiState.update { it.copy(isLoading = true) }
         loadMusicContent()
     }
     
@@ -633,7 +820,8 @@ class MusicViewModel @Inject constructor(
                     io.github.aedev.flow.data.local.ChannelSubscription(
                         channelId = artist.channelId,
                         channelName = artist.name,
-                        channelThumbnail = artist.thumbnailUrl
+                        channelThumbnail = artist.thumbnailUrl,
+                        isMusic = true
                     )
                 )
             }
@@ -691,7 +879,8 @@ class MusicViewModel @Inject constructor(
                 
                 _uiState.value = _uiState.value.copy(
                     isPlaylistLoading = false,
-                    playlistDetails = details
+                    playlistDetails = details,
+                    selectedPlaylist = details
                 )
                 return@launch
             }
@@ -703,7 +892,8 @@ class MusicViewModel @Inject constructor(
                 }
                 _uiState.value = _uiState.value.copy(
                     isPlaylistLoading = false,
-                    playlistDetails = details
+                    playlistDetails = details,
+                    selectedPlaylist = details
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -782,15 +972,65 @@ class MusicViewModel @Inject constructor(
             }
         }
     }
+
+    private suspend fun loadDailyDiscover() {
+        try {
+            val seeds = withContext(PerformanceDispatcher.diskIO) {
+                val history = playlistRepository.history.firstOrNull() ?: emptyList()
+                history
+                    .audioMusicOnly()
+                    .shuffled()
+                    .take(5)
+            }
+            
+            if (seeds.isEmpty()) return
+            
+            val items = java.util.Collections.synchronizedList(mutableListOf<DailyDiscoverItem>())
+            
+            kotlinx.coroutines.coroutineScope {
+                seeds.map { seed ->
+                    launch(PerformanceDispatcher.networkIO) {
+                        try {
+                            val related = YouTubeMusicService.getRelatedMusic(seed.videoId, 16, audioOnly = true)
+                                .audioMusicOnly()
+                            val recommendation = related.shuffled().firstOrNull {
+                                it.videoId != seed.videoId && it.isAudioMusicCandidate()
+                            }
+                            if (recommendation != null) {
+                                items.add(DailyDiscoverItem(seed, recommendation))
+                            }
+                        } catch (e: Exception) {
+                            Log.e("MusicViewModel", "Error fetching Daily Discover for seed ${seed.title}", e)
+                        }
+                    }
+                }.forEach { it.join() }
+            }
+            
+            if (items.isNotEmpty()) {
+                val finalDiscover = items.toList()
+                    .filter { it.seed.isAudioMusicCandidate() && it.recommendation.isAudioMusicCandidate() }
+                    .distinctBy { it.recommendation.videoId }
+                    .shuffled()
+                _uiState.update { it.copy(dailyDiscover = finalDiscover) }
+            }
+        } catch (e: Exception) {
+            Log.e("MusicViewModel", "Error in loadDailyDiscover", e)
+        }
+    }
 }
 
 data class MusicUiState(
+    val sessionSeed: Long = System.currentTimeMillis(),
+    val dailyDiscover: List<DailyDiscoverItem> = emptyList(),
     val forYouTracks: List<MusicTrack> = emptyList(), // Quick Picks
     val recommendedTracks: List<MusicTrack> = emptyList(), // Recommended for you
     val listenAgain: List<MusicTrack> = emptyList(), // Listen Again
     val trendingSongs: List<MusicTrack> = emptyList(),
     val newReleases: List<MusicTrack> = emptyList(),
     val musicVideos: List<MusicTrack> = emptyList(),
+    val musicVideosForYou: List<MusicTrack> = emptyList(),
+    val livePerformances: List<MusicTrack> = emptyList(),
+    val communityPlaylists: List<CommunityMusicPlaylist> = emptyList(),
     val longListens: List<MusicTrack> = emptyList(),
     val history: List<MusicTrack> = emptyList(),
     val allSongs: List<MusicTrack> = emptyList(),
@@ -808,6 +1048,7 @@ data class MusicUiState(
     val isLoading: Boolean = true,
     val isSearching: Boolean = false,
     val error: String? = null,
+    val downloadedTrackIds: Set<String> = emptySet(),
     val artistDetails: ArtistDetails? = null,
     val isArtistLoading: Boolean = false,
     val playlistDetails: PlaylistDetails? = null,

@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.VideoLibrary
@@ -67,6 +69,7 @@ fun DownloadsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var showRemoveIncompleteDialog by remember { mutableStateOf(false) }
     val haptic = LocalHapticFeedback.current
 
     val context = LocalContext.current
@@ -103,27 +106,41 @@ fun DownloadsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.downloads_title),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                navigationIcon = {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.close)
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
+                    Text(
+                        text = stringResource(R.string.downloads_title),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (uiState.incompleteDownloadCount > 0) {
+                        IconButton(onClick = { showRemoveIncompleteDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = stringResource(R.string.remove_incomplete_downloads)
+                            )
+                        }
+                    }
+                }
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
@@ -157,7 +174,7 @@ fun DownloadsScreen(
                 when (targetIndex) {
                     0 -> VideosDownloadsList(
                         videos = uiState.downloadedVideos,
-                        activeDownloads = uiState.activeVideoDownloads,
+                        incompleteDownloads = uiState.incompleteVideoDownloads,
                         progressMap = uiState.downloadProgressMap,
                         mergingVideoIds = uiState.mergingVideoIds,
                         isRefreshing = uiState.isScanning,
@@ -166,6 +183,8 @@ fun DownloadsScreen(
                         onDeleteClick = { id ->
                             requestDelete(id, DeletionType.VIDEO)
                         },
+                        onPauseClick = { id -> viewModel.pauseVideoDownload(id) },
+                        onResumeClick = { id -> viewModel.resumeVideoDownload(id) },
                         onHomeClick = onHomeClick
                     )
                     1 -> MusicDownloadsList(
@@ -181,6 +200,36 @@ fun DownloadsScreen(
                 }
             }
         }
+    }
+
+    if (showRemoveIncompleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveIncompleteDialog = false },
+            title = { Text(stringResource(R.string.remove_incomplete_downloads)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.remove_incomplete_downloads_message,
+                        uiState.incompleteDownloadCount
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showRemoveIncompleteDialog = false
+                        viewModel.removeIncompleteDownloads()
+                    }
+                ) {
+                    Text(stringResource(R.string.remove))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveIncompleteDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 
@@ -310,17 +359,19 @@ private data class TabInfo(
 @Composable
 private fun VideosDownloadsList(
     videos: List<DownloadedVideo>,
-    activeDownloads: List<DownloadWithItems>,
+    incompleteDownloads: List<DownloadWithItems>,
     progressMap: Map<String, Float>,
     mergingVideoIds: Set<String>,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onVideoClick: (List<DownloadedVideo>, Int) -> Unit,
     onDeleteClick: (String) -> Unit,
+    onPauseClick: (String) -> Unit,
+    onResumeClick: (String) -> Unit,
     onHomeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (videos.isEmpty() && activeDownloads.isEmpty()) {
+    if (videos.isEmpty() && incompleteDownloads.isEmpty()) {
         val pullState = rememberPullToRefreshState()
         PullToRefreshBox(
             isRefreshing = isRefreshing,
@@ -353,10 +404,10 @@ private fun VideosDownloadsList(
                 contentPadding = PaddingValues(vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                if (activeDownloads.isNotEmpty()) {
+                if (incompleteDownloads.isNotEmpty()) {
                     item(key = "section_active") {
                         Text(
-                            text = stringResource(R.string.section_downloading),
+                            text = stringResource(R.string.section_incomplete_downloads),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary,
@@ -366,13 +417,16 @@ private fun VideosDownloadsList(
                         )
                     }
                     items(
-                        items = activeDownloads,
+                        items = incompleteDownloads,
                         key = { "active_${it.download.videoId}" }
                     ) { dl ->
                         ActiveVideoDownloadCard(
                             download = dl,
                             progressMap = progressMap,
                             isMerging = dl.download.videoId in mergingVideoIds,
+                            onPauseClick = { onPauseClick(dl.download.videoId) },
+                            onResumeClick = { onResumeClick(dl.download.videoId) },
+                            onDeleteClick = { onDeleteClick(dl.download.videoId) },
                             modifier = Modifier.animateItem(
                                 fadeInSpec = tween(300, easing = EaseOutCubic),
                                 fadeOutSpec = tween(200, easing = EaseInCubic),
@@ -531,10 +585,17 @@ private fun ActiveVideoDownloadCard(
     download: DownloadWithItems,
     progressMap: Map<String, Float>,
     isMerging: Boolean,
+    onPauseClick: () -> Unit,
+    onResumeClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val progress = (progressMap[download.download.videoId] ?: download.progress).coerceIn(0f, 1f)
     val pct = (progress * 100).toInt()
+    val deleteDesc = stringResource(
+        R.string.cd_delete_download,
+        download.download.title
+    )
 
     Row(
         modifier = modifier
@@ -615,6 +676,7 @@ private fun ActiveVideoDownloadCard(
                     DownloadItemStatus.PENDING  -> stringResource(R.string.download_status_queued)
                     DownloadItemStatus.PAUSED   -> "$pct% \u00b7 ${stringResource(R.string.download_status_paused)}"
                     DownloadItemStatus.FAILED   -> stringResource(R.string.download_status_failed)
+                    DownloadItemStatus.CANCELLED -> stringResource(R.string.download_status_cancelled)
                     else                        -> "$pct%"
                 }
             }
@@ -622,6 +684,36 @@ private fun ActiveVideoDownloadCard(
                 text = statusText,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        if (!isMerging && download.overallStatus != DownloadItemStatus.FAILED && download.overallStatus != DownloadItemStatus.CANCELLED) {
+            val isPaused = download.overallStatus == DownloadItemStatus.PAUSED
+            IconButton(
+                onClick = if (isPaused) onResumeClick else onPauseClick
+            ) {
+                Icon(
+                    imageVector = if (isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                    contentDescription = if (isPaused)
+                        stringResource(R.string.resume)
+                    else
+                        stringResource(R.string.pause),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        IconButton(
+            onClick = onDeleteClick,
+            modifier = Modifier.semantics {
+                contentDescription = deleteDesc
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Delete,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.size(20.dp)
             )
         }
     }

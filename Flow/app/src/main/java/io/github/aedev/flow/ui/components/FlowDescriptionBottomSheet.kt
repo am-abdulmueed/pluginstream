@@ -4,8 +4,13 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.text.style.URLSpan
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,12 +18,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -38,14 +42,20 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
 import io.github.aedev.flow.R
 import androidx.core.text.HtmlCompat
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.utils.formatLikeCount
 import io.github.aedev.flow.utils.formatTimeAgo
 import io.github.aedev.flow.utils.formatViewCount
+import io.github.aedev.flow.utils.DateContext
+import io.github.aedev.flow.utils.DateDisplayMode
+import kotlinx.coroutines.launch
 
 fun parseHtmlDescription(rawHtml: String): AnnotatedString {
     // 1. Parse HTML into an Android Spanned object (Handles <br>, <a>, &amp;)
@@ -100,11 +110,6 @@ fun parseHtmlDescription(rawHtml: String): AnnotatedString {
             }
         }
 
-        // 5. Find timestamps — TIMESTAMP takes priority over URL.
-        //    YouTube chapter links like <a href="?t=74">1:14</a> should seek the
-        //    player, not open a browser.  We still add the TIMESTAMP annotation
-        //    even when the range overlaps a URL span; the click handler resolves
-        //    the conflict by preferring TIMESTAMP.
         val timestampRegex = Regex("""\b(?:[0-9]{1,2}:)?[0-9]{1,2}:[0-9]{2}\b""")
         timestampRegex.findAll(text).forEach { matchResult ->
             val start = matchResult.range.first
@@ -129,10 +134,21 @@ fun FlowDescriptionBottomSheet(
     onDismiss: () -> Unit,
     onTimestampClick: (String) -> Unit = {},
     tags: List<String> = emptyList(),
+    expandedHeight: Dp? = null,
     modifier: Modifier = Modifier
 ) {
     val uriHandler = LocalUriHandler.current
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
+    val coroutineScope = rememberCoroutineScope()
+    val latestOnDismiss by rememberUpdatedState(onDismiss)
+    val sheetExpandedHeight = expandedHeight ?: (configuration.screenHeightDp.dp * 0.75f)
+    val expandedHeightPx = with(density) { sheetExpandedHeight.toPx() }
+    val dismissThresholdPx = expandedHeightPx * 0.55f
+    val sheetHeightPx = remember { Animatable(0f) }
+    var isAnimatingOut by remember { mutableStateOf(false) }
+    val descriptionScrollState = rememberScrollState()
     
     val descriptionText = remember(video.description) {
         parseHtmlDescription(video.description)
@@ -147,70 +163,146 @@ fun FlowDescriptionBottomSheet(
             .toList()
     }
 
-    // Consume leftover scroll deltas so the sheet's drag handler never sees
-    // overscroll at the content boundary — prevents collapse while scrolling.
-    val preventCollapseOnScroll = remember {
-        object : NestedScrollConnection {
-            override fun onPostScroll(
-                consumed: Offset, available: Offset, source: NestedScrollSource
-            ) = available
+    fun animateToExpanded() {
+        coroutineScope.launch {
+            sheetHeightPx.animateTo(
+                targetValue = expandedHeightPx,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            )
         }
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = rememberFlowSheetState(),
-        containerColor = MaterialTheme.colorScheme.surface,
-        scrimColor = Color.Transparent,
-        dragHandle = { BottomSheetDefaults.DragHandle() },
-        modifier = modifier
-    ) {
-        val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-        val maxHeight = configuration.screenHeightDp.dp * 0.65f
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = maxHeight)
-                .nestedScroll(preventCollapseOnScroll)
-        ) {
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.description),
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+    fun animateToDismiss() {
+        if (isAnimatingOut) return
+        isAnimatingOut = true
+        coroutineScope.launch {
+            sheetHeightPx.animateTo(
+                targetValue = 0f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                // Copy entire description button
-                IconButton(onClick = {
-                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("description", descriptionText.text)
-                    clipboard.setPrimaryClip(clip)
-                    android.widget.Toast.makeText(
-                        context,
-                        context.getString(R.string.description_copied),
-                        android.widget.Toast.LENGTH_SHORT
-                    ).show()
-                }) {
-                    Icon(Icons.Outlined.ContentCopy, contentDescription = stringResource(R.string.copy_description))
+            )
+            latestOnDismiss()
+        }
+    }
+
+    LaunchedEffect(expandedHeightPx) {
+        isAnimatingOut = false
+        sheetHeightPx.updateBounds(lowerBound = 0f, upperBound = expandedHeightPx)
+        if (sheetHeightPx.value == 0f) {
+            sheetHeightPx.snapTo(0f)
+        }
+        sheetHeightPx.animateTo(
+            targetValue = expandedHeightPx,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        )
+    }
+
+    BackHandler(onBack = ::animateToDismiss)
+
+    val headerDragModifier = Modifier.pointerInput(expandedHeightPx, dismissThresholdPx, isAnimatingOut) {
+        val velocityTracker = VelocityTracker()
+        detectVerticalDragGestures(
+            onVerticalDrag = { change, dragAmount ->
+                if (isAnimatingOut) return@detectVerticalDragGestures
+                velocityTracker.addPointerInputChange(change)
+                coroutineScope.launch {
+                    val nextValue = (sheetHeightPx.value - dragAmount).coerceIn(0f, expandedHeightPx)
+                    sheetHeightPx.snapTo(nextValue)
                 }
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = "Close")
+            },
+            onDragCancel = {
+                velocityTracker.resetTracking()
+                if (!isAnimatingOut) animateToExpanded()
+            },
+            onDragEnd = {
+                val velocityY = velocityTracker.calculateVelocity().y
+                velocityTracker.resetTracking()
+                when {
+                    velocityY > 1200f || sheetHeightPx.value < dismissThresholdPx -> animateToDismiss()
+                    else -> animateToExpanded()
                 }
             }
+        )
+    }
 
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(with(density) { sheetHeightPx.value.toDp() }),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 0.dp
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .navigationBarsPadding()
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                        .then(headerDragModifier),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BottomSheetDefaults.DragHandle()
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(headerDragModifier)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.description),
+                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    IconButton(
+                        onClick = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("description", descriptionText.text)
+                            clipboard.setPrimaryClip(clip)
+                            android.widget.Toast.makeText(
+                                context,
+                                context.getString(R.string.description_copied),
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(Icons.Outlined.ContentCopy, contentDescription = stringResource(R.string.copy_description))
+                    }
+                    IconButton(
+                        onClick = ::animateToDismiss,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close))
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(descriptionScrollState)
+                ) {
                 // 1. Video Title
                 Text(
                     text = video.title,
@@ -238,10 +330,18 @@ fun FlowDescriptionBottomSheet(
                         label = stringResource(R.string.views)
                     )
                     VerticalHorizontalDivider()
-                    StatItem(
-                        value = formatTimeAgo(video.uploadDate).replace(" ago", ""), // "5d" instead of "5d ago"
-                        label = formatTimeAgo(video.uploadDate).let { if(it.contains("mo") || it.contains("yr")) stringResource(R.string.ago) else stringResource(R.string.since) }
-                    )
+                    val dateSettings = rememberDateDisplaySettings()
+                    if (dateSettings.resolve(DateContext.DESCRIPTION) == DateDisplayMode.RELATIVE) {
+                        StatItem(
+                            value = formatTimeAgo(video.uploadDate).replace(" ago", ""), // "5d" instead of "5d ago"
+                            label = formatTimeAgo(video.uploadDate).let { if(it.contains("mo") || it.contains("yr")) stringResource(R.string.ago) else stringResource(R.string.since) }
+                        )
+                    } else {
+                        StatItem(
+                            value = dateSettings.format(video.uploadDate, DateContext.DESCRIPTION, video.timestamp),
+                            label = stringResource(R.string.uploaded)
+                        )
+                    }
                 }
 
                 HorizontalDivider(
@@ -277,38 +377,37 @@ fun FlowDescriptionBottomSheet(
                             }
                         }
 
-                        // Rich Text Description — clickable links and timestamps.
-                        // SelectionContainer is intentionally omitted: wrapping ClickableText
-                        // (or BasicText) inside SelectionContainer intercepts touch events
-                        // and prevents the onClick/pointerInput from firing.
-                        BasicText(
-                            text = descriptionText,
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                lineHeight = 24.sp,
-                                fontSize = 15.sp
-                            ),
-                            onTextLayout = { descLayoutResult = it },
-                            modifier = Modifier.pointerInput(descriptionText) {
-                                detectTapGestures { tapOffset ->
-                                    val result = descLayoutResult ?: return@detectTapGestures
-                                    val charOffset = result.getOffsetForPosition(tapOffset)
-                                    // TIMESTAMP takes priority — YouTube chapter links like
-                                    // <a href="?t=74">1:14</a> seek the player, not a browser.
-                                    val ts = descriptionText
-                                        .getStringAnnotations("TIMESTAMP", charOffset, charOffset)
-                                        .firstOrNull()
-                                    if (ts != null) {
-                                        onTimestampClick(ts.item)
-                                    } else {
-                                        descriptionText
-                                            .getStringAnnotations("URL", charOffset, charOffset)
-                                            .firstOrNull()
-                                            ?.let { uriHandler.openUri(it.item) }
-                                    }
+                        SelectionContainer {
+                            BasicText(
+                                text = descriptionText,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    lineHeight = 24.sp,
+                                    fontSize = 15.sp
+                                ),
+                                onTextLayout = { descLayoutResult = it },
+                                modifier = Modifier.pointerInput(descriptionText) {
+                                    detectTapGestures(
+                                        onTap = { tapOffset ->
+                                            descLayoutResult?.let { result ->
+                                                val charOffset = result.getOffsetForPosition(tapOffset)
+                                                val ts = descriptionText
+                                                    .getStringAnnotations("TIMESTAMP", charOffset, charOffset)
+                                                    .firstOrNull()
+                                                if (ts != null) {
+                                                    onTimestampClick(ts.item)
+                                                } else {
+                                                    descriptionText
+                                                        .getStringAnnotations("URL", charOffset, charOffset)
+                                                        .firstOrNull()
+                                                        ?.let { uriHandler.openUri(it.item) }
+                                                }
+                                            }
+                                        }
+                                    )
                                 }
-                            }
-                        )
+                            )
+                        }
 
                         // Tags section
                         if (tags.isNotEmpty()) {
@@ -354,6 +453,7 @@ fun FlowDescriptionBottomSheet(
                 }
                 
                 Spacer(modifier = Modifier.height(48.dp))
+                }
             }
         }
     }

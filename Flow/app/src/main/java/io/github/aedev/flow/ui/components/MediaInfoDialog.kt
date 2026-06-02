@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.ui.screens.music.MusicTrack
+import io.github.aedev.flow.utils.DateContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,13 +52,19 @@ fun MediaInfoDialog(
 ) {
     val context = LocalContext.current
     var mediaInfo by remember { mutableStateOf<io.github.aedev.flow.innertube.models.MediaInfo?>(null) }
+    var resolvedDurationSeconds by remember { mutableStateOf<Int?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(track, video) {
         isLoading = true
+        resolvedDurationSeconds = track?.duration?.takeIf { it > 0 }
+            ?: video?.duration?.takeIf { it > 0 }
         val videoId = track?.videoId ?: video?.id
         if (videoId != null) {
             mediaInfo = io.github.aedev.flow.data.newmusic.InnertubeMusicService.getMediaInfo(videoId)
+            resolvedDurationSeconds = mediaInfo?.durationSeconds?.takeIf { it > 0 }
+                ?: resolvedDurationSeconds
+                ?: io.github.aedev.flow.data.music.YouTubeMusicService.fetchVideoDuration(videoId).takeIf { it > 0 }
         }
         isLoading = false
     }
@@ -124,6 +131,7 @@ fun MediaInfoDialog(
             val videoIdLabel = stringResource(R.string.video_id_label)
             val channelIdLabel = stringResource(R.string.channel_id)
             val uploadedLabel = stringResource(R.string.uploaded)
+            val dateSettings = rememberDateDisplaySettings()
             val itagLabel = stringResource(R.string.itag)
             val mimeTypeLabel = stringResource(R.string.mime_type)
             val bitrateLabel = stringResource(R.string.bitrate_label)
@@ -165,8 +173,8 @@ fun MediaInfoDialog(
                     if (info?.authorId != null) details.add(channelIdLabel to info.authorId)
                     else if (track?.channelId?.isNotEmpty() == true) details.add(channelIdLabel to track.channelId)
 
-                    if (info?.uploadDate != null) details.add(uploadedLabel to info.uploadDate)
-                    else if (video?.uploadDate != null) details.add(uploadedLabel to video.uploadDate)
+                    if (info?.uploadDate != null) details.add(uploadedLabel to dateSettings.format(info.uploadDate, DateContext.WATCH))
+                    else if (video?.uploadDate != null) details.add(uploadedLabel to dateSettings.format(video.uploadDate, DateContext.WATCH, video.timestamp))
                     
                     // Stream Info
                     if (info?.videoId_tag != null) details.add(itagLabel to info.videoId_tag.toString())
@@ -177,8 +185,9 @@ fun MediaInfoDialog(
                     if (info?.qualityLabel != null) details.add(qualityLabel to info.qualityLabel)
                     
                     // Fallback Duration
-                    val duration = track?.duration ?: video?.duration
-                    if (duration != null) details.add(durationLabel to formatDuration(duration))
+                    resolvedDurationSeconds?.takeIf { it > 0 }?.let {
+                        details.add(durationLabel to formatDuration(it))
+                    }
 
                     items(details.filter { it.second != null }) { (label, value) ->
                         InfoItem(label, value!!)

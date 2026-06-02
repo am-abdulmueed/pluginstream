@@ -222,7 +222,7 @@ class VideoDownloadManager @Inject constructor(
 
     /**
      * Get the audio download directory.
-     * Priority: custom path > public Downloads/Flow > public Music/Flow (if permission granted)
+     * Priority: custom path > public Music/Flow > public Downloads/Flow
      */
     fun getAudioDownloadDir(): File {
         customDownloadPath?.let { custom ->
@@ -230,6 +230,16 @@ class VideoDownloadManager @Inject constructor(
             if (!dir.exists()) dir.mkdirs()
             if (dir.exists() && dir.canWrite()) return dir
             Log.w(TAG, "Custom audio download path not writable: $custom, falling back to defaults")
+        }
+        try {
+            val musicDir = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
+                AUDIO_DIR
+            )
+            if (!musicDir.exists()) musicDir.mkdirs()
+            if (musicDir.canWrite()) return musicDir
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not use Music dir for audio", e)
         }
         try {
             val downloadsDir = File(
@@ -240,18 +250,6 @@ class VideoDownloadManager @Inject constructor(
             if (downloadsDir.canWrite()) return downloadsDir
         } catch (e: Exception) {
             Log.w(TAG, "Could not use Downloads dir for audio", e)
-        }
-        if (hasAllFilesAccess()) {
-            try {
-                val dir = File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC),
-                    AUDIO_DIR
-                )
-                if (!dir.exists()) dir.mkdirs()
-                if (dir.canWrite()) return dir
-            } catch (e: Exception) {
-                Log.w(TAG, "Could not use Music dir with MANAGE_EXTERNAL_STORAGE", e)
-            }
         }
         val dir = File(context.getExternalFilesDir(Environment.DIRECTORY_MUSIC), AUDIO_DIR)
         if (!dir.exists()) dir.mkdirs()
@@ -442,7 +440,7 @@ class VideoDownloadManager @Inject constructor(
             val download = downloadDao.getDownloadWithItems(videoId)
                 ?: return@withContext false
 
-            val filePaths = download.items.map { it.filePath }
+            val filePaths = download.items.flatMap { artifactPathsFor(it.filePath) }.distinct()
             val thumbPath = download.download.thumbnailPath
 
             recentlyDeletedPaths.addAll(filePaths)
@@ -472,6 +470,27 @@ class VideoDownloadManager @Inject constructor(
             false
         }
     }
+
+    /**
+     * Delete every non-completed download row and its partial artifacts.
+     * Completed downloads are never touched.
+     */
+    suspend fun deleteIncompleteDownloads(): Int = withContext(Dispatchers.IO) {
+        val incomplete = downloadDao.getAllDownloadsWithItemsOnce()
+            .filter { download ->
+                download.items.isEmpty() ||
+                    download.items.any { it.status != DownloadItemStatus.COMPLETED }
+            }
+
+        var deleted = 0
+        incomplete.forEach { download ->
+            if (deleteDownload(download.download.videoId)) deleted++
+        }
+        deleted
+    }
+
+    private fun artifactPathsFor(path: String): List<String> =
+        listOf(path, "$path.video.tmp", "$path.audio.tmp")
 
     /**
      * Delete a single file from disk.

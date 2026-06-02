@@ -3,6 +3,14 @@ package io.github.aedev.flow.player.config
 object PlayerConfig {
     
     const val TAG = "EnhancedPlayerManager"
+
+    val PREFERRED_VIDEO_MIME_TYPES = arrayOf(
+        "video/x-vnd.on2.vp9",
+        "video/avc",
+        "video/x-vnd.on2.vp8",
+        "video/hevc",
+        "video/av01"
+    )
     
     // ===== Cache Configuration =====
     /** Maximum cache size in bytes (500 MB — default) */
@@ -23,6 +31,35 @@ object PlayerConfig {
     
     /** Back buffer duration in milliseconds (15 seconds for instant rewind) */
     const val BACK_BUFFER_DURATION_MS = 15_000
+
+    /** Back buffer duration for low-memory devices. */
+    const val LOW_MEMORY_BACK_BUFFER_DURATION_MS = 0
+
+    /** Hard runtime cap for main-player max buffer */
+    const val MAX_SAFE_MAIN_BUFFER_MS = 60_000
+
+    /** Hard runtime cap for main-player min buffer so low-RAM devices do not over-retain media. */
+    const val MAX_SAFE_MAIN_MIN_BUFFER_MS = 30_000
+
+    /** Runtime caps used when Android reports a small app heap. */
+    const val LOW_MEMORY_MAX_SAFE_MAIN_BUFFER_MS = 25_000
+    const val LOW_MEMORY_MAX_SAFE_MAIN_MIN_BUFFER_MS = 12_000
+
+
+    const val MAIN_TARGET_BUFFER_BYTES = 48 * 1024 * 1024
+
+    /** Smaller target buffer budgets for devices with 256-384 MB app heaps. */
+    const val LOW_MEMORY_MAIN_TARGET_BUFFER_BYTES = 8 * 1024 * 1024
+    const val MID_MEMORY_MAIN_TARGET_BUFFER_BYTES = 24 * 1024 * 1024
+
+    /** Explicit target buffer budget per shorts player in the pooled shorts stack. */
+    const val SHORTS_TARGET_BUFFER_BYTES = 8 * 1024 * 1024
+
+    /** Preferred delay from the true live edge. Keeps YouTube live playback stable. */
+    const val LIVE_EDGE_GAP_MS = 10_000L
+
+    /** Maximum DVR window requested for live streams where the manifest supports it. */
+    const val LIVE_DVR_MAX_OFFSET_MS = 2 * 60 * 60 * 1000L
     
     // ===== Bandwidth Thresholds =====
     /** Initial bandwidth estimate in bits per second (5 Mbps) */

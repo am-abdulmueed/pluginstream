@@ -1,5 +1,7 @@
 package io.github.aedev.flow.ui.components
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +23,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.NotificationsNone
@@ -32,6 +35,7 @@ import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material.icons.outlined.WatchLater
+import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -231,6 +235,52 @@ fun VideoQuickActionsBottomSheet(
 
             item { Spacer(modifier = Modifier.height(4.dp)) }
 
+            // Playback Queue Group — Play Next, Add to queue
+            item {
+                Text(
+                    text = stringResource(R.string.playback_header),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
+                )
+                FlowMenuGroup(
+                    items = listOf(
+                        FlowMenuItemData(
+                            icon = { Icon(Icons.Outlined.QueueMusic, null) },
+                            title = { Text(stringResource(R.string.play_next_video)) },
+                            description = { Text(stringResource(R.string.play_next_video_desc)) },
+                            onClick = {
+                                viewModel.playVideoNext(video)
+                                android.widget.Toast.makeText(
+                                    context,
+                                    context.getString(R.string.play_next_toast),
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                                onDismiss()
+                            }
+                        ),
+                        FlowMenuItemData(
+                            icon = { Icon(Icons.Outlined.PlaylistAdd, null) },
+                            title = { Text(stringResource(R.string.add_video_to_queue)) },
+                            description = { Text(stringResource(R.string.add_video_to_queue_desc)) },
+                            onClick = {
+                                viewModel.addVideoToQueue(video)
+                                android.widget.Toast.makeText(
+                                    context,
+                                    context.getString(R.string.added_to_queue_toast),
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                                onDismiss()
+                            }
+                        )
+                    ),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            item { Spacer(modifier = Modifier.height(4.dp)) }
+
             // Channel Group — Go to channel, Subscribe
             if (video.channelId.isNotBlank()) {
                 item {
@@ -270,7 +320,7 @@ fun VideoQuickActionsBottomSheet(
                                     viewModel.toggleSubscription(
                                         channelId = video.channelId,
                                         channelName = video.channelName,
-                                        channelThumbnail = video.thumbnailUrl
+                                        channelThumbnail = video.channelThumbnailUrl
                                     )
                                 }
                             )
@@ -281,38 +331,6 @@ fun VideoQuickActionsBottomSheet(
 
                 item { Spacer(modifier = Modifier.height(4.dp)) }
             }
-
-            // Playback Queue Group — Play Next
-            item {
-                Text(
-                    text = stringResource(R.string.playback_header),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
-                )
-                FlowMenuGroup(
-                    items = listOf(
-                        FlowMenuItemData(
-                            icon = { Icon(Icons.Outlined.QueueMusic, null) },
-                            title = { Text(stringResource(R.string.play_next_video)) },
-                            description = { Text(stringResource(R.string.play_next_video_desc)) },
-                            onClick = {
-                                viewModel.playVideoNext(video)
-                                android.widget.Toast.makeText(
-                                    context,
-                                    context.getString(R.string.play_next_toast),
-                                    android.widget.Toast.LENGTH_SHORT
-                                ).show()
-                                onDismiss()
-                            }
-                        )
-                    ),
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-            }
-
-            item { Spacer(modifier = Modifier.height(4.dp)) }
 
             // Algorithm Group — Mark as watched, I like this, Not interested
             item {
@@ -328,7 +346,7 @@ fun VideoQuickActionsBottomSheet(
                         FlowMenuItemData(
                             icon = {
                                 Icon(
-                                    if (isWatched) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                                    if (isWatched) Icons.Filled.CheckCircle else Icons.Outlined.Visibility,
                                     null,
                                     tint = if (isWatched) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -383,7 +401,7 @@ fun VideoQuickActionsBottomSheet(
 
             item { Spacer(modifier = Modifier.height(4.dp)) }
 
-            // Utility Group — Download, Details
+            // Utility Group — Copy links, Download, Details
             item {
                 Text(
                     text = stringResource(R.string.section_options),
@@ -393,35 +411,84 @@ fun VideoQuickActionsBottomSheet(
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
                 )
                 FlowMenuGroup(
-                    items = listOf(
-                        FlowMenuItemData(
-                            icon = {
-                                Icon(
-                                    if (isDownloaded) Icons.Outlined.CheckCircle else Icons.Outlined.Download,
-                                    null,
-                                    tint = if (isDownloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            title = { Text(if (isDownloaded) stringResource(R.string.downloaded) else stringResource(R.string.download)) },
-                            onClick = {
-                                if (!isDownloaded) {
-                                    if (onDownload != null) {
-                                        onDownload()
-                                    } else {
-                                        viewModel.downloadVideo(video)
-                                    }
+                    items = buildList {
+                        add(
+                            FlowMenuItemData(
+                                icon = { Icon(Icons.Rounded.ContentCopy, null) },
+                                title = { Text(stringResource(R.string.copy_video_link)) },
+                                onClick = {
+                                    val videoUrl = "https://www.youtube.com/watch?v=${video.id}"
+                                    val clipboard = context.getSystemService(ClipboardManager::class.java)
+                                    clipboard?.setPrimaryClip(ClipData.newPlainText("video_link", videoUrl))
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        context.getString(R.string.link_copied),
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                    onDismiss()
                                 }
-                                onDismiss()
-                            }
-                        ),
-                        FlowMenuItemData(
-                            icon = { Icon(Icons.Outlined.Info, null) },
-                            title = { Text(stringResource(R.string.details_metadata)) },
-                            onClick = {
-                                showMediaInfo = true
-                            }
+                            )
                         )
-                    ),
+
+                        if (video.channelId.isNotBlank()) {
+                            add(
+                                FlowMenuItemData(
+                                    icon = { Icon(Icons.Rounded.ContentCopy, null) },
+                                    title = { Text(stringResource(R.string.copy_channel_link)) },
+                                    onClick = {
+                                        val channelUrl = "https://www.youtube.com/channel/${video.channelId}"
+                                        val clipboard = context.getSystemService(ClipboardManager::class.java)
+                                        clipboard?.setPrimaryClip(ClipData.newPlainText("channel_link", channelUrl))
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            context.getString(R.string.link_copied),
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                        onDismiss()
+                                    }
+                                )
+                            )
+                        }
+
+                        add(
+                            FlowMenuItemData(
+                                icon = {
+                                    Icon(
+                                        if (isDownloaded) Icons.Outlined.CheckCircle else Icons.Outlined.Download,
+                                        null,
+                                        tint = if (isDownloaded) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                },
+                                title = {
+                                    Text(
+                                        if (isDownloaded) stringResource(R.string.downloaded)
+                                        else stringResource(R.string.download)
+                                    )
+                                },
+                                onClick = {
+                                    if (!isDownloaded) {
+                                        if (onDownload != null) {
+                                            onDownload()
+                                        } else {
+                                            viewModel.downloadVideo(video)
+                                        }
+                                    }
+                                    onDismiss()
+                                }
+                            )
+                        )
+
+                        add(
+                            FlowMenuItemData(
+                                icon = { Icon(Icons.Outlined.Info, null) },
+                                title = { Text(stringResource(R.string.details_metadata)) },
+                                onClick = {
+                                    showMediaInfo = true
+                                }
+                            )
+                        )
+                    },
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }

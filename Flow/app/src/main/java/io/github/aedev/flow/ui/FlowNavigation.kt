@@ -19,6 +19,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import androidx.hilt.navigation.compose.hiltViewModel
 import io.github.aedev.flow.data.model.Video
+import io.github.aedev.flow.data.local.PlaylistRepository
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.ui.components.PlayerSheetValue
@@ -27,8 +28,7 @@ import io.github.aedev.flow.ui.components.MusicPlayerSheetState
 import io.github.aedev.flow.ui.screens.home.HomeScreen
 import io.github.aedev.flow.ui.screens.history.HistoryScreen
 import io.github.aedev.flow.ui.screens.library.LibraryScreen
-import io.github.aedev.flow.ui.screens.library.WatchLaterScreen
-import io.github.aedev.flow.ui.screens.likedvideos.LikedVideosScreen
+import io.github.aedev.flow.ui.screens.likedvideos.LikesScreen
 import io.github.aedev.flow.ui.screens.playlists.PlaylistsScreen
 import io.github.aedev.flow.ui.screens.playlists.PlaylistDetailScreen
 import io.github.aedev.flow.ui.screens.notifications.NotificationScreen
@@ -65,9 +65,14 @@ fun NavGraphBuilder.flowAppGraph(
     playerVisibleState: MutableState<Boolean>, 
     currentTheme: ThemeMode,
     customThemeColors: CustomThemeColors,
+    systemLightThemeMode: ThemeMode,
+    systemDarkThemeMode: ThemeMode,
     onThemeChange: (ThemeMode) -> Unit,
     onCustomThemeColorsChange: (CustomThemeColors) -> Unit,
-    disableShortsPlayer: Boolean = false
+    onSystemLightThemeChange: (ThemeMode) -> Unit,
+    onSystemDarkThemeChange: (ThemeMode) -> Unit,
+    disableShortsPlayer: Boolean = false,
+    defaultStartRoute: String = "home"
 ) {
     // =============================================
     // ONBOARDING (First-time user experience)
@@ -77,8 +82,8 @@ fun NavGraphBuilder.flowAppGraph(
         showBottomNav.value = false
         OnboardingScreen(
             onComplete = {
-                // Navigate to home and clear the backstack so user can't go back to onboarding
-                navController.navigate("home") {
+                // Navigate to the selected default tab and clear the backstack so user can't go back to onboarding
+                navController.navigate(defaultStartRoute) {
                     popUpTo("onboarding") { inclusive = true }
                 }
             }
@@ -111,7 +116,12 @@ fun NavGraphBuilder.flowAppGraph(
                 }
             },
             onShortClick = { video ->
-                navController.navigate("shorts?startVideoId=${video.id}")
+                if (disableShortsPlayer) {
+                    playerViewModel.playVideo(video)
+                    GlobalPlayerState.setCurrentVideo(video)
+                } else {
+                    navController.navigate("shorts?startVideoId=${video.id}")
+                }
             },
             onSearchClick = {
                 navController.navigate("search")
@@ -175,15 +185,25 @@ fun NavGraphBuilder.flowAppGraph(
                 if (video.isShort && !disableShortsPlayer) {
                     navController.navigate("shorts?startVideoId=${video.id}")
                 } else {
-                    navController.navigate("player/${video.id}")
+                    playerViewModel.playVideo(video)
+                    GlobalPlayerState.setCurrentVideo(video)
                 }
             },
             onShortClick = { videoId ->
-                navController.navigate("shorts?startVideoId=$videoId")
+                if (disableShortsPlayer) {
+                    navController.navigate("player/$videoId")
+                } else {
+                    navController.navigate("shorts?startVideoId=$videoId")
+                }
             },
-            onChannelClick = { channelUrl ->
-                val encodedUrl = channelUrl.replace("/", "%2F").replace(":", "%3A")
-                navController.navigate("channel?url=$encodedUrl")
+            onChannelClick = { channel ->
+                if (channel.isMusic && channel.id.isNotBlank()) {
+                    navController.navigate("artist/${channel.id}")
+                } else {
+                    val channelUrl = channel.url.ifBlank { "https://youtube.com/channel/${channel.id}" }
+                    val encodedUrl = channelUrl.replace("/", "%2F").replace(":", "%3A")
+                    navController.navigate("channel?url=$encodedUrl")
+                }
             }
         )
     }
@@ -203,10 +223,10 @@ fun NavGraphBuilder.flowAppGraph(
                 navController.navigate("musicPlaylists")
             },
             onNavigateToLikedVideos = { 
-                navController.navigate("likedVideos")
+                navController.navigate("likes")
             },
             onNavigateToWatchLater = {
-                navController.navigate("watchLater")
+                navController.navigate("playlist/${PlaylistRepository.WATCH_LATER_ID}")
             },
             onNavigateToSavedShorts = {
                 navController.navigate("savedShorts")
@@ -276,23 +296,30 @@ fun NavGraphBuilder.flowAppGraph(
             onNavigateBack = { navController.popBackStack() },
             onNavigateToAppearance = { navController.navigate("settings/appearance") },
             onNavigateToPlayerAppearance = { navController.navigate("settings/player_appearance") },
+            onNavigateToDonations = { navController.navigate("donations") },
             onNavigateToPersonality = { navController.navigate("personality") },
             onNavigateToDownloads = { navController.navigate("settings/downloads") },
             onNavigateToTimeManagement = { navController.navigate("settings/time_management") },
             onNavigateToImport = { navController.navigate("settings/import") },
             onNavigateToPlayerSettings = { navController.navigate("settings/player") },
+            onNavigateToProxySettings = { navController.navigate("settings/proxy") },
             onNavigateToVideoQuality = { navController.navigate("settings/video_quality") },
             onNavigateToShortsQuality = { navController.navigate("settings/shorts_quality") },
             onNavigateToContentSettings = { navController.navigate("settings/content") },
+            onNavigateToDateTimeSettings = { navController.navigate("settings/datetime") },
             onNavigateToBufferSettings = { navController.navigate("settings/buffer") },
             onNavigateToSearchHistory = { navController.navigate("settings/search_history") },
+            onNavigateToAbout = { navController.navigate("settings/about") },
             onNavigateToUserPreferences = { navController.navigate("settings/user_preferences") },
             onNavigateToNotifications = { navController.navigate("settings/notifications") },
+            onNavigateToAppIconPicker = { navController.navigate("settings/app_icon") },
+            onNavigateToDiagnostics = { navController.navigate("settings/diagnostics") },
             onNavigateToAutoBackup = { navController.navigate("settings/auto_backup") },
             onNavigateToExport = { navController.navigate("settings/export") },
             onNavigateToSponsorBlockSettings = { navController.navigate("settings/sponsorblock") }
         )
     }
+
     composable("settings/auto_backup") {
         currentRoute.value = "settings/auto_backup"
         showBottomNav.value = false
@@ -321,6 +348,14 @@ fun NavGraphBuilder.flowAppGraph(
         currentRoute.value = "settings/player"
         showBottomNav.value = false
         io.github.aedev.flow.ui.screens.settings.PlayerSettingsScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
+
+    composable("settings/proxy") {
+        currentRoute.value = "settings/proxy"
+        showBottomNav.value = false
+        io.github.aedev.flow.ui.screens.settings.ProxySettingsScreen(
             onNavigateBack = { navController.popBackStack() }
         )
     }
@@ -372,6 +407,14 @@ fun NavGraphBuilder.flowAppGraph(
             onBackClick = { navController.popBackStack() }
         )
     }
+
+    composable("settings/datetime") {
+        currentRoute.value = "settings/datetime"
+        showBottomNav.value = false
+        io.github.aedev.flow.ui.screens.settings.DateTimeSettingsScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
     
     composable("settings/import") {
         currentRoute.value = "settings/import"
@@ -388,14 +431,27 @@ fun NavGraphBuilder.flowAppGraph(
         )
     }
 
+    composable("settings/about") {
+        currentRoute.value = "settings/about"
+        showBottomNav.value = false
+        io.github.aedev.flow.ui.screens.settings.AboutScreen(
+            onNavigateBack = { navController.popBackStack() },
+            onNavigateToDonations = { navController.navigate("donations") }
+        )
+    }
+
     composable("settings/appearance") {
         currentRoute.value = "settings/appearance"
         showBottomNav.value = false
         io.github.aedev.flow.ui.screens.settings.AppearanceScreen(
             currentTheme = currentTheme,
             customThemeColors = customThemeColors,
+            systemLightThemeMode = systemLightThemeMode,
+            systemDarkThemeMode = systemDarkThemeMode,
             onThemeChange = onThemeChange,
             onCustomThemeColorsChange = onCustomThemeColorsChange,
+            onSystemLightThemeChange = onSystemLightThemeChange,
+            onSystemDarkThemeChange = onSystemDarkThemeChange,
             onNavigateBack = { navController.popBackStack() }
         )
     }
@@ -420,6 +476,14 @@ fun NavGraphBuilder.flowAppGraph(
         currentRoute.value = "settings/notifications"
         showBottomNav.value = false
         io.github.aedev.flow.ui.screens.settings.NotificationSettingsScreen(
+            onNavigateBack = { navController.popBackStack() }
+        )
+    }
+
+    composable("settings/app_icon") {
+        currentRoute.value = "settings/app_icon"
+        showBottomNav.value = false
+        io.github.aedev.flow.ui.screens.settings.AppIconPickerScreen(
             onNavigateBack = { navController.popBackStack() }
         )
     }
@@ -468,7 +532,11 @@ fun NavGraphBuilder.flowAppGraph(
                 }
             },
             onShortClick = { videoId ->
-                navController.navigate("shorts?startVideoId=$videoId")
+                if (disableShortsPlayer) {
+                    navController.navigate("player/$videoId")
+                } else {
+                    navController.navigate("shorts?startVideoId=$videoId")
+                }
             },
             onPlaylistClick = { playlistId ->
                 navController.navigate("playlist/$playlistId")
@@ -481,50 +549,46 @@ fun NavGraphBuilder.flowAppGraph(
     composable("history") {
         currentRoute.value = "history"
         showBottomNav.value = false
+        val musicPlayerViewModel: MusicPlayerViewModel = hiltViewModel()
         HistoryScreen(
             onVideoClick = { track ->
                 navController.navigate("player/${track.videoId}")
             },
-            onBackClick = { navController.popBackStack() },
-            onArtistClick = { channelId ->
-                navController.navigate("channel?url=$channelId")
-            }
+            onShortClick = { videoId ->
+                if (disableShortsPlayer) {
+                    navController.navigate("player/$videoId")
+                } else {
+                    navController.navigate("shorts?startVideoId=$videoId")
+                }
+            },
+            onMusicClick = { track, queue ->
+                musicPlayerViewModel.loadAndPlayTrack(track, queue, "History")
+                val encodedUrl = android.net.Uri.encode(track.thumbnailUrl)
+                val encodedTitle = android.net.Uri.encode(track.title)
+                val encodedArtist = android.net.Uri.encode(track.artist)
+                navController.navigate("musicPlayer/${track.videoId}?title=$encodedTitle&artist=$encodedArtist&thumbnailUrl=$encodedUrl")
+            },
+            onBackClick = { navController.popBackStack() }
         )
     }
 
-    // Liked Videos Screen
-    composable("likedVideos") {
-        currentRoute.value = "likedVideos"
+    // Likes Screen
+    composable("likes") {
+        currentRoute.value = "likes"
         showBottomNav.value = false
-        LikedVideosScreen(
+        val musicPlayerViewModel: MusicPlayerViewModel = hiltViewModel()
+        LikesScreen(
             onVideoClick = { track ->
                 navController.navigate("player/${track.videoId}")
             },
-            onBackClick = { navController.popBackStack() },
-            onArtistClick = { channelId ->
-                navController.navigate("channel?url=$channelId")
-            }
-        )
-    }
-
-    // Watch Later Screen
-    composable("watchLater") {
-        currentRoute.value = "watchLater"
-        showBottomNav.value = false
-        WatchLaterScreen(
-            onBackClick = { navController.popBackStack() },
-            onVideoClick = { video ->
-                if (video.isMusic) {
-                    navController.navigate("musicPlayer/${video.id}")
-                } else if (video.isShort && !disableShortsPlayer) {
-                    navController.navigate("shorts?startVideoId=${video.id}")
-                } else {
-                    navController.navigate("player/${video.id}")
-                }
+            onMusicClick = { track, queue ->
+                musicPlayerViewModel.loadAndPlayTrack(track, queue, "Likes")
+                val encodedUrl = android.net.Uri.encode(track.thumbnailUrl)
+                val encodedTitle = android.net.Uri.encode(track.title)
+                val encodedArtist = android.net.Uri.encode(track.artist)
+                navController.navigate("musicPlayer/${track.videoId}?title=$encodedTitle&artist=$encodedArtist&thumbnailUrl=$encodedUrl")
             },
-            onPlayPlaylist = { videos, index ->
-                playerViewModel.playPlaylist(videos, index, "Watch Later")
-            }
+            onBackClick = { navController.popBackStack() }
         )
     }
 
@@ -537,8 +601,7 @@ fun NavGraphBuilder.flowAppGraph(
             onPlaylistClick = { playlist ->
                 navController.navigate("playlist/${playlist.id}")
             },
-            onNavigateToWatchLater = { navController.navigate("watchLater") },
-            onNavigateToLikedVideos = { navController.navigate("likedVideos") }
+            onNavigateToWatchLater = { navController.navigate("playlist/${PlaylistRepository.WATCH_LATER_ID}") }
         )
     }
 
@@ -550,48 +613,6 @@ fun NavGraphBuilder.flowAppGraph(
             onBackClick = { navController.popBackStack() },
             onPlaylistClick = { playlist ->
                 navController.navigate("musicPlaylist/${playlist.id}")
-            },
-            onNavigateToLikedMusic = { navController.navigate("likedMusic") },
-            onNavigateToMusicHistory = { navController.navigate("musicHistory") }
-        )
-    }
-
-    composable("likedMusic") {
-        currentRoute.value = "likedMusic"
-        showBottomNav.value = false
-        val musicPlayerViewModel: MusicPlayerViewModel = hiltViewModel()
-        LikedVideosScreen(
-            onBackClick = { navController.popBackStack() },
-            onVideoClick = { track ->
-                musicPlayerViewModel.loadAndPlayTrack(track, emptyList(), "Liked Music")
-                val encodedUrl = android.net.Uri.encode(track.thumbnailUrl)
-                val encodedTitle = android.net.Uri.encode(track.title)
-                val encodedArtist = android.net.Uri.encode(track.artist)
-                navController.navigate("musicPlayer/${track.videoId}?title=$encodedTitle&artist=$encodedArtist&thumbnailUrl=$encodedUrl")
-            },
-            isMusic = true,
-            onArtistClick = { channelId ->
-                navController.navigate("artist/$channelId")
-            }
-        )
-    }
-
-    composable("musicHistory") {
-        currentRoute.value = "musicHistory"
-        showBottomNav.value = false
-        val musicPlayerViewModel: MusicPlayerViewModel = hiltViewModel()
-        HistoryScreen(
-            onBackClick = { navController.popBackStack() },
-            onVideoClick = { track ->
-                musicPlayerViewModel.loadAndPlayTrack(track, emptyList(), "Music History")
-                val encodedUrl = android.net.Uri.encode(track.thumbnailUrl)
-                val encodedTitle = android.net.Uri.encode(track.title)
-                val encodedArtist = android.net.Uri.encode(track.artist)
-                navController.navigate("musicPlayer/${track.videoId}?title=$encodedTitle&artist=$encodedArtist&thumbnailUrl=$encodedUrl")
-            },
-            isMusic = true,
-            onArtistClick = { channelId ->
-                navController.navigate("artist/$channelId")
             }
         )
     }
@@ -850,6 +871,7 @@ fun NavGraphBuilder.flowAppGraph(
             uiState.artistDetails?.let { details ->
                 ArtistPage(
                     artistDetails = details,
+                    downloadedTrackIds = uiState.downloadedTrackIds,
                     onBackClick = { navController.popBackStack() },
                     onTrackClick = { track, queue ->
                         musicPlayerViewModel.loadAndPlayTrack(track, queue)
@@ -1065,7 +1087,10 @@ fun NavGraphBuilder.flowAppGraph(
         val playerVisible = playerVisibleState.value
 
         LaunchedEffect(effectiveVideoId) {
-            if (playerUiState.cachedVideo?.id != effectiveVideoId || !playerVisible) {
+            val isAlreadyPlayingThis = playerUiState.cachedVideo?.id == effectiveVideoId &&
+                playerVisible &&
+                !playerUiState.isRestoredSession
+            if (!isAlreadyPlayingThis) {
                 val placeholder = Video(
                     id = effectiveVideoId,
                     title = "",

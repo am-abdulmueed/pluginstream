@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import io.github.aedev.flow.data.local.AppDatabase
+import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -34,8 +36,17 @@ class SubscriptionRepository private constructor(private val context: Context) {
      */
     suspend fun subscribe(channel: ChannelSubscription) {
         context.subscriptionsDataStore.edit { preferences ->
+            val existing = preferences[channelKey(channel.channelId)]?.let { deserializeChannel(it) }
+            val safeChannel = when {
+                ThumbnailUrlResolver.isYoutubeVideoThumbnail(channel.channelThumbnail) &&
+                    existing?.channelThumbnail?.isNotBlank() == true &&
+                    !ThumbnailUrlResolver.isYoutubeVideoThumbnail(existing.channelThumbnail) ->
+                    channel.copy(channelThumbnail = existing.channelThumbnail)
+                else -> channel
+            }
+
             // Save channel data
-            preferences[channelKey(channel.channelId)] = serializeChannel(channel)
+            preferences[channelKey(safeChannel.channelId)] = serializeChannel(safeChannel)
             
             // Update order list
             val currentOrder = preferences[stringPreferencesKey(SUBSCRIPTIONS_ORDER_KEY)] ?: ""
@@ -45,8 +56,8 @@ class SubscriptionRepository private constructor(private val context: Context) {
                 currentOrder.split(",").toMutableList()
             }
             
-            if (!orderList.contains(channel.channelId)) {
-                orderList.add(0, channel.channelId) // Add to front
+            if (!orderList.contains(safeChannel.channelId)) {
+                orderList.add(0, safeChannel.channelId)
                 preferences[stringPreferencesKey(SUBSCRIPTIONS_ORDER_KEY)] = orderList.joinToString(",")
             }
         }
@@ -67,6 +78,10 @@ class SubscriptionRepository private constructor(private val context: Context) {
                 preferences[stringPreferencesKey(SUBSCRIPTIONS_ORDER_KEY)] = orderList.joinToString(",")
             }
         }
+
+        AppDatabase.getDatabase(context)
+            .cacheDao()
+            .deleteSubscriptionFeedForChannel(channelId)
     }
     
     /**
@@ -120,9 +135,35 @@ class SubscriptionRepository private constructor(private val context: Context) {
             channelData?.let { deserializeChannel(it) }
         }
     }
+
+    suspend fun repairVideoThumbnailSubscriptions(
+        fetchChannelThumbnail: suspend (String) -> String
+    ): Int {
+        val subscriptions = getAllSubscriptions().first()
+        val repairs = subscriptions
+            .filter { ThumbnailUrlResolver.isYoutubeVideoThumbnail(it.channelThumbnail) }
+            .mapNotNull { subscription ->
+                val avatar = fetchChannelThumbnail(subscription.channelId).trim()
+                if (avatar.isNotEmpty() && !ThumbnailUrlResolver.isYoutubeVideoThumbnail(avatar)) {
+                    subscription.channelId to subscription.copy(channelThumbnail = avatar)
+                } else {
+                    null
+                }
+            }
+            .toMap()
+
+        if (repairs.isEmpty()) return 0
+
+        context.subscriptionsDataStore.edit { preferences ->
+            repairs.forEach { (channelId, subscription) ->
+                preferences[channelKey(channelId)] = serializeChannel(subscription)
+            }
+        }
+        return repairs.size
+    }
     
     private fun serializeChannel(channel: ChannelSubscription): String {
-        return "${channel.channelId}|${channel.channelName}|${channel.channelThumbnail}|${channel.subscribedAt}|${channel.lastVideoId ?: ""}|${channel.lastCheckTime}|${channel.isNotificationEnabled}"
+        return "${channel.channelId}|${channel.channelName}|${channel.channelThumbnail}|${channel.subscribedAt}|${channel.lastVideoId ?: ""}|${channel.lastCheckTime}|${channel.isNotificationEnabled}|${channel.isMusic}"
     }
     
     private fun deserializeChannel(data: String): ChannelSubscription? {
@@ -136,7 +177,8 @@ class SubscriptionRepository private constructor(private val context: Context) {
                     subscribedAt = parts[3].toLong(),
                     lastVideoId = if (parts.size > 4 && parts[4].isNotEmpty()) parts[4] else null,
                     lastCheckTime = if (parts.size > 5 && parts[5].isNotEmpty()) parts[5].toLong() else 0L,
-                    isNotificationEnabled = if (parts.size > 6 && parts[6].isNotEmpty()) parts[6].toBoolean() else false
+                    isNotificationEnabled = if (parts.size > 6 && parts[6].isNotEmpty()) parts[6].toBoolean() else false,
+                    isMusic = if (parts.size > 7 && parts[7].isNotEmpty()) parts[7].toBoolean() else false
                 )
             } else {
                 null
@@ -189,5 +231,6 @@ data class ChannelSubscription(
     val subscribedAt: Long = System.currentTimeMillis(),
     val lastVideoId: String? = null,
     val lastCheckTime: Long = 0L,
-    val isNotificationEnabled: Boolean = false
+    val isNotificationEnabled: Boolean = false,
+    val isMusic: Boolean = false
 )

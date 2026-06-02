@@ -14,11 +14,14 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,8 +53,9 @@ import androidx.compose.ui.geometry.Size
 import io.github.aedev.flow.data.model.SponsorBlockSegment
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,6 +72,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.core.graphics.BitmapCompat
 import androidx.core.math.MathUtils
 import org.schabi.newpipe.extractor.stream.StreamSegment
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 // Custom seekbar with preview thumbnails
@@ -85,8 +90,10 @@ fun SeekbarWithPreview(
     chapters: List<StreamSegment> = emptyList(),
     sponsorSegments: List<SponsorBlockSegment> = emptyList(),
     duration: Long = 0L,
-    bufferedValue: Float = 0f
+    bufferedValue: Float = 0f,
+    edgeAligned: Boolean = false
 ) {
+    val previewEnabled = false
     var previewPosition by remember { mutableFloatStateOf(0f) }
     var previewBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -98,10 +105,11 @@ fun SeekbarWithPreview(
     val previewH = previewBitmap?.let { with(density) { it.height.toDp() } } ?: fallbackPreviewH
     
     var sliderWidth by remember { mutableFloatStateOf(0f) }
+    var edgePointerActive by remember { mutableStateOf(false) }
     
     val isPressed by interactionSource.collectIsPressedAsState()
     val isDragged by interactionSource.collectIsDraggedAsState()
-    val isInteracting = isPressed || isDragged
+    val isInteracting = isPressed || isDragged || edgePointerActive
     
     // Internal value to keep the thumb following the finger smoothly
     var internalValue by remember { mutableFloatStateOf(value) }
@@ -115,7 +123,7 @@ fun SeekbarWithPreview(
 
     // Async thumbnail loading with debouncing and better responsiveness
     LaunchedEffect(internalValue, isInteracting) {
-        if (isInteracting && seekbarPreviewHelper != null) {
+        if (previewEnabled && isInteracting && seekbarPreviewHelper != null) {
             val durationMs = seekbarPreviewHelper.getPlayer().duration
             if (durationMs > 0) {
                 // Round to nearest 2 seconds for better cache hits during scrub
@@ -139,16 +147,12 @@ fun SeekbarWithPreview(
                 }
             }
         } else {
-            // Delay hiding to make it feel smoother
-            delay(300)
-            if (!isInteracting) {
-                previewBitmap = null
-            }
+            previewBitmap = null
         }
     }
 
     LaunchedEffect(isInteracting) {
-        if (isInteracting && sliderWidth > 0f) {
+        if (previewEnabled && isInteracting && sliderWidth > 0f) {
             previewPosition = with(density) { (internalValue * sliderWidth).toDp().value }
         }
     }
@@ -168,37 +172,33 @@ fun SeekbarWithPreview(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints)
-                val reportedHeight = 32.dp.roundToPx()
-                layout(placeable.width, reportedHeight) {
-                    placeable.placeRelative(0, 0)
-                }
-            }
     ) {
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(32.dp)
+                .height(if (edgeAligned) 20.dp else 32.dp)
                 .onGloballyPositioned { coordinates ->
                     sliderWidth = coordinates.size.width.toFloat()
                 },
-            contentAlignment = Alignment.Center
+            contentAlignment = if (edgeAligned) Alignment.BottomCenter else Alignment.Center
         ) {
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(trackHeight)
+                .height(if (edgeAligned) 20.dp else trackHeight)
         ) {
-            val height = size.height
+            val trackHeightPx = trackHeight.toPx()
             val width = size.width
+            val trackTop = if (edgeAligned) size.height - trackHeightPx else 0f
+            val trackCenterY = trackTop + trackHeightPx / 2f
             
             // Draw inactive track (background)
             drawRoundRect(
                 color = Color.White.copy(alpha = 0.15f),
-                size = Size(width, height),
-                cornerRadius = CornerRadius(height / 2)
+                topLeft = Offset(0f, trackTop),
+                size = Size(width, trackHeightPx),
+                cornerRadius = CornerRadius(trackHeightPx / 2)
             )
             
             // Draw buffer track (the NewPipe feature)
@@ -206,8 +206,9 @@ fun SeekbarWithPreview(
                 val bufferWidth = width * bufferedValue.coerceIn(0f, 1f)
                 drawRoundRect(
                     color = Color.White.copy(alpha = 0.5f), // Increased visibility for buffer
-                    size = Size(bufferWidth, height),
-                    cornerRadius = CornerRadius(height / 2)
+                    topLeft = Offset(0f, trackTop),
+                    size = Size(bufferWidth, trackHeightPx),
+                    cornerRadius = CornerRadius(trackHeightPx / 2)
                 )
             }
             
@@ -234,9 +235,9 @@ fun SeekbarWithPreview(
                          
                          drawRoundRect(
                              color = segmentColor,
-                             topLeft = Offset(startX, 0f),
-                             size = Size(segWidth, height),
-                             cornerRadius = CornerRadius(height / 2)
+                             topLeft = Offset(startX, trackTop),
+                             size = Size(segWidth, trackHeightPx),
+                             cornerRadius = CornerRadius(trackHeightPx / 2)
                          )
                      }
                 }
@@ -246,8 +247,9 @@ fun SeekbarWithPreview(
             val activeWidth = width * internalValue
             drawRoundRect(
                 color = primaryColor,
-                size = Size(activeWidth, height),
-                cornerRadius = CornerRadius(height / 2)
+                topLeft = Offset(0f, trackTop),
+                size = Size(activeWidth, trackHeightPx),
+                cornerRadius = CornerRadius(trackHeightPx / 2)
             )
             
             // Draw Chapter Separators (Gaps)
@@ -265,13 +267,38 @@ fun SeekbarWithPreview(
                             // Draw a clear line to simulate a gap
                             drawLine(
                                 color = Color.Black.copy(alpha = 0.8f), 
-                                start = Offset(gapX, 0f), 
-                                end = Offset(gapX, height),
+                                start = Offset(gapX, trackTop), 
+                                end = Offset(gapX, trackTop + trackHeightPx),
                                 strokeWidth = gapWidth
                             )
                         }
                     }
                 }
+            }
+
+            if (edgeAligned && thumbScale > 0f) {
+                val thumbRadius = 7.dp.toPx() * thumbScale
+                val thumbX = if (width > thumbRadius * 2f) {
+                    (width * internalValue).coerceIn(thumbRadius, width - thumbRadius)
+                } else {
+                    width * internalValue
+                }
+                drawCircle(
+                    color = primaryColor.copy(alpha = 0.24f),
+                    radius = thumbRadius + 8.dp.toPx(),
+                    center = Offset(thumbX, trackCenterY)
+                )
+                drawCircle(
+                    color = Color.White,
+                    radius = thumbRadius,
+                    center = Offset(thumbX, trackCenterY)
+                )
+                drawCircle(
+                    color = primaryColor,
+                    radius = thumbRadius,
+                    center = Offset(thumbX, trackCenterY),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.dp.toPx())
+                )
             }
         }
 
@@ -284,14 +311,14 @@ fun SeekbarWithPreview(
                 onValueChange(newValue)
 
                 // Update preview position
-                if (seekbarPreviewHelper != null) {
+                if (previewEnabled && seekbarPreviewHelper != null) {
                     previewPosition = with(density) { (newValue * sliderWidth).toDp().value }
                 }
             },
             onValueChangeFinished = {
                 onValueChangeFinished?.invoke()
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = if (edgeAligned) Modifier.fillMaxSize() else Modifier.fillMaxWidth(),
             enabled = enabled,
             valueRange = valueRange,
             steps = steps,
@@ -302,31 +329,103 @@ fun SeekbarWithPreview(
                 inactiveTrackColor = Color.Transparent
             ),
             thumb = {
-                Box(
-                    modifier = Modifier
-                        .size(14.dp)
-                        .scale(thumbScale)
-                        .background(Color.White, CircleShape)
-                        .border(3.dp, primaryColor, CircleShape)
-                        .then(
-                            if (isInteracting) {
-                                Modifier.background(
-                                    Brush.radialGradient(
-                                        colors = listOf(primaryColor.copy(alpha = 0.4f), Color.Transparent),
-                                        radius = 40f
+                if (edgeAligned) {
+                    Spacer(modifier = Modifier.size(0.dp))
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(14.dp)
+                            .scale(thumbScale)
+                            .background(Color.White, CircleShape)
+                            .border(3.dp, primaryColor, CircleShape)
+                            .then(
+                                if (isInteracting) {
+                                    Modifier.background(
+                                        Brush.radialGradient(
+                                            colors = listOf(primaryColor.copy(alpha = 0.4f), Color.Transparent),
+                                            radius = 40f
+                                        )
                                     )
-                                )
-                            } else Modifier
-                        )
-                )
+                                } else Modifier
+                            )
+                    )
+                }
             }
         )
+
+        if (edgeAligned) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .pointerInput(enabled, valueRange, steps) {
+                        if (!enabled) return@pointerInput
+
+                        fun valueForX(x: Float): Float {
+                            val width = size.width.toFloat().coerceAtLeast(1f)
+                            val fraction = (x / width).coerceIn(0f, 1f)
+                            val steppedFraction = if (steps > 0) {
+                                val intervals = steps + 1
+                                (fraction * intervals).roundToInt()
+                                    .coerceIn(0, intervals)
+                                    .toFloat() / intervals.toFloat()
+                            } else {
+                                fraction
+                            }
+                            return valueRange.start +
+                                (valueRange.endInclusive - valueRange.start) * steppedFraction
+                        }
+
+                        fun updateValueFromX(x: Float) {
+                            val newValue = valueForX(x)
+                            if (abs(newValue - internalValue) > 0.0001f) {
+                                internalValue = newValue
+                                onValueChange(newValue)
+
+                                if (previewEnabled && seekbarPreviewHelper != null) {
+                                    previewPosition = with(density) { (newValue * sliderWidth).toDp().value }
+                                }
+                            }
+                        }
+
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            edgePointerActive = true
+                            down.consume()
+                            updateValueFromX(down.position.x)
+
+                            try {
+                                var activePointerId = down.id
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull { it.id == activePointerId }
+                                        ?: event.changes.firstOrNull { it.pressed }
+                                        ?: break
+
+                                    activePointerId = change.id
+                                    if (!change.pressed) {
+                                        change.consume()
+                                        break
+                                    }
+
+                                    if (change.positionChange() != Offset.Zero) {
+                                        updateValueFromX(change.position.x)
+                                    }
+                                    change.consume()
+                                }
+                            } finally {
+                                edgePointerActive = false
+                                onValueChangeFinished?.invoke()
+                            }
+                        }
+                    }
+            )
+        }
         } 
 
         val triangleH = 7.dp
 
         AnimatedVisibility(
-            visible = isInteracting,
+            visible = previewEnabled && isInteracting,
             enter = fadeIn(tween(150)) + slideInVertically(
                 initialOffsetY = { it / 2 }, animationSpec = tween(150)
             ),

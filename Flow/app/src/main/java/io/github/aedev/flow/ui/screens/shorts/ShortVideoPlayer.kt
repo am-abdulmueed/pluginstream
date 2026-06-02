@@ -47,13 +47,14 @@ import coil3.compose.AsyncImage
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.model.toShortVideo
-import io.github.aedev.flow.utils.formatTimeAgo
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.shorts.ShortsPlayerPool
 import io.github.aedev.flow.ui.components.ChannelAvatarImage
 import io.github.aedev.flow.ui.components.rememberFlowSheetState
+import io.github.aedev.flow.ui.components.rememberDateDisplaySettings
+import io.github.aedev.flow.utils.DateContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -76,6 +77,7 @@ fun ShortVideoPage(
     val context = LocalContext.current
     val playerPreferences = remember { io.github.aedev.flow.data.local.PlayerPreferences(context) }
     val shortsPlaybackMode by playerPreferences.shortsPlaybackMode.collectAsState(initial = "loop")
+    val shortsAutoScrollSeconds by playerPreferences.shortsAutoScrollSeconds.collectAsState(initial = 10)
     val haptic = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     val playerPool = remember { ShortsPlayerPool.getInstance() }
@@ -103,6 +105,10 @@ fun ShortVideoPage(
     var showLikeAnimation by remember { mutableStateOf(false) }
     var isFastForwarding by remember { mutableStateOf(false) }
     var hasStartedPlaying by remember { mutableStateOf(false) }
+    var hasAutoAdvanced by remember(video.id, isActive, shortsPlaybackMode, shortsAutoScrollSeconds) { mutableStateOf(false) }
+    var hasRecordedWatched by remember(video.id, isActive) { mutableStateOf(false) }
+    var hasTouchedHistory by remember(video.id, isActive) { mutableStateOf(false) }
+    var lastProgressSavedAt by remember(video.id, isActive) { mutableStateOf(0L) }
     var isDragging by remember { mutableStateOf(false) }
     var dragProgress by remember { mutableStateOf(0f) }
 
@@ -110,8 +116,14 @@ fun ShortVideoPage(
     var showShortsOptionsSheet by remember { mutableStateOf(false) }
     var showAudioTrackSheet by remember { mutableStateOf(false) }
     var showQualitySheet by remember { mutableStateOf(false) }
+    var showSpeedSheet by remember { mutableStateOf(false) }
+    val shortsSpeed by playerPreferences.shortsPlaybackSpeed.collectAsState(initial = 1f)
+
+    LaunchedEffect(isActive, shortsSpeed) {
+        if (isActive) playerPool.setBasePlaybackSpeed(shortsSpeed)
+    }
     var availableAudioStreams by remember { mutableStateOf<List<org.schabi.newpipe.extractor.stream.AudioStream>>(emptyList()) }
-    var availableVideoStreams by remember { mutableStateOf<List<org.schabi.newpipe.extractor.stream.VideoStream>>(emptyList()) }
+    var availableQualities by remember { mutableStateOf<List<io.github.aedev.flow.data.shorts.ShortVideoQuality>>(emptyList()) }
     var selectedAudioIndex by remember { mutableStateOf(0) }
     var selectedQualityHeight by remember { mutableStateOf(-1) }
     var isLoadingStreams by remember { mutableStateOf(false) }
@@ -120,6 +132,9 @@ fun ShortVideoPage(
     var showDownloadDialog by remember { mutableStateOf(false) }
     var currentStreamInfo by remember { mutableStateOf<org.schabi.newpipe.extractor.stream.StreamInfo?>(null) }
     var currentStreamSizes by remember { mutableStateOf<Map<String, Long>>(emptyMap()) }
+    var currentInnerTubeVideoFormats by remember { mutableStateOf<List<io.github.aedev.flow.innertube.models.response.PlayerResponse.StreamingData.Format>>(emptyList()) }
+    var currentInnerTubeAudioFormats by remember { mutableStateOf<List<io.github.aedev.flow.innertube.models.response.PlayerResponse.StreamingData.Format>>(emptyList()) }
+    val downloadDialogStyle by playerPreferences.downloadDialogStyle.collectAsState(initial = io.github.aedev.flow.data.local.DownloadDialogStyle.FULL)
 
     // ── PlayerView instance ──
     val playerView = remember {
@@ -180,12 +195,58 @@ fun ShortVideoPage(
     }
 
     // ── Add listener to detect when video ends (for auto-play-next) ──
-    DisposableEffect(isActive, pageIndex, shortsPlaybackMode) {
+    fun requestAutoAdvance() {
+        if (!hasAutoAdvanced) {
+            hasAutoAdvanced = true
+            onVideoEnded()
+        }
+    }
+
+    fun recordShortWatched(positionMs: Long = currentPosition, durationMs: Long = duration) {
+        if (!hasRecordedWatched) {
+            hasRecordedWatched = true
+            viewModel.recordShortWatched(video.toShortVideo(), positionMs, durationMs)
+        }
+    }
+
+    fun recordShortProgress(positionMs: Long = currentPosition, durationMs: Long = duration) {
+        if (!hasRecordedWatched) {
+            hasTouchedHistory = true
+            lastProgressSavedAt = positionMs
+            viewModel.recordShortProgress(video.toShortVideo(), positionMs, durationMs)
+        }
+    }
+
+    val latestPosition by rememberUpdatedState(currentPosition)
+    val latestDuration by rememberUpdatedState(duration)
+    val latestHasStartedPlaying by rememberUpdatedState(hasStartedPlaying)
+    val latestHasRecordedWatched by rememberUpdatedState(hasRecordedWatched)
+
+    DisposableEffect(video.id, isActive) {
+        onDispose {
+            if (
+                isActive &&
+                !latestHasRecordedWatched &&
+                (latestHasStartedPlaying || latestPosition >= 1_000L)
+            ) {
+                viewModel.recordShortProgress(video.toShortVideo(), latestPosition, latestDuration)
+            }
+        }
+    }
+
+    DisposableEffect(isActive, pageIndex, shortsPlaybackMode, shortsAutoScrollSeconds) {
         val player = playerPool.getPlayerForIndex(pageIndex)
         val eventListener = object : androidx.media3.common.Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == androidx.media3.common.Player.STATE_ENDED && shortsPlaybackMode == "auto_next") {
-                    onVideoEnded()
+                if (playbackState == androidx.media3.common.Player.STATE_ENDED) {
+                    val endedDuration = player?.duration?.coerceAtLeast(0L) ?: duration
+                    recordShortWatched(
+                        positionMs = endedDuration.takeIf { it > 0L } ?: currentPosition,
+                        durationMs = endedDuration
+                    )
+                    if (shortsPlaybackMode == "auto_next" || shortsPlaybackMode == "auto_interval") {
+                        requestAutoAdvance()
+                    }
                 }
             }
         }
@@ -224,6 +285,33 @@ fun ShortVideoPage(
     }
 
     // ── Pause indicator auto-hide ──
+    LaunchedEffect(isActive, currentPosition, duration, isPlaying, isBuffering, isDragging, shortsPlaybackMode, shortsAutoScrollSeconds) {
+        if (!isActive || isDragging || isBuffering || !isPlaying) return@LaunchedEffect
+
+        val safeDuration = duration.coerceAtLeast(0L)
+        if (!hasTouchedHistory && currentPosition >= 1_500L) {
+            recordShortProgress(currentPosition, safeDuration)
+        } else if (hasTouchedHistory && currentPosition - lastProgressSavedAt >= 5_000L) {
+            recordShortProgress(currentPosition, safeDuration)
+        }
+
+        if (!hasRecordedWatched && safeDuration > 0L && currentPosition >= (safeDuration * 0.9f).toLong()) {
+            recordShortWatched(currentPosition, safeDuration)
+        }
+
+        if (shortsPlaybackMode == "auto_interval" && !hasAutoAdvanced) {
+            val intervalMs = shortsAutoScrollSeconds.coerceIn(5, 20) * 1000L
+            val shouldWaitForEnd = safeDuration in 1..intervalMs
+            if (!shouldWaitForEnd && currentPosition >= intervalMs) {
+                recordShortWatched(
+                    positionMs = currentPosition,
+                    durationMs = safeDuration.takeIf { it > 0L } ?: intervalMs
+                )
+                requestAutoAdvance()
+            }
+        }
+    }
+
     LaunchedEffect(showPauseIndicator) {
         if (showPauseIndicator) {
             delay(600)
@@ -322,6 +410,40 @@ fun ShortVideoPage(
         }
 
         // ── Buffering Indicator ──
+        AnimatedVisibility(
+            visible = isActive && shortsPlaybackMode == "auto_interval",
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(top = 56.dp, end = 16.dp)
+        ) {
+            Surface(
+                color = Color.Black.copy(alpha = 0.55f),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Timer,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.shorts_auto_scroll_active_template, shortsAutoScrollSeconds),
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+
         if (isBuffering) {
             CircularProgressIndicator(
                 modifier = Modifier
@@ -527,7 +649,7 @@ fun ShortVideoPage(
                         }
                         if (video.uploadDate.isNotBlank()) {
                             Text(
-                                text = formatTimeAgo(video.uploadDate),
+                                text = rememberDateDisplaySettings().format(video.uploadDate, DateContext.WATCH, video.timestamp),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.White.copy(alpha = 0.6f)
                             )
@@ -697,7 +819,10 @@ fun ShortVideoPage(
                     scope.launch {
                         val streamInfo = viewModel.getVideoStreamInfo(video.id)
                         currentStreamInfo = streamInfo
-                        if (streamInfo != null) {
+                        val (itVideo, itAudio) = viewModel.getInnerTubeDownloadFormats(video.id)
+                        currentInnerTubeVideoFormats = itVideo
+                        currentInnerTubeAudioFormats = itAudio
+                        if (streamInfo != null || itVideo.isNotEmpty()) {
                             currentStreamSizes = viewModel.fetchStreamSizes(video.id)
                             showDownloadDialog = true
                         }
@@ -733,17 +858,30 @@ fun ShortVideoPage(
                 if (!isLoadingStreams) {
                     isLoadingStreams = true
                     scope.launch {
-                        val streamInfo = viewModel.getVideoStreamInfo(video.id)
-                        availableVideoStreams = (
-                            (streamInfo?.videoStreams?.filterIsInstance<org.schabi.newpipe.extractor.stream.VideoStream>() ?: emptyList()) +
-                            (streamInfo?.videoOnlyStreams?.filterIsInstance<org.schabi.newpipe.extractor.stream.VideoStream>() ?: emptyList())
-                        ).distinctBy { it.height }.sortedByDescending { it.height }
+                        availableQualities = viewModel.getAvailableQualities(video.id)
                         isLoadingStreams = false
-                        if (availableVideoStreams.isNotEmpty()) showQualitySheet = true
+                        if (availableQualities.isNotEmpty()) showQualitySheet = true
                     }
                 }
             },
+            currentSpeed = shortsSpeed,
+            onSpeedClick = {
+                showShortsOptionsSheet = false
+                showSpeedSheet = true
+            },
             onDismiss = { showShortsOptionsSheet = false }
+        )
+    }
+
+    if (showSpeedSheet) {
+        ShortsSpeedSheet(
+            currentSpeed = shortsSpeed,
+            onSpeedSelected = { speed ->
+                scope.launch { playerPreferences.setShortsPlaybackSpeed(speed) }
+                playerPool.setBasePlaybackSpeed(speed)
+                showSpeedSheet = false
+            },
+            onDismiss = { showSpeedSheet = false }
         )
     }
 
@@ -764,16 +902,13 @@ fun ShortVideoPage(
     }
 
     // ── Quality Selection Sheet ──
-    if (showQualitySheet && availableVideoStreams.isNotEmpty()) {
+    if (showQualitySheet && availableQualities.isNotEmpty()) {
         ShortsQualitySheet(
-            videoStreams = availableVideoStreams,
+            qualities = availableQualities,
             selectedHeight = selectedQualityHeight.takeIf { it >= 0 },
-            onQualitySelected = { stream ->
-                val videoUrl = stream.content ?: stream.url
-                if (videoUrl != null) {
-                    playerPool.reloadWithVideoUrl(pageIndex, video.id, videoUrl)
-                    selectedQualityHeight = stream.height
-                }
+            onQualitySelected = { quality ->
+                playerPool.reloadWithVideoUrl(pageIndex, video.id, quality.videoUrl)
+                selectedQualityHeight = quality.heightClass
                 showQualitySheet = false
             },
             onDismiss = { showQualitySheet = false }
@@ -781,13 +916,26 @@ fun ShortVideoPage(
     }
 
     // ── Download Dialog ──
-    if (showDownloadDialog && currentStreamInfo != null) {
-        io.github.aedev.flow.ui.screens.player.components.DownloadQualityDialog(
-            streamInfo = currentStreamInfo,
-            streamSizes = currentStreamSizes,
-            video = video,
-            onDismiss = { showDownloadDialog = false }
-        )
+    if (showDownloadDialog && (currentStreamInfo != null || currentInnerTubeVideoFormats.isNotEmpty())) {
+        if (downloadDialogStyle == io.github.aedev.flow.data.local.DownloadDialogStyle.COMPACT) {
+            io.github.aedev.flow.ui.screens.player.components.DownloadQualityDialogCompact(
+                streamInfo = currentStreamInfo,
+                streamSizes = currentStreamSizes,
+                innerTubeVideoFormats = currentInnerTubeVideoFormats,
+                innerTubeAudioFormats = currentInnerTubeAudioFormats,
+                video = video,
+                onDismiss = { showDownloadDialog = false }
+            )
+        } else {
+            io.github.aedev.flow.ui.screens.player.components.DownloadQualityDialog(
+                streamInfo = currentStreamInfo,
+                streamSizes = currentStreamSizes,
+                innerTubeVideoFormats = currentInnerTubeVideoFormats,
+                innerTubeAudioFormats = currentInnerTubeAudioFormats,
+                video = video,
+                onDismiss = { showDownloadDialog = false }
+            )
+        }
     }
 }
 
@@ -801,6 +949,8 @@ private fun ShortsOptionsSheet(
     onDownloadClick: () -> Unit,
     onAudioTrackClick: () -> Unit,
     onQualityClick: () -> Unit,
+    currentSpeed: Float = 1f,
+    onSpeedClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberFlowSheetState()) {
@@ -991,6 +1141,94 @@ private fun ShortsOptionsSheet(
                     }
                 }
             }
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp))
+            Surface(
+                onClick = onSpeedClick,
+                color = Color.Transparent,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Speed,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = stringResource(R.string.shorts_playback_speed),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = if (currentSpeed == 1f) stringResource(R.string.speed_normal) else "${currentSpeed}x",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ShortsSpeedSheet(
+    currentSpeed: Float,
+    onSpeedSelected: (Float) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val speeds = listOf(0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberFlowSheetState()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.shorts_playback_speed),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+            )
+            HorizontalDivider()
+            LazyColumn {
+                items(speeds) { speed ->
+                    val isSelected = speed == currentSpeed
+                    Surface(
+                        onClick = { onSpeedSelected(speed) },
+                        color = Color.Transparent,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (speed == 1.0f) stringResource(R.string.speed_normal) else "${speed}x",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurface
+                            )
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -1095,9 +1333,9 @@ private fun ShortsAudioTrackSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShortsQualitySheet(
-    videoStreams: List<org.schabi.newpipe.extractor.stream.VideoStream>,
+    qualities: List<io.github.aedev.flow.data.shorts.ShortVideoQuality>,
     selectedHeight: Int?,
-    onQualitySelected: (org.schabi.newpipe.extractor.stream.VideoStream) -> Unit,
+    onQualitySelected: (io.github.aedev.flow.data.shorts.ShortVideoQuality) -> Unit,
     onDismiss: () -> Unit
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberFlowSheetState()) {
@@ -1114,12 +1352,12 @@ private fun ShortsQualitySheet(
             )
             HorizontalDivider()
             LazyColumn {
-                items(videoStreams) { stream ->
-                    val isSelected = stream.height == selectedHeight
-                    val label = "${stream.height}p"
-                    val formatLabel = stream.format?.name?.uppercase() ?: ""
+                items(qualities) { quality ->
+                    val isSelected = quality.heightClass == selectedHeight
+                    val label = quality.label
+                    val formatLabel = quality.codecLabel
                     Surface(
-                        onClick = { onQualitySelected(stream) },
+                        onClick = { onQualitySelected(quality) },
                         color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                         modifier = Modifier.fillMaxWidth()
                     ) {

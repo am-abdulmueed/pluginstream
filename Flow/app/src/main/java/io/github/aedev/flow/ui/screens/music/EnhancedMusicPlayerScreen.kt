@@ -6,19 +6,19 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -31,16 +31,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.util.VelocityTracker
-import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -65,6 +61,8 @@ import coil3.asDrawable
 import androidx.core.graphics.drawable.toBitmap
 
 import io.github.aedev.flow.R
+import io.github.aedev.flow.data.local.MusicPlayerBackgroundStyle
+import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.SleepTimerManager
 import io.github.aedev.flow.ui.components.SleepTimerSheet
@@ -81,12 +79,17 @@ fun EnhancedMusicPlayerScreen(
     onBackClick: () -> Unit,
     onArtistClick: (String) -> Unit = {},
     onAlbumClick: (String) -> Unit = {},
+    isPlayerSheetExpanded: Boolean = true,
     viewModel: MusicPlayerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
+    val playerPreferences = remember { PlayerPreferences(context) }
+    val backgroundStyle by playerPreferences.musicPlayerBackgroundStyle.collectAsState(
+        initial = MusicPlayerBackgroundStyle.BLUR_GRADIENT
+    )
     
     val isVideoMode = false 
     var sheetColor by remember { mutableStateOf<Color?>(null) }
@@ -152,9 +155,8 @@ fun EnhancedMusicPlayerScreen(
     }
     
     // ── Unified Sheet State ──────────────────────────────────────────────
-    var currentTab by remember { mutableStateOf(PlayerTab.UP_NEXT) }
-    
-    val queuePeekHeight = 64.dp
+    var showQueueSheet by remember { mutableStateOf(false) }
+    var showInlineLyrics by remember { mutableStateOf(false) }
     
     // ── Dialogs & Sheets ─────────────────────────────────────────────────
     if (uiState.showCreatePlaylistDialog) {
@@ -184,14 +186,14 @@ fun EnhancedMusicPlayerScreen(
         MusicQuickActionsSheet(
             track = uiState.currentTrack!!,
             onDismiss = { showMoreOptions = false },
-            onViewArtist = { 
-                if (uiState.currentTrack!!.channelId.isNotEmpty()) {
-                    onArtistClick(uiState.currentTrack!!.channelId)
+            onViewArtist = { channelId ->
+                if (channelId.isNotEmpty()) {
+                    onArtistClick(channelId)
                 }
             },
-            onViewAlbum = { 
-                if (uiState.currentTrack!!.album.isNotEmpty()) {
-                    onAlbumClick(uiState.currentTrack!!.album)
+            onViewAlbum = { albumId ->
+                if (albumId.isNotEmpty()) {
+                    onAlbumClick(albumId)
                 }
             },
             onShare = { 
@@ -203,7 +205,8 @@ fun EnhancedMusicPlayerScreen(
                 context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.share_song)))
             },
             onInfoClick = { showInfoDialog = true },
-            onAudioEffectsClick = { showAudioSettings = true }
+            onAudioEffectsClick = { showAudioSettings = true },
+            showPlaylistDialogs = false
         )
     }
 
@@ -256,22 +259,40 @@ fun EnhancedMusicPlayerScreen(
         val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarPx = with(density) { navBarPadding.toPx() }
 
-        val reservedHeight = statusBarPadding + 56.dp + 32.dp + 32.dp + 20.dp + 72.dp + queuePeekHeight + navBarPadding
+        val reservedHeight = statusBarPadding + 56.dp + 32.dp + 32.dp + 20.dp + 72.dp + 64.dp + navBarPadding
         val availableForArtwork = screenHeight - reservedHeight
         val artworkMaxWidth = screenWidth - (PlayerHorizontalPadding * 2)
         val artworkSize = min(availableForArtwork, artworkMaxWidth).coerceAtLeast(160.dp)
 
         val maxHeightPx = constraints.maxHeight.toFloat()
-        val queuePeekPx = with(density) { queuePeekHeight.toPx() }
-        val queueCollapsedY = maxHeightPx - queuePeekPx - navBarPx
+        val queueHiddenY = maxHeightPx + navBarPx
         val queueExpandedY = with(density) { (statusBarPadding + 72.dp).toPx() }
-        val safeCollapsedY = queueCollapsedY.coerceAtLeast(queueExpandedY)
+        val safeHiddenY = queueHiddenY.coerceAtLeast(queueExpandedY)
 
-        var queueOffsetY by remember(safeCollapsedY) { mutableFloatStateOf(safeCollapsedY) }
-        val clampedQueueOffset = queueOffsetY.coerceIn(queueExpandedY, safeCollapsedY)
+        val queueOffsetY = remember { Animatable(safeHiddenY) }
+        LaunchedEffect(isPlayerSheetExpanded, safeHiddenY) {
+            if (!isPlayerSheetExpanded) {
+                showQueueSheet = false
+                queueOffsetY.snapTo(safeHiddenY)
+            }
+        }
+        LaunchedEffect(queueExpandedY, safeHiddenY) {
+            queueOffsetY.updateBounds(lowerBound = queueExpandedY, upperBound = safeHiddenY)
+            if (!showQueueSheet) {
+                queueOffsetY.snapTo(safeHiddenY)
+            } else {
+                queueOffsetY.snapTo(queueOffsetY.value.coerceIn(queueExpandedY, safeHiddenY))
+            }
+        }
+        val queueSheetActive = isPlayerSheetExpanded && showQueueSheet
+        val clampedQueueOffset = if (!queueSheetActive) {
+            safeHiddenY
+        } else {
+            queueOffsetY.value.coerceIn(queueExpandedY, safeHiddenY)
+        }
 
-        val queueFraction = if (safeCollapsedY != queueExpandedY) {
-            (1f - ((clampedQueueOffset - queueExpandedY) / (safeCollapsedY - queueExpandedY))).coerceIn(0f, 1f)
+        val queueFraction = if (safeHiddenY != queueExpandedY) {
+            (1f - ((clampedQueueOffset - queueExpandedY) / (safeHiddenY - queueExpandedY))).coerceIn(0f, 1f)
         } else 0f
 
         val mainAlpha = (1f - (queueFraction / 0.4f)).coerceIn(0f, 1f)
@@ -281,56 +302,53 @@ fun EnhancedMusicPlayerScreen(
         val miniHeaderTranslation = with(density) { 10.dp.toPx() * (1f - miniHeaderAlpha) }
 
         // ── Sheet animation helper ──────────────────────────────────────────
-        fun animateQueueSheet(target: Float) {
-            scope.launch {
-                animate(
-                    initialValue = queueOffsetY,
-                    targetValue = target,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    )
-                ) { value, _ ->
-                    queueOffsetY = value
-                }
+        suspend fun animateQueueSheetTo(target: Float, initialVelocity: Float = 0f) {
+            if (target < safeHiddenY && isPlayerSheetExpanded) showQueueSheet = true
+            queueOffsetY.stop()
+            queueOffsetY.animateTo(
+                targetValue = target.coerceIn(queueExpandedY, safeHiddenY),
+                initialVelocity = initialVelocity,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            )
+            if (target >= safeHiddenY) {
+                queueOffsetY.snapTo(safeHiddenY)
+                showQueueSheet = false
             }
         }
 
+        suspend fun settleQueueSheet(velocity: Float) {
+            val distance = safeHiddenY - queueExpandedY
+            val progress = if (distance > 0f) {
+                ((queueOffsetY.value - queueExpandedY) / distance).coerceIn(0f, 1f)
+            } else {
+                1f
+            }
+            val target = when {
+                velocity < -900f -> queueExpandedY
+                velocity > 900f -> safeHiddenY
+                progress < 0.42f -> queueExpandedY
+                else -> safeHiddenY
+            }
+            animateQueueSheetTo(target, velocity)
+        }
+
+        fun animateQueueSheet(target: Float) {
+            scope.launch { animateQueueSheetTo(target) }
+        }
+
         // ── Intercept system back when sheet is expanded ────────────────────
-        BackHandler(enabled = queueFraction > 0.5f) {
-            animateQueueSheet(safeCollapsedY)
+        BackHandler(enabled = queueSheetActive && queueFraction > 0.05f) {
+            animateQueueSheet(safeHiddenY)
         }
 
-        AnimatedContent(
-            targetState = uiState.currentTrack?.highResThumbnailUrl ?: track.highResThumbnailUrl,
-            transitionSpec = { fadeIn(tween(800)) togetherWith fadeOut(tween(800)) },
-            label = "bgArt"
-        ) { thumbnailUrl ->
-            AsyncImage(
-                model = thumbnailUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(150.dp),
-                alpha = 0.55f,
-                contentScale = ContentScale.Crop
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.00f to Color.Black.copy(alpha = 0.40f),
-                            0.30f to Color.Black.copy(alpha = 0.20f),
-                            0.55f to Color.Black.copy(alpha = 0.40f),
-                            0.80f to Color.Black.copy(alpha = 0.80f),
-                            1.00f to Color.Black.copy(alpha = 0.95f)
-                        )
-                    )
-                )
+        PlayerBackground(
+            thumbnailUrl = uiState.currentTrack?.highResThumbnailUrl ?: track.highResThumbnailUrl,
+            style = backgroundStyle,
+            paletteBaseColor = animatedSheetColor,
+            paletteAccentColor = animatedAccentColor
         )
 
         // ══════════════════════════════════════════════════════════
@@ -340,60 +358,116 @@ fun EnhancedMusicPlayerScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
-                .verticalScroll(rememberScrollState())
                 .graphicsLayer { alpha = mainAlpha }
         ) {
-            // ── Top Bar ──
-            PlayerTopBar(
-                playingFrom = uiState.playingFrom,
-                onBackClick = onBackClick,
-                onSleepTimerClick = { showSleepTimer = true },
-                onMoreOptionsClick = { showMoreOptions = true }
-            )
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // ── Artwork ──
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = PlayerHorizontalPadding)
+                    .weight(1f)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(artworkSize)
-                        .graphicsLayer {
-                            scaleX = artworkScale
-                            scaleY = artworkScale
+                AnimatedContent(
+                    targetState = showInlineLyrics,
+                    transitionSpec = {
+                        (fadeIn(tween(500)) + scaleIn(tween(500), initialScale = 0.98f)) togetherWith
+                            (fadeOut(tween(260)) + scaleOut(tween(260), targetScale = 1.02f))
+                    },
+                    label = "artworkInlineLyrics"
+                ) { lyricsVisible ->
+                    if (lyricsVisible) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    scaleX = artworkScale
+                                    scaleY = artworkScale
+                                }
+                        ) {
+                            InlineLyricsPanel(
+                                lyrics = uiState.lyrics,
+                                syncedLyrics = uiState.syncedLyrics,
+                                currentPosition = uiState.currentPosition,
+                                isLoading = uiState.isLyricsLoading,
+                                accentColor = animatedAccentColor,
+                                onSeekTo = { viewModel.seekTo(it) },
+                                providerName = uiState.lyricsProviderName,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         }
-                        .shadow(
-                            elevation = if (uiState.isPlaying) 32.dp else 12.dp,
-                            shape = RoundedCornerShape(8.dp),
-                            ambientColor = Color.Black.copy(alpha = 0.5f),
-                            spotColor = Color.Black.copy(alpha = 0.6f)
-                        )
-                        .clip(RoundedCornerShape(8.dp))
-                ) {
-                    PlayerArtwork(
-                        thumbnailUrl = (uiState.currentTrack?.highResThumbnailUrl ?: track.highResThumbnailUrl),
-                        isVideoMode = isVideoMode,
-                        isLoading = uiState.isLoading,
-                        player = EnhancedMusicPlayerManager.player,
-                        onSkipPrevious = {
-                            viewModel.skipToPrevious()
-                            skipDirection = SkipDirection.PREVIOUS
-                        },
-                        onSkipNext = {
-                            viewModel.skipToNext()
-                            skipDirection = SkipDirection.NEXT
-                        },
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    } else {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pointerInput(onBackClick) {
+                                    var downwardDrag = 0f
+                                    detectVerticalDragGestures(
+                                        onDragStart = { downwardDrag = 0f },
+                                        onVerticalDrag = { change, dragAmount ->
+                                            if (dragAmount > 0f) {
+                                                downwardDrag += dragAmount
+                                                change.consume()
+                                            }
+                                        },
+                                        onDragEnd = {
+                                            if (downwardDrag > 72.dp.toPx()) {
+                                                onBackClick()
+                                            }
+                                            downwardDrag = 0f
+                                        },
+                                        onDragCancel = { downwardDrag = 0f }
+                                    )
+                                }
+                        ) {
+                            PlayerTopBar(
+                                playingFrom = uiState.playingFrom,
+                                onBackClick = onBackClick,
+                                onSleepTimerClick = { showSleepTimer = true },
+                                onMoreOptionsClick = { showMoreOptions = true },
+                                modifier = Modifier.statusBarsPadding(),
+                                activeColor = animatedAccentColor,
+                                showSleepTimerAction = false
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = PlayerHorizontalPadding)
+                                .size(artworkSize)
+                                .graphicsLayer {
+                                    scaleX = artworkScale
+                                    scaleY = artworkScale
+                                }
+                                .shadow(
+                                    elevation = if (uiState.isPlaying) 32.dp else 12.dp,
+                                    shape = RoundedCornerShape(8.dp),
+                                    ambientColor = Color.Black.copy(alpha = 0.5f),
+                                    spotColor = Color.Black.copy(alpha = 0.6f)
+                                )
+                                .clip(RoundedCornerShape(8.dp))
+                        ) {
+                            PlayerArtwork(
+                                thumbnailUrl = (uiState.currentTrack?.highResThumbnailUrl ?: track.highResThumbnailUrl),
+                                isVideoMode = isVideoMode,
+                                isLoading = uiState.isLoading,
+                                player = EnhancedMusicPlayerManager.player,
+                                onSkipPrevious = {
+                                    viewModel.skipToPrevious()
+                                    skipDirection = SkipDirection.PREVIOUS
+                                },
+                                onSkipNext = {
+                                    viewModel.skipToNext()
+                                    skipDirection = SkipDirection.NEXT
+                                },
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(if (showInlineLyrics) 8.dp else 16.dp))
 
             // ── Title & Artist + Action Buttons ──
             Row(
@@ -439,13 +513,31 @@ fun EnhancedMusicPlayerScreen(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                PlayerMainActionButtons(
-                    isLiked = uiState.isLiked,
-                    isDownloaded = uiState.downloadedTrackIds.contains(uiState.currentTrack?.videoId),
-                    onLikeClick = { viewModel.toggleLike() },
-                    onDownloadClick = { viewModel.downloadTrack() },
-                    onAddToPlaylist = { viewModel.showAddToPlaylistDialog(true) }
-                )
+                AnimatedContent(
+                    targetState = showInlineLyrics,
+                    transitionSpec = {
+                        (fadeIn(tween(220)) + scaleIn(tween(220), initialScale = 0.9f)) togetherWith
+                            (fadeOut(tween(160)) + scaleOut(tween(160), targetScale = 0.9f))
+                    },
+                    label = "lyricsActionsSwap"
+                ) { lyricsActive ->
+                    if (lyricsActive) {
+                        PlayerLyricsRefreshButton(
+                            isLoading = uiState.isLyricsLoading,
+                            accentColor = animatedAccentColor,
+                            onRefresh = { viewModel.refreshLyrics() }
+                        )
+                    } else {
+                        PlayerMainActionButtons(
+                            isLiked = uiState.isLiked,
+                            isDownloaded = uiState.downloadedTrackIds.contains(uiState.currentTrack?.videoId),
+                            onLikeClick = { viewModel.toggleLike() },
+                            onDownloadClick = { viewModel.downloadTrack() },
+                            onAddToPlaylist = { viewModel.showAddToPlaylistDialog(true) },
+                            accentColor = animatedAccentColor
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(28.dp))
@@ -465,17 +557,37 @@ fun EnhancedMusicPlayerScreen(
             PlayerPlaybackControls(
                 isPlaying = uiState.isPlaying,
                 isBuffering = uiState.isBuffering,
-                shuffleEnabled = uiState.shuffleEnabled,
-                repeatMode = uiState.repeatMode,
-                onShuffleToggle = { viewModel.toggleShuffle() },
                 onPreviousClick = { viewModel.skipToPrevious() },
                 onPlayPauseToggle = { viewModel.togglePlayPause() },
                 onNextClick = { viewModel.skipToNext() },
-                onRepeatToggle = { viewModel.toggleRepeat() },
                 modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
             )
 
-            Spacer(modifier = Modifier.height(queuePeekHeight + navBarPadding + 20.dp))
+            Spacer(modifier = Modifier.height(22.dp))
+
+            PlayerSecondaryActions(
+                lyricsActive = showInlineLyrics,
+                shuffleEnabled = uiState.shuffleEnabled,
+                repeatMode = uiState.repeatMode,
+                sleepTimerActive = SleepTimerManager.isActive,
+                accentColor = animatedAccentColor,
+                onLyricsClick = {
+                    uiState.currentTrack?.let { viewModel.ensureLyricsLoaded(it) }
+                    showInlineLyrics = !showInlineLyrics
+                },
+                onShuffleClick = { viewModel.toggleShuffle() },
+                onRepeatClick = { viewModel.toggleRepeat() },
+                onQueueClick = {
+                    if (isPlayerSheetExpanded) {
+                        showQueueSheet = true
+                        animateQueueSheet(queueExpandedY)
+                    }
+                },
+                onSleepTimerClick = { showSleepTimer = true },
+                modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+            )
+
+            Spacer(modifier = Modifier.height(navBarPadding + 20.dp))
         }
 
         if (queueFraction > 0.3f) {
@@ -546,103 +658,106 @@ fun EnhancedMusicPlayerScreen(
             }
         }
 
-        val queueCornerRadius = 24.dp * (1f - queueFraction)
+        val queueCornerRadius = 28.dp * (1f - queueFraction)
 
         val queueDraggableState = rememberDraggableState { delta ->
-            queueOffsetY = (queueOffsetY + delta).coerceIn(queueExpandedY, safeCollapsedY)
+            scope.launch {
+                queueOffsetY.snapTo((queueOffsetY.value + delta).coerceIn(queueExpandedY, safeHiddenY))
+            }
         }
 
+        val queueDragHandleModifier = Modifier.draggable(
+            orientation = Orientation.Vertical,
+            state = queueDraggableState,
+            onDragStarted = {
+                scope.launch { queueOffsetY.stop() }
+            },
+            onDragStopped = { velocity ->
+                settleQueueSheet(velocity)
+            }
+        )
+
         // ── NestedScrollConnection: isolates sheet events from MusicPlayerBottomSheet ──
-        val sheetNestedScrollConnection = remember(queueExpandedY, safeCollapsedY) {
+        val sheetNestedScrollConnection = remember(queueExpandedY, safeHiddenY) {
             object : NestedScrollConnection {
-                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
-                    Offset.Zero
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    if (source == NestedScrollSource.UserInput && available.y < 0f && queueOffsetY.value > queueExpandedY) {
+                        val toMove = maxOf(available.y, queueExpandedY - queueOffsetY.value)
+                        scope.launch {
+                            queueOffsetY.snapTo((queueOffsetY.value + toMove).coerceIn(queueExpandedY, safeHiddenY))
+                        }
+                        return Offset(0f, toMove)
+                    }
+                    return Offset.Zero
+                }
 
                 override fun onPostScroll(
                     consumed: Offset,
                     available: Offset,
                     source: NestedScrollSource
                 ): Offset {
-                    if (source == NestedScrollSource.UserInput && available.y > 0f && queueOffsetY < safeCollapsedY) {
-                        val toMove = minOf(available.y, safeCollapsedY - queueOffsetY)
-                        queueOffsetY = (queueOffsetY + toMove).coerceIn(queueExpandedY, safeCollapsedY)
+                    if (source == NestedScrollSource.UserInput && available.y > 0f && queueOffsetY.value < safeHiddenY) {
+                        val toMove = minOf(available.y, safeHiddenY - queueOffsetY.value)
+                        scope.launch {
+                            queueOffsetY.snapTo((queueOffsetY.value + toMove).coerceIn(queueExpandedY, safeHiddenY))
+                        }
+                        return Offset(0f, toMove)
                     }
-                    return available
+                    return Offset.Zero
                 }
 
-                override suspend fun onPreFling(available: Velocity): Velocity = Velocity.Zero
+                override suspend fun onPreFling(available: Velocity): Velocity {
+                    if (queueOffsetY.value > queueExpandedY && queueOffsetY.value < safeHiddenY) {
+                        settleQueueSheet(available.y)
+                        return available
+                    }
+                    return Velocity.Zero
+                }
 
                 override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                    if (queueOffsetY > queueExpandedY && queueOffsetY < safeCollapsedY) {
-                        val mid = (safeCollapsedY + queueExpandedY) / 2f
-                        val target = if (queueOffsetY < mid) queueExpandedY else safeCollapsedY
-                        animate(
-                            initialValue = queueOffsetY,
-                            targetValue = target,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioLowBouncy,
-                                stiffness = Spring.StiffnessMediumLow
-                            )
-                        ) { value, _ -> queueOffsetY = value }
+                    if (queueOffsetY.value > queueExpandedY && queueOffsetY.value < safeHiddenY) {
+                        settleQueueSheet(available.y)
+                        return available
                     }
-                    return available
+                    return Velocity.Zero
                 }
             }
         }
 
-        Box(
-            modifier = Modifier
-                .offset { IntOffset(0, clampedQueueOffset.roundToInt()) }
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .shadow(
-                    elevation = (16.dp * queueFraction),
-                    shape = RoundedCornerShape(topStart = queueCornerRadius, topEnd = queueCornerRadius),
-                    clip = false
+        if (queueSheetActive || clampedQueueOffset < safeHiddenY - 1f) {
+            Box(
+                modifier = Modifier
+                    .offset { IntOffset(0, clampedQueueOffset.roundToInt()) }
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .shadow(
+                        elevation = (18.dp * queueFraction),
+                        shape = RoundedCornerShape(topStart = queueCornerRadius, topEnd = queueCornerRadius),
+                        clip = false
+                    )
+                    .nestedScroll(sheetNestedScrollConnection)
+            ) {
+                QueueSheet(
+                    sheetBackgroundColor = animatedSheetColor,
+                    accentColor = animatedAccentColor,
+                    onSheetColor = adaptiveOnSheetColor,
+                    sheetCornerRadius = queueCornerRadius,
+                    queue = uiState.queue,
+                    automixTracks = uiState.autoplaySuggestions,
+                    currentIndex = uiState.currentQueueIndex,
+                    downloadedTrackIds = uiState.downloadedTrackIds,
+                    playingFrom = uiState.playingFrom,
+                    selectedFilter = uiState.selectedFilter,
+                    isAutomixLoading = uiState.isRelatedLoading,
+                    onTrackClick = { viewModel.playFromQueue(it) },
+                    onMoveTrack = { from, to -> viewModel.moveTrack(from, to) },
+                    onFilterSelect = { viewModel.setFilter(it) },
+                    onAutomixTrackClick = { viewModel.loadAndPlayTrack(it) },
+                    onPlayNextAutomix = { viewModel.playNext(it) },
+                    onAddToQueueAutomix = { viewModel.addToQueue(it) },
+                    dragHandleModifier = queueDragHandleModifier
                 )
-                .nestedScroll(sheetNestedScrollConnection)
-                .draggable(
-                    orientation = Orientation.Vertical,
-                    state = queueDraggableState,
-                    onDragStopped = { velocity ->
-                        val midPoint = (safeCollapsedY + queueExpandedY) / 2
-                        val target = when {
-                            velocity < -800f -> queueExpandedY
-                            velocity > 800f  -> safeCollapsedY
-                            clampedQueueOffset < midPoint -> queueExpandedY
-                            else -> safeCollapsedY
-                        }
-                        animateQueueSheet(target)
-                    }
-                )
-        ) {
-            UnifiedPlayerSheet(
-                sheetBackgroundColor = animatedSheetColor,
-                accentColor = animatedAccentColor,
-                onSheetColor = adaptiveOnSheetColor,
-                currentTab = currentTab,
-                onTabSelect = { currentTab = it },
-                isExpanded = queueFraction > 0.5f,
-                onExpand = { animateQueueSheet(queueExpandedY) },
-                sheetCornerRadius = queueCornerRadius,
-                queue = uiState.queue,
-                currentIndex = uiState.currentQueueIndex,
-                playingFrom = uiState.playingFrom,
-                autoplayEnabled = uiState.autoplayEnabled,
-                selectedFilter = uiState.selectedFilter,
-                onTrackClick = { viewModel.playFromQueue(it) },
-                onToggleAutoplay = { viewModel.toggleAutoplay() },
-                onFilterSelect = { viewModel.setFilter(it) },
-                onMoveTrack = { from, to -> viewModel.moveTrack(from, to) },
-                lyrics = uiState.lyrics,
-                syncedLyrics = uiState.syncedLyrics,
-                currentPosition = uiState.currentPosition,
-                isLyricsLoading = uiState.isLyricsLoading,
-                onSeekTo = { viewModel.seekTo(it) },
-                relatedTracks = uiState.relatedContent,
-                isRelatedLoading = uiState.isRelatedLoading,
-                onRelatedTrackClick = { viewModel.loadAndPlayTrack(it) }
-            )
+            }
         }
 
         AnimatedSkipIndicators(

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import io.github.aedev.flow.data.local.PlayerPreferences
 import androidx.compose.ui.res.stringResource
 import io.github.aedev.flow.R
-import io.github.aedev.flow.data.lyrics.PreferredLyricsProvider
+import io.github.aedev.flow.data.lyrics.LyricsProviderRegistry
 import io.github.aedev.flow.ui.components.rememberFlowSheetState
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.painterResource
@@ -71,6 +71,8 @@ fun PlayerSettingsScreen(
     val autoPipEnabled by playerPreferences.autoPipEnabled.collectAsState(initial = false)
     val overlayAutoplayEnabled by playerPreferences.overlayAutoplayEnabled.collectAsState(initial = false)
     val overlaySleepTimerEnabled by playerPreferences.overlaySleepTimerEnabled.collectAsState(initial = true)
+    val overlayLockModeEnabled by playerPreferences.overlayLockModeEnabled.collectAsState(initial = false)
+    val overlaySpeedIndicatorEnabled by playerPreferences.overlaySpeedIndicatorEnabled.collectAsState(initial = false)
     
     val autoplayEnabled by playerPreferences.autoplayEnabled.collectAsState(initial = true)
     val skipSilenceEnabled by playerPreferences.skipSilenceEnabled.collectAsState(initial = false)
@@ -78,9 +80,12 @@ fun PlayerSettingsScreen(
     val backgroundPlayEnabled by playerPreferences.backgroundPlayEnabled.collectAsState(initial = false)
     val shortsBackgroundPlay by playerPreferences.shortsBackgroundPlay.collectAsState(initial = false)
     val shortsPlaybackMode by playerPreferences.shortsPlaybackMode.collectAsState(initial = "loop")
+    val shortsAutoScrollSeconds by playerPreferences.shortsAutoScrollSeconds.collectAsState(initial = 10)
     val preferredAudioLanguage by playerPreferences.preferredAudioLanguage.collectAsState(initial = "original")
     val playDuringCalls by playerPreferences.playDuringCalls.collectAsState(initial = false)
-    val currentLyricsProvider by playerPreferences.preferredLyricsProvider.collectAsState(initial = "LRCLIB")
+    val lyricsProviderOrder by playerPreferences.lyricsProviderOrder.collectAsState(initial = "")
+    val lyricsEnabledStates by playerPreferences.allLyricsProviderEnabledStates().collectAsState(initial = emptyMap())
+    val registry = remember { LyricsProviderRegistry.default() }
     val doubleTapSeekSeconds by playerPreferences.doubleTapSeekSeconds.collectAsState(initial = 10)
     val miniPlayerContinueWatchingEnabled by playerPreferences.miniPlayerContinueWatchingEnabled.collectAsState(initial = true)
     val videoLoopEnabled by playerPreferences.videoLoopEnabled.collectAsState(initial = false)
@@ -105,6 +110,7 @@ fun PlayerSettingsScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -197,6 +203,22 @@ fun PlayerSettingsScreen(
                     )
                     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                     SettingsSwitchItem(
+                        icon = Icons.Outlined.Lock,
+                        title = stringResource(R.string.player_settings_overlay_lock_mode),
+                        subtitle = stringResource(R.string.player_settings_overlay_lock_mode_subtitle),
+                        checked = overlayLockModeEnabled,
+                        onCheckedChange = { coroutineScope.launch { playerPreferences.setOverlayLockModeEnabled(it) } }
+                    )
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    SettingsSwitchItem(
+                        icon = Icons.Outlined.Speed,
+                        title = stringResource(R.string.player_settings_overlay_speed_indicator),
+                        subtitle = stringResource(R.string.player_settings_overlay_speed_indicator_subtitle),
+                        checked = overlaySpeedIndicatorEnabled,
+                        onCheckedChange = { coroutineScope.launch { playerPreferences.setOverlaySpeedIndicatorEnabled(it) } }
+                    )
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    SettingsSwitchItem(
                         icon = Icons.Outlined.PlayCircleOutline,
                         title = stringResource(R.string.player_settings_mini_player_continue_watching_title),
                         subtitle = stringResource(R.string.player_settings_mini_player_continue_watching_subtitle),
@@ -209,7 +231,11 @@ fun PlayerSettingsScreen(
                         title = stringResource(R.string.global_loop),
                         subtitle = stringResource(R.string.global_loop_subtitle),
                         checked = videoLoopEnabled,
-                        onCheckedChange = { coroutineScope.launch { playerPreferences.setVideoLoopEnabled(it) } }
+                        onCheckedChange = {
+                            coroutineScope.launch {
+                                playerPreferences.setVideoLoopEnabled(it)
+                            }
+                        }
                     )
                 }
             }
@@ -235,10 +261,14 @@ fun PlayerSettingsScreen(
                     SettingsClickItem(
                         icon = Icons.Outlined.SwapVert,
                         title = stringResource(R.string.player_settings_shorts_playback_mode_title),
-                        subtitle = if (shortsPlaybackMode == "loop") 
-                            stringResource(R.string.player_settings_shorts_playback_mode_loop)
-                        else 
-                            stringResource(R.string.player_settings_shorts_playback_mode_auto_next),
+                        subtitle = when (shortsPlaybackMode) {
+                            "auto_next" -> stringResource(R.string.player_settings_shorts_playback_mode_auto_next)
+                            "auto_interval" -> stringResource(
+                                R.string.player_settings_shorts_playback_mode_auto_interval_summary,
+                                shortsAutoScrollSeconds
+                            )
+                            else -> stringResource(R.string.player_settings_shorts_playback_mode_loop)
+                        },
                         onClick = { showShortsPlaybackModeDialog = true }
                     )
                     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
@@ -247,7 +277,12 @@ fun PlayerSettingsScreen(
                         title = stringResource(R.string.player_settings_autoplay),
                         subtitle = stringResource(R.string.player_settings_autoplay_subtitle),
                         checked = autoplayEnabled,
-                        onCheckedChange = { coroutineScope.launch { playerPreferences.setAutoplayEnabled(it) } }
+                        enabled = !videoLoopEnabled,
+                        onCheckedChange = {
+                            coroutineScope.launch {
+                                playerPreferences.setAutoplayEnabled(it && !videoLoopEnabled)
+                            }
+                        }
                     )
                     HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                     SettingsSwitchItem(
@@ -442,9 +477,13 @@ fun PlayerSettingsScreen(
                 SectionHeader(text = stringResource(R.string.lyrics_provider_title))
                 SettingsGroup {
                     SettingsClickItem(
-                        icon =painterResource(R.drawable.ic_lyrics),
+                        icon = painterResource(R.drawable.ic_lyrics),
                         title = stringResource(R.string.lyrics_provider_title),
-                        subtitle = getLyricsProviderLabel(PreferredLyricsProvider.fromString(currentLyricsProvider)),
+                        subtitle = run {
+                            val enabledCount = lyricsEnabledStates.count { it.value }
+                            val total = registry.providerNames.size
+                            "$enabledCount / $total providers enabled"
+                        },
                         onClick = { showLyricsProviderSheet = true }
                     )
                 }
@@ -544,8 +583,11 @@ fun PlayerSettingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    listOf("loop" to R.string.player_settings_shorts_playback_mode_loop,
-                           "auto_next" to R.string.player_settings_shorts_playback_mode_auto_next).forEach { (mode, labelRes) ->
+                    listOf(
+                        "loop" to R.string.player_settings_shorts_playback_mode_loop,
+                        "auto_next" to R.string.player_settings_shorts_playback_mode_auto_next,
+                        "auto_interval" to R.string.player_settings_shorts_playback_mode_auto_interval
+                    ).forEach { (mode, labelRes) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -569,6 +611,35 @@ fun PlayerSettingsScreen(
                             )
                         }
                     }
+
+                    AnimatedVisibility(visible = shortsPlaybackMode == "auto_interval") {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.player_settings_shorts_auto_scroll_seconds_template,
+                                    shortsAutoScrollSeconds
+                                ),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                            Slider(
+                                value = shortsAutoScrollSeconds.toFloat(),
+                                onValueChange = { value ->
+                                    coroutineScope.launch {
+                                        playerPreferences.setShortsAutoScrollSeconds(value.toInt())
+                                    }
+                                },
+                                valueRange = 5f..20f,
+                                steps = 14,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
                 }
             },
             confirmButton = {
@@ -581,6 +652,9 @@ fun PlayerSettingsScreen(
 
     // Lyrics Provider Selection Sheet
     if (showLyricsProviderSheet) {
+        val orderedProviders = remember(lyricsProviderOrder) {
+            registry.getOrderedProviders(lyricsProviderOrder)
+        }
         ModalBottomSheet(
             onDismissRequest = { showLyricsProviderSheet = false },
             sheetState = rememberFlowSheetState(),
@@ -598,40 +672,53 @@ fun PlayerSettingsScreen(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
                 )
+                Text(
+                    text = "Providers are tried in order. The first one that returns lyrics wins.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 0.dp).padding(bottom = 8.dp)
+                )
 
-                PreferredLyricsProvider.values().forEach { provider ->
-                    val isSelected = currentLyricsProvider == provider.name
-                    
+                orderedProviders.forEachIndexed { index, provider ->
+                    val isEnabled = lyricsEnabledStates[provider.name] ?: true
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                coroutineScope.launch {
-                                    playerPreferences.setPreferredLyricsProvider(provider.name)
-                                }
-                                showLyricsProviderSheet = false
-                            }
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                            .padding(horizontal = 24.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = getLyricsProviderLabel(provider),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                        
-                        if (isSelected) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "${index + 1}.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.width(28.dp)
+                            )
+                            Text(
+                                text = provider.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = if (isEnabled) FontWeight.Medium else FontWeight.Normal,
+                                color = if (isEnabled) MaterialTheme.colorScheme.onSurface
+                                       else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                             )
                         }
+                        Switch(
+                            checked = isEnabled,
+                            onCheckedChange = { enabled ->
+                                coroutineScope.launch {
+                                    playerPreferences.setLyricsProviderEnabled(provider.name, enabled)
+                                }
+                            }
+                        )
                     }
-                    
-                    if (provider != PreferredLyricsProvider.values().last()) {
+
+                    if (index < orderedProviders.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 24.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -697,14 +784,6 @@ fun PlayerSettingsScreen(
 
 }
 
-@Composable
-private fun getLyricsProviderLabel(provider: PreferredLyricsProvider): String {
-    return when (provider) {
-        PreferredLyricsProvider.LRCLIB -> stringResource(R.string.lyrics_provider_lrclib)
-        PreferredLyricsProvider.BETTER_LYRICS -> stringResource(R.string.lyrics_provider_better_lyrics)
-        PreferredLyricsProvider.SIMPMUSIC -> stringResource(R.string.lyrics_provider_simpmusic)
-    }
-}
 
 @Composable
 private fun SettingsClickItem(

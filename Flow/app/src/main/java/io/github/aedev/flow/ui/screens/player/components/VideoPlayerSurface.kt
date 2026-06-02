@@ -1,20 +1,43 @@
 package io.github.aedev.flow.ui.screens.player.components
 
+import android.graphics.Outline
+import android.os.Build
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.Player
+import androidx.compose.runtime.collectAsState
 import androidx.media3.common.VideoSize
 import androidx.media3.ui.PlayerView
+import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.EnhancedPlayerManager
+
+private fun pickPlayerViewLayoutRes(): Int =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        R.layout.video_player_view_surface
+    } else {
+        R.layout.video_player_view
+    }
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
@@ -22,24 +45,32 @@ fun VideoPlayerSurface(
     video: Video,
     resizeMode: Int,
     modifier: Modifier = Modifier,
-    onVideoAspectRatioChanged: ((Float) -> Unit)? = null
+    onVideoAspectRatioChanged: ((Float) -> Unit)? = null,
+    cornerRadiusDp: Float = 0f
 ) {
     val context = LocalContext.current
-    
+    val density = LocalDensity.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var surfaceRestoreTrigger by remember { mutableIntStateOf(0) }
+    var attachedVideoId by remember { mutableStateOf<String?>(null) }
+    val cornerRadiusPx = with(density) { cornerRadiusDp.dp.toPx() }
+
+    val manager = remember { EnhancedPlayerManager.getInstance() }
+    // Observe player state to trigger recomposition/update when player instance or state changes
+    val playerState by manager.playerState.collectAsState()
+
     val playerView = remember {
-        Log.d("EnhancedVideoPlayer", "Creating shared PlayerView")
-        PlayerView(context).apply {
-            useController = false
+        Log.d("EnhancedVideoPlayer", "Creating shared PlayerView (sdk=${Build.VERSION.SDK_INT})")
+        (LayoutInflater.from(context).inflate(pickPlayerViewLayoutRes(), null) as PlayerView).apply {
             layoutParams = FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-            // Set background to black to avoid white flash during transitions
-            setBackgroundColor(android.graphics.Color.BLACK)
+            setKeepContentOnPlayerReset(false)
         }
     }
-    
+
     val videoSizeListener = remember {
         object : Player.Listener {
             override fun onVideoSizeChanged(videoSize: VideoSize) {
@@ -48,75 +79,113 @@ fun VideoPlayerSurface(
                     onVideoAspectRatioChanged?.invoke(ratio.coerceIn(0.56f, 2.5f))
                 }
             }
+            override fun onRenderedFirstFrame() {
+                Log.d("EnhancedVideoPlayer", "First frame rendered")
+            }
         }
     }
 
-    DisposableEffect(Unit) {
-        val surfaceView = playerView.videoSurfaceView as? android.view.SurfaceView
-        val callback = if (surfaceView != null) {
-            object : android.view.SurfaceHolder.Callback {
-                override fun surfaceCreated(holder: android.view.SurfaceHolder) {
-                    Log.d("EnhancedVideoPlayer", "Surface created for video ${video.id}")
-                    EnhancedPlayerManager.getInstance().attachVideoSurface(holder, forceAttach = true)
-                }
-
-                override fun surfaceChanged(
-                    holder: android.view.SurfaceHolder,
-                    format: Int,
-                    width: Int,
-                    height: Int
-                ) {
-                    // Surface resized but still valid
-                }
-
-                override fun surfaceDestroyed(holder: android.view.SurfaceHolder) {
-                    Log.d("EnhancedVideoPlayer", "Surface destroyed for video ${video.id}")
-                    EnhancedPlayerManager.getInstance().detachVideoSurface(holder)
-                }
-            }.also { surfaceView.holder.addCallback(it) }
-        } else null
-
+    DisposableEffect(playerView) {
         onDispose {
-            callback?.let { surfaceView?.holder?.removeCallback(it) }
+            playerView.player?.removeListener(videoSizeListener)
+            playerView.player = null
         }
     }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START || event == Lifecycle.Event.ON_RESUME) {
+                surfaceRestoreTrigger++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val currentSurfaceRestoreTrigger = surfaceRestoreTrigger
 
     AndroidView(
         factory = { playerView },
         update = { view ->
-            val newPlayer = EnhancedPlayerManager.getInstance().getPlayer()
-            val oldPlayer = view.player
-            if (oldPlayer !== newPlayer) {
-                oldPlayer?.removeListener(videoSizeListener)
-                newPlayer?.addListener(videoSizeListener)
-            }
-
-            view.player = newPlayer
-
-            // Apply resize mode
-            view.resizeMode = when (resizeMode) {
-                0 -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
-                1 -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
-                2 -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                else -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
-            }
+            @Suppress("UNUSED_VARIABLE")
+            val stateTrigger = playerState // Dependency to trigger update
+            @Suppress("UNUSED_VARIABLE")
+            val restoreTrigger = currentSurfaceRestoreTrigger
             
-            if (!EnhancedPlayerManager.getInstance().isSurfaceReady) {
-                try {
-                    val surfaceView = view.videoSurfaceView
-                    if (surfaceView is android.view.SurfaceView) {
-                        val holder = surfaceView.holder
-                        val surface = holder.surface
-                        if (surface != null && surface.isValid) {
-                            EnhancedPlayerManager.getInstance().attachVideoSurface(holder)
-                            Log.d("EnhancedVideoPlayer", "Surface reattached in update block (fallback - was not ready)")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.w("EnhancedVideoPlayer", "Failed to reattach surface in update fallback", e)
+            val newPlayer = manager.getPlayer()
+            val oldPlayer = view.player
+            val videoChanged = attachedVideoId != video.id
+
+            if (oldPlayer !== newPlayer || videoChanged) {
+                Log.d("VideoPlayerSurface", "Attaching player to view: videoId=${video.id}, playerInitialized=${newPlayer != null}")
+                oldPlayer?.removeListener(videoSizeListener)
+                if (oldPlayer === newPlayer && oldPlayer != null) {
+                    view.player = null
                 }
+                newPlayer?.addListener(videoSizeListener)
+                 view.player = newPlayer
+                 attachedVideoId = video.id
+                 
+                 // Nudge the player if it's already in READY state but we just attached the surface.
+                 // This forces the renderer to refresh and draw the first frame on the new surface.
+                 if (newPlayer != null && newPlayer.playbackState == Player.STATE_READY) {
+                     Log.d("VideoPlayerSurface", "Nudging player to refresh surface at ${newPlayer.currentPosition}ms")
+                     newPlayer.seekTo(newPlayer.currentPosition)
+                 }
+             }
+
+            if (newPlayer != null && manager.isInAudioOnlyMode()) {
+                Log.d("VideoPlayerSurface", "Restoring video output after audio-only background mode")
+                manager.restoreVideoOutput()
             }
-        },
-        modifier = modifier.fillMaxSize()
-    )
+
+            if (newPlayer != null &&
+                newPlayer.playbackState == Player.STATE_IDLE &&
+                newPlayer.currentMediaItem != null
+            ) {
+                Log.d("VideoPlayerSurface", "PlayerView attached; player IDLE with media - calling prepare()")
+                newPlayer.prepare()
+            }
+
+                view.subtitleView?.let { subtitleView ->
+                    if (subtitleView.visibility != View.GONE) {
+                        subtitleView.visibility = View.GONE
+                    }
+                }
+
+                val desiredResizeMode = when (resizeMode) {
+                    0 -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+                    1 -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL
+                    2 -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                    else -> androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT
+                }
+                if (view.resizeMode != desiredResizeMode) {
+                    view.resizeMode = desiredResizeMode
+                }
+
+                applyOutlineCornerRadius(view, cornerRadiusPx)
+            },
+            modifier = modifier.fillMaxSize()
+        )
 }
+
+private fun applyOutlineCornerRadius(view: PlayerView, radiusPx: Float) {
+    val current = view.getTag(R.id.player_view) as? Float
+    if (current != null && current == radiusPx) return
+    if (radiusPx <= 0f) {
+        view.clipToOutline = false
+        view.outlineProvider = ViewOutlineProvider.BACKGROUND
+    } else {
+        view.outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(v: View, outline: Outline) {
+                outline.setRoundRect(0, 0, v.width, v.height, radiusPx)
+            }
+        }
+        view.clipToOutline = true
+    }
+    view.invalidateOutline()
+    view.setTag(R.id.player_view, radiusPx)
+}
+
+private val Float.dp: androidx.compose.ui.unit.Dp
+    get() = androidx.compose.ui.unit.Dp(this)

@@ -39,6 +39,7 @@ class MusicPlaybackService : Service() {
     private var currentPosition = 0L
     private var currentDuration = 0L
     private var currentAlbumArt: Bitmap? = null
+    private var hasStartedForeground = false
     
     // Position update job for smooth progress tracking
     private var positionUpdateJob: Job? = null
@@ -47,6 +48,7 @@ class MusicPlaybackService : Service() {
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "music_playback_channel"
         private const val CHANNEL_NAME = "Music Playback"
+        private const val NOTIFICATION_ART_MAX_PX = 512
         
         const val ACTION_PLAY_PAUSE = "io.github.aedev.flow.ACTION_PLAY_PAUSE"
         const val ACTION_NEXT = "io.github.aedev.flow.ACTION_NEXT"
@@ -217,6 +219,7 @@ class MusicPlaybackService : Service() {
                 ACTION_LIKE -> EnhancedMusicPlayerManager.toggleLike()
                 ACTION_STOP -> {
                     EnhancedMusicPlayerManager.pause()
+                    hasStartedForeground = false
                     stopForeground(STOP_FOREGROUND_REMOVE)
                     stopSelf()
                 }
@@ -316,24 +319,27 @@ class MusicPlaybackService : Service() {
         val request = ImageRequest.Builder(applicationContext)
             .data(url)
             .allowHardware(false)
+            .size(NOTIFICATION_ART_MAX_PX)
             .build()
         val bitmap = when (val result = applicationContext.imageLoader.execute(request)) {
             is coil3.request.SuccessResult -> (result.image.asDrawable(applicationContext.resources) as? BitmapDrawable)?.bitmap
             else -> null
         }
-        bitmap?.let { ensureMinSize(it, 512) }
+        bitmap?.let { normalizeNotificationArt(it) }
     }
 
-    /**
-     * Scale bitmap up so its shorter side is at least [minPx] pixels.
-     * Prevents FHD+ notification panels from upscaling tiny art and looking blurry.
-     */
-    private fun ensureMinSize(bitmap: Bitmap, minPx: Int): Bitmap {
+    private fun normalizeNotificationArt(bitmap: Bitmap, maxPx: Int = NOTIFICATION_ART_MAX_PX): Bitmap {
         val w = bitmap.width
         val h = bitmap.height
-        if (w >= minPx && h >= minPx) return bitmap
-        val scale = minPx.toFloat() / minOf(w, h)
-        return Bitmap.createScaledBitmap(bitmap, (w * scale).toInt(), (h * scale).toInt(), true)
+        val longestSide = maxOf(w, h)
+        if (longestSide <= maxPx) return bitmap
+        val scale = maxPx.toFloat() / longestSide.toFloat()
+        return Bitmap.createScaledBitmap(
+            bitmap,
+            (w * scale).toInt().coerceAtLeast(1),
+            (h * scale).toInt().coerceAtLeast(1),
+            true
+        )
     }
     
     /**
@@ -457,8 +463,14 @@ class MusicPlaybackService : Service() {
                 .setShowCancelButton(true)
                 .setCancelButtonIntent(stopIntent)
         )
-        
-        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+
+        val notification = notificationBuilder.build()
+        if (!hasStartedForeground && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForeground(NOTIFICATION_ID, notification)
+            hasStartedForeground = true
+        } else {
+            notificationManager.notify(NOTIFICATION_ID, notification)
+        }
     }
     
     private fun createActionIntent(action: String, requestCode: Int): PendingIntent {

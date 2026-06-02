@@ -1,6 +1,7 @@
 package io.github.aedev.flow.data.repository
 
 import android.content.Context
+import io.github.aedev.flow.network.AppProxyManager
 import okhttp3.OkHttpClient
 import org.schabi.newpipe.extractor.downloader.Downloader
 import org.schabi.newpipe.extractor.downloader.Request
@@ -15,14 +16,17 @@ import java.util.concurrent.TimeUnit
  */
 class NewPipeDownloader private constructor(context: Context) : Downloader() {
 
-    private val client: OkHttpClient = OkHttpClient.Builder()
-        .readTimeout(30, TimeUnit.SECONDS)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        // .cache(Cache(File(context.cacheDir, "newpipe_http_cache"), 10 * 1024 * 1024))
-        .build()
+    private val client: OkHttpClient
+        get() = AppProxyManager.applyTo(OkHttpClient.Builder())
+            .readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
 
     companion object {
+        private const val USER_AGENT =
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0"
+
         @Volatile
         private var INSTANCE: NewPipeDownloader? = null
 
@@ -42,9 +46,11 @@ class NewPipeDownloader private constructor(context: Context) : Downloader() {
 
         val builder = okhttp3.Request.Builder()
             .url(url)
+            .header("User-Agent", USER_AGENT)
 
         // Add headers
         for ((key, list) in headers) {
+            builder.removeHeader(key)
             for (value in list) {
                 builder.addHeader(key, value)
             }

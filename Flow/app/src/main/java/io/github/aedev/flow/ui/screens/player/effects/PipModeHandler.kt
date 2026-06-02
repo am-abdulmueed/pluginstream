@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.player.EnhancedPlayerManager
+import io.github.aedev.flow.player.GlobalPlayerState
 import io.github.aedev.flow.player.PictureInPictureHelper
 
 private const val TAG = "PipModeHandler"
@@ -30,7 +31,7 @@ object PipModeHandler {
      */
     fun enterPipMode(activity: Activity?, isPlaying: Boolean) {
         activity?.let { act ->
-            PictureInPictureHelper.enterPipMode(
+            PictureInPictureHelper.requestPlayerPipMode(
                 activity = act,
                 isPlaying = isPlaying
             )
@@ -69,7 +70,11 @@ fun PipBroadcastReceiverEffect(context: Context) {
         val receiver = PictureInPictureHelper.createPipActionReceiver(
             onPlay = { EnhancedPlayerManager.getInstance().play() },
             onPause = { EnhancedPlayerManager.getInstance().pause() },
-            onClose = { EnhancedPlayerManager.getInstance().pause() }
+            onClose = {
+                GlobalPlayerState.requestDismiss()
+                EnhancedPlayerManager.getInstance().stop()
+                EnhancedPlayerManager.getInstance().stopBackgroundService()
+            }
         )
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {

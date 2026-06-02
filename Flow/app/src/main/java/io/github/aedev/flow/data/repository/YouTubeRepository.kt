@@ -23,6 +23,9 @@ import org.schabi.newpipe.extractor.Page
 import org.schabi.newpipe.extractor.exceptions.ExtractionException
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import io.github.aedev.flow.data.local.PlayerPreferences
+import io.github.aedev.flow.innertube.YouTube
+import io.github.aedev.flow.innertube.models.SongItem
+import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.coroutines.flow.first
 import java.util.Locale
 import javax.inject.Inject
@@ -144,6 +147,7 @@ class YouTubeRepository @Inject constructor(
                 .filterIsInstance<StreamInfoItem>()
                 .map { it.toVideo() }
                 .filter { it.duration in 1..60 } // Actual shorts are <= 60s
+                .sortedByDescending { it.timestamp }
             
             Pair(shorts, infoItems.nextPage)
         } catch (e: Exception) {
@@ -300,16 +304,8 @@ class YouTubeRepository @Inject constructor(
             val bestThumbnail = info.thumbnails
                 .sortedByDescending { it.height }
                 .map { it.url }
-                .firstOrNull()?.let { url ->
-                    if (url.contains("i.ytimg.com/vi/") || url.contains("img.youtube.com/vi/")) {
-                        when {
-                            url.endsWith("/mqdefault.jpg") -> url.replace("/mqdefault.jpg", "/hq720.jpg")
-                            url.endsWith("/default.jpg") -> url.replace("/default.jpg", "/hq720.jpg")
-                            url.endsWith("/hqdefault.jpg") -> url.replace("/hqdefault.jpg", "/hq720.jpg")
-                            else -> url
-                        }
-                    } else url
-                } ?: ""
+                .firstOrNull()
+                .let { ThumbnailUrlResolver.normalizeVideoThumbnail(videoId, it) }
             
             val bestAvatar = info.uploaderAvatars
                 .sortedByDescending { it.height }
@@ -720,22 +716,41 @@ class YouTubeRepository @Inject constructor(
         try {
             val playlistUrl = "https://www.youtube.com/playlist?list=$playlistId"
             val playlistInfo = org.schabi.newpipe.extractor.playlist.PlaylistInfo.getInfo(service, playlistUrl)
-            
-            val videos = playlistInfo.relatedItems
+
+            val allVideos = mutableListOf<Video>()
+            allVideos += playlistInfo.relatedItems
                 .filterIsInstance<StreamInfoItem>()
                 .map { it.toVideo() }
-                
+
+            var nextPage = playlistInfo.nextPage
+            while (nextPage != null) {
+                val page = org.schabi.newpipe.extractor.playlist.PlaylistInfo
+                    .getMoreItems(service, playlistUrl, nextPage)
+                allVideos += page.items
+                    .filterIsInstance<StreamInfoItem>()
+                    .map { it.toVideo() }
+                nextPage = page.nextPage
+            }
+
+            val innertubeVideos = fetchInnertubePlaylistVideos(playlistId)
+            val playlistVideos = if (innertubeVideos.size > allVideos.size) {
+                Log.i(TAG, "Using Innertube playlist result for $playlistId (${innertubeVideos.size} > ${allVideos.size})")
+                innertubeVideos
+            } else {
+                allVideos
+            }
+
             val bestThumbnail = playlistInfo.thumbnails
                 .sortedByDescending { it.height }
-                .firstOrNull()?.url ?: videos.firstOrNull()?.thumbnailUrl ?: ""
+                .firstOrNull()?.url ?: playlistVideos.firstOrNull()?.thumbnailUrl ?: ""
 
             io.github.aedev.flow.data.model.Playlist(
                 id = playlistId,
                 name = playlistInfo.name ?: "Unknown Playlist",
                 thumbnailUrl = bestThumbnail,
-                videoCount = videos.size,
+                videoCount = playlistVideos.size,
                 description = playlistInfo.description?.content ?: "",
-                videos = videos,
+                videos = playlistVideos,
                 isLocal = false
             )
         } catch (e: Exception) {
@@ -756,6 +771,51 @@ class YouTubeRepository @Inject constructor(
         }
     }
 
+    private suspend fun fetchInnertubePlaylistVideos(
+        playlistId: String,
+        maxContinuationPages: Int = 30
+    ): List<Video> {
+        return try {
+            val firstPage = YouTube.playlist(playlistId).getOrNull() ?: return emptyList()
+            val songs = mutableListOf<SongItem>()
+            val seenContinuations = mutableSetOf<String>()
+
+            songs += firstPage.songs
+            var continuation = firstPage.songsContinuation ?: firstPage.continuation
+            var requestCount = 0
+
+            while (continuation != null && requestCount < maxContinuationPages) {
+                if (!seenContinuations.add(continuation)) break
+                val page = YouTube.playlistContinuation(continuation).getOrNull() ?: break
+                if (page.songs.isEmpty() && page.continuation == null) break
+                songs += page.songs
+                continuation = page.continuation
+                requestCount++
+            }
+
+            songs.map { it.toPlaylistVideo() }
+        } catch (e: Exception) {
+            Log.w(TAG, "Innertube playlist fallback failed for $playlistId: ${e.message}")
+            emptyList()
+        }
+    }
+
+    private fun SongItem.toPlaylistVideo(): Video {
+        val artistNames = artists.joinToString(", ") { it.name }
+        val channel = artists.firstOrNull()
+        return Video(
+            id = id,
+            title = title,
+            channelName = artistNames,
+            channelId = channel?.id ?: "",
+            thumbnailUrl = ThumbnailUrlResolver.normalizeVideoThumbnail(id, thumbnail),
+            duration = duration ?: 0,
+            viewCount = 0,
+            uploadDate = "",
+            isMusic = false
+        )
+    }
+
     /**
      * Extension function to convert StreamInfoItem to our Video model
      */
@@ -771,17 +831,8 @@ class YouTubeRepository @Inject constructor(
         val bestThumbnail = thumbnails
             .sortedByDescending { it.height }
             .map { it.url }
-            .firstOrNull()?.let { url ->
-                // YouTube thumbnail quality promotion logic
-                if (url.contains("i.ytimg.com/vi/") || url.contains("img.youtube.com/vi/")) {
-                    when {
-                        url.endsWith("/mqdefault.jpg") -> url.replace("/mqdefault.jpg", "/hq720.jpg")
-                        url.endsWith("/default.jpg") -> url.replace("/default.jpg", "/hq720.jpg")
-                        url.endsWith("/hqdefault.jpg") -> url.replace("/hqdefault.jpg", "/hq720.jpg")
-                        else -> url
-                    }
-                } else url
-            } ?: ""
+            .firstOrNull()
+            .let { ThumbnailUrlResolver.normalizeVideoThumbnail(videoId, it) }
         
         val bestAvatar = uploaderAvatars
             .sortedByDescending { it.height }
@@ -875,22 +926,15 @@ class YouTubeRepository @Inject constructor(
      * Extension function to convert PlaylistInfoItem to our Playlist model
      */
     private fun org.schabi.newpipe.extractor.playlist.PlaylistInfoItem.toPlaylist(): io.github.aedev.flow.data.model.Playlist {
+        val playlistId = url.substringAfterLast("=")
         val bestThumbnail = thumbnails
             .sortedByDescending { it.height }
             .map { it.url }
-            .firstOrNull()?.let { url ->
-                if (url.contains("i.ytimg.com/vi/") || url.contains("img.youtube.com/vi/")) {
-                    when {
-                        url.endsWith("/mqdefault.jpg") -> url.replace("/mqdefault.jpg", "/hq720.jpg")
-                        url.endsWith("/default.jpg") -> url.replace("/default.jpg", "/hq720.jpg")
-                        url.endsWith("/hqdefault.jpg") -> url.replace("/hqdefault.jpg", "/hq720.jpg")
-                        else -> url
-                    }
-                } else url
-            } ?: ""
+            .firstOrNull()
+            .let { ThumbnailUrlResolver.normalizeVideoThumbnail(playlistId, it) }
         
         return io.github.aedev.flow.data.model.Playlist(
-            id = url.substringAfterLast("="),
+            id = playlistId,
             name = name ?: "Unknown Playlist",
             thumbnailUrl = bestThumbnail,
             videoCount = streamCount.toInt(),
@@ -945,13 +989,13 @@ class YouTubeRepository @Inject constructor(
             ?: return null
 
         val unitMillis = when {
-            normalized.contains("second") -> 1_000L
-            normalized.contains("minute") -> 60_000L
-            normalized.contains("hour") -> 3_600_000L
-            normalized.contains("day") -> 86_400_000L
-            normalized.contains("week") -> 7L * 86_400_000L
-            normalized.contains("month") -> 30L * 86_400_000L
-            normalized.contains("year") -> 365L * 86_400_000L
+            normalized.contains("second") || normalized.endsWith("s") -> 1_000L
+            normalized.contains("minute") || normalized.endsWith("m") -> 60_000L
+            normalized.contains("hour") || normalized.endsWith("h") -> 3_600_000L
+            normalized.contains("day") || normalized.endsWith("d") -> 86_400_000L
+            normalized.contains("week") || normalized.endsWith("w") -> 7L * 86_400_000L
+            normalized.contains("month") || normalized.endsWith("mo") -> 30L * 86_400_000L
+            normalized.contains("year") || normalized.endsWith("y") -> 365L * 86_400_000L
             else -> return null
         }
 

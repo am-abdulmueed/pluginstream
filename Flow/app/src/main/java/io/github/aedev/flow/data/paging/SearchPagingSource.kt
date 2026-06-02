@@ -6,9 +6,11 @@ import androidx.paging.PagingState
 import io.github.aedev.flow.data.local.Duration
 import io.github.aedev.flow.data.local.UploadDate
 import io.github.aedev.flow.data.local.SearchFilter
+import io.github.aedev.flow.data.local.SortType
 import io.github.aedev.flow.data.model.Channel
 import io.github.aedev.flow.data.model.Playlist
 import io.github.aedev.flow.data.model.Video
+import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.schabi.newpipe.extractor.Page
@@ -16,6 +18,7 @@ import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.channel.ChannelInfoItem
 import org.schabi.newpipe.extractor.playlist.PlaylistInfoItem
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
+import org.schabi.newpipe.extractor.stream.StreamType
 
 /**
  * Sealed class representing any unified search result item.
@@ -66,6 +69,14 @@ class SearchPagingSource(
                 val items: List<SearchResultItem> = infoPage.items.mapNotNull { item ->
                     when (item) {
                         is StreamInfoItem -> {
+                            val isLiveStream = item.streamType == StreamType.LIVE_STREAM ||
+                                item.streamType == StreamType.AUDIO_LIVE_STREAM
+                            if (searchFilter?.contentType == io.github.aedev.flow.data.local.ContentType.LIVE &&
+                                !isLiveStream
+                            ) {
+                                return@mapNotNull null
+                            }
+
                             val duration = item.duration.toInt()
                             val uploadDate = item.textualUploadDate ?: ""
 
@@ -95,8 +106,10 @@ class SearchPagingSource(
                             }
 
                             val videoId = extractVideoId(item.url)
-                            val thumbnail = item.thumbnails.maxByOrNull { it.width }?.url
-                                ?: "https://i.ytimg.com/vi/$videoId/hq720.jpg"
+                            val thumbnail = ThumbnailUrlResolver.normalizeVideoThumbnail(
+                                videoId,
+                                item.thumbnails.maxByOrNull { it.width }?.url
+                            )
                             val channelThumb = try {
                                 item.uploaderAvatars.maxByOrNull { it.width }?.url ?: ""
                             } catch (_: Exception) { "" }
@@ -113,7 +126,8 @@ class SearchPagingSource(
                                     uploadDate = item.textualUploadDate ?: "",
                                     timestamp = System.currentTimeMillis(),
                                     channelThumbnailUrl = channelThumb,
-                                    isShort = item.duration in 1..60
+                                    isShort = item.duration in 1..60,
+                                    isLive = isLiveStream
                                 )
                             )
                         }
@@ -157,7 +171,7 @@ class SearchPagingSource(
                 Log.d(TAG, "Loaded ${items.size} items | query='$query' | nextPage=${infoPage.nextPage != null}")
 
                 LoadResult.Page(
-                    data = items,
+                    data = sortVideoItems(searchFilter = searchFilter, items),
                     prevKey = null,
                     nextKey = infoPage.nextPage
                 )
@@ -190,4 +204,19 @@ class SearchPagingSource(
     private fun extractPlaylistId(url: String): String =
         url.substringAfter("list=").substringBefore("&")
             .ifEmpty { url.substringAfterLast("/").substringBefore("?") }
+
+    private fun sortVideoItems(searchFilter: SearchFilter?, items: List<SearchResultItem>): List<SearchResultItem> =
+        when (searchFilter?.sortType) {
+            SortType.RELEVANCE -> items
+            SortType.RATING -> items.sortedByDescending { item ->
+                if (item is SearchResultItem.VideoResult) item.video.likeCount else 0L
+            }
+
+            SortType.VIEWS -> items.sortedByDescending { item ->
+                if (item is SearchResultItem.VideoResult) item.video.viewCount else 0L
+            }
+
+            else -> items
+        }
+
 }

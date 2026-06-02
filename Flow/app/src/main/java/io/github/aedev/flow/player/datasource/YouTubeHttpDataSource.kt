@@ -7,6 +7,9 @@ import androidx.media3.datasource.BaseDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.HttpDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
+import io.github.aedev.flow.network.AppProxyManager
+import okhttp3.OkHttpClient
 
 /**
  * YouTube-specific HttpDataSource optimized for streaming performance.
@@ -44,34 +47,28 @@ class YouTubeHttpDataSource private constructor(
     @UnstableApi
     override fun open(dataSpec: DataSpec): Long {
         currentUri = dataSpec.uri
-        
-        // Sanitize URI for YouTube to avoid conflicts with ExoPlayer's range handling
-        val sanitizedUri = if (isYouTubeUri(dataSpec.uri)) {
-            removeConflictingQueryParameters(dataSpec.uri)
-        } else {
-            dataSpec.uri
-        }
-        
-        val enhancedDataSpec = dataSpec.buildUpon()
-            .setUri(sanitizedUri)
-            .build()
 
-        // Optimized timeouts for YouTube streaming
-        // YouTube can have variable latency, especially during peak hours
-        // Longer timeouts prevent premature failures on slow networks
-        val factory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
-            .setUserAgent(userAgent)
-            .setConnectTimeoutMs(15_000) // 15s connect - balance between responsiveness and reliability
-            .setReadTimeoutMs(30_000)    // 30s read - critical for DASH segment downloads
-            .setAllowCrossProtocolRedirects(true)
-            .setKeepPostFor302Redirects(true)
+        val requestUserAgent = if (isYouTubeUri(dataSpec.uri)) {
+            resolveYouTubeUserAgent(dataSpec.uri)
+        } else {
+            userAgent
+        }
+        val factory = OkHttpDataSource.Factory(
+            AppProxyManager.applyTo(OkHttpClient.Builder())
+                .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .retryOnConnectionFailure(true)
+                .build()
+        ).setUserAgent(requestUserAgent)
 
         if (isYouTubeUri(dataSpec.uri)) {
             addYouTubeHeaders(factory)
         }
 
         dataSource = factory.createDataSource()
-        return dataSource!!.open(enhancedDataSpec)
+        return dataSource!!.open(dataSpec)
     }
 
     override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
@@ -101,28 +98,20 @@ class YouTubeHttpDataSource private constructor(
                host.contains("ytimg.com")
     }
 
-    /**
-     * Remove query parameters that conflict with ExoPlayer's range handling.
-     * ExoPlayer adds its own Range headers for DASH playback, and YouTube's
-     * 'range' query parameter can cause conflicts.
-     */
-    private fun removeConflictingQueryParameters(uri: Uri): Uri {
-        val builder = uri.buildUpon().clearQuery()
-        uri.queryParameterNames.forEach { name ->
-            // Remove 'range' if ExoPlayer is going to handle it via DataSpec
-            // Keep all other parameters (including 'n' for throttling deobfuscation)
-            if (name != "range") {
-                builder.appendQueryParameter(name, uri.getQueryParameter(name))
-            }
+    private fun resolveYouTubeUserAgent(uri: Uri): String {
+        return when (uri.getQueryParameter("c")?.uppercase()) {
+            "IOS" -> "com.google.ios.youtube/21.03.3 (iPad7,6; U; CPU iPadOS 17_7_10 like Mac OS X; en-US)"
+            "ANDROID", "ANDROID_CREATOR" -> "com.google.android.youtube/21.03.38 (Linux; U; Android 14) gzip"
+            "ANDROID_VR" -> "com.google.android.apps.youtube.vr.oculus/1.61.48 (Linux; U; Android 12; en_US; Quest 3; Build/SQ3A.220605.009.A1; Cronet/132.0.6808.3)"
+            else -> userAgent
         }
-        return builder.build()
     }
 
     /**
      * Add headers that YouTube expects/requires for video streaming.
      * These help avoid bot detection and ensure proper CDN routing.
      */
-    private fun addYouTubeHeaders(factory: androidx.media3.datasource.DefaultHttpDataSource.Factory) {
+    private fun addYouTubeHeaders(factory: OkHttpDataSource.Factory) {
         val headers = mapOf(
             "Origin" to "https://www.youtube.com",
             "Referer" to "https://www.youtube.com/",

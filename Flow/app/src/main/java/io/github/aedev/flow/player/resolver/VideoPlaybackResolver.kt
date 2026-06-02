@@ -3,8 +3,11 @@ package io.github.aedev.flow.player.resolver
 import android.net.Uri
 import android.util.Log
 import androidx.media3.datasource.DataSource
+import androidx.media3.exoplayer.hls.playlist.DefaultHlsPlaylistTracker
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.MergingMediaSource
+import io.github.aedev.flow.player.stream.VideoCodecUtils
+import io.github.aedev.flow.player.config.PlayerConfig
 import org.schabi.newpipe.extractor.stream.AudioStream
 import org.schabi.newpipe.extractor.stream.DeliveryMethod
 import org.schabi.newpipe.extractor.stream.Stream
@@ -25,12 +28,13 @@ import org.schabi.newpipe.extractor.stream.VideoStream
  */
 class VideoPlaybackResolver(
     private val dashDataSourceFactory: DataSource.Factory,
-    private val progressiveDataSourceFactory: DataSource.Factory
+    private val progressiveDataSourceFactory: DataSource.Factory,
+    private val liveDashDataSourceFactory: DataSource.Factory = dashDataSourceFactory,
+    private val liveHlsDataSourceFactory: DataSource.Factory = progressiveDataSourceFactory
 ) {
     companion object {
         private const val TAG = "VideoPlaybackResolver"
-
-        private const val LIVE_EDGE_GAP_MS = 10_000L
+        private const val PLAYLIST_STUCK_TARGET_DURATION_COEFFICIENT = 15.0
     }
 
     fun resolve(
@@ -42,7 +46,27 @@ class VideoPlaybackResolver(
     ): MediaSource? {
         Log.d(TAG, "Resolving playback: ${videoStreams.size} video streams, audio=${audioStream != null}, dash=${!dashManifestUrl.isNullOrEmpty()}, hls=${!hlsUrl.isNullOrEmpty()}, duration=${durationSeconds}s")
         
-        // 1. Priority: HLS URL for Live streams
+        if (!hlsUrl.isNullOrEmpty() && !dashManifestUrl.isNullOrEmpty()) {
+            try {
+                Log.d(TAG, "Using YouTube DASH manifest for live DVR playback: ${dashManifestUrl.take(80)}...")
+
+                val liveDashItem = androidx.media3.common.MediaItem.Builder()
+                    .setUri(dashManifestUrl)
+                    .setMimeType(androidx.media3.common.MimeTypes.APPLICATION_MPD)
+                    .setLiveConfiguration(
+                        androidx.media3.common.MediaItem.LiveConfiguration.Builder()
+                            .setTargetOffsetMs(PlayerConfig.LIVE_EDGE_GAP_MS)
+                            .build()
+                    )
+                    .build()
+
+                return androidx.media3.exoplayer.dash.DashMediaSource.Factory(liveDashDataSourceFactory)
+                    .createMediaSource(liveDashItem)
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to build live DASH media source, falling back to HLS", e)
+            }
+        }
+
         if (!hlsUrl.isNullOrEmpty()) {
             try {
                 Log.d(TAG, "Using YouTube HLS manifest for live playback: ${hlsUrl.take(80)}...")
@@ -52,15 +76,23 @@ class VideoPlaybackResolver(
                     .setMimeType(androidx.media3.common.MimeTypes.APPLICATION_M3U8)
                     .setLiveConfiguration(
                         androidx.media3.common.MediaItem.LiveConfiguration.Builder()
-                            .setTargetOffsetMs(LIVE_EDGE_GAP_MS)
+                            .setTargetOffsetMs(PlayerConfig.LIVE_EDGE_GAP_MS)
                             .build()
                     )
                     .build()
 
-                val cachelessFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
-
-                return androidx.media3.exoplayer.hls.HlsMediaSource.Factory(cachelessFactory)
+                return androidx.media3.exoplayer.hls.HlsMediaSource.Factory(liveHlsDataSourceFactory)
                     .setAllowChunklessPreparation(true)
+                    .setPlaylistTrackerFactory { dataSourceFactory, loadErrorHandlingPolicy, playlistParserFactory, cmcdConfiguration, releasableExecutorSupplier ->
+                        DefaultHlsPlaylistTracker(
+                            dataSourceFactory,
+                            loadErrorHandlingPolicy,
+                            playlistParserFactory,
+                            cmcdConfiguration,
+                            PLAYLIST_STUCK_TARGET_DURATION_COEFFICIENT,
+                            releasableExecutorSupplier
+                        )
+                    }
                     .createMediaSource(liveItem)
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to build live HLS media source", e)
@@ -85,12 +117,16 @@ class VideoPlaybackResolver(
                 Log.w(TAG, "Failed to use YouTube DASH manifest, trying generated manifests", e)
             }
         } else if (useSpecificStream) {
-            Log.d(TAG, "User selected specific quality (${videoStreams.firstOrNull()?.height}p) - bypassing YouTube DASH URL")
+            Log.d(TAG, "User selected specific quality (${videoStreams.firstOrNull()?.let(VideoCodecUtils::qualityHeightFromStream)}p) - bypassing YouTube DASH URL")
         }
 
         // 3. Generate DASH manifests from progressive streams (NewPipe approach)
         // This avoids YouTube's progressive throttling (~50-100 KB/s limit)
-        val videoSource = createVideoSource(videoStreams, durationSeconds)
+        val videoSource = createVideoSource(
+            videoStreams = videoStreams,
+            durationSeconds = durationSeconds,
+            preferMuxed = audioStream == null
+        )
         val audioSource = createAudioSource(audioStream, durationSeconds)
         
         return when {
@@ -118,16 +154,23 @@ class VideoPlaybackResolver(
      */
     private fun createVideoSource(
         videoStreams: List<VideoStream>,
-        durationSeconds: Long
+        durationSeconds: Long,
+        preferMuxed: Boolean
     ): MediaSource? {
         if (videoStreams.isEmpty()) return null
         
         // Sort by quality and prefer video-only streams (they can use DASH manifests)
-        val sortedStreams = videoStreams.sortedByDescending { it.height }
+        val sortedStreams = videoStreams.sortedWith(
+            compareByDescending<VideoStream> { VideoCodecUtils.qualityHeightFromStream(it) }
+                .thenBy { VideoCodecUtils.playbackCodecRank(it) }
+                .thenByDescending { it.bitrate }
+        )
         
-        // Try to find a video-only stream first (better for DASH manifest generation)
-        val videoOnlyStream = sortedStreams.firstOrNull { it.isVideoOnly }
-        val bestStream = videoOnlyStream ?: sortedStreams.firstOrNull()
+        val bestStream = if (preferMuxed) {
+            sortedStreams.firstOrNull { !it.isVideoOnly } ?: sortedStreams.firstOrNull()
+        } else {
+            sortedStreams.firstOrNull { it.isVideoOnly } ?: sortedStreams.firstOrNull()
+        }
         
         if (bestStream == null) return null
         
@@ -149,7 +192,7 @@ class VideoPlaybackResolver(
         }
         
         val deliveryMethod = stream.deliveryMethod
-        Log.d(TAG, "Creating video source: ${stream.height}p, delivery=${deliveryMethod}, videoOnly=${stream.isVideoOnly}")
+        Log.d(TAG, "Creating video source: ${VideoCodecUtils.qualityHeightFromStream(stream)}p, delivery=${deliveryMethod}, videoOnly=${stream.isVideoOnly}")
         
         return try {
             when (deliveryMethod) {
@@ -228,7 +271,7 @@ class VideoPlaybackResolver(
         val itagItem = stream.itagItem 
             ?: throw IllegalStateException("No ItagItem for DASH stream")
             
-        Log.d(TAG, "Generating OTF DASH manifest for ${stream.height}p video")
+        Log.d(TAG, "Generating OTF DASH manifest for ${VideoCodecUtils.qualityHeightFromStream(stream)}p video")
         val manifestString = ManifestGenerator.generateOtfManifest(stream, itagItem, durationSeconds)
         
         return if (manifestString != null) {
@@ -250,7 +293,7 @@ class VideoPlaybackResolver(
         val itagItem = stream.itagItem
         
         if (itagItem != null && durationSeconds > 0) {
-            Log.d(TAG, "Generating progressive DASH manifest for ${stream.height}p to avoid throttling")
+            Log.d(TAG, "Generating progressive DASH manifest for ${VideoCodecUtils.qualityHeightFromStream(stream)}p to avoid throttling")
             val manifestString = ManifestGenerator.generateProgressiveManifest(stream, itagItem, durationSeconds)
             
             if (manifestString != null) {
@@ -313,7 +356,7 @@ class VideoPlaybackResolver(
      * Fallback: Create standard progressive video source (may be throttled!)
      */
     private fun createProgressiveSource(stream: VideoStream): MediaSource {
-        Log.d(TAG, "Creating progressive video source for ${stream.height}p (WARNING: may be throttled)")
+        Log.d(TAG, "Creating progressive video source for ${VideoCodecUtils.qualityHeightFromStream(stream)}p (WARNING: may be throttled)")
         val item = androidx.media3.common.MediaItem.Builder()
             .setUri(stream.content)
             .setMimeType(stream.format?.mimeType ?: androidx.media3.common.MimeTypes.VIDEO_MP4)

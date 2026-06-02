@@ -7,8 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.material.icons.outlined.SaveAlt
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,6 +45,42 @@ fun ExportDataScreen(
                     context.getString(
                         if (result.isSuccess) R.string.settings_export_success
                         else R.string.settings_export_failed
+                    ),
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    val exportNewPipeSubscriptionsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val result = backupRepo.exportSubscriptionsAsNewPipe(it)
+                android.widget.Toast.makeText(
+                    context,
+                    context.getString(
+                        if (result.isSuccess) R.string.export_newpipe_subs_success
+                        else R.string.export_newpipe_subs_failed
+                    ),
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    val exportWatchHistoryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let {
+            scope.launch {
+                val result = backupRepo.exportWatchHistory(it)
+                android.widget.Toast.makeText(
+                    context,
+                    context.getString(
+                        if (result.isSuccess) R.string.settings_export_success
+                        else R.string.history_export_failed
                     ),
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
@@ -88,6 +126,7 @@ fun ExportDataScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -143,6 +182,30 @@ fun ExportDataScreen(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     onClick = {
                         exportAppDataLauncher.launch("flow_backup_${System.currentTimeMillis()}.json")
+                    }
+                )
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.export_newpipe_subs_title),
+                    description = stringResource(R.string.export_newpipe_subs_desc),
+                    painter = painterResource(id = R.drawable.ic_newpipe),
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    onClick = {
+                        exportNewPipeSubscriptionsLauncher.launch("newpipe_subscriptions_${System.currentTimeMillis()}.json")
+                    }
+                )
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.export_watch_history_title),
+                    description = stringResource(R.string.export_watch_history_desc),
+                    icon = Icons.Outlined.History,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    onClick = {
+                        exportWatchHistoryLauncher.launch("flow-watch-history.json")
                     }
                 )
             }

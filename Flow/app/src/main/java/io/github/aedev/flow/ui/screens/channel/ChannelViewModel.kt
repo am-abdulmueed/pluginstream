@@ -13,6 +13,7 @@ import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.paging.ChannelVideosPagingSource
 import io.github.aedev.flow.data.paging.ChannelPlaylistsPagingSource
 import io.github.aedev.flow.utils.PerformanceDispatcher
+import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -25,6 +26,7 @@ import org.schabi.newpipe.extractor.channel.ChannelInfo
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
 import org.schabi.newpipe.extractor.linkhandler.ListLinkHandler
+import java.util.Locale
 
 class ChannelViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ChannelUiState())
@@ -117,8 +119,7 @@ class ChannelViewModel : ViewModel() {
                 
                 Log.d(TAG, "Channel loaded: ${channelInfo.name}")
                 
-                // Extract channel ID from URL
-                val channelId = extractChannelId(normalizedUrl)
+                val channelId = channelInfo.id
                 
                 _uiState.update { 
                     it.copy(
@@ -312,9 +313,10 @@ class ChannelViewModel : ViewModel() {
         viewModelScope.launch(PerformanceDispatcher.diskIO) {
             val state = _uiState.value
             val channelId = state.channelId ?: return@launch
-            val channelName = state.channelInfo?.name ?: return@launch
+            val channelInfo = state.channelInfo ?: return@launch
+            val channelName = channelInfo.name
             val channelThumbnail = try { 
-                state.channelInfo?.avatars?.firstOrNull()?.url ?: ""
+                channelInfo.avatars.firstOrNull()?.url ?: ""
             } catch (e: Exception) { 
                 ""
             }
@@ -522,8 +524,17 @@ class ChannelViewModel : ViewModel() {
             url.contains("/shorts/") -> url.substringAfter("/shorts/").substringBefore("?")
             else -> url.substringAfterLast("/").substringBefore("?")
         }
-        val thumbnail = thumbnails.maxByOrNull { it.width }?.url
-            ?: "https://i.ytimg.com/vi/$videoId/hq720.jpg"
+        val thumbnail = ThumbnailUrlResolver.normalizeVideoThumbnail(
+            videoId,
+            thumbnails.maxByOrNull { it.width }?.url
+        )
+        val absoluteUploadTimestamp = uploadDate?.offsetDateTime()?.toInstant()?.toEpochMilli()
+        val textualDate = textualUploadDate?.takeIf { it.isNotBlank() }
+        val displayUploadDate = textualDate
+            ?: io.github.aedev.flow.utils.formatTimeAgo(uploadDate?.offsetDateTime()?.toString())
+        val uploadTimestamp = absoluteUploadTimestamp
+            ?: parseRelativeUploadDate(textualDate)
+            ?: 0L
         return Video(
             id = videoId,
             title = name,
@@ -534,10 +545,40 @@ class ChannelViewModel : ViewModel() {
                 ?: channelInfo.avatars.firstOrNull()?.url
                 ?: "",
             viewCount = viewCount,
-            duration = duration.toInt(),
-            uploadDate = io.github.aedev.flow.utils.formatTimeAgo(uploadDate?.offsetDateTime()?.toString()),
+            duration = duration.toInt().coerceAtLeast(0),
+            uploadDate = displayUploadDate,
+            timestamp = uploadTimestamp,
             description = ""
         )
+    }
+
+    private fun parseRelativeUploadDate(text: String?): Long? {
+        val normalized = text?.lowercase(Locale.US)
+            ?.replace("streamed", "")
+            ?.replace("premiered", "")
+            ?.replace("live", "")
+            ?.replace("ago", "")
+            ?.trim()
+            ?: return null
+
+        if (normalized.isBlank()) return null
+        if (normalized.contains("just now") || normalized.contains("today")) return System.currentTimeMillis()
+        if (normalized.contains("yesterday")) return System.currentTimeMillis() - 24L * 60L * 60L * 1000L
+
+        val value = Regex("(\\d+)").find(normalized)?.groupValues?.getOrNull(1)?.toLongOrNull()
+            ?: return null
+        val unitMillis = when {
+            normalized.contains("second") || normalized.endsWith("s") -> 1_000L
+            normalized.contains("minute") || normalized.endsWith("m") -> 60_000L
+            normalized.contains("hour") || normalized.endsWith("h") -> 3_600_000L
+            normalized.contains("day") || normalized.endsWith("d") -> 86_400_000L
+            normalized.contains("week") || normalized.endsWith("w") -> 7L * 86_400_000L
+            normalized.contains("month") || normalized.endsWith("mo") -> 30L * 86_400_000L
+            normalized.contains("year") || normalized.endsWith("y") -> 365L * 86_400_000L
+            else -> return null
+        }
+
+        return System.currentTimeMillis() - (value * unitMillis)
     }
 }
 

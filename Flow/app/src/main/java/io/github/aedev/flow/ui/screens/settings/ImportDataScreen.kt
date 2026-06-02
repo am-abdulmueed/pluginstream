@@ -71,7 +71,7 @@ fun ImportDataScreen(
         when (val s = importState) {
             is ImportViewModel.State.Success -> {
                 snackbarHostState.showSnackbar(
-                    if (s.count > 0) "Imported ${s.count} ${s.label.lowercase()}"
+                    s.message ?: if ((s.count ?: 0) > 0) "Imported ${s.count} ${s.label.lowercase()}"
                     else "${s.label} imported successfully"
                 )
                 importViewModel.dismiss()
@@ -122,6 +122,16 @@ fun ImportDataScreen(
         onResult = { uri -> uri?.let { importViewModel.importYouTubeWatchHistory(it) } }
     )
 
+    val freeTubeHistoryImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri -> uri?.let { importViewModel.importFreeTubeWatchHistory(it) } }
+    )
+
+    val newPipeHistoryImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri -> uri?.let { importViewModel.importNewPipeWatchHistory(it) } }
+    )
+
     val youtubePlaylistImportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri ->
@@ -170,10 +180,24 @@ fun ImportDataScreen(
         }
     )
 
-    // Flow Engine / Neural profile import
     val libreTubeImportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri -> uri?.let { importViewModel.importLibreTube(it) } }
+    )
+
+    val youtubeTakeoutImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri -> uri?.let { importViewModel.importYouTubeTakeout(it) } }
+    )
+
+    val newPipePlaylistImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri -> uri?.let { importViewModel.importNewPipePlaylists(it) } }
+    )
+
+    val libreTubePlaylistImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri -> uri?.let { importViewModel.importLibreTubePlaylists(it) } }
     )
 
     val metrolistImportLauncher = rememberLauncherForActivityResult(
@@ -202,40 +226,32 @@ fun ImportDataScreen(
 
     val importMasterLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
-        onResult = { uri ->
-            uri?.let {
-                scope.launch {
-                    val result = backupRepo.importMasterBackup(it)
-                    snackbarHostState.showSnackbar(
-                        context.getString(
-                            if (result.isSuccess) R.string.import_master_backup_success
-                            else R.string.import_master_backup_failed
-                        )
-                    )
-                }
-            }
-        }
+        onResult = { uri -> uri?.let { importViewModel.importMasterBackup(it) } }
     )
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        stringResource(R.string.import_data_title),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                navigationIcon = {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.btn_back))
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
+                    Text(
+                        text = stringResource(R.string.import_data_title),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
@@ -288,12 +304,26 @@ fun ImportDataScreen(
                     onClick = { importMasterLauncher.launch(arrayOf("application/zip", "application/octet-stream")) }
                 )
             }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.import_engine_data),
+                    description = stringResource(R.string.import_engine_data_desc),
+                    icon = Icons.Outlined.Psychology,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    onClick = { importEngineLauncher.launch(arrayOf("application/json")) }
+                )
+            }
             
             item {
                 PreferencesSectionHeader(
                     title = "External Services",
                     subtitle = "Import from other YouTube clients"
                 )
+            }
+
+            item {
+                ImportSubsectionHeader(title = stringResource(R.string.import_subscriptions_section_title))
             }
 
             item {
@@ -330,10 +360,92 @@ fun ImportDataScreen(
             }
 
             item {
-                PreferencesSectionHeader(
-                    title = stringResource(R.string.import_music_apps_section_title),
-                    subtitle = stringResource(R.string.import_music_apps_section_subtitle)
+                ImportSubsectionHeader(title = stringResource(R.string.import_history_section_title))
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.import_yt_takeout_all),
+                    description = stringResource(R.string.import_yt_takeout_all_desc),
+                    icon = Icons.Outlined.Archive,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    enabled = importState !is ImportViewModel.State.Running,
+                    onClick = { youtubeTakeoutImportLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) }
                 )
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.import_yt_watch_history),
+                    description = stringResource(R.string.import_yt_watch_history_desc),
+                    icon = Icons.Outlined.History,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    enabled = importState !is ImportViewModel.State.Running,
+                    onClick = { youtubeHistoryImportLauncher.launch(arrayOf("text/html", "text/plain", "*/*")) }
+                )
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.import_freetube_history),
+                    description = stringResource(R.string.import_freetube_history_desc),
+                    icon = Icons.Outlined.History,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    enabled = importState !is ImportViewModel.State.Running,
+                    onClick = { freeTubeHistoryImportLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream", "*/*")) }
+                )
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.import_newpipe_history),
+                    description = stringResource(R.string.import_newpipe_history_desc),
+                    painter = painterResource(id = R.drawable.ic_newpipe),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    enabled = importState !is ImportViewModel.State.Running,
+                    onClick = { newPipeHistoryImportLauncher.launch(arrayOf("application/zip", "application/octet-stream", "application/x-sqlite3", "*/*")) }
+                )
+            }
+
+            item {
+                ImportSubsectionHeader(title = stringResource(R.string.import_playlists_section_title))
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.import_newpipe_playlists),
+                    description = stringResource(R.string.import_newpipe_playlists_desc),
+                    painter = painterResource(id = R.drawable.ic_newpipe),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    enabled = importState !is ImportViewModel.State.Running,
+                    onClick = { newPipePlaylistImportLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) }
+                )
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.import_libretube_playlists),
+                    description = stringResource(R.string.import_libretube_playlists_desc),
+                    painter = painterResource(id = R.drawable.ic_libretube),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    enabled = importState !is ImportViewModel.State.Running,
+                    onClick = { libreTubePlaylistImportLauncher.launch(arrayOf("application/json")) }
+                )
+            }
+
+            item {
+                ImportOptionCard(
+                    title = stringResource(R.string.import_yt_playlist),
+                    description = stringResource(R.string.import_yt_playlist_desc),
+                    icon = Icons.Outlined.PlaylistPlay,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    enabled = importState !is ImportViewModel.State.Running,
+                    onClick = { youtubePlaylistImportLauncher.launch(arrayOf("text/comma-separated-values", "text/csv", "text/plain")) }
+                )
+            }
+
+            item {
+                ImportSubsectionHeader(title = stringResource(R.string.import_music_apps_section_title))
             }
 
             item {
@@ -348,57 +460,13 @@ fun ImportDataScreen(
             }
 
             item {
-                PreferencesSectionHeader(
-                    title = stringResource(R.string.import_yt_data_section_title),
-                    subtitle = stringResource(R.string.import_yt_data_section_subtitle)
-                )
-            }
-
-            item {
-                ImportOptionCard(
-                    title = stringResource(R.string.import_yt_watch_history),
-                    description = stringResource(R.string.import_yt_watch_history_desc),
-                    icon = Icons.Outlined.History,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    enabled = importState !is ImportViewModel.State.Running,
-                    onClick = { youtubeHistoryImportLauncher.launch(arrayOf("text/html", "text/plain")) }
-                )
-            }
-
-            item {
-                ImportOptionCard(
-                    title = stringResource(R.string.import_yt_playlist),
-                    description = stringResource(R.string.import_yt_playlist_desc),
-                    icon = Icons.Outlined.PlaylistPlay,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    onClick = { youtubePlaylistImportLauncher.launch(arrayOf("text/comma-separated-values", "text/csv", "text/plain")) }
-                )
-            }
-
-            item {
                 ImportOptionCard(
                     title = stringResource(R.string.import_yt_music_playlist),
                     description = stringResource(R.string.import_yt_music_playlist_desc),
                     icon = Icons.Outlined.QueueMusic,
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    enabled = importState !is ImportViewModel.State.Running,
                     onClick = { youtubeMusicPlaylistImportLauncher.launch(arrayOf("text/comma-separated-values", "text/csv", "text/plain")) }
-                )
-            }
-
-            item {
-                PreferencesSectionHeader(
-                    title = stringResource(R.string.import_engine_section_title),
-                    subtitle = stringResource(R.string.import_engine_section_subtitle)
-                )
-            }
-
-            item {
-                ImportOptionCard(
-                    title = stringResource(R.string.import_engine_data),
-                    description = stringResource(R.string.import_engine_data_desc),
-                    icon = Icons.Outlined.Psychology,
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    onClick = { importEngineLauncher.launch(arrayOf("application/json")) }
                 )
             }
 
@@ -407,6 +475,17 @@ fun ImportDataScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ImportSubsectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+    )
 }
 
 @Composable

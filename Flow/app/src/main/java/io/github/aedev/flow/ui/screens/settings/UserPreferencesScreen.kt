@@ -39,8 +39,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
+import io.github.aedev.flow.data.recommendation.NeuroTopicCatalog
 import io.github.aedev.flow.data.recommendation.TopicCategory
 import io.github.aedev.flow.data.local.PlayerPreferences
+import io.github.aedev.flow.ui.components.topicCategoryIcon
 import io.github.aedev.flow.ui.theme.extendedColors
 import kotlinx.coroutines.launch
 
@@ -70,25 +72,29 @@ fun UserPreferencesScreen(
     }
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = stringResource(R.string.content_preferences_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    navigationIcon = {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         IconButton(onClick = onNavigateBack) {
                             Icon(Icons.Default.ArrowBack, stringResource(R.string.btn_back))
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.Transparent
-                    )
-                )
+                        Text(
+                            text = stringResource(R.string.content_preferences_title),
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
                 
                 ScrollableTabRow(
                     selectedTabIndex = pagerState.currentPage,
@@ -278,7 +284,7 @@ fun UserPreferencesScreen(
                         }
                         
                         items(
-                            items = FlowNeuroEngine.TOPIC_CATEGORIES,
+                            items = NeuroTopicCatalog.TOPIC_CATEGORIES,
                             key = { it.name }
                         ) { category ->
                             TopicCategoryExpandableCard(
@@ -578,9 +584,11 @@ private fun TopicCategoryExpandableCard(
                     modifier = Modifier.size(44.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = category.icon,
-                            fontSize = 22.sp
+                        Icon(
+                            imageVector = topicCategoryIcon(category.icon),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -589,7 +597,7 @@ private fun TopicCategoryExpandableCard(
                 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = category.name.replace(Regex("^[^a-zA-Z]+"), "").trim(),
+                        text = category.name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )

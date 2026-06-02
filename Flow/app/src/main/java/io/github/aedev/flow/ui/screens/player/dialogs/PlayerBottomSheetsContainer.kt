@@ -9,12 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.SleepTimerManager
 import io.github.aedev.flow.ui.components.FlowChaptersBottomSheet
+import io.github.aedev.flow.ui.components.CommentSortFilter
 import io.github.aedev.flow.ui.components.FlowCommentsBottomSheet
 import io.github.aedev.flow.ui.components.FlowDescriptionBottomSheet
 import io.github.aedev.flow.ui.components.FlowPlaylistQueueBottomSheet
@@ -31,39 +33,44 @@ fun PlayerBottomSheetsContainer(
     uiState: VideoPlayerUiState,
     video: Video,
     completeVideo: Video,
+    disableShortsPlayer: Boolean,
     comments: List<Comment>,
+    commentsEnabled: Boolean = true,
     isLoadingComments: Boolean,
     isLoadingMoreComments: Boolean = false,
     hasMoreComments: Boolean = false,
     onLoadMoreComments: (videoId: String) -> Unit = {},
+    mediaSheetExpandedHeight: Dp? = null,
     context: Context,
     onPlayAsShort: (String) -> Unit,
     onPlayAsMusic: (String) -> Unit,
     onLoadReplies: (Comment) -> Unit = {},
-    onNavigateToChannel: ((String) -> Unit)? = null
+    onLoadMoreReplies: (Comment) -> Unit = {},
+    onNavigateToChannel: ((String) -> Unit)? = null,
+    renderChaptersSheet: Boolean = true
 ) {
-    // Sorted comments based on filter — pinned comments always first
-    val sortedComments = remember(comments, screenState.isTopComments) {
+    fun relativeTimeToSeconds(timeStr: String): Long {
+        val lower = timeStr.lowercase().trim()
+        val number = Regex("\\d+").find(lower)?.value?.toLongOrNull() ?: 0L
+        return when {
+            "second" in lower -> number
+            "minute" in lower -> number * 60L
+            "hour" in lower -> number * 3_600L
+            "day" in lower -> number * 86_400L
+            "week" in lower -> number * 604_800L
+            "month" in lower -> number * 2_592_000L
+            "year" in lower -> number * 31_536_000L
+            else -> Long.MAX_VALUE
+        }
+    }
+
+    val sortedComments = remember(comments, screenState.commentSortFilter) {
         val pinned = comments.filter { it.isPinned }
         val unpinned = comments.filterNot { it.isPinned }
-        val sortedUnpinned = if (screenState.isTopComments) {
-            unpinned.sortedByDescending { it.likeCount }
-        } else {
-            fun relativeTimeToSeconds(timeStr: String): Long {
-                val lower = timeStr.lowercase().trim()
-                val number = Regex("\\d+").find(lower)?.value?.toLongOrNull() ?: 0L
-                return when {
-                    "second" in lower -> number
-                    "minute" in lower -> number * 60L
-                    "hour"   in lower -> number * 3_600L
-                    "day"    in lower -> number * 86_400L
-                    "week"   in lower -> number * 604_800L
-                    "month"  in lower -> number * 2_592_000L
-                    "year"   in lower -> number * 31_536_000L
-                    else              -> Long.MAX_VALUE
-                }
-            }
-            unpinned.sortedBy { relativeTimeToSeconds(it.publishedTime) }
+        val sortedUnpinned = when (screenState.commentSortFilter) {
+            CommentSortFilter.TOP -> unpinned.sortedByDescending { it.likeCount }
+            CommentSortFilter.NEWEST -> unpinned.sortedBy { relativeTimeToSeconds(it.publishedTime) }
+            CommentSortFilter.OLDEST -> unpinned.sortedByDescending { relativeTimeToSeconds(it.publishedTime) }
         }
         pinned + sortedUnpinned
     }
@@ -78,9 +85,6 @@ fun PlayerBottomSheetsContainer(
             }
             val ms = seconds * 1000L
             EnhancedPlayerManager.getInstance().seekTo(ms)
-            
-            screenState.showCommentsSheet = false
-            screenState.showDescriptionSheet = false
         }
     }
     
@@ -130,15 +134,16 @@ fun PlayerBottomSheetsContainer(
     }
 
     // Comments Bottom Sheet
-    if (screenState.showCommentsSheet) {
+    if (screenState.showCommentsSheet && commentsEnabled) {
         FlowCommentsBottomSheet(
             comments = sortedComments,
             isLoading = isLoadingComments,
-            isTopSelected = screenState.isTopComments,
-            onFilterChanged = { isTop ->
-                screenState.isTopComments = isTop
+            selectedFilter = screenState.commentSortFilter,
+            onFilterChanged = { filter ->
+                screenState.commentSortFilter = filter
             },
             onLoadReplies = onLoadReplies,
+            onLoadMoreReplies = onLoadMoreReplies,
             onTimestampClick = handleTimestampClick,
             isLoadingMore = isLoadingMoreComments,
             hasMore = hasMoreComments,
@@ -147,6 +152,7 @@ fun PlayerBottomSheetsContainer(
                 screenState.showCommentsSheet = false
                 onNavigateToChannel?.invoke("@$authorHandle")
             },
+            expandedHeight = mediaSheetExpandedHeight,
             onDismiss = { screenState.showCommentsSheet = false }
         )
     }
@@ -186,18 +192,22 @@ fun PlayerBottomSheetsContainer(
             video = currentVideo,
             tags = uiState.streamInfo?.tags ?: emptyList(),
             onTimestampClick = handleTimestampClick,
+            expandedHeight = mediaSheetExpandedHeight,
             onDismiss = { screenState.showDescriptionSheet = false }
         )
     }
 
     // Chapters Bottom Sheet
-    if (screenState.showChaptersSheet) {
+    if (screenState.showChaptersSheet && renderChaptersSheet) {
         FlowChaptersBottomSheet(
             chapters = uiState.chapters,
             currentPosition = screenState.currentPosition,
+            durationMs = screenState.duration,
             onChapterClick = { newPosition ->
                 EnhancedPlayerManager.getInstance().seekTo(newPosition)
             },
+            thumbnailUrl = video.thumbnailUrl,
+            expandedHeight = mediaSheetExpandedHeight,
             onDismiss = { screenState.showChaptersSheet = false }
         )
     }
@@ -215,6 +225,7 @@ fun PlayerBottomSheetsContainer(
             onPlayVideoAtIndex = { index ->
                 EnhancedPlayerManager.getInstance().playVideoAtIndex(index)
             },
+            expandedHeight = mediaSheetExpandedHeight,
             onDismiss = { screenState.showPlaylistQueueSheet = false }
         )
     }
@@ -226,7 +237,7 @@ fun PlayerBottomSheetsContainer(
     }
 
     // Shorts/Music Suggestion Dialog
-    if (screenState.showShortsPrompt) {
+    if (screenState.showShortsPrompt && !disableShortsPlayer) {
         ShortsSuggestionDialog(
             isMusic = completeVideo.isMusic || 
                      completeVideo.title.contains("Official Audio", true) || 

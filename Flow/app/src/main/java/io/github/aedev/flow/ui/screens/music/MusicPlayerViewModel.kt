@@ -1,9 +1,12 @@
 package io.github.aedev.flow.ui.screens.music
 
 import android.content.Context
+import android.net.Uri
+import android.os.SystemClock
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.aedev.flow.R
 import io.github.aedev.flow.data.local.LikedVideoInfo
 import io.github.aedev.flow.data.local.LikedVideosRepository
 import io.github.aedev.flow.data.local.ViewHistory
@@ -11,6 +14,7 @@ import io.github.aedev.flow.data.music.DownloadManager
 import io.github.aedev.flow.data.music.PlaylistRepository
 import io.github.aedev.flow.data.model.Video
 import java.util.UUID
+import java.util.Locale
 import io.github.aedev.flow.data.music.YouTubeMusicService
 import io.github.aedev.flow.player.EnhancedMusicPlayerManager
 import io.github.aedev.flow.player.RepeatMode
@@ -27,9 +31,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import io.github.aedev.flow.data.lyrics.LyricsEntry
 import io.github.aedev.flow.data.lyrics.LyricsHelper
-import io.github.aedev.flow.data.lyrics.PreferredLyricsProvider
 import io.github.aedev.flow.data.local.PlayerPreferences
 import kotlinx.coroutines.flow.first
+import kotlin.math.abs
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -48,10 +52,12 @@ class MusicPlayerViewModel @Inject constructor(
     val uiState: StateFlow<MusicPlayerUiState> = _uiState.asStateFlow()
     
     private val playerPreferences = PlayerPreferences(context)
-    private var lyricsHelper = LyricsHelper() 
+    private val lyricsHelper = LyricsHelper(context)
     
     private var isInitialized = false
     private var loadTrackJob: kotlinx.coroutines.Job? = null
+    private var pendingSeekPosition: Long? = null
+    private var pendingSeekStartedAtMs: Long = 0L
 
     init {
         EnhancedMusicPlayerManager.initialize(context)
@@ -77,18 +83,21 @@ class MusicPlayerViewModel @Inject constructor(
         
         viewModelScope.launch {
             EnhancedMusicPlayerManager.playerState.collect { playerState ->
+                val acceptedPosition = acceptedPlaybackPosition(playerState.position)
                 _uiState.update { it.copy(
                     isPlaying = playerState.isPlaying,
                     isBuffering = playerState.isBuffering,
                     duration = playerState.duration,
-                    currentPosition = playerState.position
+                    currentPosition = acceptedPosition ?: it.currentPosition
                 ) }
             }
         }
         
         viewModelScope.launch {
             EnhancedMusicPlayerManager.currentPosition.collect { position ->
-                _uiState.update { it.copy(currentPosition = position) }
+                acceptedPlaybackPosition(position)?.let { acceptedPosition ->
+                    _uiState.update { it.copy(currentPosition = acceptedPosition) }
+                }
             }
         }
             
@@ -148,6 +157,17 @@ class MusicPlayerViewModel @Inject constructor(
         }
             
         viewModelScope.launch {
+            EnhancedMusicPlayerManager.automixItems.collect { automix ->
+                _uiState.update {
+                    it.copy(
+                        autoplaySuggestions = automix,
+                        isRelatedLoading = false
+                    )
+                }
+            }
+        }
+            
+        viewModelScope.launch {
             localPlaylistRepository.getMusicPlaylistsFlow().collect { playlistInfos ->
                 val playlists = playlistInfos.map { info ->
                     io.github.aedev.flow.data.music.Playlist(
@@ -178,8 +198,19 @@ class MusicPlayerViewModel @Inject constructor(
     fun loadAndPlayTrack(track: MusicTrack, queue: List<MusicTrack> = emptyList(), sourceName: String? = null) {
         loadTrackJob?.cancel()
         loadTrackJob = viewModelScope.launch {
-            val finalSourceName = sourceName ?: "Radio \u2022 ${track.artist}"
+            val finalSourceName = resolveSourceName(sourceName, track)
             val activeQueue = if (queue.isNotEmpty()) queue else listOf(track)
+            val localUriOverrides = withContext(PerformanceDispatcher.diskIO) {
+                activeQueue.mapNotNull { queuedTrack ->
+                    val path = downloadManager.getDownloadedTrackPath(queuedTrack.videoId) ?: return@mapNotNull null
+                    val uri = if (path.startsWith("content://")) {
+                        Uri.parse(path)
+                    } else {
+                        Uri.fromFile(java.io.File(path))
+                    }
+                    queuedTrack.videoId to uri
+                }.toMap()
+            }
 
             // ─── PHASE 1: Instant start ───────────────────────────────────────────
             _uiState.update { it.copy(
@@ -187,14 +218,16 @@ class MusicPlayerViewModel @Inject constructor(
                 isLoading = true,
                 error = null,
                 playingFrom = finalSourceName,
-                selectedFilter = "All"
+                selectedFilter = FILTER_ALL
             ) }
 
             withContext(kotlinx.coroutines.Dispatchers.Main) {
                 EnhancedMusicPlayerManager.playTrack(
                     track = track,
                     audioUrl = "music://${track.videoId}",
-                    queue = activeQueue
+                    queue = activeQueue,
+                    sourceName = finalSourceName,
+                    localUriOverrides = localUriOverrides
                 )
             }
 
@@ -204,7 +237,7 @@ class MusicPlayerViewModel @Inject constructor(
             // ─── PHASE 2: Background — does NOT block audio ───────────────────────
             supervisorScope {
                 launch(PerformanceDispatcher.networkIO) {
-                    if (!downloadManager.isCachedForOffline(track.videoId)) {
+                    if (!localUriOverrides.containsKey(track.videoId) && !downloadManager.isCachedForOffline(track.videoId)) {
                         EnhancedMusicPlayerManager.resolveStreamUrl(track.videoId)
                     }
                 }
@@ -234,13 +267,63 @@ class MusicPlayerViewModel @Inject constructor(
                         } ?: emptyList()
 
                         if (relatedTracks.isNotEmpty()) {
-                            EnhancedMusicPlayerManager.updateQueue(listOf(track) + relatedTracks)
-                            _uiState.update { it.copy(autoplaySuggestions = relatedTracks) }
+                            EnhancedMusicPlayerManager.updateAutomixItems(relatedTracks)
                         }
                     }
                 }
             }
         }
+    }
+
+    private fun resolveSourceName(sourceName: String?, track: MusicTrack): String {
+        val trimmed = sourceName?.trim().orEmpty()
+        if (trimmed.isBlank()) {
+            return context.getString(R.string.radio_source_template, track.artist)
+        }
+
+        val key = trimmed.lowercase(Locale.getDefault())
+        val mapped = when (key) {
+            "listen_again" -> context.getString(R.string.section_listen_again)
+            "daily_discover" -> context.getString(R.string.section_daily_discover)
+            "quick_picks" -> context.getString(R.string.section_quick_picks)
+            "speed_dial", "speed_dial_shuffle" -> context.getString(R.string.section_speed_dial)
+            "recommended" -> context.getString(R.string.section_recommended)
+            "recently_played" -> context.getString(R.string.section_recently_played)
+            "music_videos" -> context.getString(R.string.section_music_videos)
+            "music_videos_for_you" -> context.getString(R.string.section_music_videos_for_you)
+            "live_performances" -> context.getString(R.string.section_live_performances)
+            "new_releases" -> context.getString(R.string.section_new_releases)
+            "popular_artists" -> context.getString(R.string.section_popular_artists)
+            "mixed_for_you" -> context.getString(R.string.section_mixed_for_you)
+            "moods_and_genres" -> context.getString(R.string.section_moods_and_genres)
+            "mood_and_genres" -> context.getString(R.string.section_mood_and_genres)
+            "from_the_community" -> context.getString(R.string.section_from_the_community)
+            "top_albums" -> context.getString(R.string.section_top_albums)
+            "top_picks" -> context.getString(R.string.top_picks_for_you)
+            "trending" -> context.getString(R.string.trending)
+            else -> null
+        }
+
+        if (mapped != null) return mapped
+
+        if (key.startsWith("genre_")) {
+            val genre = trimmed.substringAfter("genre_", "").replace('_', ' ').trim()
+            if (genre.isNotBlank()) return genre
+        }
+
+        return CleanSource(trimmed)
+    }
+
+    private fun CleanSource(value: String): String {
+        return value
+            .replace('_', ' ')
+            .split(' ')
+            .filter { it.isNotBlank() }
+            .joinToString(" ") { word ->
+                word.replaceFirstChar { char ->
+                    if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
+                }
+            }
     }
 
     fun togglePlayPause() {
@@ -261,7 +344,7 @@ class MusicPlayerViewModel @Inject constructor(
 
     fun setFilter(filter: String) {
         val currentTrack = _uiState.value.currentTrack ?: return
-        _uiState.update { it.copy(selectedFilter = filter, isLoading = true) }
+        _uiState.update { it.copy(selectedFilter = filter, isRelatedLoading = true) }
         
         viewModelScope.launch(PerformanceDispatcher.networkIO) {
             try {
@@ -270,38 +353,62 @@ class MusicPlayerViewModel @Inject constructor(
                 } ?: emptyList()
                 
                 val filteredList = when (filter) {
-                    "Discover" -> freshRelated.shuffled().take(20)
-                    "Popular" -> freshRelated.sortedByDescending { it.title.length }.take(20)
-                    "Deep cuts" -> freshRelated.reversed().take(20)
-                    "Workout" -> freshRelated.filter { it.title.contains("remix", ignoreCase = true) || true }.shuffled()
+                    FILTER_DISCOVER -> freshRelated.shuffled().take(20)
+                    FILTER_POPULAR -> freshRelated.sortedByDescending { it.duration }.take(20)
+                    FILTER_DEEP_CUTS -> freshRelated.reversed().take(20)
+                    FILTER_WORKOUT -> freshRelated.filter {
+                        it.title.contains("remix", ignoreCase = true) ||
+                            it.title.contains("workout", ignoreCase = true) ||
+                            it.title.contains("mix", ignoreCase = true)
+                    }.ifEmpty { freshRelated.shuffled() }.take(20)
                     else -> freshRelated
                 }
                 
                 _uiState.update { it.copy(
                     autoplaySuggestions = filteredList,
-                    isLoading = false
+                    isRelatedLoading = false
                 ) }
                 
-                EnhancedMusicPlayerManager.updateQueue(listOf(currentTrack) + filteredList)
+                EnhancedMusicPlayerManager.updateAutomixItems(filteredList)
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isRelatedLoading = false) }
             }
         }
     }
 
     fun moveTrack(fromIndex: Int, toIndex: Int) {
-        val currentQueue = _uiState.value.queue.toMutableList()
-        if (fromIndex in currentQueue.indices && toIndex in currentQueue.indices) {
-            val track = currentQueue.removeAt(fromIndex)
-            currentQueue.add(toIndex, track)
-            _uiState.update { it.copy(queue = currentQueue) }
-            EnhancedMusicPlayerManager.updateQueue(currentQueue)
-        }
+        EnhancedMusicPlayerManager.moveMediaItem(fromIndex, toIndex)
     }
 
     fun seekTo(position: Long) {
-        EnhancedMusicPlayerManager.seekTo(position)
-        _uiState.update { it.copy(currentPosition = position) }
+        val duration = _uiState.value.duration.takeIf { it > 0 }
+            ?: EnhancedMusicPlayerManager.getDuration().takeIf { it > 0 }
+        val target = duration?.let { position.coerceIn(0L, it) } ?: position.coerceAtLeast(0L)
+        pendingSeekPosition = target
+        pendingSeekStartedAtMs = SystemClock.elapsedRealtime()
+        EnhancedMusicPlayerManager.seekTo(target)
+        _uiState.update { it.copy(currentPosition = target) }
+    }
+
+    private fun acceptedPlaybackPosition(position: Long): Long? {
+        val pending = pendingSeekPosition ?: return position
+        val elapsedMs = SystemClock.elapsedRealtime() - pendingSeekStartedAtMs
+        val seekHasLanded = abs(position - pending) <= SEEK_POSITION_CONFIRM_TOLERANCE_MS
+        val guardExpired = elapsedMs >= SEEK_POSITION_GUARD_MS
+
+        if (seekHasLanded) {
+            if (elapsedMs >= SEEK_POSITION_MIN_HOLD_MS) {
+                pendingSeekPosition = null
+            }
+            return position
+        }
+
+        if (guardExpired) {
+            pendingSeekPosition = null
+            return position
+        }
+
+        return null
     }
 
     fun skipToNext() {
@@ -347,6 +454,7 @@ class MusicPlayerViewModel @Inject constructor(
                     relatedContent = related,
                     isRelatedLoading = false
                 ) }
+                EnhancedMusicPlayerManager.updateAutomixItems(related)
             } catch (e: Exception) {
                 _uiState.update { it.copy(isRelatedLoading = false) }
             }
@@ -406,7 +514,7 @@ class MusicPlayerViewModel @Inject constructor(
                 isMusic = true
             )
             localPlaylistRepository.addVideoToPlaylist(playlistId, video)
-            Toast.makeText(context, "Added to playlist", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.added_to_playlist_toast), Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -428,12 +536,14 @@ class MusicPlayerViewModel @Inject constructor(
 
     fun playNext(track: MusicTrack) {
         EnhancedMusicPlayerManager.playNext(track)
-        Toast.makeText(context, "Will play next", Toast.LENGTH_SHORT).show()
+        EnhancedMusicPlayerManager.removeAutomixItem(track.videoId)
+        Toast.makeText(context, context.getString(R.string.play_next_toast), Toast.LENGTH_SHORT).show()
     }
 
     fun addToQueue(track: MusicTrack) {
         EnhancedMusicPlayerManager.addToQueue(track)
-        Toast.makeText(context, "Added to queue", Toast.LENGTH_SHORT).show()
+        EnhancedMusicPlayerManager.removeAutomixItem(track.videoId)
+        Toast.makeText(context, context.getString(R.string.added_to_queue_toast), Toast.LENGTH_SHORT).show()
     }
     
     fun downloadTrack(track: MusicTrack? = null) {
@@ -441,14 +551,14 @@ class MusicPlayerViewModel @Inject constructor(
         
         if (_uiState.value.downloadedTrackIds.contains(trackToDownload.videoId)) {
              viewModelScope.launch(kotlinx.coroutines.Dispatchers.Main) {
-                 Toast.makeText(context, "Already downloaded", Toast.LENGTH_SHORT).show()
+                 Toast.makeText(context, context.getString(R.string.already_downloaded_toast), Toast.LENGTH_SHORT).show()
              }
              return
         }
 
         viewModelScope.launch {
             withContext(kotlinx.coroutines.Dispatchers.Main) {
-                Toast.makeText(context, "Download started...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.download_started_toast), Toast.LENGTH_SHORT).show()
             }
             
             try {
@@ -457,7 +567,7 @@ class MusicPlayerViewModel @Inject constructor(
             } catch (e: Exception) {
                 android.util.Log.e("MusicDownload", "Download start exception", e)
                 withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    Toast.makeText(context, "Download error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.download_error_toast, e.message ?: ""), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -487,9 +597,10 @@ class MusicPlayerViewModel @Inject constructor(
         lyricsJob?.cancel()
         lyricsJob = viewModelScope.launch {
             _uiState.update { it.copy(
-                isLyricsLoading = true, 
+                isLyricsLoading = true,
                 lyrics = null,
-                syncedLyrics = emptyList()
+                syncedLyrics = emptyList(),
+                lyricsProviderName = ""
             ) }
             
             val cleanArtist = cleanName(artist)
@@ -497,39 +608,29 @@ class MusicPlayerViewModel @Inject constructor(
             val targetDuration = duration ?: (_uiState.value.duration.toInt() / 1000)
 
             try {
-                val preferredProviderName = playerPreferences.preferredLyricsProvider.first()
-                val preferredProvider = PreferredLyricsProvider.fromString(preferredProviderName)
-                
-                if (lyricsHelper.preferredProvider != preferredProvider) {
-                    lyricsHelper = LyricsHelper(preferredProvider)
-                }
-                
                 val result = lyricsHelper.getLyrics(videoId, cleanTitle, cleanArtist, targetDuration, album)
-                
+
                 if (result != null) {
                     val (entries, providerName) = result
                     val hasWords = entries.any { it.words != null }
-                    android.util.Log.d("MusicPlayerViewModel", "Got ${entries.size} lyrics lines from $providerName (word-sync=$hasWords)")
-                    
-                    if (entries.size > 1 || (entries.size == 1 && entries[0].time > 0)) {
-                        val plainText = entries.joinToString("\n") { it.text }
-                        _uiState.update { it.copy(
-                            isLyricsLoading = false,
-                            lyrics = plainText,
-                            syncedLyrics = entries
-                        ) }
-                    } else if (entries.size == 1) {
-                        _uiState.update { it.copy(
-                            isLyricsLoading = false,
-                            lyrics = entries[0].text,
-                            syncedLyrics = emptyList()
-                        ) }
-                    } else {
-                        _uiState.update { it.copy(isLyricsLoading = false) }
-                    }
+                    val isSynced = lyricsHelper.entriesAreSynced(entries)
+                    android.util.Log.d(
+                        "MusicPlayerViewModel",
+                        "Got ${entries.size} lyrics lines from $providerName (word-sync=$hasWords, synced=$isSynced)"
+                    )
+
+                    val plainText = entries.joinToString("\n") { it.text }
+                    _uiState.update { it.copy(
+                        isLyricsLoading = false,
+                        lyrics = plainText.takeIf { it.isNotBlank() },
+                        syncedLyrics = if (isSynced) entries else emptyList(),
+                        lyricsProviderName = providerName
+                    ) }
                 } else {
                     _uiState.update { it.copy(isLyricsLoading = false) }
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 android.util.Log.e("MusicPlayerViewModel", "Lyrics fetch failed", e)
                 _uiState.update { it.copy(isLyricsLoading = false) }
@@ -553,12 +654,25 @@ class MusicPlayerViewModel @Inject constructor(
         fetchLyrics(track.videoId, track.artist, track.title, track.duration, track.album)
     }
 
+    fun refreshLyrics() {
+        val track = _uiState.value.currentTrack ?: return
+        viewModelScope.launch {
+            try {
+                lyricsHelper.forceRefresh(track.videoId)
+            } catch (e: Exception) {
+                android.util.Log.w("MusicPlayerViewModel", "forceRefresh failed: ${e.message}")
+            }
+            fetchLyrics(track.videoId, track.artist, track.title, track.duration, track.album)
+        }
+    }
+
     fun updateProgress() {
         val position = EnhancedMusicPlayerManager.getCurrentPosition()
         val duration = EnhancedMusicPlayerManager.getDuration()
+        val acceptedPosition = acceptedPlaybackPosition(position)
         
         _uiState.update { it.copy(
-            currentPosition = position,
+            currentPosition = acceptedPosition ?: it.currentPosition,
             duration = if (duration > 0) duration else it.duration
         ) }
     }
@@ -588,11 +702,22 @@ data class MusicPlayerUiState(
     val lyrics: String? = null,
     val syncedLyrics: List<LyricsEntry> = emptyList(),
     val isLyricsLoading: Boolean = false,
-    val playingFrom: String = "Unknown Source",
+    val playingFrom: String = "",
     val autoplayEnabled: Boolean = true,
-    val selectedFilter: String = "All",
+    val selectedFilter: String = FILTER_ALL,
     val relatedContent: List<MusicTrack> = emptyList(),
     val isRelatedLoading: Boolean = false,
-    val downloadedTrackIds: Set<String> = emptySet()
+    val downloadedTrackIds: Set<String> = emptySet(),
+    val lyricsProviderName: String = ""
 )
+
+const val FILTER_ALL = "ALL"
+const val FILTER_DISCOVER = "DISCOVER"
+const val FILTER_POPULAR = "POPULAR"
+const val FILTER_DEEP_CUTS = "DEEP_CUTS"
+const val FILTER_WORKOUT = "WORKOUT"
+
+private const val SEEK_POSITION_CONFIRM_TOLERANCE_MS = 1_000L
+private const val SEEK_POSITION_MIN_HOLD_MS = 250L
+private const val SEEK_POSITION_GUARD_MS = 1_500L
 

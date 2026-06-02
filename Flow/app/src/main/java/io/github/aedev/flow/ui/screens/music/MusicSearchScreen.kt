@@ -7,8 +7,10 @@ import io.github.aedev.flow.R
 import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -42,13 +44,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import io.github.aedev.flow.innertube.YouTube.SearchFilter
+import io.github.aedev.flow.ui.components.MusicCollectionActionItem
+import io.github.aedev.flow.ui.components.MusicCollectionQuickActionsSheet
 import io.github.aedev.flow.ui.components.MusicQuickActionsSheet
 import io.github.aedev.flow.ui.components.AddToPlaylistDialog
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.innertube.models.*
+import io.github.aedev.flow.ui.screens.music.components.TrackListItem
 import kotlinx.coroutines.FlowPreview
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class, FlowPreview::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class, FlowPreview::class, ExperimentalFoundationApi::class)
 @Composable
 fun MusicSearchScreen(
     onBackClick: () -> Unit,
@@ -73,6 +78,30 @@ fun MusicSearchScreen(
     
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedTrack by remember { mutableStateOf<MusicTrack?>(null) }
+    var selectedCollection by remember { mutableStateOf<MusicCollectionActionItem?>(null) }
+
+    fun dismissSearchInput() {
+        keyboardController?.hide()
+        focusManager.clearFocus(force = true)
+    }
+
+    fun showTrackActions(track: MusicTrack) {
+        selectedTrack = track
+        showBottomSheet = true
+    }
+
+    fun showCollectionActions(item: YTItem) {
+        item.toCollectionActionItem()?.let { selectedCollection = it }
+    }
+
+    fun menuActionFor(item: YTItem): (() -> Unit)? = when (item) {
+        is SongItem -> ({ showTrackActions(convertSongToMusicTrack(item)) })
+        is AlbumItem, is PlaylistItem -> ({ showCollectionActions(item) })
+        else -> null
+    }
+
+    fun isDownloaded(item: YTItem): Boolean =
+        (item as? SongItem)?.let { uiState.downloadedTrackIds.contains(it.id) } ?: false
 
     if (showBottomSheet && selectedTrack != null) {
         val context = LocalContext.current
@@ -95,6 +124,21 @@ fun MusicSearchScreen(
             }
         )
     }
+
+    selectedCollection?.let { collection ->
+        MusicCollectionQuickActionsSheet(
+            item = collection,
+            onDismiss = { selectedCollection = null },
+            onOpen = {
+                dismissSearchInput()
+                if (collection.isAlbum) {
+                    onAlbumClick(collection.id)
+                } else {
+                    onPlaylistClick(collection.id)
+                }
+            }
+        )
+    }
     
     val voiceSearchLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -108,6 +152,11 @@ fun MusicSearchScreen(
                 viewModel.performSearch(spokenText)
             }
         }
+    }
+
+    fun playSearchTrack(track: MusicTrack, queue: List<MusicTrack>, source: String?) {
+        dismissSearchInput()
+        onTrackClick(track, queue, source)
     }
 
     Scaffold(
@@ -146,18 +195,27 @@ fun MusicSearchScreen(
                             item = item,
                             onClick = {
                                 when (item) {
-                                    is SongItem -> onTrackClick(convertSongToMusicTrack(item), listOf(convertSongToMusicTrack(item)), "Recommended")
-                                    is ArtistItem -> onArtistClick(item.id)
-                                    is AlbumItem -> onAlbumClick(item.id)
-                                    is PlaylistItem -> onPlaylistClick(item.id)
+                                    is SongItem -> {
+                                        val track = convertSongToMusicTrack(item)
+                                        playSearchTrack(track, listOf(track), "Recommended")
+                                    }
+                                    is ArtistItem -> {
+                                        dismissSearchInput()
+                                        onArtistClick(item.id)
+                                    }
+                                    is AlbumItem -> {
+                                        dismissSearchInput()
+                                        onAlbumClick(item.id)
+                                    }
+                                    is PlaylistItem -> {
+                                        dismissSearchInput()
+                                        onPlaylistClick(item.id)
+                                    }
                                 }
                             },
-                            onMenuClick = {
-                                if (item is SongItem) {
-                                    selectedTrack = convertSongToMusicTrack(item)
-                                    showBottomSheet = true
-                                }
-                            }
+                            onMenuClick = menuActionFor(item),
+                            onLongClick = menuActionFor(item),
+                            isDownloaded = isDownloaded(item)
                         )
                     }
                     items(uiState.suggestions) { suggestion ->
@@ -210,10 +268,19 @@ fun MusicSearchScreen(
                                                 onClick = {
                                                     val item = summary.items.first()
                                                     when (item) {
-                                                        is SongItem -> onTrackClick(convertSongToMusicTrack(item), summary.items.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }, searchSourceTemplate.format(query))
-                                                        is ArtistItem -> onArtistClick(item.id)
-                                                        is AlbumItem -> onAlbumClick(item.id)
-                                                        is PlaylistItem -> onPlaylistClick(item.id)
+                                                        is SongItem -> playSearchTrack(convertSongToMusicTrack(item), summary.items.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }, searchSourceTemplate.format(query))
+                                                        is ArtistItem -> {
+                                                            dismissSearchInput()
+                                                            onArtistClick(item.id)
+                                                        }
+                                                        is AlbumItem -> {
+                                                            dismissSearchInput()
+                                                            onAlbumClick(item.id)
+                                                        }
+                                                        is PlaylistItem -> {
+                                                            dismissSearchInput()
+                                                            onPlaylistClick(item.id)
+                                                        }
                                                     }
                                                 },
                                                 onShuffleClick = {
@@ -222,7 +289,8 @@ fun MusicSearchScreen(
                                                         viewModel.getArtistTracks(item.id) { tracks ->
                                                             val musicTracks = tracks.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }
                                                             if (musicTracks.isNotEmpty()) {
-                                                                onTrackClick(musicTracks.shuffled().first(), musicTracks.shuffled(), artistSourceTemplate.format(item.title))
+                                                                val shuffled = musicTracks.shuffled()
+                                                                playSearchTrack(shuffled.first(), shuffled, artistSourceTemplate.format(item.title))
                                                             }
                                                         }
                                                     }
@@ -234,11 +302,13 @@ fun MusicSearchScreen(
                                                         viewModel.getArtistTracks(item.id) { tracks ->
                                                             val musicTracks = tracks.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }
                                                             if (musicTracks.isNotEmpty()) {
-                                                                onTrackClick(musicTracks.first(), musicTracks, artistSourceTemplate.format(item.title))
+                                                                playSearchTrack(musicTracks.first(), musicTracks, artistSourceTemplate.format(item.title))
                                                             }
                                                         }
                                                     }
-                                                }
+                                                },
+                                                onLongClick = menuActionFor(summary.items.first()),
+                                                onMenuClick = menuActionFor(summary.items.first())
                                             )
                                         }
                                         // Skip the first item as it's in the TopResultCard
@@ -247,18 +317,24 @@ fun MusicSearchScreen(
                                                 item = item,
                                                 onClick = {
                                                     when (item) {
-                                                        is SongItem -> onTrackClick(convertSongToMusicTrack(item), summary.items.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }, searchSourceTemplate.format(query))
-                                                        is ArtistItem -> onArtistClick(item.id)
-                                                        is AlbumItem -> onAlbumClick(item.id)
-                                                        is PlaylistItem -> onPlaylistClick(item.id)
+                                                        is SongItem -> playSearchTrack(convertSongToMusicTrack(item), summary.items.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }, searchSourceTemplate.format(query))
+                                                        is ArtistItem -> {
+                                                            dismissSearchInput()
+                                                            onArtistClick(item.id)
+                                                        }
+                                                        is AlbumItem -> {
+                                                            dismissSearchInput()
+                                                            onAlbumClick(item.id)
+                                                        }
+                                                        is PlaylistItem -> {
+                                                            dismissSearchInput()
+                                                            onPlaylistClick(item.id)
+                                                        }
                                                     }
                                                 },
-                                                onMenuClick = {
-                                                    if (item is SongItem) {
-                                                        selectedTrack = convertSongToMusicTrack(item)
-                                                        showBottomSheet = true
-                                                    }
-                                                }
+                                                onMenuClick = menuActionFor(item),
+                                                onLongClick = menuActionFor(item),
+                                                isDownloaded = isDownloaded(item)
                                             )
                                         }
                                     } else {
@@ -267,18 +343,24 @@ fun MusicSearchScreen(
                                                 item = item,
                                                 onClick = {
                                                     when (item) {
-                                                        is SongItem -> onTrackClick(convertSongToMusicTrack(item), summary.items.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }, searchSourceTemplate.format(query))
-                                                        is ArtistItem -> onArtistClick(item.id)
-                                                        is AlbumItem -> onAlbumClick(item.id)
-                                                        is PlaylistItem -> onPlaylistClick(item.id)
+                                                        is SongItem -> playSearchTrack(convertSongToMusicTrack(item), summary.items.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }, searchSourceTemplate.format(query))
+                                                        is ArtistItem -> {
+                                                            dismissSearchInput()
+                                                            onArtistClick(item.id)
+                                                        }
+                                                        is AlbumItem -> {
+                                                            dismissSearchInput()
+                                                            onAlbumClick(item.id)
+                                                        }
+                                                        is PlaylistItem -> {
+                                                            dismissSearchInput()
+                                                            onPlaylistClick(item.id)
+                                                        }
                                                     }
                                                 },
-                                                onMenuClick = {
-                                                    if (item is SongItem) {
-                                                        selectedTrack = convertSongToMusicTrack(item)
-                                                        showBottomSheet = true
-                                                    }
-                                                }
+                                                onMenuClick = menuActionFor(item),
+                                                onLongClick = menuActionFor(item),
+                                                isDownloaded = isDownloaded(item)
                                             )
                                         }
                                     }
@@ -290,18 +372,24 @@ fun MusicSearchScreen(
                                         item = item,
                                         onClick = {
                                             when (item) {
-                                                is SongItem -> onTrackClick(convertSongToMusicTrack(item), uiState.filteredResults.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }, searchSourceTemplate.format(query))
-                                                is ArtistItem -> onArtistClick(item.id)
-                                                is AlbumItem -> onAlbumClick(item.id)
-                                                is PlaylistItem -> onPlaylistClick(item.id)
+                                                is SongItem -> playSearchTrack(convertSongToMusicTrack(item), uiState.filteredResults.filterIsInstance<SongItem>().map { convertSongToMusicTrack(it) }, searchSourceTemplate.format(query))
+                                                is ArtistItem -> {
+                                                    dismissSearchInput()
+                                                    onArtistClick(item.id)
+                                                }
+                                                is AlbumItem -> {
+                                                    dismissSearchInput()
+                                                    onAlbumClick(item.id)
+                                                }
+                                                is PlaylistItem -> {
+                                                    dismissSearchInput()
+                                                    onPlaylistClick(item.id)
+                                                }
                                             }
                                         },
-                                        onMenuClick = {
-                                            if (item is SongItem) {
-                                                selectedTrack = convertSongToMusicTrack(item)
-                                                showBottomSheet = true
-                                            }
-                                        }
+                                        onMenuClick = menuActionFor(item),
+                                        onLongClick = menuActionFor(item),
+                                        isDownloaded = isDownloaded(item)
                                     )
                                 }
                             }
@@ -495,16 +583,34 @@ fun SearchSuggestionRow(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecommendedItemRow(
     item: YTItem,
     onClick: () -> Unit,
+    isDownloaded: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
     onMenuClick: (() -> Unit)? = null
 ) {
+    if (item is SongItem) {
+        TrackListItem(
+            track = convertSongToMusicTrack(item),
+            isDownloaded = isDownloaded,
+            showMenu = onMenuClick != null,
+            onClick = onClick,
+            onLongClick = onLongClick,
+            onMenuClick = { onMenuClick?.invoke() }
+        )
+        return
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -551,16 +657,34 @@ fun RecommendedItemRow(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun YTItemRow(
     item: YTItem,
     onClick: () -> Unit,
+    isDownloaded: Boolean = false,
+    onLongClick: (() -> Unit)? = null,
     onMenuClick: (() -> Unit)? = null
 ) {
+    if (item is SongItem) {
+        TrackListItem(
+            track = convertSongToMusicTrack(item),
+            isDownloaded = isDownloaded,
+            showMenu = onMenuClick != null,
+            onClick = onClick,
+            onLongClick = onLongClick,
+            onMenuClick = { onMenuClick?.invoke() }
+        )
+        return
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -610,12 +734,15 @@ fun YTItemRow(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TopResultCard(
     item: YTItem,
     onClick: () -> Unit,
     onShuffleClick: () -> Unit,
-    onRadioClick: () -> Unit
+    onRadioClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    onMenuClick: (() -> Unit)? = null
 ) {
     val cardBackground = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
     
@@ -623,7 +750,10 @@ fun TopResultCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = cardBackground)
     ) {
@@ -660,11 +790,21 @@ fun TopResultCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Icon(
-                    Icons.Default.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (onMenuClick != null) {
+                    IconButton(onClick = onMenuClick) {
+                        Icon(
+                            Icons.Default.MoreVert,
+                            contentDescription = stringResource(R.string.more_options),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             if (item is ArtistItem) {
@@ -718,6 +858,28 @@ private fun convertSongToMusicTrack(item: SongItem): MusicTrack {
         views = 0, // View count text is a string in SongItem
         sourceUrl = "https://www.youtube.com/watch?v=${item.id}",
         album = item.album?.name ?: "Unknown Album",
-        channelId = item.artists.firstOrNull()?.id ?: ""
+        channelId = item.artists.firstOrNull()?.id ?: "",
+        isExplicit = item.explicit,
+        isVideoSong = item.isVideoSong
     )
+}
+
+private fun YTItem.toCollectionActionItem(): MusicCollectionActionItem? = when (this) {
+    is AlbumItem -> MusicCollectionActionItem(
+        id = id,
+        title = title,
+        subtitle = artists?.joinToString { it.name }.orEmpty(),
+        thumbnailUrl = thumbnail,
+        description = year?.toString().orEmpty(),
+        isAlbum = true
+    )
+    is PlaylistItem -> MusicCollectionActionItem(
+        id = id,
+        title = title,
+        subtitle = author?.name.orEmpty(),
+        thumbnailUrl = thumbnail,
+        description = author?.name.orEmpty(),
+        isAlbum = false
+    )
+    else -> null
 }

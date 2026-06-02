@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.AutoFixHigh
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -58,12 +60,33 @@ import io.github.aedev.flow.data.model.DeArrowResult
 import io.github.aedev.flow.data.model.Video
 import io.github.aedev.flow.data.repository.DeArrowRepository
 import io.github.aedev.flow.ui.theme.extendedColors
+import io.github.aedev.flow.utils.ThumbnailUrlResolver
 import io.github.aedev.flow.utils.formatDuration
 import io.github.aedev.flow.utils.formatPremiereDate
+import io.github.aedev.flow.utils.DateContext
 import io.github.aedev.flow.utils.formatViewCount
 import kotlinx.coroutines.flow.collectLatest
 
 private const val AVATAR_TAG = "ChannelAvatarImage"
+
+@Composable
+private fun UpcomingReminderBadge(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(999.dp),
+        color = Color.Black.copy(alpha = 0.7f),
+        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.2f))
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.NotificationsActive,
+            contentDescription = stringResource(R.string.upcoming_video_reminder_badge),
+            tint = Color.White,
+            modifier = Modifier
+                .size(20.dp)
+                .padding(4.dp)
+        )
+    }
+}
 
 @Composable
 fun VideoCard(
@@ -93,6 +116,7 @@ fun VideoCard(
     val displayTitle = deArrowResult?.title ?: video.title
     val displayThumbnailUrl = deArrowResult?.thumbnailUrl ?: video.thumbnailUrl
     val videoCardActionsEnabled by playerPrefs.videoCardActionsEnabled.collectAsState(initial = false)
+    val upcomingReminderIds by playerPrefs.upcomingVideoReminderIds.collectAsState(initial = emptySet())
     val quickActionsVm: QuickActionsViewModel = hiltViewModel()
     val interactionSource = remember { MutableInteractionSource() }
     Column(
@@ -117,7 +141,8 @@ fun VideoCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                 .thumbnailGradientOverlay()
         ) {
-            AsyncImage(
+            VideoThumbnailImage(
+                videoId = video.id,
                 model = displayThumbnailUrl,
                 contentDescription = displayTitle,
                 modifier = Modifier.fillMaxSize(),
@@ -158,6 +183,14 @@ fun VideoCard(
                         fontWeight = FontWeight.Bold
                     )
                 }
+            }
+
+            if (video.id in upcomingReminderIds) {
+                UpcomingReminderBadge(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                )
             }
 
             // Watch progress bar
@@ -228,13 +261,14 @@ fun VideoCard(
                 // Metadata Row
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val premiereDate = formatPremiereDate(video.uploadDate)
+                    val displayDate = rememberDateDisplaySettings().format(video.uploadDate, DateContext.LISTS, video.timestamp)
                     Text(
                         text = if (video.isUpcoming)
                             premiereDate?.let { stringResource(R.string.premiere_date_prefix, it) } ?: stringResource(R.string.premiere_soon)
                         else if (video.viewCount >= 0L)
                             stringResource(R.string.video_metadata_short_template, video.channelName, stringResource(R.string.views_template, formatViewCount(video.viewCount)))
                         else
-                            "${video.channelName} · ${video.uploadDate}",
+                            "${video.channelName} · $displayDate",
                         style = MaterialTheme.typography.labelSmall,
                         color = if (video.isUpcoming) MaterialTheme.colorScheme.primary
                                 else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -346,6 +380,7 @@ fun VideoCardHorizontal(
     }
     val displayTitle = deArrowResult?.title ?: video.title
     val displayThumbnailUrl = deArrowResult?.thumbnailUrl ?: video.thumbnailUrl
+    val upcomingReminderIds by playerPrefs.upcomingVideoReminderIds.collectAsState(initial = emptySet())
     val watchProgress by produceState<Float?>(initialValue = null, video.id) {
         ViewHistory.getInstance(context).getVideoHistory(video.id).collectLatest { entry ->
             value = if (entry != null && entry.duration > 0 && entry.progressPercentage >= 3f) {
@@ -376,7 +411,8 @@ fun VideoCardHorizontal(
                 .clip(RoundedCornerShape(14.dp)) // Sleek corners
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            AsyncImage(
+            VideoThumbnailImage(
+                videoId = video.id,
                 model = displayThumbnailUrl,
                 contentDescription = displayTitle,
                 modifier = Modifier.fillMaxSize(),
@@ -415,6 +451,14 @@ fun VideoCardHorizontal(
                 }
             }
 
+            if (video.id in upcomingReminderIds) {
+                UpcomingReminderBadge(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                )
+            }
+
             // Watch progress bar
             watchProgress?.let { progress ->
                 LinearProgressIndicator(
@@ -451,13 +495,14 @@ fun VideoCardHorizontal(
                 )
 
                 val premiereDate = formatPremiereDate(video.uploadDate)
+                val displayDate = rememberDateDisplaySettings().format(video.uploadDate, DateContext.LISTS, video.timestamp)
                 Text(
                     text = if (video.isUpcoming)
                                premiereDate?.let { stringResource(R.string.premiere_date_prefix, it) } ?: stringResource(R.string.premiere_soon)
                            else if (video.viewCount >= 0L)
-                               stringResource(R.string.video_metadata_short_template, stringResource(R.string.views_template, formatViewCount(video.viewCount)), video.uploadDate)
+                               stringResource(R.string.video_metadata_short_template, stringResource(R.string.views_template, formatViewCount(video.viewCount)), displayDate)
                            else
-                               "${video.channelName} · ${video.uploadDate}",
+                               "${video.channelName} · $displayDate",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (video.isUpcoming) MaterialTheme.colorScheme.primary
                             else MaterialTheme.extendedColors.textSecondary
@@ -506,7 +551,13 @@ fun VideoCardFullWidth(
     val displayTitle = deArrowResultFullWidth?.title ?: video.title
     val displayThumbnailUrl = deArrowResultFullWidth?.thumbnailUrl ?: video.thumbnailUrl
     val videoCardActionsEnabledFW by playerPrefsFullWidth.videoCardActionsEnabled.collectAsState(initial = false)
+    val videoCardMarkWatchedEnabledFW by playerPrefsFullWidth.videoCardMarkWatchedEnabled.collectAsState(initial = false)
+    val upcomingReminderIds by playerPrefsFullWidth.upcomingVideoReminderIds.collectAsState(initial = emptySet())
     val quickActionsVmFW: QuickActionsViewModel = hiltViewModel()
+    val watchedVideoIdsFW by quickActionsVmFW.watchedVideoIds.collectAsState()
+    val isWatchedFW = remember(watchedVideoIdsFW, watchProgress, video.id) {
+        watchedVideoIdsFW.contains(video.id) || (watchProgress ?: 0f) >= 0.99f
+    }
 
     val interactionSource = remember { MutableInteractionSource() }
     Column(
@@ -530,7 +581,8 @@ fun VideoCardFullWidth(
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                 .thumbnailGradientOverlay()
         ) {
-            SafeAsyncImage(
+            VideoThumbnailImage(
+                videoId = video.id,
                 model = displayThumbnailUrl,
                 contentDescription = displayTitle,
                 modifier = Modifier.fillMaxSize(),
@@ -571,6 +623,14 @@ fun VideoCardFullWidth(
                         fontWeight = FontWeight.Bold
                     )
                 }
+            }
+
+            if (video.id in upcomingReminderIds) {
+                UpcomingReminderBadge(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                )
             }
 
             // Watch progress bar
@@ -642,13 +702,14 @@ fun VideoCardFullWidth(
                 )
 
                 val premiereDate = formatPremiereDate(video.uploadDate)
+                val displayDate = rememberDateDisplaySettings().format(video.uploadDate, DateContext.LISTS, video.timestamp)
                 Text(
                     text = if (video.isUpcoming)
                                premiereDate?.let { stringResource(R.string.premiere_date_prefix, it) } ?: stringResource(R.string.premiere_soon)
                            else if (video.viewCount >= 0L)
-                               stringResource(R.string.video_metadata_template, video.channelName, stringResource(R.string.views_template, formatViewCount(video.viewCount)), video.uploadDate)
+                               stringResource(R.string.video_metadata_template, video.channelName, stringResource(R.string.views_template, formatViewCount(video.viewCount)), displayDate)
                            else
-                               "${video.channelName} · ${video.uploadDate}",
+                               "${video.channelName} · $displayDate",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (video.isUpcoming) MaterialTheme.colorScheme.primary
                             else MaterialTheme.extendedColors.textSecondary,
@@ -673,58 +734,98 @@ fun VideoCardFullWidth(
             }
         }
 
-        // Like / Dislike action buttons
-        if (videoCardActionsEnabledFW) {
-            Row(
+        // Video card quick actions (like/dislike/mark watched)
+        if (videoCardActionsEnabledFW || videoCardMarkWatchedEnabledFW) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp)
                     .padding(bottom = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { quickActionsVmFW.markAsInteresting(video) }
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Outlined.ThumbUp,
-                        contentDescription = stringResource(R.string.i_like_this),
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.i_like_this),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                if (videoCardActionsEnabledFW) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { quickActionsVmFW.markAsInteresting(video) }
+                                .padding(horizontal = 8.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Outlined.ThumbUp,
+                                contentDescription = stringResource(R.string.i_like_this),
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(R.string.i_like_this),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { quickActionsVmFW.markNotInterested(video) }
+                                .padding(horizontal = 8.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Outlined.ThumbDown,
+                                contentDescription = stringResource(R.string.not_interested),
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(R.string.not_interested),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
-                Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { quickActionsVmFW.markNotInterested(video) }
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Outlined.ThumbDown,
-                        contentDescription = stringResource(R.string.not_interested),
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = stringResource(R.string.not_interested),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+
+                if (videoCardMarkWatchedEnabledFW) {
+                    val watchedTint = if (isWatchedFW) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                if (!isWatchedFW) quickActionsVmFW.markAsWatched(video)
+                            }
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Outlined.Visibility,
+                            contentDescription = stringResource(R.string.mark_as_watched),
+                            modifier = Modifier.size(16.dp),
+                            tint = watchedTint
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(R.string.mark_as_watched),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = watchedTint
+                        )
+                    }
                 }
             }
         }
@@ -771,6 +872,12 @@ fun CompactVideoCard(
     ) {
         value = if (deArrowEnabledCompact) DeArrowRepository.getDeArrowResult(video.id) else null
     }
+    val videoCardMarkWatchedEnabledCompact by playerPrefsCompact.videoCardMarkWatchedEnabled.collectAsState(initial = false)
+    val quickActionsVmCompact: QuickActionsViewModel = hiltViewModel()
+    val watchedVideoIdsCompact by quickActionsVmCompact.watchedVideoIds.collectAsState()
+    val isWatchedCompact = remember(watchedVideoIdsCompact, watchProgress, video.id) {
+        watchedVideoIdsCompact.contains(video.id) || (watchProgress ?: 0f) >= 0.99f
+    }
     val displayTitle = deArrowResultCompact?.title ?: video.title
     val displayThumbnailUrl = deArrowResultCompact?.thumbnailUrl ?: video.thumbnailUrl
 
@@ -795,7 +902,8 @@ fun CompactVideoCard(
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
         ) {
-            SafeAsyncImage(
+            VideoThumbnailImage(
+                videoId = video.id,
                 model = displayThumbnailUrl,
                 contentDescription = displayTitle,
                 modifier = Modifier.fillMaxSize(),
@@ -893,14 +1001,18 @@ fun CompactVideoCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.extendedColors.textSecondary,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = if (onChannelClick != null)
+                    Modifier.clickable { onChannelClick(video.channelId) }
+                else Modifier
             )
             
             val premiereDate = formatPremiereDate(video.uploadDate)
+            val displayDate = rememberDateDisplaySettings().format(video.uploadDate, DateContext.LISTS, video.timestamp)
             Text(
                 text = if (video.viewCount < 0L)
                            premiereDate?.let { stringResource(R.string.premiere_date_prefix, it) } ?: stringResource(R.string.premiere_soon)
-                       else stringResource(R.string.video_metadata_short_template, stringResource(R.string.views_template, formatViewCount(video.viewCount)), video.uploadDate),
+                       else stringResource(R.string.video_metadata_short_template, stringResource(R.string.views_template, formatViewCount(video.viewCount)), displayDate),
                 style = MaterialTheme.typography.bodySmall,
                 color = if (video.viewCount < 0L) MaterialTheme.colorScheme.primary
                         else MaterialTheme.extendedColors.textSecondary.copy(alpha = 0.8f),
@@ -910,19 +1022,38 @@ fun CompactVideoCard(
             )
         }
 
-        // More options button
-        IconButton(
-            onClick = { showQuickActions = true },
-            modifier = Modifier
-                .size(24.dp)
-                .align(Alignment.Top)
+        Column(
+            modifier = Modifier.align(Alignment.Top),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "More options",
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(16.dp)
-            )
+            IconButton(
+                onClick = { showQuickActions = true },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "More options",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+
+            if (videoCardMarkWatchedEnabledCompact) {
+                IconButton(
+                    onClick = {
+                        if (!isWatchedCompact) quickActionsVmCompact.markAsWatched(video)
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Visibility,
+                        contentDescription = stringResource(R.string.mark_as_watched),
+                        tint = if (isWatchedCompact) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
         }
     }
     
@@ -999,7 +1130,8 @@ private fun ContinueWatchingCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .thumbnailGradientOverlay()
         ) {
-            SafeAsyncImage(
+            VideoThumbnailImage(
+                videoId = entry.videoId,
                 model = entry.thumbnailUrl,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
@@ -1130,7 +1262,8 @@ fun ShortsCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .thumbnailGradientOverlay()
         ) {
-            SafeAsyncImage(
+            VideoThumbnailImage(
+                videoId = video.id,
                 model = video.thumbnailUrl,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
@@ -1162,40 +1295,81 @@ fun ShortsCard(
 }
 
 @Composable
-private fun SafeAsyncImage(
+fun VideoThumbnailImage(
+    videoId: String,
     model: Any?,
     contentDescription: String?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Fit
 ) {
-    if (model is ImageVector) {
+    val primaryModel = remember(videoId, model) {
+        when (model) {
+            is String -> model.takeIf { it.isNotBlank() }
+                ?: ThumbnailUrlResolver.buildHighQualityYoutubeThumbnail(videoId)
+            null -> ThumbnailUrlResolver.buildHighQualityYoutubeThumbnail(videoId)
+            else -> model
+        }
+    }
+    val fallbackModel = remember(videoId, primaryModel) {
+        (primaryModel as? String)?.let { ThumbnailUrlResolver.fallbackVideoThumbnail(videoId, it) }
+    }
+
+    SafeAsyncImage(
+        model = primaryModel,
+        fallbackModel = fallbackModel,
+        contentDescription = contentDescription,
+        modifier = modifier,
+        contentScale = contentScale
+    )
+}
+
+@Composable
+private fun SafeAsyncImage(
+    model: Any?,
+    fallbackModel: Any? = null,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Fit
+) {
+    var currentModel by remember(model, fallbackModel) { mutableStateOf(model) }
+    var didFallback by remember(model, fallbackModel) { mutableStateOf(false) }
+    var hasError by remember(model, fallbackModel) { mutableStateOf(false) }
+
+    if (currentModel is ImageVector) {
         Image(
-            imageVector = model,
+            imageVector = currentModel as ImageVector,
             contentDescription = contentDescription,
             modifier = modifier,
             contentScale = contentScale,
             colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
         )
     } else {
-        val isValidModel = when (model) {
-            is String -> model.isNotEmpty()
+        val isValidModel = when (currentModel) {
+            is String -> (currentModel as String).isNotEmpty()
             is Int -> true // Resource ID
             else -> false
         }
 
-        if (isValidModel) {
-            var hasError by remember(model) { mutableStateOf(false) }
-            if (hasError) {
-                Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant))
-            } else {
-                AsyncImage(
-                    model = model,
-                    contentDescription = contentDescription,
-                    modifier = modifier,
-                    contentScale = contentScale,
-                    onError = { hasError = true }
-                )
-            }
+        if (isValidModel && !hasError) {
+            AsyncImage(
+                model = currentModel,
+                contentDescription = contentDescription,
+                modifier = modifier,
+                contentScale = contentScale,
+                onError = {
+                    val canFallback = !didFallback &&
+                        fallbackModel is String &&
+                        fallbackModel.isNotEmpty() &&
+                        fallbackModel != currentModel
+
+                    if (canFallback) {
+                        didFallback = true
+                        currentModel = fallbackModel
+                    } else {
+                        hasError = true
+                    }
+                }
+            )
         } else {
             // Fallback placeholder
             Box(modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant))

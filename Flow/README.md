@@ -194,9 +194,18 @@ Flow gives you both. The recommendation engine learns what you like by analyzing
 <a id="support--donations"></a>
 ## 💰 Support Development
 
-Flow is free and open-source. I am an independent developer without banking access, so I rely on **Crypto** to keep the lights on.
+Flow is a free and open-source project. As an independent developer without traditional banking access, keeping this project alive relies entirely on community support. 
 
-**If you enjoy the app, please consider supporting:**
+**You can now easily support the project using a Credit Card, Apple Pay, or PayPal via Patreon!** (You can choose to support monthly, or just leave a simple one-time tip in the shop).
+
+<a href="https://patreon.com/A_EDev" target="_blank" rel="noreferrer noopener">
+  <img src="https://img.shields.io/badge/Patreon-Support_Flow-FF424D?style=for-the-badge&amp;logo=patreon&amp;logoColor=white" alt="Support Flow on Patreon">
+</a>
+
+<br>
+
+**Prefer to send Crypto directly?**
+If you already use crypto, you can send it directly to my wallets below:
 
 | Coin | Network | Address |
 | :--- | :--- | :--- |
@@ -206,7 +215,7 @@ Flow is free and open-source. I am an independent developer without banking acce
 | **Solana** | SOL | `7b3SLgiVPb8qQUvERSPGRWoFoiGEDvkFuY98M1GEngug` |
 | **Monero** | XMR | `8AgaxZnpEvT8VXJpczpL7BQejwSEw97saJmKYqq4zKErbe9bkYSwUhJ813msPPbdYhF11oz4N7tfEj4Zi6k27fKD83ca1if` |
 
-*Your support helps me maintain the project and add new features!*
+*Your support helps me maintain the project and add amazing new features!*
 
 ---
 
@@ -246,6 +255,18 @@ It is distributed under the **GNU General Public License v3 (GPLv3)**.
 
 > 🚨 **For Developers:**
 > This license requires that any project using Flow's source code (including the `FlowNeuroEngine` algorithm) must also be **Open Source** under the GPLv3 license. You may not use this code in a proprietary or closed-source application.
+
+---
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=A-EDev%2FFlow&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=A-EDev/Flow&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=A-EDev/Flow&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=A-EDev/Flow&type=date&legend=top-left" />
+ </picture>
+</a>
 
 ---
 

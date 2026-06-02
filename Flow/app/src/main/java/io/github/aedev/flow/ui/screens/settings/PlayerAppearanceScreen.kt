@@ -2,6 +2,7 @@ package io.github.aedev.flow.ui.screens.settings
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,17 +27,23 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import io.github.aedev.flow.R
+import io.github.aedev.flow.data.local.DEFAULT_FULLSCREEN_SEEKBAR_PADDING_DP
+import io.github.aedev.flow.data.local.FullscreenSeekbarPaddingMode
+import io.github.aedev.flow.data.local.MAX_FULLSCREEN_SEEKBAR_PADDING_DP
+import io.github.aedev.flow.data.local.MusicPlayerBackgroundStyle
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.SliderStyle
 import io.github.aedev.flow.ui.screens.music.player.components.PlayerSliderTrack
 import io.github.aedev.flow.ui.screens.music.player.components.SquigglySlider
 import io.github.aedev.flow.ui.components.rememberFlowSheetState
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.res.painterResource
@@ -51,10 +58,29 @@ fun PlayerAppearanceScreen(
     val playerPreferences = remember { PlayerPreferences(context) }
     
     val currentSliderStyle by playerPreferences.sliderStyle.collectAsState(initial = SliderStyle.DEFAULT)
-    val swipeGesturesEnabled by playerPreferences.swipeGesturesEnabled.collectAsState(initial = true)
+    val currentMusicPlayerBackgroundStyle by playerPreferences.musicPlayerBackgroundStyle.collectAsState(
+        initial = MusicPlayerBackgroundStyle.BLUR_GRADIENT
+    )
+    val brightnessSwipeGesturesEnabled by playerPreferences.brightnessSwipeGesturesEnabled.collectAsState(initial = true)
+    val rememberBrightnessEnabled by playerPreferences.rememberBrightnessEnabled.collectAsState(initial = false)
+    val volumeSwipeGesturesEnabled by playerPreferences.volumeSwipeGesturesEnabled.collectAsState(initial = true)
+    val allowVolumeBoost by playerPreferences.allowVolumeBoost.collectAsState(initial = false)
     val showFullscreenTitle by playerPreferences.showFullscreenTitle.collectAsState(initial = false)
+    val adaptivePlayerSizeEnabled by playerPreferences.adaptivePlayerSizeEnabled.collectAsState(initial = true)
+    val fullscreenSeekbarPaddingMode by playerPreferences.fullscreenSeekbarPaddingMode.collectAsState(
+        initial = FullscreenSeekbarPaddingMode.DEFAULT
+    )
+    val fullscreenSeekbarCustomPaddingDp by playerPreferences.fullscreenSeekbarCustomPaddingDp.collectAsState(
+        initial = DEFAULT_FULLSCREEN_SEEKBAR_PADDING_DP
+    )
+    val fullscreenSeekbarPaddingDp = when (fullscreenSeekbarPaddingMode) {
+        FullscreenSeekbarPaddingMode.FULL_WIDTH -> 0
+        FullscreenSeekbarPaddingMode.DEFAULT -> DEFAULT_FULLSCREEN_SEEKBAR_PADDING_DP
+        FullscreenSeekbarPaddingMode.CUSTOM -> fullscreenSeekbarCustomPaddingDp
+    }
 
     var showStyleSheet by remember { mutableStateOf(false) }
+    var showBackgroundStyleSheet by remember { mutableStateOf(false) }
 
     if (showStyleSheet) {
         ModalBottomSheet(
@@ -134,8 +160,79 @@ fun PlayerAppearanceScreen(
         }
     }
 
+    if (showBackgroundStyleSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showBackgroundStyleSheet = false },
+            sheetState = rememberFlowSheetState(),
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 0.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.player_background_style_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                )
+
+                LazyColumn {
+                    items(MusicPlayerBackgroundStyle.values()) { style ->
+                        val isSelected = currentMusicPlayerBackgroundStyle == style
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    coroutineScope.launch {
+                                        playerPreferences.setMusicPlayerBackgroundStyle(style)
+                                    }
+                                }
+                                .padding(horizontal = 24.dp, vertical = 12.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = stringResource(getBackgroundStyleLabelResInScreen(style)),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+                            PreviewPlayerBackground(style = style)
+                        }
+
+                        if (style != MusicPlayerBackgroundStyle.values().last()) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 24.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -179,6 +276,16 @@ fun PlayerAppearanceScreen(
                         subtitle = stringResource(getStyleLabelResInScreen(currentSliderStyle)),
                         onClick = { showStyleSheet = true }
                     )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                    SettingsItem(
+                        icon = painterResource(R.drawable.ic_music_note),
+                        title = stringResource(R.string.player_background_style_title),
+                        subtitle = stringResource(getBackgroundStyleLabelResInScreen(currentMusicPlayerBackgroundStyle)),
+                        onClick = { showBackgroundStyleSheet = true }
+                    )
                 }
             }
             
@@ -200,12 +307,63 @@ fun PlayerAppearanceScreen(
                 SettingsGroup {
                     SettingsToggleItem(
                         icon = painterResource(R.drawable.ic_swipe_gesture),
-                        title = stringResource(R.string.player_appearance_swipe_gestures_title),
-                        subtitle = stringResource(R.string.player_appearance_swipe_gestures_subtitle),
-                        checked = swipeGesturesEnabled,
+                        title = stringResource(R.string.player_appearance_brightness_gesture_title),
+                        subtitle = stringResource(R.string.player_appearance_brightness_gesture_subtitle),
+                        checked = brightnessSwipeGesturesEnabled,
                         onCheckedChange = { enabled ->
                             coroutineScope.launch {
-                                playerPreferences.setSwipeGesturesEnabled(enabled)
+                                playerPreferences.setBrightnessSwipeGesturesEnabled(enabled)
+                            }
+                        }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+
+                    SettingsToggleItem(
+                        icon = painterResource(R.drawable.ic_swipe_gesture),
+                        title = stringResource(R.string.player_appearance_remember_brightness_title),
+                        subtitle = stringResource(R.string.player_appearance_remember_brightness_subtitle),
+                        checked = rememberBrightnessEnabled,
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                playerPreferences.setRememberBrightnessEnabled(enabled)
+                            }
+                        }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+
+                    SettingsToggleItem(
+                        icon = painterResource(R.drawable.ic_swipe_gesture),
+                        title = stringResource(R.string.player_appearance_volume_gesture_title),
+                        subtitle = stringResource(R.string.player_appearance_volume_gesture_subtitle),
+                        checked = volumeSwipeGesturesEnabled,
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                playerPreferences.setVolumeSwipeGesturesEnabled(enabled)
+                            }
+                        }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+
+                    SettingsToggleItem(
+                        icon = painterResource(R.drawable.ic_swipe_gesture),
+                        title = stringResource(R.string.player_appearance_volume_boost_title),
+                        subtitle = stringResource(R.string.player_appearance_volume_boost_subtitle),
+                        checked = allowVolumeBoost,
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                playerPreferences.setAllowVolumeBoost(enabled)
                             }
                         }
                     )
@@ -220,6 +378,23 @@ fun PlayerAppearanceScreen(
             item {
                 SettingsGroup {
                     SettingsToggleItem(
+                        icon = painterResource(R.drawable.ic_aspect_ratio),
+                        title = stringResource(R.string.player_adaptive_size_title),
+                        subtitle = stringResource(R.string.player_adaptive_size_subtitle),
+                        checked = adaptivePlayerSizeEnabled,
+                        onCheckedChange = { enabled ->
+                            coroutineScope.launch {
+                                playerPreferences.setAdaptivePlayerSizeEnabled(enabled)
+                            }
+                        }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+
+                    SettingsToggleItem(
                         icon = painterResource(R.drawable.ic_progress_bar_style),
                         title = stringResource(R.string.player_show_title_title),
                         subtitle = stringResource(R.string.player_show_title_subtitle),
@@ -227,6 +402,27 @@ fun PlayerAppearanceScreen(
                         onCheckedChange = { enabled ->
                             coroutineScope.launch {
                                 playerPreferences.setShowFullscreenTitle(enabled)
+                            }
+                        }
+                    )
+
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+
+                    FullscreenSeekbarPaddingItem(
+                        mode = fullscreenSeekbarPaddingMode,
+                        customPaddingDp = fullscreenSeekbarCustomPaddingDp,
+                        effectivePaddingDp = fullscreenSeekbarPaddingDp,
+                        onModeChange = { mode ->
+                            coroutineScope.launch {
+                                playerPreferences.setFullscreenSeekbarPaddingMode(mode)
+                            }
+                        },
+                        onCustomPaddingChange = { paddingDp ->
+                            coroutineScope.launch {
+                                playerPreferences.setFullscreenSeekbarCustomPaddingDp(paddingDp)
                             }
                         }
                     )
@@ -424,6 +620,173 @@ fun SettingsToggleItem(
     }
 }
 
+@Composable
+private fun FullscreenSeekbarPaddingItem(
+    mode: FullscreenSeekbarPaddingMode,
+    customPaddingDp: Int,
+    effectivePaddingDp: Int,
+    onModeChange: (FullscreenSeekbarPaddingMode) -> Unit,
+    onCustomPaddingChange: (Int) -> Unit
+) {
+    val animatedPreviewPadding by animateDpAsState(
+        targetValue = effectivePaddingDp.dp,
+        animationSpec = spring(),
+        label = "fullscreenSeekbarPreviewPadding"
+    )
+    val options = listOf(
+        FullscreenSeekbarPaddingMode.FULL_WIDTH,
+        FullscreenSeekbarPaddingMode.DEFAULT,
+        FullscreenSeekbarPaddingMode.CUSTOM
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_progress_bar_style),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .padding(top = 2.dp)
+                .size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.player_fullscreen_seekbar_width_title),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = stringResource(
+                    R.string.player_fullscreen_seekbar_width_subtitle,
+                    effectivePaddingDp
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+            FullscreenSeekbarPaddingPreview(horizontalPadding = animatedPreviewPadding)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                options.forEach { option ->
+                    val selected = mode == option
+                    Surface(
+                        color = if (selected) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)
+                        },
+                        contentColor = if (selected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(
+                            1.dp,
+                            if (selected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                            }
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onModeChange(option) }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = stringResource(getFullscreenSeekbarPaddingModeLabelRes(option)),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 6.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (mode == FullscreenSeekbarPaddingMode.CUSTOM) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Slider(
+                        value = customPaddingDp.toFloat(),
+                        onValueChange = { value ->
+                            val snapped = ((value / 4f).roundToInt() * 4)
+                                .coerceIn(0, MAX_FULLSCREEN_SEEKBAR_PADDING_DP)
+                            onCustomPaddingChange(snapped)
+                        },
+                        valueRange = 0f..MAX_FULLSCREEN_SEEKBAR_PADDING_DP.toFloat(),
+                        steps = (MAX_FULLSCREEN_SEEKBAR_PADDING_DP / 4) - 1,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = stringResource(R.string.player_fullscreen_seekbar_width_value, customPaddingDp),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.width(56.dp),
+                        textAlign = TextAlign.End
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FullscreenSeekbarPaddingPreview(horizontalPadding: androidx.compose.ui.unit.Dp) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
+    val videoSurfaceColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(44.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(videoSurfaceColor)
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding)
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(trackColor)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.36f)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(primaryColor)
+            )
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -549,11 +912,75 @@ fun PreviewPlayerSlider(style: SliderStyle) {
 }
 
 
+@Composable
+fun PreviewPlayerBackground(style: MusicPlayerBackgroundStyle) {
+    val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.tertiary
+    val surface = MaterialTheme.colorScheme.surfaceVariant
+    val brush = when (style) {
+        MusicPlayerBackgroundStyle.BLUR_GRADIENT -> Brush.linearGradient(
+            listOf(primary.copy(alpha = 0.80f), secondary.copy(alpha = 0.55f), Color.Black.copy(alpha = 0.90f))
+        )
+        MusicPlayerBackgroundStyle.BLUR -> Brush.linearGradient(
+            listOf(surface.copy(alpha = 0.85f), primary.copy(alpha = 0.45f), surface.copy(alpha = 0.85f))
+        )
+        MusicPlayerBackgroundStyle.GRADIENT -> Brush.linearGradient(
+            listOf(primary.copy(alpha = 0.95f), secondary.copy(alpha = 0.75f), Color.Black.copy(alpha = 0.92f))
+        )
+        MusicPlayerBackgroundStyle.DEFAULT -> Brush.linearGradient(
+            listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant)
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(brush)
+    ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 14.dp)
+                .size(28.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(Color.White.copy(alpha = 0.82f))
+        )
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 14.dp)
+                .width(112.dp)
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(Color.White.copy(alpha = 0.72f))
+        )
+    }
+}
+
 private fun getStyleLabelResInScreen(style: SliderStyle): Int {    return when (style) {
         SliderStyle.DEFAULT -> R.string.style_default
         SliderStyle.METROLIST -> R.string.style_metrolist
         SliderStyle.METROLIST_SLIM -> R.string.style_metrolist_slim
         SliderStyle.SQUIGGLY -> R.string.style_squiggly
         SliderStyle.SLIM -> R.string.style_slim
+    }
+}
+
+private fun getBackgroundStyleLabelResInScreen(style: MusicPlayerBackgroundStyle): Int {
+    return when (style) {
+        MusicPlayerBackgroundStyle.BLUR_GRADIENT -> R.string.player_background_style_blur_gradient
+        MusicPlayerBackgroundStyle.BLUR -> R.string.player_background_style_blur
+        MusicPlayerBackgroundStyle.GRADIENT -> R.string.player_background_style_gradient
+        MusicPlayerBackgroundStyle.DEFAULT -> R.string.player_background_style_default
+    }
+}
+
+private fun getFullscreenSeekbarPaddingModeLabelRes(mode: FullscreenSeekbarPaddingMode): Int {
+    return when (mode) {
+        FullscreenSeekbarPaddingMode.FULL_WIDTH -> R.string.player_fullscreen_seekbar_width_full
+        FullscreenSeekbarPaddingMode.DEFAULT -> R.string.player_fullscreen_seekbar_width_default
+        FullscreenSeekbarPaddingMode.CUSTOM -> R.string.player_fullscreen_seekbar_width_custom
     }
 }

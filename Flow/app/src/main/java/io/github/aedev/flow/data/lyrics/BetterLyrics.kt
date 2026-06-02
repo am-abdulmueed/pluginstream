@@ -7,6 +7,7 @@ package io.github.aedev.flow.data.lyrics
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import io.github.aedev.flow.network.AppProxyManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -21,10 +22,11 @@ import java.util.concurrent.TimeUnit
 object BetterLyrics {
     private const val TAG = "BetterLyrics"
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
-        .build()
+    private val client: OkHttpClient
+        get() = AppProxyManager.applyTo(OkHttpClient.Builder())
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .build()
 
     private val gson = Gson()
 
@@ -97,9 +99,7 @@ object BetterLyrics {
                 }
 
                 val ttmlLines = try {
-                    val parsedLines = TTMLParser.parseTTML(ttml)
-                    val lrcStr = TTMLParser.toLRC(parsedLines)
-                    LyricsUtils.parseLyrics(lrcStr)
+                    TTMLParser.parseTTMLToLyricsEntries(ttml)
                 } catch (e: Exception) {
                     Log.e(TAG, "TTML parse failed", e)
                     emptyList()
