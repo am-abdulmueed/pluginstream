@@ -738,12 +738,12 @@ class PlayerPreferences(context: Context) {
     // Quality preferences
     val defaultQualityWifi: Flow<VideoQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
-            VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_WIFI] ?: "1080p")
+            VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_WIFI] ?: "auto")
         }
     
     val defaultQualityCellular: Flow<VideoQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
-            VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_CELLULAR] ?: "480p")
+            VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_CELLULAR] ?: "auto")
         }
     
     suspend fun setDefaultQualityWifi(quality: VideoQuality) {
@@ -758,7 +758,7 @@ class PlayerPreferences(context: Context) {
         }
     }
 
-    // Shorts quality preferences (default to 720p WiFi, 480p Cellular)
+    // Shorts quality preferences (default to 720p WiFi, 720p Cellular)
     val shortsQualityWifi: Flow<VideoQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
             VideoQuality.fromString(preferences[Keys.SHORTS_QUALITY_WIFI] ?: "720p")
@@ -766,7 +766,7 @@ class PlayerPreferences(context: Context) {
 
     val shortsQualityCellular: Flow<VideoQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
-            VideoQuality.fromString(preferences[Keys.SHORTS_QUALITY_CELLULAR] ?: "480p")
+            VideoQuality.fromString(preferences[Keys.SHORTS_QUALITY_CELLULAR] ?: "720p")
         }
 
     suspend fun setShortsQualityWifi(quality: VideoQuality) {
@@ -1506,7 +1506,7 @@ class PlayerPreferences(context: Context) {
 
     // Show app logo icon in home screen top bar (default on)
     val showAppLogoIcon: Flow<Boolean> = context.playerPreferencesDataStore.data
-        .map { preferences -> preferences[Keys.SHOW_APP_LOGO_ICON] ?: true }
+        .map { preferences -> preferences[Keys.SHOW_APP_LOGO_ICON] ?: false }
 
     suspend fun setShowAppLogoIcon(enabled: Boolean) {
         context.playerPreferencesDataStore.edit { preferences ->

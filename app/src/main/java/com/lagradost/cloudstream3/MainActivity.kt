@@ -999,6 +999,47 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         onUserLeaveHint(this)
     }
 
+    fun setFullscreen(isFullscreen: Boolean) {
+        main {
+            binding?.apply {
+                val isNavVisible = !isFullscreen && listOf(
+                    R.id.navigation_home,
+                    R.id.navigation_search,
+                    R.id.navigation_flow,
+                    R.id.navigation_game,
+                    R.id.navigation_offers,
+                    R.id.navigation_library,
+                    R.id.navigation_downloads,
+                    R.id.navigation_settings,
+                    R.id.navigation_download_child,
+                    R.id.navigation_download_queue,
+                    R.id.navigation_subtitles,
+                    R.id.navigation_chrome_subtitles,
+                    R.id.navigation_settings_player,
+                    R.id.navigation_settings_updates,
+                    R.id.navigation_settings_ui,
+                    R.id.navigation_settings_account,
+                    R.id.navigation_settings_providers,
+                    R.id.navigation_settings_general,
+                    R.id.navigation_settings_extensions,
+                    R.id.navigation_settings_plugins,
+                    R.id.navigation_test_providers,
+                ).contains(navController?.currentDestination?.id)
+
+                navRailView.isVisible = isNavVisible && isLandscape()
+                navView.isVisible = isNavVisible && !isLandscape()
+                navViewContainer.isVisible = isNavVisible && !isLandscape()
+                
+                navHostFragment.apply {
+                    val marginPx = resources.getDimensionPixelSize(R.dimen.nav_rail_view_width)
+                    layoutParams = (navHostFragment.layoutParams as ViewGroup.MarginLayoutParams).apply {
+                        marginStart = if (isNavVisible && isLandscape() && isLayout(TV or EMULATOR)) marginPx else 0
+                    }
+                }
+            }
+        }
+    }
+
     @SuppressLint("ApplySharedPref") // commit since the op needs to be synchronous
     private fun showConfirmExitDialog(settingsManager: SharedPreferences) {
         val confirmBeforeExit = settingsManager.getInt(getString(R.string.confirm_exit_key), -1)

@@ -246,6 +246,10 @@ fun GlobalPlayerOverlay(
 
     LaunchedEffect(screenState.isFullscreen) {
         screenState.dismissMediaSheets()
+        playerViewModel.setFullscreen(screenState.isFullscreen)
+        if (screenState.isFullscreen && playerSheetState.currentValue != PlayerSheetValue.Expanded) {
+            playerSheetState.expand()
+        }
     }
 
     LaunchedEffect(screenState.zoomIndicatorSequence) {
@@ -292,6 +296,7 @@ fun GlobalPlayerOverlay(
     // ===== EFFECTS =====
     LaunchedEffect(playerUiState.shouldDismissPlayer) {
         if (playerUiState.shouldDismissPlayer) {
+            screenState.isFullscreen = false
             onMinimize()
             playerViewModel.resetDismissState()
         }

@@ -8,6 +8,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.media3.common.util.UnstableApi
+import androidx.compose.ui.platform.LocalContext
+import com.lagradost.cloudstream3.MainActivity
 import com.lagradost.cloudstream3.ui.theme.CloudStreamComposeTheme
 import com.lagradost.cloudstream3.ui.theme.isAppInDarkTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,6 +28,7 @@ class FlowFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
+                val context = LocalContext.current
                 CloudStreamComposeTheme {
                     val isDark = isAppInDarkTheme()
                     FlowApp(
@@ -36,10 +39,19 @@ class FlowFragment : Fragment() {
                         onThemeChange = {},
                         onCustomThemeColorsChange = {},
                         onSystemLightThemeChange = {},
-                        onSystemDarkThemeChange = {}
+                        onSystemDarkThemeChange = {},
+                        onFullscreenChange = { isFullscreen ->
+                            (context as? MainActivity)?.setFullscreen(isFullscreen)
+                        }
                     )
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Reset fullscreen state when leaving the fragment
+        (activity as? MainActivity)?.setFullscreen(false)
     }
 }

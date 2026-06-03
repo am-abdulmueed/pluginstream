@@ -316,11 +316,7 @@ fun ContentSettingsScreen(
                             }
                         }
                     )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 56.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                    SettingsSwitchItem(
+                    /*SettingsSwitchItem(
                         icon = androidx.compose.ui.graphics.vector.ImageVector.vectorResource(id = R.drawable.ic_notification_logo),
                         title = stringResource(R.string.content_settings_show_app_logo_title),
                         subtitle = stringResource(R.string.content_settings_show_app_logo_subtitle),
@@ -328,7 +324,7 @@ fun ContentSettingsScreen(
                         onCheckedChange = { enabled ->
                             coroutineScope.launch { preferences.setShowAppLogoIcon(enabled) }
                         }
-                    )
+                    )*/
                 }
             }
 

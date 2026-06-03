@@ -664,7 +664,7 @@ item {
             // APPEARANCE
             // =================================================
             item { SectionHeader(text = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_header_appearance)) }
-            item {
+            /*item {
                 SettingsGroup { 
                     SettingsItem(
                         icon = Icons.Outlined.Palette,
@@ -672,7 +672,9 @@ item {
                         subtitle = androidx.compose.ui.res.stringResource(getThemeNameRes(currentTheme)),
                         onClick = onNavigateToAppearance
                     )
-                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    HorizontalDivider(Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))*/
+            item {
+                SettingsGroup {
                     SettingsItem(
                         icon = Icons.Outlined.Language,
                         title = androidx.compose.ui.res.stringResource(io.github.aedev.flow.R.string.settings_item_app_language),

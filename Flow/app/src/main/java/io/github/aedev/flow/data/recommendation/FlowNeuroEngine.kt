@@ -1653,7 +1653,7 @@ class FlowNeuroEngine(private val appContext: Context) {
             if (primaryTopic != null) {
                 recentInteractions.add(MomentumEntry(primaryTopic, learningRate > 0))
                 while (recentInteractions.size > NeuroScoring.MOMENTUM_WINDOW) {
-                    recentInteractions.removeFirst()
+                    recentInteractions.removeAt(0)
                 }
             }
 

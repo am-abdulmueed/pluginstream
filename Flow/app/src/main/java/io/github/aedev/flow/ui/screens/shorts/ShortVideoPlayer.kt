@@ -532,7 +532,6 @@ fun ShortVideoPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomStart)
-                .navigationBarsPadding()
                 .padding(bottom = 60.dp, start = 16.dp, end = 8.dp),
             verticalAlignment = Alignment.Bottom
         ) {
@@ -740,7 +739,6 @@ fun ShortVideoPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .navigationBarsPadding()
                     .padding(bottom = 48.dp)
                     .height(20.dp)
                     .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { }

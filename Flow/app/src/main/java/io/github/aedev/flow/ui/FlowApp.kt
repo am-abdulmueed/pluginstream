@@ -72,6 +72,7 @@ fun FlowApp(
     onCustomThemeColorsChange: (CustomThemeColors) -> Unit,
     onSystemLightThemeChange: (ThemeMode) -> Unit,
     onSystemDarkThemeChange: (ThemeMode) -> Unit,
+    onFullscreenChange: (Boolean) -> Unit = {},
     deeplinkVideoId: String? = null,
     isShort: Boolean = false,
     onDeeplinkConsumed: () -> Unit = {}
@@ -211,9 +212,20 @@ fun FlowApp(
         )
     }
     
-    LaunchedEffect(playerSheetState.currentValue, playerSheetState.isDragging, currentRoute.value) {
+    LaunchedEffect(
+        playerSheetState.currentValue,
+        playerSheetState.isDragging,
+        currentRoute.value,
+        musicPlayerSheetState.isExpanded,
+        playerUiState.isFullscreen,
+        playerVisible
+    ) {
         if (!playerSheetState.isDragging) {
-            showBottomNav.value = currentRoute.value.isBottomNavRoute() && playerSheetState.currentValue != PlayerSheetValue.Expanded
+            showBottomNav.value = currentRoute.value.isBottomNavRoute() &&
+                    (!playerVisible || playerSheetState.currentValue != PlayerSheetValue.Expanded) &&
+                    !musicPlayerSheetState.isExpanded &&
+                    !playerUiState.isFullscreen
+
             when (playerSheetState.currentValue) {
                 PlayerSheetValue.Expanded -> GlobalPlayerState.expandMiniPlayer()
                 PlayerSheetValue.Collapsed -> GlobalPlayerState.collapseMiniPlayer()
@@ -258,8 +270,16 @@ fun FlowApp(
         }
     }
 
+    LaunchedEffect(playerVisible) {
+        if (!playerVisible) {
+            suppressMusicMiniAfterVideo = false
+        }
+    }
+
     LaunchedEffect(currentMusicTrack?.videoId) {
         if (currentMusicTrack == null) {
+            suppressMusicMiniAfterVideo = false
+        } else if (!playerVisible) {
             suppressMusicMiniAfterVideo = false
         }
     }
@@ -278,14 +298,6 @@ fun FlowApp(
         }
     }
 
-    LaunchedEffect(musicPlayerSheetState.isExpanded, currentRoute.value) {
-        if (musicPlayerSheetState.isExpanded) {
-            showBottomNav.value = false
-        } else if (!musicPlayerSheetState.isDismissed && playerSheetState.currentValue != PlayerSheetValue.Expanded && currentRoute.value.isBottomNavRoute()) {
-            showBottomNav.value = true
-        }
-    }
-
     ApplyStatusBarStyle(
         themeMode = currentTheme,
         systemLightThemeMode = systemLightThemeMode,
@@ -293,6 +305,11 @@ fun FlowApp(
         isFullscreen = playerUiState.isFullscreen,
         isMusicPlayerImmersive = currentMusicTrack != null && musicPlayerSheetState.progress > 0.5f
     )
+
+    LaunchedEffect(playerUiState.isFullscreen, playerSheetState.currentValue, playerVisible) {
+        val isExpanded = (playerSheetState.currentValue == PlayerSheetValue.Expanded && playerVisible) || playerUiState.isFullscreen
+        onFullscreenChange(isExpanded)
+    }
 
     LaunchedEffect(isInPipMode) {
         if (isInPipMode && !currentRoute.value.startsWith("player") && currentVideo != null) {
@@ -321,9 +338,8 @@ fun FlowApp(
             currentRoute.value.isLibraryOrSettingsRouteForMusicMiniPlayer()
         val isMusicMiniPlayerObscuringContent =
             currentMusicTrack != null &&
-                !suppressMusicMiniAfterVideo &&
-                playerUiState.cachedVideo == null &&
-                playerUiState.streamInfo == null &&
+                (!suppressMusicMiniAfterVideo || currentRoute.value == "music" || currentRoute.value == "musicPlayer") &&
+                (playerUiState.cachedVideo == null || !playerVisible) &&
                 !musicPlayerSheetState.isDismissed &&
                 !musicPlayerSheetState.isExpanded
         val musicMiniPlayerContentPadding by animateDpAsState(
@@ -515,9 +531,8 @@ fun FlowApp(
     
     // ===== GLOBAL MUSIC PLAYER OVERLAY =====
     if (currentMusicTrack != null &&
-        !suppressMusicMiniAfterVideo &&
-        playerUiState.cachedVideo == null &&
-        playerUiState.streamInfo == null
+        (!suppressMusicMiniAfterVideo || currentRoute.value == "music" || currentRoute.value == "musicPlayer") &&
+        (playerUiState.cachedVideo == null || !playerVisible)
     ) {
         MusicPlayerBottomSheet(
             state = musicPlayerSheetState,
@@ -588,7 +603,7 @@ private fun String.isBottomNavRoute(): Boolean {
 }
 
 private fun String.isLibraryOrSettingsRouteForMusicMiniPlayer(): Boolean {
-    return this == "library" ||
+    return isBottomNavRoute() ||
         this == "history" ||
         this == "playlists" ||
         this == "playlist" ||

@@ -524,7 +524,7 @@ class VideoPlayerViewModel @Inject constructor(
      */
     fun startBackgroundService() {
         val state = _uiState.value
-        val audioUrl = state.audioStream?.content
+        val audioUrl = state.audioStream?.content ?: state.videoStream?.content
         val videoId = state.cachedVideo?.id ?: state.streamInfo?.id
         if (videoId != null && audioUrl != null) {
             val musicTrack = io.github.aedev.flow.ui.screens.music.MusicTrack(

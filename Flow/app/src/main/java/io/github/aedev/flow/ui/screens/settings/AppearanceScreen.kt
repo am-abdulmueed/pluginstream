@@ -250,9 +250,9 @@ fun AppearanceScreen(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    IconButton(onClick = { showCustomizer = true }) {
+                    /*IconButton(onClick = { showCustomizer = true }) {
                         Icon(Icons.Outlined.Palette, contentDescription = "Customize theme")
-                    }
+                    }*/
                 }
             }
         },
@@ -284,7 +284,7 @@ fun AppearanceScreen(
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            /*item(span = { GridItemSpan(maxLineSpan) }) {
                 CategoryFilterRow(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { selectedCategory = it }
@@ -329,7 +329,7 @@ fun AppearanceScreen(
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Spacer(modifier = Modifier.height(56.dp))
-            }
+            }*/
         }
     }
 }
