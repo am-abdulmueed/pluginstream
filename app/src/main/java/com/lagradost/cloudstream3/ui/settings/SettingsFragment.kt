@@ -370,7 +370,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             📁 Total Storage: ${totalStorageGb} GB
             🚀 Free Space: ${freeStorageGb} GB (Req: 1GB)
             
-            ----------------------------------
+            ---------
             $statusMessage
         """.trimIndent()
 

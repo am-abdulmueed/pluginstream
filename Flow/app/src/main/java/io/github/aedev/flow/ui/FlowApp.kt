@@ -87,6 +87,37 @@ fun FlowApp(
         ctx as? androidx.activity.ComponentActivity
     }
     val navController = rememberNavController()
+    val navViewModel: FlowNavigationViewModel = activity?.let { hiltViewModel(it) } ?: hiltViewModel()
+
+    // Restore and save navigation state
+    var isGraphInitialized by remember { mutableStateOf(false) }
+    LaunchedEffect(navController) {
+        // Wait for graph to be attached
+        navController.currentBackStackEntryFlow.collect {
+            isGraphInitialized = true
+        }
+    }
+
+    LaunchedEffect(isGraphInitialized, navController) {
+        if (!isGraphInitialized) return@LaunchedEffect
+        
+        val lastRoute = navViewModel.lastRoute
+        if (lastRoute != null && lastRoute != "home" && lastRoute != "onboarding" && deeplinkVideoId == null) {
+            // Restore last route if not home/onboarding and no deep link is pending
+            navController.navigate(lastRoute) {
+                popUpTo("home") { inclusive = false }
+            }
+        }
+
+        // Listen for changes to save the last route
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            val route = destination.route
+            if (route != null && route != "onboarding") {
+                navViewModel.lastRoute = route
+            }
+        }
+    }
+
     val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
     
     val playerViewModel: VideoPlayerViewModel = activity?.let { hiltViewModel(it) } ?: hiltViewModel()
