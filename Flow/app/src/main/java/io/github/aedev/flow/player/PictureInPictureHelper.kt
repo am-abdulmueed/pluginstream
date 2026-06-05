@@ -14,7 +14,7 @@ import android.util.Rational
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import io.github.aedev.flow.R
-import io.github.aedev.flow.MainActivity
+import io.github.aedev.flow.FlowMainActivity as MainActivity
 
 /**
  * Helper class for Picture-in-Picture mode support

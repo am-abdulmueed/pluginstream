@@ -67,7 +67,7 @@
             android:value="true" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".FlowMainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|uiMode"
             android:launchMode="singleTop"

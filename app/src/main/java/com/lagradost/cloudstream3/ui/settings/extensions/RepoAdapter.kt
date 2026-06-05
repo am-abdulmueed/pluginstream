@@ -116,7 +116,7 @@ class RepoAdapter(
                     repositoryItemRoot.setOnClickListener {
                         clickCallback(item)
                     }
-                    val originalName = item.name ?: ""
+                    val originalName = item.name
                     mainText.text = originalName.replace("moviebox", "Max", ignoreCase = true)
                         .replace("moveibox", "Max", ignoreCase = true)
                         .replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
@@ -164,7 +164,7 @@ class RepoAdapter(
                         true
                     }
 
-                    val originalName = item.name ?: ""
+                    val originalName = item.name
                     mainText.text = originalName.replace("moviebox", "Max", ignoreCase = true)
                         .replace("moveibox", "Max", ignoreCase = true)
                         .replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
@@ -205,7 +205,7 @@ class RepoAdapter(
                         clickCallback(item)
                     }
 
-                    val originalName = item.name ?: ""
+                    val originalName = item.name
                     mainText.text = originalName.replace("moviebox", "Max", ignoreCase = true)
                         .replace("moveibox", "Max", ignoreCase = true)
                         .replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)

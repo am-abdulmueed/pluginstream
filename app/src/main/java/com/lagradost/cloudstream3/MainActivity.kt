@@ -732,8 +732,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     private fun updateMoreIconToShow(isShowing: Boolean) {
         binding?.apply {
-            val moreMenuItem = navView?.menu?.findItem(R.id.navigation_more)
-            val moreRailItem = navRailView?.menu?.findItem(R.id.navigation_more)
+            val moreMenuItem = navView.menu.findItem(R.id.navigation_more)
+            val moreRailItem = navRailView.menu.findItem(R.id.navigation_more)
             
             if (isShowing) {
                 // Show X icon
@@ -1123,7 +1123,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val destinationId = item.itemId
 
         // Check if we are already at the selected destination
-        if (navController?.currentDestination?.id == destinationId) return false
+        if (navController.currentDestination?.id == destinationId) return false
 
         // Make all nav buttons focus on this specific view when nextFocusRightId
         val targetView = when (destinationId) {

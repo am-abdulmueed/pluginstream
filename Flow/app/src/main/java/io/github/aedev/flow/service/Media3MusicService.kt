@@ -16,7 +16,7 @@ import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import io.github.aedev.flow.MainActivity
+import io.github.aedev.flow.FlowMainActivity as MainActivity
 import io.github.aedev.flow.R
 import io.github.aedev.flow.data.model.ParametricEQ
 import io.github.aedev.flow.player.audio.CustomEqualizerAudioProcessor

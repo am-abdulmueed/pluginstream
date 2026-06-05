@@ -15,7 +15,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import io.github.aedev.flow.MainActivity
+import io.github.aedev.flow.FlowMainActivity as MainActivity
 import io.github.aedev.flow.data.local.PlayerPreferences
 import io.github.aedev.flow.data.local.entity.DownloadFileType
 import io.github.aedev.flow.data.local.entity.DownloadItemEntity

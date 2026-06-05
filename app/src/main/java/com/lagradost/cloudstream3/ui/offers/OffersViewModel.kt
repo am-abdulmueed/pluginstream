@@ -434,7 +434,7 @@ class OffersViewModel : ViewModel() {
 
     fun getAmountForCountry(offer: CpaOffer, countryCode: String?): Double {
         return if (countryCode != null && offer.payoutsPerCountry?.containsKey(countryCode) == true) {
-            offer.payoutsPerCountry!![countryCode] ?: offer.amount
+            offer.payoutsPerCountry[countryCode] ?: offer.amount
         } else {
             offer.amount
         }

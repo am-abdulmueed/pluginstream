@@ -17,7 +17,7 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.core.app.NotificationCompat
 import androidx.media.session.MediaButtonReceiver
-import io.github.aedev.flow.MainActivity
+import io.github.aedev.flow.FlowMainActivity as MainActivity
 import io.github.aedev.flow.R
 import io.github.aedev.flow.player.EnhancedPlayerManager
 import io.github.aedev.flow.player.GlobalPlayerState

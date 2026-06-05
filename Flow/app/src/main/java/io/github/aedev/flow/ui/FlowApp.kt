@@ -336,11 +336,11 @@ fun FlowApp(
         isMusicPlayerImmersive = currentMusicTrack != null && musicPlayerSheetState.progress > 0.5f
     )
 
-    LaunchedEffect(playerUiState.isFullscreen, playerSheetState.currentValue, playerVisible, currentRoute.value) {
+    LaunchedEffect(playerUiState.isFullscreen, playerSheetState.fraction, playerVisible, currentRoute.value, musicPlayerSheetState.progress) {
         val isShorts = currentRoute.value == "shorts" || currentRoute.value == "savedShortsPlayer"
-        val isExpanded = (playerSheetState.currentValue == PlayerSheetValue.Expanded && playerVisible) || 
-                         playerUiState.isFullscreen || 
-                         isShorts
+        val isPlayerExpanded = playerVisible && (playerSheetState.fraction < 0.5f || playerUiState.isFullscreen)
+        val isMusicExpanded = musicPlayerSheetState.progress > 0.5f
+        val isExpanded = isPlayerExpanded || isShorts || isMusicExpanded
         onFullscreenChange(isExpanded)
     }
 

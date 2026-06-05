@@ -51,7 +51,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class FlowMainActivity : ComponentActivity() {
     private val _deeplinkVideoId = mutableStateOf<String?>(null)
     val deeplinkVideoId: State<String?> = _deeplinkVideoId
     
@@ -138,11 +138,12 @@ class MainActivity : ComponentActivity() {
 
         handleIntent(intent)
 
-        
+        /*
         // Check for updates (only in release builds, only in github flavor)
         if (!BuildConfig.DEBUG && BuildConfig.UPDATER_ENABLED) {
             checkForUpdates(dataManager)
         }
+        */
 
         setContent {
             val scope = rememberCoroutineScope()
@@ -555,7 +556,7 @@ class MainActivity : ComponentActivity() {
                 val lastCheck = dataManager.lastUpdateCheck.first()
                 val currentTime = System.currentTimeMillis()
                 if (currentTime - lastCheck < 24 * 60 * 60 * 1000) {
-                    Log.d("MainActivity", "Skipping update check (cooldown)")
+                    Log.d("FlowMainActivity", "Skipping update check (cooldown)")
                     return@launch
                 }
 
@@ -576,15 +577,15 @@ class MainActivity : ComponentActivity() {
                         val cleanLatest = latestTag.removePrefix("v").split("-").first()
                         val cleanCurrent = currentVersion.removePrefix("v").split("-").first()
                         
-                        Log.d("MainActivity", "Latest tag: $latestTag, Current: $currentVersion, Comparing: $cleanLatest vs $cleanCurrent")
+                        Log.d("FlowMainActivity", "Latest tag: $latestTag, Current: $currentVersion, Comparing: $cleanLatest vs $cleanCurrent")
                         
                         if (isNewerVersion(cleanLatest, cleanCurrent)) {
                             withContext(Dispatchers.Main) {
-                                AlertDialog.Builder(this@MainActivity)
+                                AlertDialog.Builder(this@FlowMainActivity)
                                     .setTitle("Update Available")
                                     .setMessage("A new version of Flow is available ($latestTag). Download the latest APK?")
                                     .setPositiveButton("Download") { _, _ ->
-                                        ApkUpdateHelper.requestDownload(this@MainActivity, "https://github.com/A-EDev/Flow/releases/latest")
+                                        ApkUpdateHelper.requestDownload(this@FlowMainActivity, "https://github.com/A-EDev/Flow/releases/latest")
                                     }
                                     .setNegativeButton("Later", null)
                                     .show()
@@ -597,7 +598,7 @@ class MainActivity : ComponentActivity() {
                 dataManager.setLastUpdateCheck(currentTime)
                 
             } catch (e: Exception) {
-                Log.e("MainActivity", "Failed to check for updates", e)
+                Log.e("FlowMainActivity", "Failed to check for updates", e)
             }
         }
     }
@@ -638,7 +639,7 @@ class MainActivity : ComponentActivity() {
             }
             startActivity(intent)
         } catch (e: Exception) {
-            Log.w("MainActivity", "Could not request battery optimization exemption: ${e.message}")
+            Log.w("FlowMainActivity", "Could not request battery optimization exemption: ${e.message}")
         }
     }
 }

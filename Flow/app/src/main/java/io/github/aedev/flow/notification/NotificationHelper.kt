@@ -14,7 +14,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import io.github.aedev.flow.data.local.AppDatabase
 import io.github.aedev.flow.data.local.entity.NotificationEntity
-import io.github.aedev.flow.MainActivity
+import io.github.aedev.flow.FlowMainActivity as MainActivity
 import io.github.aedev.flow.R
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
