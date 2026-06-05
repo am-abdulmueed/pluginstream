@@ -596,7 +596,7 @@
     <string name="app_info_intent_error">No se puede abrir la información de la aplicación PluginStream.</string>
     <string name="custom_media_singluar">Media</string>
     <string name="audio_book_singular">Audiolibro</string>
-    <string name="battery_dialog_message">Para garantizar las notificaciones y descargas sin interrupciones de programas de TV suscritos, PluginStream necesita permiso para ejecutarse en segundo plano. Al presionar Aceptar, se abrirá la información de la aplicación. Presione «Permitir».\n\nTenga en cuenta que este permiso no significa que CS3 consumirá la batería. Solo funcionará en segundo plano cuando es necesario, como cuando se reciben notificaciones o se descargan vídeos desde extensiones oficiales.</string>
+    <string name="battery_dialog_message">Para garantizar las notificaciones y descargas sin interrupciones de programas de TV suscritos, PluginStream necesita permiso para ejecutarse en segundo plano. Al presionar Aceptar, se abrirá la información de la aplicación. Presione «Permitir».\n\nTenga en cuenta que este permiso no significa que PluginStream consumirá la batería. Solo funcionará en segundo plano cuando es necesario, como cuando se reciben notificaciones o se descargan vídeos desde extensiones oficiales.</string>
     <string name="reset_btn">Reset</string>
     <string name="episode_upcoming_format" formatted="true">Próximamente en %s</string>
     <string name="next_season_episode_format" formatted="true">La temporada %1$d y el episodio %2$d se estrenarán en</string>

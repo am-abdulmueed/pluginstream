@@ -608,7 +608,7 @@
     <string name="music_singlar">Musik</string>
     <string name="audio_book_singular">Buku Audio</string>
     <string name="custom_media_singluar">Media</string>
-    <string name="battery_dialog_message">Untuk memastikan unduhan dan pemberitahuan tanpa gangguan untuk acara TV berlangganan, PluginStreammemerlukan izin untuk berjalan di latar belakang. Dengan menekan OK, Anda akan diperlihatkan dialog permintaan. Silakan tekan ‘Izinkan’.\n\nHarap dicatat, izin ini tidak berarti CS3 akan menguras baterai Anda. Aplikasi ini hanya akan beroperasi di latar belakang jika diperlukan, misalnya saat menerima notifikasi atau mengunduh video dari ekstensi resmi.</string>
+    <string name="battery_dialog_message">Untuk memastikan unduhan dan pemberitahuan tanpa gangguan untuk acara TV berlangganan, PluginStreammemerlukan izin untuk berjalan di latar belakang. Dengan menekan OK, Anda akan diperlihatkan dialog permintaan. Silakan tekan ‘Izinkan’.\n\nHarap dicatat, izin ini tidak berarti PluginStream akan menguras baterai Anda. Aplikasi ini hanya akan beroperasi di latar belakang jika diperlukan, misalnya saat menerima notifikasi atau mengunduh video dari ekstensi resmi.</string>
     <string name="reset_btn">Mengatur ulang</string>
     <string name="next_season_episode_format" formatted="true">Musim %1$d Episode %2$d akan dirilis pada</string>
     <string name="episode_upcoming_format" formatted="true">Akan datang di %s</string>

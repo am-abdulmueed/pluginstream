@@ -612,7 +612,7 @@
     <string name="next_season_episode_format" formatted="true">الحلقة ال %2$d من الجزء ال%1$d رح تنزل ب</string>
     <string name="episode_action_cast_mirror">كاست مراية</string>
     <string name="player_settings_select_cast_device">نقي جهاز الكاست</string>
-    <string name="cs3wiki">ويكي \"كلود ستريم\"</string>
+    <string name="pluginstream_wiki">ويكي \"PluginStream\"</string>
     <string name="pref_category_accounts">أكونتات</string>
     <string name="pref_category_security">سكوريتي</string>
     <string name="qr_image">صورة الـ\"كيو آر\" كود</string>

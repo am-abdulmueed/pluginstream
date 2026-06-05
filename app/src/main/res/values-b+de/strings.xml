@@ -622,7 +622,7 @@
     <string name="test_warning">Warnung</string>
     <string name="device_pin_counter_text">Code läuft ab in %1$dm %2$ds</string>
     <string name="cs3wiki">PluginStream-Wiki</string>
-    <string name="battery_dialog_message">Um einen unterbrechungsfreien Download zu gewährleisten und Benachrichtigungen für abonnierte TV-Shows anzuzeigen, benötigt PluginStream die Berechtigung, im Hintergrund ausgeführt zu werden. Beim drücken auf 𝙊𝙆 wird ein Dialog angezeigt. Bitte drücke ‚Erlauben‘.\n\nBitte beachte, dass dies nicht dazu führt, dass CS3 den Akku dauerhaft entlädt. Es läuft nur im Hintergrund, wenn es nötig ist, beispielsweise zum Empfang von Benachrichtigungen oder dem Download von Videos aus offiziellen Erweiterungen.</string>
+    <string name="battery_dialog_message">Um einen unterbrechungsfreien Download zu gewährleisten und Benachrichtigungen für abonnierte TV-Shows anzuzeigen, benötigt PluginStream die Berechtigung, im Hintergrund ausgeführt zu werden. Beim drücken auf 𝙊𝙆 wird ein Dialog angezeigt. Bitte drücke ‚Erlauben‘.\n\nBitte beachte, dass dies nicht dazu führt, dass PluginStream den Akku dauerhaft entlädt. Es läuft nur im Hintergrund, wenn es nötig ist, beispielsweise zum Empfang von Benachrichtigungen oder dem Download von Videos aus offiziellen Erweiterungen.</string>
     <string name="delete_files">Dateien löschen</string>
     <string name="delete_format" formatted="true">Löschen (%1$d | %2$s)</string>
     <string name="select_all">Alle auswählen</string>

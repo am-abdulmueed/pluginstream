@@ -351,11 +351,11 @@
     <string name="favorite_removed">%s がお気に入りから削除されました</string>
     <string name="pin">PIN</string>
     <string name="auto_rotate_video">自動回転</string>
-    <string name="cs3wiki">CloudStreamウィキ</string>
+    <string name="cs3wiki">PluginStreamウィキ</string>
     <string name="already_voted">すでに投票しました</string>
     <string name="duplicate_add">追加</string>
     <string name="mobile_data">モバイルデータ</string>
-    <string name="app_info_intent_error">CloudStreamのアプリ情報を開くことができません.</string>
+    <string name="app_info_intent_error">PluginStreamのアプリ情報を開くことができません.</string>
     <string name="update_notification_downloading">アプリの更新をダウンロード中…</string>
     <string name="apk_installer_legacy">レガシー</string>
     <string name="profile_background_des">プロフィールの背景</string>
@@ -474,7 +474,7 @@
     <string name="sort">並べ替え</string>
     <string name="revert">元に戻す</string>
     <string name="subscription_in_progress_notification">購読している番組を更新中</string>
-    <string name="biometric_authentication_title">CloudStreamをアンロック</string>
+    <string name="biometric_authentication_title">PluginStreamをアンロック</string>
     <string name="apply_on_restart">変更を反映するにはアプリを再起動してください。</string>
     <string name="benene">開発者にベネネを与える</string>
     <string name="benene_des">与えられたベネネ</string>
@@ -624,7 +624,7 @@
     <string name="action_remove_from_watched">視聴済みから削除</string>
     <string name="confirm_exit_dialog">本当に終了しますか？</string>
     <string name="yes">はい</string>
-    <string name="battery_dialog_message">中断のないダウンロードと購読しているテレビ番組の通知を確実にするために、CloudStreamはバックグラウンドで実行する許可が必要です。\'OK\'を押すと、リクエストダイアログが表示されます。\'許可\'を押してください。\n\nこの許可は、CS3がバッテリーを消耗することを意味するものではありません。通知の受信や公式拡張機能からのビデオのダウンロードなど、必要な場合にのみバックグラウンドで動作します。</string>
+    <string name="battery_dialog_message">中断のないダウンロードと購読しているテレビ番組の通知を確実にするために、PluginStreamはバックグラウンドで実行する許可が必要です。\'OK\'を押すと、リクエストダイアログが表示されます。\'許可\'を押してください。\n\nこの許可は、CS3がバッテリーを消耗することを意味するものではありません。通知の受信や公式拡張機能からのビデオのダウンロードなど、必要な場合にのみバックグラウンドで動作します。</string>
     <string name="sort_updated_old">更新日 (古い順)</string>
     <string name="sort_episodes_number_asc">エピソード (昇順)</string>
     <string name="sort_episodes_rating_low_high">評価 (最低)</string>
@@ -639,7 +639,7 @@
     <string name="quality_profile_help">ここでソースの並び順を変更できます。ビデオの優先度が高いほど、ソース選択で上位に表示されます。 ソースの優先度と品質の優先度の合計がビデオの優先度になります。 \n\nソース A: 3 \n品質 B: 7 \nビデオの優先度は10になります。 \n\n注: 合計が10以上の場合、そのリンクが読み込まれたときにプレーヤーは自動的に読み込みをスキップします！</string>
     <string name="qualities">品質</string>
     <string name="duplicate_message_multiple" formatted="true">ライブラリに潜在的な重複アイテムが見つかりました: \n\n%s \n\nこのアイテムを追加しますか、既存のものを置き換えますか、それともアクションをキャンセルしますか？</string>
-    <string name="biometric_warning">CloudStreamのデータは今バックアップされました。非常に低い可能性ですが、すべてのデバイスは異なって動作する可能性があります。まれに、アプリへのアクセスがロックアウトされた場合、アプリのデータを完全にクリアし、バックアップから復元してください。このことで生じる不便についてお詫び申し上げます。</string>
+    <string name="biometric_warning">PluginStreamのデータは今バックアップされました。非常に低い可能性ですが、すべてのデバイスは異なって動作する可能性があります。まれに、アプリへのアクセスがロックアウトされた場合、アプリのデータを完全にクリアし、バックアップから復元してください。このことで生じる不便についてお詫び申し上げます。</string>
     <string name="device_pin_error_message">デバイスPINコードを取得できません。ローカル認証を試してください</string>
     <string name="sort_release_date_old">公開日 (古い順)</string>
     <string name="hide_player_control_names">プレーヤーのコントロール名を非表示</string>

@@ -193,6 +193,9 @@ import com.lagradost.cloudstream3.utils.UIHelper.requestRW
 import com.lagradost.cloudstream3.utils.UIHelper.setNavigationBarColorCompat
 import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.FirebaseHelper
+import androidx.compose.ui.platform.ComposeView
+import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
+import io.github.aedev.flow.player.DeepFlowManager
 import com.lagradost.cloudstream3.utils.USER_PROVIDER_API
 import com.lagradost.cloudstream3.utils.USER_SELECTED_HOMEPAGE_API
 import com.lagradost.cloudstream3.utils.setText
@@ -2081,6 +2084,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     @Suppress("DEPRECATION_ERROR")
     override fun onCreate(savedInstanceState: Bundle?) {
+        val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as android.app.UiModeManager
+        if (uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
+            Toast.makeText(this, "This version is for Phones only! Please install the TV version.", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+
         app.initClient(this)
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -2097,6 +2107,17 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         setNavigationBarColorCompat(R.attr.primaryGrayBackground)
         updateLocale()
         super.onCreate(savedInstanceState)
+
+        // Pre-initialize Flow engines in background to speed up Flow tab opening
+        ioSafe {
+            try {
+                FlowNeuroEngine.initialize(this@MainActivity)
+                DeepFlowManager.initialize(this@MainActivity)
+            } catch (e: Throwable) {
+                logError(e)
+            }
+        }
+
         try {
             if (isCastApiAvailable()) {
                 CastContext.getSharedInstance(this) { it.run() }
@@ -2138,6 +2159,16 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 val newLocalBinding = ActivityMainTvBinding.inflate(layoutInflater, null, false)
                 setContentView(newLocalBinding.root)
 
+                // Warm up Compose runtime to avoid delay on first click of Flow tab
+                // This initializes the Compose runtime early
+                try {
+                    ComposeView(this).apply {
+                        setContent {}
+                    }
+                } catch (e: Throwable) {
+                    logError(e)
+                }
+
                 if (isLayout(TV) && ANIMATED_OUTLINE) {
                     TvFocus.focusOutline = WeakReference(newLocalBinding.focusOutline)
                     newLocalBinding.root.viewTreeObserver.addOnScrollChangedListener {
@@ -2178,6 +2209,17 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             } else {
                 val newLocalBinding = ActivityMainBinding.inflate(layoutInflater, null, false)
                 setContentView(newLocalBinding.root)
+
+                // Warm up Compose runtime to avoid delay on first click of Flow tab
+                // This initializes the Compose runtime early
+                try {
+                    ComposeView(this).apply {
+                        setContent {}
+                    }
+                } catch (e: Throwable) {
+                    logError(e)
+                }
+
                 newLocalBinding
             }
         } catch (t: Throwable) {

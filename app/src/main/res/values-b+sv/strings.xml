@@ -591,7 +591,7 @@
 \nkvarstår</string>
     <string name="toast_copied">kopierad!</string>
     <string name="repo_copy_label">Lagringsnamn och URL</string>
-    <string name="battery_dialog_message">För att säkerställa oavbrutna nedladdningar och aviseringar för prenumererade tv-program behöver PluginStream tillstånd att köras i bakgrunden. Genom att trycka på OK kommer du få en förfrågningsdialogruta. Tryck då på \'Tillåt\'.\n\nObservera att denna behörighet inte betyder att CS3 kommer att tömma ditt batteri. Den fungerar bara i bakgrunden när det behövs, till exempel när du tar emot aviseringar eller laddar ner videor från officiella tillägg.</string>
+    <string name="battery_dialog_message">För att säkerställa oavbrutna nedladdningar och aviseringar för prenumererade tv-program behöver PluginStream tillstånd att köras i bakgrunden. Genom att trycka på OK kommer du få en förfrågningsdialogruta. Tryck då på \'Tillåt\'.\n\nObservera att denna behörighet inte betyder att PluginStream kommer att tömma ditt batteri. Den fungerar bara i bakgrunden när det behövs, till exempel när du tar emot aviseringar eller laddar ner videor från officiella tillägg.</string>
     <string name="biometric_warning">Din PluginStream-data har säkerhetskopierats nu. Även om möjligheten till detta är mycket liten, kan alla enheter bete sig olika. I det sällsynta fallet att du blir utelåst från att komma åt appen, rensa appdata helt och återställ från en säkerhetskopia. Vi ber om ursäkt för eventuella besvär som detta uppstår.</string>
     <string name="audio_book_singular">Ljudbok</string>
     <string name="clipboard_permission_error">Det gick inte att komma åt urklipp. Försök igen.</string>

@@ -738,12 +738,12 @@ class PlayerPreferences(context: Context) {
     // Quality preferences
     val defaultQualityWifi: Flow<VideoQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
-            VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_WIFI] ?: "auto")
+            VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_WIFI] ?: "480p")
         }
     
     val defaultQualityCellular: Flow<VideoQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
-            VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_CELLULAR] ?: "auto")
+            VideoQuality.fromString(preferences[Keys.DEFAULT_QUALITY_CELLULAR] ?: "480p")
         }
     
     suspend fun setDefaultQualityWifi(quality: VideoQuality) {
@@ -758,15 +758,15 @@ class PlayerPreferences(context: Context) {
         }
     }
 
-    // Shorts quality preferences (default to 720p WiFi, 720p Cellular)
+    // Shorts quality preferences (default to 480p WiFi, 480p Cellular)
     val shortsQualityWifi: Flow<VideoQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
-            VideoQuality.fromString(preferences[Keys.SHORTS_QUALITY_WIFI] ?: "720p")
+            VideoQuality.fromString(preferences[Keys.SHORTS_QUALITY_WIFI] ?: "480p")
         }
 
     val shortsQualityCellular: Flow<VideoQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
-            VideoQuality.fromString(preferences[Keys.SHORTS_QUALITY_CELLULAR] ?: "720p")
+            VideoQuality.fromString(preferences[Keys.SHORTS_QUALITY_CELLULAR] ?: "480p")
         }
 
     suspend fun setShortsQualityWifi(quality: VideoQuality) {
@@ -783,7 +783,7 @@ class PlayerPreferences(context: Context) {
 
     val musicAudioQuality: Flow<MusicAudioQuality> = context.playerPreferencesDataStore.data
         .map { preferences ->
-            MusicAudioQuality.fromString(preferences[Keys.MUSIC_AUDIO_QUALITY] ?: MusicAudioQuality.AUTO.label)
+            MusicAudioQuality.fromString(preferences[Keys.MUSIC_AUDIO_QUALITY] ?: MusicAudioQuality.MEDIUM.label)
         }
 
     suspend fun setMusicAudioQuality(quality: MusicAudioQuality) {

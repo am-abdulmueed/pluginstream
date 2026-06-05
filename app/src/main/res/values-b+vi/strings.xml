@@ -617,7 +617,7 @@
     <string name="custom_media_singluar">Phương tiện</string>
     <string name="repo_copy_label">Tên và URL kho lưu trữ</string>
     <string name="reset_btn">Đặt lại</string>
-    <string name="battery_dialog_message">Để đảm bảo quá trình tải xuống và thông báo cho các chương trình truyền hình đã đăng ký không bị gián đoạn, PluginStream cần có quyền chạy ở chế độ nền. Bằng cách nhấn OK, một hộp thoại yêu cầu sẽ hiển thị. Hãy nhấn \"Cho phép\".\n\nXin lưu ý, quyền này không có nghĩa là CS3 sẽ làm hao pin của bạn. Nó sẽ chỉ hoạt động ở chế độ nền khi cần thiết, chẳng hạn như khi nhận được thông báo hoặc tải xuống video từ các tiện ích mở rộng chính thức.</string>
+    <string name="battery_dialog_message">Để đảm bảo quá trình tải xuống và thông báo cho các chương trình truyền hình đã đăng ký không bị gián đoạn, PluginStream cần có quyền chạy ở chế độ nền. Bằng cách nhấn OK, một hộp thoại yêu cầu sẽ hiển thị. Hãy nhấn \"Cho phép\".\n\nXin lưu ý, quyền này không có nghĩa là PluginStream sẽ làm hao pin của bạn. Nó sẽ chỉ hoạt động ở chế độ nền khi cần thiết, chẳng hạn như khi nhận được thông báo hoặc tải xuống video từ các tiện ích mở rộng chính thức.</string>
     <string name="next_season_episode_format" formatted="true">Mùa %1$d Tập %2$d sẽ được phát hành vào</string>
     <string name="episode_upcoming_format" formatted="true">Sắp tới sau %s</string>
     <string name="player_settings_select_cast_device">Chọn thiết bị truyền</string>

@@ -600,13 +600,13 @@
     <string name="test_extensions">Prova tutte le estensioni</string>
     <string name="test_extensions_summary">Questo test è pensato solo per gli sviluppatori e non verifica o nega il funzionamento di alcuna estensione.</string>
     <string name="subscribe_tooltip">Notifica nuovo episodio</string>
-    <string name="biometric_authentication_title">Sblocca CloudStream</string>
+    <string name="biometric_authentication_title">Sblocca PluginStream</string>
     <string name="biometric_setting">Blocco con dati biometrici</string>
     <string name="password_pin_authentication_title">Autenticazione con password/PIN</string>
     <string name="biometric_unsupported">L\'autenticazione biometrica non è supportata su questo dispositivo</string>
     <string name="biometric_setting_summary">Sblocca app con impronta digitale, Face ID, PIN, sequenza e password.</string>
     <string name="biometric_prompt_description">Dopo alcuni tentativi falliti, il prompt si chiuderà. Riavvia semplicemente l\'app per riprovare.</string>
-    <string name="biometric_warning">È stato eseguito il backup dei tuoi dati CloudStream. Sebbene questa possibilità sia molto bassa, tutti i dispositivi possono comportarsi in modo diverso. Nel raro caso in cui ti venga bloccato l\'accesso all\'app, cancella completamente i dati dell\'app e ripristina da un backup. Siamo molto spiacenti per qualsiasi inconveniente derivanti da questo.</string>
+    <string name="biometric_warning">È stato eseguito il backup dei tuoi dati PluginStream. Sebbene questa possibilità sia molto bassa, tutti i dispositivi possono comportarsi in modo diverso. Nel raro caso in cui ti venga bloccato l\'accesso all\'app, cancella completamente i dati dell\'app e ripristina da un backup. Siamo molto spiacenti per qualsiasi inconveniente derivanti da questo.</string>
     <string name="unfavorite">Non preferito</string>
     <string name="resume_remaining" formatted="true">%s
 \nresiduo</string>
@@ -617,9 +617,9 @@
     <string name="clipboard_unknown_error">Errore durante la copia. Copia logcat e contatta il supporto dell\'app.</string>
     <string name="ok">OK</string>
     <string name="battery_dialog_title">Disabilita ottimizzazione della batteria</string>
-    <string name="app_info_intent_error">Impossibile aprire le informazioni sull\'app CloudStream.</string>
+    <string name="app_info_intent_error">Impossibile aprire le informazioni sull\'app PluginStream.</string>
     <string name="custom_media_singluar">Media</string>
-    <string name="battery_dialog_message">Per garantire download e notifiche ininterrotti per le serie TV a cui si è abbonati, PluginStreamnecessita dell\'autorizzazione per funzionare in background. Premendo OK, verrà mostrata una finestra di dialogo di richiesta. Premi \"Consenti\".\n\nNota che questa autorizzazione non significa che CS3 scaricherà la batteria. Funzionerà in background solo quando necessario, ad esempio quando si ricevono notifiche o si scaricano video da estensioni ufficiali.</string>
+    <string name="battery_dialog_message">Per garantire download e notifiche ininterrotti per le serie TV a cui si è abbonati, PluginStreamnecessita dell\'autorizzazione per funzionare in background. Premendo OK, verrà mostrata una finestra di dialogo di richiesta. Premi \"Consenti\".\n\nNota che questa autorizzazione non significa che PluginStream scaricherà la batteria. Funzionerà in background solo quando necessario, ad esempio quando si ricevono notifiche o si scaricano video da estensioni ufficiali.</string>
     <string name="app_unrestricted_toast">L\'utilizzo della batteria dell\'app è già impostato su \"Senza restrizioni\"</string>
     <string name="music_singlar">Musica</string>
     <string name="audio_book_singular">Audiolibro</string>
@@ -628,7 +628,7 @@
     <string name="next_season_episode_format" formatted="true">L\'episodio %2$d della stagione %1$d uscirà tra</string>
     <string name="episode_action_cast_mirror">Mirror cast</string>
     <string name="player_settings_select_cast_device">Seleziona dispositivo per cast</string>
-    <string name="cs3wiki">Wiki di CloudStream</string>
+    <string name="cs3wiki">Wiki di PluginStream</string>
     <string name="pref_category_accounts">Conti</string>
     <string name="pref_category_security">Sicurezza</string>
     <string name="auth_locally">Autenticazione locale</string>

@@ -254,7 +254,6 @@ fun FlowApp(
         if (!playerSheetState.isDragging) {
             showBottomNav.value = currentRoute.value.isBottomNavRoute() &&
                     (!playerVisible || playerSheetState.currentValue != PlayerSheetValue.Expanded) &&
-                    !musicPlayerSheetState.isExpanded &&
                     !playerUiState.isFullscreen
 
             when (playerSheetState.currentValue) {
@@ -337,8 +336,11 @@ fun FlowApp(
         isMusicPlayerImmersive = currentMusicTrack != null && musicPlayerSheetState.progress > 0.5f
     )
 
-    LaunchedEffect(playerUiState.isFullscreen, playerSheetState.currentValue, playerVisible) {
-        val isExpanded = (playerSheetState.currentValue == PlayerSheetValue.Expanded && playerVisible) || playerUiState.isFullscreen
+    LaunchedEffect(playerUiState.isFullscreen, playerSheetState.currentValue, playerVisible, currentRoute.value) {
+        val isShorts = currentRoute.value == "shorts" || currentRoute.value == "savedShortsPlayer"
+        val isExpanded = (playerSheetState.currentValue == PlayerSheetValue.Expanded && playerVisible) || 
+                         playerUiState.isFullscreen || 
+                         isShorts
         onFullscreenChange(isExpanded)
     }
 

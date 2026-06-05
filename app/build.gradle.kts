@@ -88,8 +88,8 @@ android {
         applicationId = "com.betapix.pluginstream"
         minSdk = 23
         targetSdk = 36
-        versionCode = 69
-        versionName = "5.1.1"
+        versionCode = 512
+        versionName = "5.1.2"
 
         resValue("string", "commit_hash", getGitCommitHash())
 
@@ -148,6 +148,14 @@ android {
     val isStableTask = taskNames.any { it.contains("stable", ignoreCase = true) }
 
     androidComponents {
+        onVariants { variant ->
+            val vName = "5.1.2"
+            variant.outputs.forEach { output ->
+                val apkOutput = output as? com.android.build.api.variant.impl.VariantOutputImpl
+                apkOutput?.outputFileName?.set("pluginstream-phone-$vName.apk")
+            }
+        }
+
         beforeVariants { variant ->
             val flavorNames = variant.productFlavors.map { it.second }
             if (isPrereleaseTask) {

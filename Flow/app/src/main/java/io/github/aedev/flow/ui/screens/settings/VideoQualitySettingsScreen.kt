@@ -27,9 +27,9 @@ fun VideoQualitySettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     val playerPreferences = remember { PlayerPreferences(context) }
     
-    val wifiQuality by playerPreferences.defaultQualityWifi.collectAsState(initial = VideoQuality.Q_1080p)
+    val wifiQuality by playerPreferences.defaultQualityWifi.collectAsState(initial = VideoQuality.Q_480p)
     val cellularQuality by playerPreferences.defaultQualityCellular.collectAsState(initial = VideoQuality.Q_480p)
-    val musicAudioQuality by playerPreferences.musicAudioQuality.collectAsState(initial = MusicAudioQuality.AUTO)
+    val musicAudioQuality by playerPreferences.musicAudioQuality.collectAsState(initial = MusicAudioQuality.MEDIUM)
     
     val qualities = listOf(
         VideoQuality.AUTO,
