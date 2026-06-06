@@ -85,7 +85,7 @@ class SubscriptionWorkManager(val context: Context, workerParams: WorkerParamete
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setColor(context.colorFromAttribute(R.attr.colorPrimary))
-            .setSmallIcon(R.drawable.ic_pluginstream_monochrome_big)
+            .setSmallIcon(R.drawable.ic_cloudstream_monochrome_big)
 
     private val notificationManager: NotificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -97,7 +97,7 @@ class SubscriptionWorkManager(val context: Context, workerParams: WorkerParamete
                 .build()
         )
     }
-    @Suppress("DEPRECATION_ERROR")
+
     override suspend fun doWork(): Result {
         try {
 //        println("Update subscriptions!")

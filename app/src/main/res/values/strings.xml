@@ -30,16 +30,11 @@
     <string name="app_name">PluginStream</string>
     <string name="play_with_app_name">Play with PluginStream</string>
     <string name="title_home">Home</string>
-    <string name="title_flow">Flow</string>
     <string name="title_search">Search</string>
-    <string name="title_offers">Offers</string>
     <string name="title_downloads">Downloads</string>
     <string name="download_queue">Download queue</string>
     <string name="title_settings">Settings</string>
-    <string name="title_more">More</string>
     <string name="search_hint">Search…</string>
-    <string name="search_nexgama">Search in NexGama…</string>
-    <string name="welcome_nexgama">Welcome NexGama</string>
     <string name="search_hint_site" formatted="true">Search %s…</string>
     <string name="speech_recognition_unavailable">Speech recognition is not available</string>
     <string name="begin_speaking">Begin Speaking…</string>
@@ -99,10 +94,6 @@
     <string name="home_more_info">More info</string>
     <string name="home_expanded_hide">Hide</string>
     <string name="home_play">Play</string>
-    <string name="whats_new">What\'s New</string>
-    <string name="whats_new_summary">See what changed in the latest update</string>
-    <string name="whats_new_key">whats_new_key</string>
-    <string name="changelog_last_version">changelog_last_version</string>
     <string name="home_info">Info</string>
     <string name="filter_bookmarks">Filter Bookmarks</string>
     <string name="error_bookmarks_text">Bookmarks</string>
@@ -192,8 +183,6 @@
     <string name="library">Library</string>
     <string name="category_account">Accounts and Security</string>
     <string name="category_updates">Updates and Backup</string>
-    <string name="about">About</string>
-    <string name="setup_language_subtext">Choose your preferred app language</string>
     <string name="settings_info">Info</string>
     <string name="advanced_search">Advanced Search</string>
     <string name="advanced_search_des">Gives you the search results separated by provider</string>
@@ -201,6 +190,7 @@
     <string name="search_suggestions_des">Show search suggestions while typing</string>
     <string name="clear_suggestions">Clear Suggestions</string>
     <string name="show_fillers_settings">Show filler episode for anime</string>
+    <string name="show_player_metadata_overlay">Show Player Metadata Overlay</string>
     <string name="show_trailers_settings">Show trailers</string>
     <string name="kitsu_settings">Show posters from Kitsu</string>
     <string name="show_cast_in_details">Show cast panel</string>
@@ -217,32 +207,7 @@
     <string name="prerelease_install_failed">Failed to install pre-release.</string>
     <string name="apk_installer_settings">APK Installer</string>
     <string name="apk_installer_settings_des">Some devices do not support the new package installer. Try the legacy option if updates do not install.</string>
-    <string name="github">GitHub</string>
-    <string name="instagram">Instagram</string>
-    <string name="telegram">Telegram</string>
-    <string name="share_plugin">Share App</string>
-    <string name="dev_profile_label">PROFILE</string>
-    <string name="expertise_label">EXPERTISE</string>
-    <string name="philosophy_label">PHILOSOPHY</string>
-    <string name="role_label">ROLE</string>
-    <string name="dev_role">Developer &amp; UI/UX Designer</string>
-    <string name="dev_philosophy_text">Proud supporter of Free &amp; Open-Source Software.</string>
-    <string name="expertise_mobile">Mobile: Kotlin • Flutter • Jetpack Compose • React Native</string>
-    <string name="expertise_web">Web &amp; Backend: Next.js • Node.js • Python</string>
-    <string name="expertise_desktop">Desktop: Electron • Flutter • Kotlin (JVM)</string>
-    <string name="dev_profile">About</string>
-    <string name="dev_tagline">"Crafting digital solutions with clean code, elegant design, and an open-source heart."</string>
-    <string name="dev_website">Website</string>
-    <string name="category_app_feedback">Preferences</string>
-    <string name="category_support_help">SUPPORT</string>
-    <string name="category_legal_info">ABOUT &amp; LEGAL</string>
-    <string name="rate_our_app">Rate Our App</string>
-    <string name="report_a_bug">Report a Bug</string>
-    <string name="about_us">About Us</string>
-    <string name="support_faqs">Support &amp; FAQs</string>
-    <string name="contact_developer">Report a Bug</string>
-    <string name="privacy_policy">Privacy Policy</string>
-    <string name="terms_of_service">Terms of Service</string>
+    <string name="github">Github</string>
     <string name="lightnovel">Light novel app by the same devs</string>
     <string name="anim">Anime app by the same devs</string>
     <string name="discord">Join Discord</string>
@@ -323,11 +288,12 @@
     <string name="live_singular">Livestream</string>
     <string name="nsfw_singular">NSFW</string>
     <string name="other_singular">Video</string>
-    <string name="music_singlar">Music</string>
+    <string name="music_singular">Music</string>
     <string name="audio_book_singular">Audio Book</string>
-    <string name="custom_media_singluar">Media</string>
-    <string name="audio_singluar">Audio</string>
-    <string name="podcast_singluar">Podcast</string>
+    <string name="custom_media_singular">Media</string>
+    <string name="audio_singular">Audio</string>
+    <string name="podcast_singular">Podcast</string>
+    <string name="video_singular">Video</string>
     <string name="source_error">Source error</string>
     <string name="remote_error">Remote error</string>
     <string name="render_error">Renderer error</string>
@@ -410,7 +376,7 @@
     <string name="category_general">General</string>
     <string name="random_button_settings">Random Button</string>
     <string name="random_button_settings_desc">Show random button on Homepage and Library</string>
-    <string name="provider_lang_settings">Content languages</string>
+    <string name="provider_lang_settings">Provider language settings</string>
     <string name="app_layout">App Layout</string>
     <string name="preferred_media_settings">Preferred media</string>
     <string name="enable_nsfw_on_providers">Enable NSFW on supported Extensions</string>
@@ -455,7 +421,7 @@
     <string name="authenticated_user_fail" formatted="true">Could not log in at %s</string>
     <!-- ============ -->
     <string name="disable">Disable</string>
-    <string name="none">Select</string>
+    <string name="none">None</string>
     <string name="normal">Normal</string>
     <string name="all">All</string>
     <string name="max">Max</string>
@@ -499,7 +465,6 @@
     <string name="quality_blueray">Blu-ray</string>
     <string name="quality_workprint">WP</string>
     <string name="quality_dvd">DVD</string>
-
     <string name="quality_4k">4K</string>
     <string name="quality_sd">SD</string>
     <string name="quality_uhd">UHD</string>
@@ -525,6 +490,7 @@
     <string name="network_adress_example">https://example.com/example.mp4</string>
     <string name="referer">Referer (optional)</string>
     <string name="next">Next</string>
+    <string name="setup_language_subtext">Choose your preferred app language</string>
     <string name="provider_languages_tip">Which languages do you prefer? (Recommended: Select All)</string>
     <string name="previous">Previous</string>
     <string name="skip_setup">Skip setup</string>
@@ -532,6 +498,8 @@
     <string name="preferred_media_subtext">What do you want to see</string>
     <string name="setup_done">Done</string>
     <string name="extensions">Extensions</string>
+    <string name="setup_extensions_subtext">Connecting to the best providers, please wait...</string>
+    <string name="blank_repo_message">No sites are currently installed in PluginStream. Please close and reopen the app to refresh.</string>
     <string name="add_repository">Add repository</string>
     <string name="repository_name_hint">Repository name (Optional)</string>
     <string name="repository_url_hint">Repository URL or Shortcode</string>
@@ -551,14 +519,10 @@
     <string name="delete_repository_plugins">This will also delete all repository plugins</string>
     <string name="delete_repository">Delete repository</string>
     <string name="delete_plugin">Delete plugin</string>
-    <string name="setup_extensions_subtext">Connecting to the best providers, please wait...</string>
     <string name="plugins_downloaded" formatted="true">Downloaded: %d</string>
     <string name="plugins_disabled" formatted="true">Disabled: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Not downloaded: %d</string>
     <string name="plugins_updated" formatted="true">Updated %d plugins</string>
-    <string name="blank_repo_message">No sites are currently installed in PluginStream. Please close and reopen the app to refresh.
-\n
-\nAlternatively, join our Telegram or search online to add repositories.</string>
     <string name="view_public_repositories_button">View community repositories</string>
     <string name="view_public_repositories_button_short">Public list</string>
     <string name="uppercase_all_subtitles">Uppercase all subtitles</string>
@@ -595,7 +559,8 @@
     <string name="skip_type_recap">Recap</string>
     <string name="skip_type_mixed_ed">Mixed ending</string>
     <string name="skip_type_mixed_op">Mixed opening</string>
-    <string name="skip_type_creddits">Credits</string>
+    <string name="skip_type_credits">Credits</string>
+    <string name="skip_type_preview">Preview</string>
     <string name="skip_type_intro">Intro</string>
     <string name="clear_history">Clear history</string>
     <string name="history">History</string>
@@ -614,7 +579,7 @@
     <string name="battery_dialog_title">Disable Battery optimization</string>
     <string name="battery_dialog_message">To ensure uninterrupted downloads and notifications for subscribed
         TV shows, PluginStream needs permission to run in background. By pressing "OK", you\'ll be shown a request dialog.
-        Please press \'Allow\'.\n\nPlease note, this permission does not mean PluginStream will drain your battery. It will only operate in the background when necessary, such as
+        Please press \'Allow\'.\n\nPlease note, this permission does not mean CS3 will drain your battery. It will only operate in the background when necessary, such as
         when receiving notifications or downloading videos from official extensions.</string>
     <string name="app_unrestricted_toast">App battery usage is already set to unrestricted</string>
     <string name="app_info_intent_error">Unable to open PluginStream\'s App info.</string>
@@ -816,29 +781,28 @@
         <item quantity="one">%d download queued</item>
         <item quantity="other">%d downloads queued</item>
     </plurals>
-    <string name="game_icon">Game Icon</string>
-    <string name="games">Games</string>
-    <string name="search_games">Search games...</string>
-    <string name="dev_handle">@PluginStream</string>
-    <string name="delete_all_extensions_warning">Warning ⚠️\n\nDeleting all extensions will reset everything. You will need to restart the app (close and reopen) to ensure all plugins are reinstalled fresh.</string>
-    <string name="delete_all_extensions">Delete All</string>
-    <string name="close">Close</string>
-    <string name="category_account_security">Account &amp; Security</string>
-    <string name="category_appearance_playback">Appearance &amp; Playback</string>
-    <string name="category_system_updates">System &amp; Updates</string>
-    <string name="category_support">Support</string>
-    <string name="category_about_legal">About &amp; Legal</string>
-    <string name="category_preferences">Preferences</string>
+    <string name="player_is_live">Live</string>
 
+    <string name="settings">Settings</string>
     <string name="general">General</string>
     <string name="providers">Providers</string>
     <string name="ui">UI</string>
     <string name="player">Player</string>
     <string name="updates">Updates</string>
+    <string name="category_account_security">Accounts and Security</string>
+    <string name="category_appearance_playback">Appearance and Playback</string>
+    <string name="category_preferences">Preferences</string>
+    <string name="category_system_updates">System and Updates</string>
+    <string name="category_support">Support</string>
+    <string name="category_about_legal">About and Legal</string>
+    <string name="rate_our_app">Rate our App</string>
     <string name="share_app">Share App</string>
-    <string name="support_faq">Support &amp; FAQ</string>
+    <string name="report_a_bug">Report a Bug</string>
+    <string name="support_faq">FAQ</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
     <string name="system_compatibility">System Compatibility</string>
-    <string name="system_compatibility_summary">Check if your device has enough RAM and storage for a smooth experience.</string>
+    <string name="system_compatibility_summary">Check if your device is compatible with all features</string>
     <string name="app_info_cache">App Info &amp; Cache</string>
-    <string name="app_info_cache_summary">Manage storage, clear cache, or check app permissions.</string>
+    <string name="app_info_cache_summary">View app information and manage cache</string>
 </resources>

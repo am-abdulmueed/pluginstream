@@ -37,27 +37,27 @@ class ContactDeveloperDialog : BottomSheetDialogFragment() {
         
         view.findViewById<View>(R.id.contact_streaming_support).setOnClickListener {
             val logs = AppDiagnostics.readLogs(50)
-            val subject = "[PluginStream-Stream] Support/Request"
+            val subject = "[CloudStream-Stream] Support/Request"
             val body = "Issue/Request Type: [Streaming Bug / New Provider Request]\n\nDetails:\n[Describe which link or provider is not working...]\n\n${AppDiagnostics.getDeviceInfo()}\n\n--- Recent Logs ---\n$logs"
             sendEmailIntent(requireContext(), subject, body) {
                 Toast.makeText(requireContext(), "No email client found", Toast.LENGTH_SHORT).show()
             }
             dismiss()
         }
-        
+
         view.findViewById<View>(R.id.contact_games_support).setOnClickListener {
             val logs = AppDiagnostics.readLogs(50)
-            val subject = "[PluginStream-Games] New Game/Bug Report"
+            val subject = "[CloudStream-Games] New Game/Bug Report"
             val body = "Action: [Add New Game / Game Not Loading]\n\nGame Name:\nGenre:\nAdditional Info: [Provide link or description here]\n\nNote: Thanks for making the game hub better!\n\n${AppDiagnostics.getDeviceInfo()}\n\n--- Recent Logs ---\n$logs"
             sendEmailIntent(requireContext(), subject, body) {
                 Toast.makeText(requireContext(), "No email client found", Toast.LENGTH_SHORT).show()
             }
             dismiss()
         }
-        
+
         view.findViewById<View>(R.id.contact_general_bug).setOnClickListener {
             val logs = AppDiagnostics.readLogs(100)
-            val subject = "⚠️ Bug Report - PluginStream v${BuildConfig.VERSION_NAME}"
+            val subject = "⚠️ Bug Report - CloudStream v${BuildConfig.VERSION_NAME}"
             val body = "${AppDiagnostics.getDeviceInfo()}\n---\nProblem Description:\n[Describe the problem you are facing...]\n---\nLatest Logs:\n$logs\n\nPlease fix this as soon as possible. Thanks!"
             sendEmailIntent(requireContext(), subject, body) {
                 Toast.makeText(requireContext(), "No email client found", Toast.LENGTH_SHORT).show()

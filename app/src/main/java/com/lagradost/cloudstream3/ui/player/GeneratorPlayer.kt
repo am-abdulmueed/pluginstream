@@ -87,6 +87,7 @@ import com.lagradost.cloudstream3.ui.result.EpisodeAdapter
 import com.lagradost.cloudstream3.ui.result.FOCUS_SELF
 import com.lagradost.cloudstream3.ui.result.ResultEpisode
 import com.lagradost.cloudstream3.ui.result.ResultFragment
+import com.lagradost.cloudstream3.ui.result.ResultFragment.bindLogo
 import com.lagradost.cloudstream3.ui.result.ResultViewModel2
 import com.lagradost.cloudstream3.ui.result.SyncViewModel
 import com.lagradost.cloudstream3.ui.result.setLinearListLayout
@@ -98,14 +99,13 @@ import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
 import com.lagradost.cloudstream3.ui.subtitles.SUBTITLE_AUTO_SELECT_KEY
 import com.lagradost.cloudstream3.ui.subtitles.SubtitlesFragment
 import com.lagradost.cloudstream3.ui.subtitles.SubtitlesFragment.Companion.getAutoSelectLanguageTagIETF
-import com.lagradost.cloudstream3.utils.AdsManager
+import com.lagradost.cloudstream3.utils.AppContextUtils.getShortSeasonText
 import com.lagradost.cloudstream3.utils.AppContextUtils.html
 import com.lagradost.cloudstream3.utils.AppContextUtils.sortSubs
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.runOnMainThread
 import com.lagradost.cloudstream3.utils.DataStoreHelper
 import com.lagradost.cloudstream3.utils.DataStoreHelper.getViewPos
-import com.lagradost.cloudstream3.utils.EpisodeSkip
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
@@ -123,6 +123,7 @@ import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.downloader.DownloadUtils.getImageBitmapFromUrl
 import com.lagradost.cloudstream3.utils.setText
 import com.lagradost.cloudstream3.utils.txt
+import com.lagradost.cloudstream3.utils.videoskip.VideoSkipStamp
 import com.lagradost.safefile.SafeFile
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -130,6 +131,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.util.Calendar
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 @OptIn(UnstableApi::class)
 class GeneratorPlayer : FullScreenPlayer() {
@@ -138,11 +142,18 @@ class GeneratorPlayer : FullScreenPlayer() {
         const val CHANNEL_ID = 7340
         const val STOP_ACTION = "stopcs3"
 
-        private var lastUsedGenerator: IGenerator? = null
-        fun newInstance(generator: IGenerator, syncData: HashMap<String, String>? = null): Bundle {
+        private val generators = ConcurrentHashMap<String, VideoGenerator<*>>()
+        fun newInstance(
+            generator: VideoGenerator<*>,
+            index: Int,
+            syncData: HashMap<String, String>? = null
+        ): Bundle {
             Log.i(TAG, "newInstance = $syncData")
-            lastUsedGenerator = generator
+            val uuid = UUID.randomUUID().toString()
+            generators[uuid] = generator
             return Bundle().apply {
+                putString("uuid", uuid)
+                putInt("index", index)
                 if (syncData != null) putSerializable("syncData", syncData)
             }
         }
@@ -161,61 +172,24 @@ class GeneratorPlayer : FullScreenPlayer() {
 
     private lateinit var viewModel: PlayerGeneratorViewModel //by activityViewModels()
     private lateinit var sync: SyncViewModel
-    private var currentLinks: Set<Pair<ExtractorLink?, ExtractorUri?>> = setOf()
-    private var currentSubs: Set<SubtitleData> = setOf()
 
     private var currentSelectedLink: Pair<ExtractorLink?, ExtractorUri?>? = null
     private var currentSelectedSubtitles: SubtitleData? = null
-    private var currentMeta: Any? = null
-    private var nextMeta: Any? = null
-    private var isActive: Boolean = false
+    private val currentMeta: Any? get() = viewModel.state.generatorState?.meta
+    private val nextMeta: Any? get() = viewModel.state.generatorState?.nextMeta
+
+    private var isPlayerActive: AtomicBoolean = AtomicBoolean(false)
     private var isNextEpisode: Boolean = false // this is used to reset the watch time
 
     private var preferredAutoSelectSubtitles: String? = null // null means do nothing, "" means none
-
-    private var binding: FragmentPlayerBinding? = null
-    private var allMeta: List<ResultEpisode>? = null
-
-    private var interstitialAdJob: Job? = null
-    private var lastAdShowTime: Long = 0
-    private val AD_INTERVAL_MS = 12 * 60 * 1000L // Temporary: 1 minute for testing (Original: 12 minutes)
-
-    private fun startInterstitialAdTimer() {
-        interstitialAdJob?.cancel()
-        interstitialAdJob = viewModel.viewModelScope.launch {
-            while (isActive) {
-                delay(1000) 
-                if (player.getIsPlaying()) {
-                    val currentTime = System.currentTimeMillis()
-                    if (lastAdShowTime == 0L) {
-                        lastAdShowTime = currentTime
-                    }
-
-                    if (currentTime - lastAdShowTime >= AD_INTERVAL_MS) {
-                        runOnMainThread {
-                            activity?.let { act ->
-                                val wasPlaying = player.getIsPlaying()
-                                if (wasPlaying) player.handleEvent(CSPlayerEvent.Pause)
-                                
-                                AdsManager.showInterstitialAd(act) {
-                                    lastAdShowTime = System.currentTimeMillis()
-                                    if (wasPlaying) player.handleEvent(CSPlayerEvent.Play)
-                                }
-                            }
-                        }
-                    }
-                }
+    private val allMeta: List<ResultEpisode>?
+        get() = viewModel.state.generatorState?.allMeta?.filterIsInstance<ResultEpisode>()
+            ?.map { episode ->
+                // Refresh all the episodes watch duration
+                getViewPos(episode.id)?.let { data ->
+                    episode.copy(position = data.position, duration = data.duration)
+                } ?: episode
             }
-        }
-    }
-
-    private fun startLoading() {
-        player.release()
-        currentSelectedSubtitles = null
-        isActive = false
-        binding?.overlayLoadingSkipButton?.isVisible = false
-        binding?.playerLoadingOverlay?.isVisible = true
-    }
 
     private fun setSubtitles(subtitle: SubtitleData?, userInitiated: Boolean): Boolean {
         // If subtitle is changed and user initiated -> Save the language
@@ -247,7 +221,7 @@ class GeneratorPlayer : FullScreenPlayer() {
         playerBinding?.playerTracksBtt?.isVisible =
             tracks.allVideoTracks.size > 1 || tracks.allAudioTracks.size > 1
         // Only set the preferred language if it is available.
-        // Otherwise it may give some users audio track init failed!
+        // Otherwise, it may give some users audio track init failed!
         if (tracks.allAudioTracks.any { it.language == preferredAudioTrackLanguage }) {
             player.setPreferredAudioTrack(preferredAudioTrackLanguage)
         }
@@ -266,7 +240,7 @@ class GeneratorPlayer : FullScreenPlayer() {
     }
 
     private fun getPos(): Long {
-        val durPos = getViewPos(viewModel.getId()) ?: return 0L
+        val durPos = getViewPos(viewModel.state.generatorState?.id) ?: return 0L
         if (durPos.duration == 0L) return 0L
         if (durPos.position * 100L / durPos.duration > 95L) {
             return 0L
@@ -344,13 +318,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                 override fun getCurrentContentText(player: Player): CharSequence? {
                     return when (val meta = currentMeta) {
                         is ResultEpisode -> {
-                            val apiName = meta.apiName.replace("moviebox", "Max", ignoreCase = true)
-                                .replace("moveibox", "Max", ignoreCase = true)
-                                .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
-                                .replace("castle", "PluginStream", ignoreCase = true)
-                                .replace("castel", "PluginStream", ignoreCase = true)
-                                .replace("caslte", "PluginStream", ignoreCase = true)
-                            "${meta.name} - $apiName"
+                            meta.name
                         }
 
                         is ExtractorUri -> {
@@ -387,16 +355,13 @@ class GeneratorPlayer : FullScreenPlayer() {
                         }
 
                         // retry several times with a preview in case the preview generator is slow
-                        for (i in 0..10) {
+                        repeat(10) {
                             val preview = this@GeneratorPlayer.player.getPreview(0.5f)
-                            if (preview == null) {
-                                delay(1000L)
-                                continue
+                            if (preview != null) {
+                                callback.onBitmap(preview)
+                                return@repeat
                             }
-                            callback.onBitmap(
-                                preview
-                            )
-                            break
+                            delay(1000L)
                         }
                     }
 
@@ -412,6 +377,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                     return mutableMapOf(
                         STOP_ACTION to NotificationCompat.Action(
                             R.drawable.baseline_stop_24,
+                            @SuppressLint("PrivateResource")
                             context.getString(androidx.media3.ui.R.string.exo_controls_stop_description),
                             createBroadcastIntent(STOP_ACTION, context, instanceId)
                         )
@@ -425,9 +391,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                 override fun onCustomAction(player: Player, action: String, intent: Intent) {
                     when (action) {
                         STOP_ACTION -> {
-                            exitFullscreen()
-                            this@GeneratorPlayer.player.release()
-                            activity?.popCurrentPage()
+                            exitPlayer()
                         }
                     }
                 }
@@ -527,9 +491,9 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
     }
 
-    private fun loadLink(link: Pair<ExtractorLink?, ExtractorUri?>?, sameEpisode: Boolean) {
+    private fun loadLink(link: VideoLink?, sameEpisode: Boolean) {
         if (link == null) return
-
+        isPlayerActive.set(true)
         // manage UI
         binding?.playerLoadingOverlay?.isVisible = false
         val isTorrent =
@@ -545,26 +509,17 @@ class GeneratorPlayer : FullScreenPlayer() {
 
         uiReset()
         currentSelectedLink = link
-        currentMeta = viewModel.getMeta()
-        nextMeta = viewModel.getNextMeta()
-        allMeta = viewModel.getAllMeta()?.filterIsInstance<ResultEpisode>()?.map { episode ->
-            // Refresh all the episodes watch duration
-            getViewPos(episode.id)?.let { data ->
-                episode.copy(position = data.position, duration = data.duration)
-            } ?: episode
-        }
         //  setEpisodes(viewModel.getAllMeta() ?: emptyList())
-        isActive = true
         setPlayerDimen(null)
         setTitle()
         if (!sameEpisode)
             hasRequestedStamps = false
 
         loadExtractorJob(link.first)
-        startInterstitialAdTimer()
         // load player
         context?.let { ctx ->
             val (url, uri) = link
+            val subtitles = viewModel.state.subtitles
             player.loadPlayer(
                 ctx,
                 sameEpisode,
@@ -573,11 +528,11 @@ class GeneratorPlayer : FullScreenPlayer() {
                 startPosition = if (sameEpisode) null else {
                     if (isNextEpisode) 0L else getPos()
                 },
-                currentSubs,
+                subtitles,
                 (if (sameEpisode) currentSelectedSubtitles else null) ?: getAutoSelectSubtitle(
-                    currentSubs, settings = true, downloads = true
+                    subtitles, settings = true, downloads = true
                 ),
-                preview = isFullScreenPlayer
+                preview = true
             )
         }
 
@@ -585,13 +540,6 @@ class GeneratorPlayer : FullScreenPlayer() {
             player.addTimeStamps(emptyList()) // clear stamps
             // Resets subtitle delay, as we watch some other content
             player.setSubtitleOffset(0)
-        }
-    }
-
-    private fun sortLinks(qualityProfile: Int): List<Pair<ExtractorLink?, ExtractorUri?>> {
-        return currentLinks.sortedBy {
-            // negative because we want to sort highest quality first
-            -getLinkPriority(qualityProfile, it.first)
         }
     }
 
@@ -673,7 +621,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                     imageViewEnd.setImageDrawable(drawableEnd)
                 }
 
-                @SuppressLint("SetTextI18n")
                 override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                     val view = convertView ?: LayoutInflater.from(context).inflate(layout, null)
 
@@ -689,6 +636,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                         item?.let { fromTagToLanguageName(it.lang) ?: it.lang } ?: ""
                     val providerSuffix =
                         if (isSingleProvider || item == null) "" else " · ${item.source}"
+                    @SuppressLint("SetTextI18n")
                     secondaryTextView?.text = language + providerSuffix
 
                     setHearingImpairedIcon(drawableEnd, position)
@@ -920,22 +868,21 @@ class GeneratorPlayer : FullScreenPlayer() {
         vararg subtitleData: SubtitleData
     ) {
         if (subtitleData.isEmpty()) return
-        val selectedSubtitle = subtitleData.first()
         val ctx = context ?: return
-
-        val subs = currentSubs + subtitleData
+        val selectedSubtitle = subtitleData.first()
+        viewModel.addSubtitles(subtitleData.toSet())
 
         // this is used instead of observe(viewModel._currentSubs), because observe is too slow
-        player.setActiveSubtitles(subs)
+        player.setActiveSubtitles(viewModel.state.subtitles)
 
         // Save current time as to not reset player to 00:00
         player.saveData()
         player.reloadPlayer(ctx)
 
         setSubtitles(selectedSubtitle, false)
-        viewModel.addSubtitles(subtitleData.toSet())
 
         selectSourceDialog?.dismissSafe()
+        selectSourceDialog = null
 
         showToast(
             String.format(ctx.getString(R.string.player_loaded_subtitles), selectedSubtitle.name),
@@ -975,10 +922,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                 addAndSelectSubtitles(subtitleData)
             }
         }
-
-    private var selectSourceDialog: Dialog? = null
-    // var selectTracksDialog: AlertDialog? = null
-
 
     /** Will toast both when an error is found and when a subtitle is selected,
      * so only use from a user click and not a background process */
@@ -1035,7 +978,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                     }
 
                     // checks for both a race condition and if any of the subs generated is new
-                    if (this.isActive && !currentSubs.containsAll(subtitles) && !hasSelectASubtitle) {
+                    if (this.isActive && !viewModel.state.subtitles.containsAll(subtitles) && !hasSelectASubtitle) {
                         hasSelectASubtitle = true
                         runOnMainThread {
                             addAndSelectSubtitles(*subtitles.toTypedArray())
@@ -1058,7 +1001,7 @@ class GeneratorPlayer : FullScreenPlayer() {
             context?.let { ctx ->
                 val isPlaying = player.getIsPlaying()
                 player.handleEvent(CSPlayerEvent.Pause, PlayerEventSource.UI)
-                val currentSubtitles = sortSubs(currentSubs)
+                val currentSubtitles = sortSubs(viewModel.state.subtitles)
 
                 val sourceDialog = Dialog(ctx, R.style.DialogFullscreenPlayer)
                 val binding =
@@ -1100,7 +1043,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                 }
 
                 if (subsProvidersIsActive) {
-                    val currentLoadResponse = viewModel.getLoadResponse()
+                    val currentLoadResponse = viewModel.state.generatorState?.response
 
                     val loadFromOpenSubsFooter: TextView = layoutInflater.inflate(
                         R.layout.sort_bottom_footer_add_choice, null
@@ -1112,6 +1055,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                     loadFromOpenSubsFooter.setOnClickListener {
                         shouldDismiss = false
                         sourceDialog.dismissSafe(activity)
+                        selectSourceDialog = null
                         openOnlineSubPicker(it.context, currentLoadResponse) {
                             dismiss()
                         }
@@ -1132,6 +1076,7 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                         loadFromFirstSubsFooter.setOnClickListener {
                             sourceDialog.dismissSafe(activity)
+                            selectSourceDialog = null
                             showToast(R.string.loading)
                             addFirstSub(
                                 SubtitleSearch(
@@ -1156,7 +1101,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                 var sortedUrls = emptyList<Pair<ExtractorLink?, ExtractorUri?>>()
 
                 fun refreshLinks(qualityProfile: Int) {
-                    sortedUrls = sortLinks(qualityProfile)
+                    sortedUrls = viewModel.state.sortLinks(qualityProfile)
                     if (sortedUrls.isEmpty()) {
                         sourceDialog.findViewById<LinearLayout>(R.id.sort_sources_holder)?.isGone =
                             true
@@ -1307,6 +1252,7 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                 binding.cancelBtt.setOnClickListener {
                     sourceDialog.dismissSafe(activity)
+                    this.selectSourceDialog = null
                 }
 
                 fun setProfileName(profile: Int) {
@@ -1320,16 +1266,28 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                 binding.profilesClickSettings.setOnClickListener {
                     val activity = activity ?: return@setOnClickListener
-                    QualityProfileDialog(
+                    val dialog = QualityProfileDialog(
                         activity,
                         R.style.DialogFullscreenPlayer,
-                        currentLinks.mapNotNull { it.first?.let { extractorLink -> LinkSource(extractorLink) } },
+                        viewModel.state.links.mapNotNull {
+                            it.first?.let { extractorLink ->
+                                LinkSource(
+                                    extractorLink
+                                )
+                            }
+                        },
                         currentQualityProfile
                     ) { profile ->
                         currentQualityProfile = profile.id
                         setProfileName(profile.id)
-                        refreshLinks(profile.id)
-                    }.show()
+                    }
+
+                    dialog.setOnDismissListener {
+                        viewModel.state.clearSortedLinksCache()
+                        refreshLinks(currentQualityProfile)
+                    }
+
+                    dialog.show()
                 }
 
                 binding.subtitlesEncodingFormat.apply {
@@ -1357,6 +1315,7 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                     shouldDismiss = false
                     sourceDialog.dismissSafe(activity)
+                    selectSourceDialog = null
 
                     val index = prefValues.indexOf(currentPrefMedia)
                     activity?.showDialog(
@@ -1395,6 +1354,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                         }
                     }
                     sourceDialog.dismissSafe(activity)
+                    selectSourceDialog = null
                 }
             }
         } catch (e: Exception) {
@@ -1418,6 +1378,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                 val binding: PlayerSelectTracksBinding =
                     PlayerSelectTracksBinding.inflate(LayoutInflater.from(ctx), null, false)
                 val trackDialog = Dialog(ctx, R.style.DialogFullscreenPlayer)
+                this.selectTrackDialog = trackDialog
                 trackDialog.setContentView(binding.root)
                 trackDialog.show()
 
@@ -1470,11 +1431,12 @@ class GeneratorPlayer : FullScreenPlayer() {
                 }
 
                 var audioIndexStart = currentAudioTracks.indexOfFirst { track ->
-                    track.id == tracks.currentAudioTrack?.id && 
-                    track.formatIndex == tracks.currentAudioTrack?.formatIndex
+                    track.id == tracks.currentAudioTrack?.id &&
+                            track.formatIndex == tracks.currentAudioTrack?.formatIndex
                 }.coerceAtLeast(0)
 
-                val audioArrayAdapter = ArrayAdapter<String>(ctx, R.layout.sort_bottom_single_choice)
+                val audioArrayAdapter =
+                    ArrayAdapter<String>(ctx, R.layout.sort_bottom_single_choice)
 
                 audioArrayAdapter.addAll(
                     currentAudioTracks.mapIndexed { _, track ->
@@ -1482,7 +1444,9 @@ class GeneratorPlayer : FullScreenPlayer() {
                         val language = (
                                 track.language?.trim()?.let { raw ->
                                     fromTagToLanguageName(raw)
-                                        ?: fromTagToLanguageName(raw.replace('_','-').substringBefore('-').lowercase())
+                                        ?: fromTagToLanguageName(
+                                            raw.replace('_', '-').substringBefore('-').lowercase()
+                                        )
                                         ?: raw
                                 }
                                     ?: track.label
@@ -1504,7 +1468,8 @@ class GeneratorPlayer : FullScreenPlayer() {
                         }
 
                         listOfNotNull(
-                            language.takeIf { it.isNotBlank() }?.replaceFirstChar { it.uppercaseChar() },
+                            language.takeIf { it.isNotBlank() }
+                                ?.replaceFirstChar { it.uppercaseChar() },
                             channels.takeIf { it.isNotBlank() },
                             codec.takeIf { it.isNotBlank() }?.uppercase()
                         ).joinToString(" • ")
@@ -1526,12 +1491,13 @@ class GeneratorPlayer : FullScreenPlayer() {
 
                 binding.cancelBtt.setOnClickListener {
                     trackDialog.dismissSafe(activity)
+                    this.selectTrackDialog = null
                 }
 
                 binding.applyBtt.setOnClickListener {
                     val currentTrack = currentAudioTracks.getOrNull(audioIndexStart)
                     player.setPreferredAudioTrack(
-                        currentTrack?.language, 
+                        currentTrack?.language,
                         currentTrack?.id,
                         currentTrack?.formatIndex,
                     )
@@ -1543,13 +1509,13 @@ class GeneratorPlayer : FullScreenPlayer() {
                         player.setMaxVideoSize(width, height, currentVideo?.id)
                     }
                     trackDialog.dismissSafe(activity)
+                    this.selectTrackDialog = null
                 }
             }
         } catch (e: Exception) {
             logError(e)
         }
     }
-
 
     override fun playerError(exception: Throwable) {
         val currentUrl =
@@ -1580,73 +1546,94 @@ class GeneratorPlayer : FullScreenPlayer() {
     }
 
     private fun startPlayer() {
-        if (isActive) return // we don't want double load when you skip loading
+        // We don't want double load when you skip loading
+        if (isPlayerActive.get()) {
+            return
+        }
 
-        val links = sortLinks(currentQualityProfile)
+        val links = viewModel.state.sortLinks(currentQualityProfile)
         if (links.isEmpty()) {
             noLinksFound()
             return
         }
+        // Atomic operation to prevent double loading
+        if (!isPlayerActive.compareAndSet(false, true)) {
+            return
+        }
         loadLink(links.first(), false)
+        showPlayerMetadata()
+    }
+
+    private fun showPlayerMetadata() {
+        val overlay = playerBinding?.playerMetadataScrim ?: return
+
+        val titleView = overlay.findViewById<TextView>(R.id.player_movie_title)
+        val logoView = overlay.findViewById<ImageView>(R.id.player_movie_logo)
+        val metaView = overlay.findViewById<TextView>(R.id.player_movie_meta)
+        val descView = overlay.findViewById<TextView>(R.id.player_movie_overview)
+
+        val load = viewModel.state.generatorState?.response ?: return
+        val episode = currentMeta as? ResultEpisode
+        titleView.text = load.name
+
+        bindLogo(
+            url = load.logoUrl,
+            headers = load.posterHeaders,
+            titleView = titleView,
+            logoView = logoView
+        )
+
+        val meta = arrayOf(
+            load.tags?.takeIf { it.isNotEmpty() }?.joinToString(", "),
+            load.year?.toString(),
+            if (!load.type.isMovieType())
+                context?.getShortSeasonText(
+                    episode = episode?.episode,
+                    season = episode?.season
+                )
+            else null,
+            load.score?.let { "⭐ $it" }
+        ).filterNotNull()
+            .joinToString(" • ")
+
+        metaView.text = meta
+        metaView.isVisible = meta.isNotBlank()
+
+
+        val description = load.plot
+
+        if (!description.isNullOrBlank()) {
+            descView.isVisible = true
+            descView.text = description
+        } else {
+            descView.isVisible = false
+
+        }
     }
 
     override fun nextEpisode() {
         if (viewModel.hasNextEpisode() == true) {
-            val act = activity
-            if (act != null) {
-                moviePlayCount++
-                if (moviePlayCount >= 3) {
-                    AdsManager.showRewardedAd(act) {
-                        moviePlayCount = 0
-                        isNextEpisode = true
-                        player.release()
-                        viewModel.loadLinksNext()
-                    }
-                } else {
-                    isNextEpisode = true
-                    player.release()
-                    viewModel.loadLinksNext()
-                }
-            } else {
-                isNextEpisode = true
-                player.release()
-                viewModel.loadLinksNext()
-            }
+            isNextEpisode = true
+            releasePlayer()
+            viewModel.loadLinksNext()
         }
     }
 
     override fun prevEpisode() {
         if (viewModel.hasPrevEpisode() == true) {
-            val act = activity
-            if (act != null) {
-                moviePlayCount++
-                if (moviePlayCount >= 3) {
-                    AdsManager.showRewardedAd(act) {
-                        moviePlayCount = 0
-                        isNextEpisode = true
-                        player.release()
-                        viewModel.loadLinksPrev()
-                    }
-                } else {
-                    isNextEpisode = true
-                    player.release()
-                    viewModel.loadLinksPrev()
-                }
-            } else {
-                isNextEpisode = true
-                player.release()
-                viewModel.loadLinksPrev()
-            }
+            isNextEpisode = true
+            releasePlayer()
+            viewModel.loadLinksPrev()
         }
     }
 
     override fun hasNextMirror(): Boolean {
-        val links = sortLinks(currentQualityProfile)
+        val links = viewModel.state.sortLinks(currentQualityProfile)
         return links.isNotEmpty() && links.indexOf(currentSelectedLink) + 1 < links.size
     }
 
     override fun nextMirror() {
-        val links = sortLinks(currentQualityProfile)
+        val links = viewModel.state.sortLinks(currentQualityProfile)
         if (links.isEmpty()) {
             noLinksFound()
             return
@@ -1664,7 +1651,6 @@ class GeneratorPlayer : FullScreenPlayer() {
     override fun onDestroy() {
         ResultFragment.updateUI()
         currentVerifyLink?.cancel()
-        interstitialAdJob?.cancel()
         super.onDestroy()
     }
 
@@ -1694,7 +1680,7 @@ class GeneratorPlayer : FullScreenPlayer() {
         val percentage = position * 100L / duration
 
         DataStoreHelper.setViewPosAndResume(
-            viewModel.getId(),
+            viewModel.state.generatorState?.id,
             position,
             duration,
             currentMeta,
@@ -1746,14 +1732,18 @@ class GeneratorPlayer : FullScreenPlayer() {
     ): SubtitleData? {
         val langCode = preferredAutoSelectSubtitles ?: return null
         if (downloads) {
-            return sortSubs(subtitles).firstOrNull { it.origin == SubtitleOrigin.DOWNLOADED_FILE && it.matchesLanguageCode(langCode) }
+            sortSubs(subtitles).firstOrNull {
+                it.origin == SubtitleOrigin.DOWNLOADED_FILE && it.matchesLanguageCode(
+                    langCode
+                )
+            }?.let { return it }
         }
 
         if (!settings) return null
 
         return sortSubs(subtitles).firstOrNull { it.matchesLanguageCode(langCode) }
     }
-    
+
     private fun autoSelectFromSettings(): Boolean {
         // auto select subtitle based on settings
         val langCode = preferredAutoSelectSubtitles
@@ -1770,7 +1760,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                 }
             } else if (!langCode.isNullOrEmpty()) {
                 getAutoSelectSubtitle(
-                    currentSubs, settings = true, downloads = false
+                    viewModel.state.subtitles, settings = true, downloads = false
                 )?.let { sub ->
                     if (setSubtitles(sub, false)) {
                         player.saveData()
@@ -1784,20 +1774,20 @@ class GeneratorPlayer : FullScreenPlayer() {
         return false
     }
 
-    private fun autoSelectFromDownloads(): Boolean {
-        if (player.getCurrentPreferredSubtitle() == null) {
-            getAutoSelectSubtitle(currentSubs, settings = false, downloads = true)?.let { sub ->
-                context?.let { ctx ->
-                    if (setSubtitles(sub, false)) {
-                        player.saveData()
-                        player.reloadPlayer(ctx)
-                        player.handleEvent(CSPlayerEvent.Play)
-                        return true
-                    }
-                }
-            }
+    private fun autoSelectFromDownloads() {
+        if (player.getCurrentPreferredSubtitle() != null) {
+            return
         }
-        return false
+        val sub =
+            getAutoSelectSubtitle(viewModel.state.subtitles, settings = false, downloads = true)
+                ?: return
+        val ctx = context ?: return
+        if (!setSubtitles(sub, false)) {
+            return
+        }
+        player.saveData()
+        player.reloadPlayer(ctx)
+        player.handleEvent(CSPlayerEvent.Play)
     }
 
     private fun autoSelectSubtitles() {
@@ -1826,7 +1816,7 @@ class GeneratorPlayer : FullScreenPlayer() {
 
         when (val meta = currentMeta) {
             is ResultEpisode -> {
-                headerName = meta.headerName.replace("moviebox", "MAX", ignoreCase = true).replace("moveibox", "MAX", ignoreCase = true)
+                headerName = meta.headerName
                 subName = meta.name
                 episode = meta.episode
                 season = meta.season
@@ -1834,7 +1824,7 @@ class GeneratorPlayer : FullScreenPlayer() {
             }
 
             is ExtractorUri -> {
-                headerName = meta.headerName?.replace("moviebox", "MAX", ignoreCase = true)?.replace("moveibox", "MAX", ignoreCase = true)
+                headerName = meta.headerName
                 subName = meta.name
                 episode = meta.episode
                 season = meta.season
@@ -1863,8 +1853,6 @@ class GeneratorPlayer : FullScreenPlayer() {
         return ""
     }
 
-
-    @SuppressLint("SetTextI18n")
     fun setTitle() {
         var playerVideoTitle = getPlayerVideoTitle()
 
@@ -1883,13 +1871,12 @@ class GeneratorPlayer : FullScreenPlayer() {
 
         playerBinding?.playerEpisodeFillerHolder?.isVisible = isFiller ?: false
         playerBinding?.playerVideoTitle?.text = playerVideoTitle
-        playerBinding?.offlinePin?.isVisible = lastUsedGenerator is DownloadFileGenerator
+        playerBinding?.offlinePin?.isVisible = viewModel.generator is DownloadFileGenerator
     }
 
-    @SuppressLint("SetTextI18n")
     fun setPlayerDimen(widthHeight: Pair<Int, Int>?) {
         val resolution = widthHeight?.let { "${it.first}x${it.second}" }
-        val name = (currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name)?.replace("moviebox", "MAX", ignoreCase = true)?.replace("moveibox", "MAX", ignoreCase = true)
+        val name = currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name
         val title = getHeaderName()
 
         val result = listOfNotNull(
@@ -1998,29 +1985,13 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        // this is used instead of layout-television to follow the settings and some TV devices are not classified as TV for some reason
-        layout =
-            if (isLayout(TV or EMULATOR)) R.layout.fragment_player_tv else R.layout.fragment_player
-
-        viewModel = ViewModelProvider(this)[PlayerGeneratorViewModel::class.java]
-        sync = ViewModelProvider(this)[SyncViewModel::class.java]
-
-        viewModel.attachGenerator(lastUsedGenerator)
-        unwrapBundle(savedInstanceState)
-        unwrapBundle(arguments)
-
-        val root = super.onCreateView(inflater, container, savedInstanceState) ?: return null
-        binding = FragmentPlayerBinding.bind(root)
-        return root
-    }
-
-    override fun onDestroyView() {
-        binding = null
-        super.onDestroyView()
-    }
+    /**
+     * This is used instead of layout-television to follow the
+     * settings and some TV devices are not classified as TV
+     * for some reason.
+     */
+    override fun pickLayout(): Int =
+        if (isLayout(TV or EMULATOR)) R.layout.fragment_player_tv else R.layout.fragment_player
 
     var skipAnimator: ValueAnimator? = null
     var skipIndex = 0
@@ -2041,6 +2012,12 @@ class GeneratorPlayer : FullScreenPlayer() {
             skipAnimator?.cancel()
             isVisible = true
 
+            /** Focus instantly to make the focus color appear instantly */
+            if (show && !isShowing) {
+                // Automatically request focus if the menu is not opened
+                playerBinding?.skipChapterButton?.requestFocus()
+            }
+
             // just in case
             val lay = layoutParams
             lay.width = from
@@ -2049,12 +2026,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                 from, to
             ).apply {
                 addListener(onEnd = {
-                    if (show) {
-                        if (!isShowing) {
-                            // Automatically request focus if the menu is not opened
-                            playerBinding?.skipChapterButton?.requestFocus()
-                        }
-                    } else {
+                    if (!show) {
                         playerBinding?.skipChapterButton?.isVisible = false
                         if (!isShowing) {
                             // Automatically return focus to play pause
@@ -2074,11 +2046,11 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
     }
 
-    override fun onTimestampSkipped(timestamp: EpisodeSkip.SkipStamp) {
+    override fun onTimestampSkipped(timestamp: VideoSkipStamp) {
         displayTimeStamp(false)
     }
 
-    override fun onTimestamp(timestamp: EpisodeSkip.SkipStamp?) {
+    override fun onTimestamp(timestamp: VideoSkipStamp?) {
         if (timestamp != null) {
             playerBinding?.skipChapterButton?.setText(timestamp.uiText)
             displayTimeStamp(true)
@@ -2093,8 +2065,9 @@ class GeneratorPlayer : FullScreenPlayer() {
     }
 
     override fun isThereEpisodes(): Boolean {
-        val meta = allMeta
-        return !meta.isNullOrEmpty() && meta.size > 1
+        // Checks if there is a second episode of type ResultEpisode
+        // => There exists more than 1 episode, and they are all ResultEpisode
+        return viewModel.state.generatorState?.allMeta?.getOrNull(1) as? ResultEpisode != null
     }
 
     override fun showEpisodesOverlay() {
@@ -2105,29 +2078,10 @@ class GeneratorPlayer : FullScreenPlayer() {
                     false,
                     { episodeClick ->
                         if (episodeClick.action == ACTION_CLICK_DEFAULT) {
-                            val act = activity
-                            if (act != null) {
-                                moviePlayCount++
-                                if (moviePlayCount >= 3) {
-                                    AdsManager.showRewardedAd(act) {
-                                        moviePlayCount = 0
-                                        isNextEpisode = false
-                                        player.release()
-                                        playerEpisodeOverlay.isGone = true
-                                        episodeClick.position?.let { viewModel.loadThisEpisode(it) }
-                                    }
-                                } else {
-                                    isNextEpisode = false
-                                    player.release()
-                                    playerEpisodeOverlay.isGone = true
-                                    episodeClick.position?.let { viewModel.loadThisEpisode(it) }
-                                }
-                            } else {
-                                isNextEpisode = false
-                                player.release()
-                                playerEpisodeOverlay.isGone = true
-                                episodeClick.position?.let { viewModel.loadThisEpisode(it) }
-                            }
+                            isNextEpisode = false
+                            releasePlayer()
+                            playerEpisodeOverlay.isGone = true
+                            episodeClick.position?.let { viewModel.loadThisEpisode(it) }
                         }
                     },
                     { downloadClickEvent ->
@@ -2144,7 +2098,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                 (playerEpisodeList.adapter as? EpisodeAdapter)?.submitList(episodes)
 
                 // Scroll to current episode
-                viewModel.getCurrentIndex()?.let { index ->
+                viewModel.state.generatorState?.index?.let { index ->
                     playerEpisodeList.scrollToPosition(index)
                     // Ensure focus on tv
                     if (isLayout(TV)) {
@@ -2163,15 +2117,14 @@ class GeneratorPlayer : FullScreenPlayer() {
                 // update overlay season title
                 var lastTopIndex = -1
                 playerEpisodeList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                    @SuppressLint("SetTextI18n", "DefaultLocale")
                     override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                         val layoutManager =
                             recyclerView.layoutManager as? LinearLayoutManager ?: return
                         val topIndex = layoutManager.findFirstCompletelyVisibleItemPosition()
                         if (topIndex != RecyclerView.NO_POSITION && topIndex != lastTopIndex) {
+                            @Suppress("AssignedValueIsNeverRead")
                             lastTopIndex = topIndex
                             val topItem = episodes.getOrNull(topIndex)
-
                             topItem?.let {
                                 playerEpisodeOverlayTitle.setText(
                                     ResultViewModel2.seasonToTxt(
@@ -2189,26 +2142,64 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        var langFilterList = listOf<String>()
-        var filterSubByLang = false
+    @MainThread
+    fun releasePlayer() {
+        player.release()
+        currentSelectedSubtitles = null
+        currentSelectedLink = null
+        isPlayerActive.set(false)
+        binding?.overlayLoadingSkipButton?.isVisible = false
+        binding?.playerLoadingOverlay?.isVisible = true
+        uiReset()
+    }
+
+    fun exitPlayer() {
+        playerHostView?.exitFullscreen()
+        player.release()
+        activity?.popCurrentPage()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("index", viewModel.episodeIndex)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onBindingCreated(binding: FragmentPlayerBinding, savedInstanceState: Bundle?) {
+        viewModel = ViewModelProvider(this)[PlayerGeneratorViewModel::class.java]
+        sync = ViewModelProvider(this)[SyncViewModel::class.java]
+
+        val uuid = savedInstanceState?.getString("uuid") ?: arguments?.getString("uuid")
+        val index = savedInstanceState?.getInt("index") ?: arguments?.getInt("index")
+        val generator = generators[uuid]
+
+        unwrapBundle(savedInstanceState)
+        unwrapBundle(arguments)
+
+        super.onBindingCreated(binding, savedInstanceState)
+
+        // Avoid showing no links found
+        if (generator == null || index == null) {
+            exitPlayer()
+            return
+        }
+        viewModel.attachGenerator(generator, index)
 
         context?.let { ctx ->
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(ctx)
-            showName        = settingsManager.getBoolean(ctx.getString(R.string.show_name_key), true)
-            showResolution  = settingsManager.getBoolean(ctx.getString(R.string.show_resolution_key), true)
-            showMediaInfo   = settingsManager.getBoolean(ctx.getString(R.string.show_media_info_key), false)
-            limitTitle      = settingsManager.getInt(ctx.getString(R.string.prefer_title_limit_key), 0)
+            showName = settingsManager.getBoolean(ctx.getString(R.string.show_name_key), true)
+            showResolution =
+                settingsManager.getBoolean(ctx.getString(R.string.show_resolution_key), true)
+            showMediaInfo =
+                settingsManager.getBoolean(ctx.getString(R.string.show_media_info_key), false)
+            limitTitle = settingsManager.getInt(ctx.getString(R.string.prefer_title_limit_key), 0)
             updateForcedEncoding(ctx)
-            filterSubByLang =
+            viewModel.filterSubByLang =
                 settingsManager.getBoolean(getString(R.string.filter_sub_lang_key), false)
-            if (filterSubByLang) {
+            if (viewModel.filterSubByLang) {
                 val langFromPrefMedia = settingsManager.getStringSet(
                     this.getString(R.string.provider_lang_key), mutableSetOf("en")
                 )
-                langFilterList = langFromPrefMedia?.mapNotNull {
+                viewModel.langFilterList = langFromPrefMedia?.mapNotNull {
                     fromTagToEnglishLanguageName(it)?.lowercase() ?: return@mapNotNull null
                 } ?: listOf()
             }
@@ -2221,18 +2212,23 @@ class GeneratorPlayer : FullScreenPlayer() {
 
         preferredAutoSelectSubtitles = getAutoSelectLanguageTagIETF()
 
-        if (currentSelectedLink == null) {
+        val selectedLink = currentSelectedLink
+        if (selectedLink == null) {
             viewModel.loadLinks()
+        } else {
+            // Recreated view, so we need to recreate the
+            loadLink(selectedLink, true)
         }
 
-        binding?.overlayLoadingSkipButton?.setOnClickListener {
-            startPlayer()
+        binding.overlayLoadingSkipButton.setOnClickListener {
+            // Mark as "success" early
+            viewModel.modifyState {
+                copy(loading = Resource.Success(Unit))
+            }
         }
 
-        binding?.playerLoadingGoBack?.setOnClickListener {
-            exitFullscreen()
-            player.release()
-            activity?.popCurrentPage()
+        binding.playerLoadingGoBack.setOnClickListener {
+            exitPlayer()
         }
 
         playerBinding?.downloadHeader?.setOnClickListener {
@@ -2245,14 +2241,29 @@ class GeneratorPlayer : FullScreenPlayer() {
             }
         }
 
-        observe(viewModel.currentStamps) { stamps ->
+        observe(viewModel.currentStamps) { (stamps, instance) ->
+            if (instance != viewModel.state.instance) return@observe // Outdated observe
             player.addTimeStamps(stamps)
         }
 
-        observe(viewModel.loadingLinks) {
-            when (it) {
+        observe(viewModel.currentSubtitles) { (subtitles, instance) ->
+            if (instance != viewModel.state.instance) return@observe // Outdated observe
+            player.setActiveSubtitles(subtitles)
+
+            // If the file is downloaded then do not select auto select the subtitles
+            // Downloaded subtitles cannot be selected immediately after loading since
+            // player.getCurrentPreferredSubtitle() cannot fetch data from non-loaded subtitles
+            // Resulting in unselecting the downloaded subtitle
+            if (subtitles.lastOrNull()?.origin != SubtitleOrigin.DOWNLOADED_FILE) {
+                autoSelectSubtitles()
+            }
+        }
+        observe(viewModel.loadingLinks) { (loading, instance) ->
+            if (instance != viewModel.state.instance) return@observe // Outdated observe
+
+            when (loading) {
                 is Resource.Loading -> {
-                    startLoading()
+                    releasePlayer()
                 }
 
                 is Resource.Success -> {
@@ -2264,29 +2275,30 @@ class GeneratorPlayer : FullScreenPlayer() {
                 }
 
                 is Resource.Failure -> {
-                    showToast(it.errorString, Toast.LENGTH_LONG)
+                    showToast(loading.errorString, Toast.LENGTH_LONG)
                     startPlayer()
                 }
             }
         }
 
-        observe(viewModel.currentLinks) {
-            currentLinks = it
-            val turnVisible = it.isNotEmpty() && lastUsedGenerator?.canSkipLoading == true
-            val wasGone = binding?.overlayLoadingSkipButton?.isGone == true
+        observe(viewModel.currentLinks) { (links, instance) ->
+            if (instance != viewModel.state.instance) return@observe // Outdated observe
 
-            binding?.overlayLoadingSkipButton?.apply {
+            val turnVisible = links.isNotEmpty() && viewModel.generator?.canSkipLoading == true
+            val wasGone = binding.overlayLoadingSkipButton.isGone
+
+            binding.overlayLoadingSkipButton.apply {
                 isVisible = turnVisible
-                val value = viewModel.currentLinks.value
-                if (value.isNullOrEmpty()) {
+                if (links.isEmpty()) {
                     setText(R.string.skip_loading)
                 } else {
-                    text = "${context.getString(R.string.skip_loading)} (${value.size})"
+                    @SuppressLint("SetTextI18n")
+                    text = "${context.getString(R.string.skip_loading)} (${links.size})"
                 }
             }
 
             safe {
-                if (currentLinks.any { link ->
+                if (!isPlayerActive.get() && viewModel.state.links.any { link ->
                         getLinkPriority(currentQualityProfile, link.first) >=
                                 QualityDataHelper.AUTO_SKIP_PRIORITY
                     }
@@ -2296,37 +2308,10 @@ class GeneratorPlayer : FullScreenPlayer() {
             }
 
             if (turnVisible && wasGone) {
-                binding?.overlayLoadingSkipButton?.requestFocus()
-            }
-        }
-
-        observe(viewModel.currentSubs) { set ->
-            val setOfSub = mutableSetOf<SubtitleData>()
-            if (langFilterList.isNotEmpty() && filterSubByLang) {
-                Log.i("subfilter", "Filtering subtitle")
-                langFilterList.forEach { lang ->
-                    Log.i("subfilter", "Lang: $lang")
-                    setOfSub += set.filter {
-                        it.originalName.contains(lang, ignoreCase = true) ||
-                                it.origin != SubtitleOrigin.URL
-                    }
-                }
-                currentSubs = setOfSub
-            } else {
-                currentSubs = set
-            }
-            player.setActiveSubtitles(set)
-
-            // If the file is downloaded then do not select auto select the subtitles
-            // Downloaded subtitles cannot be selected immediately after loading since
-            // player.getCurrentPreferredSubtitle() cannot fetch data from non-loaded subtitles
-            // Resulting in unselecting the downloaded subtitle
-            if (set.lastOrNull()?.origin != SubtitleOrigin.DOWNLOADED_FILE) {
-                autoSelectSubtitles()
+                binding.overlayLoadingSkipButton.requestFocus()
             }
         }
     }
-
 }
 
 @Suppress("DEPRECATION")

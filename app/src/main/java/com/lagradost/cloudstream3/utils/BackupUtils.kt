@@ -10,7 +10,6 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.getActivity
 import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.lagradost.cloudstream3.R
@@ -21,11 +20,12 @@ import com.lagradost.cloudstream3.syncproviders.AccountManager
 import com.lagradost.cloudstream3.syncproviders.providers.AniListApi.Companion.ANILIST_CACHED_LIST
 import com.lagradost.cloudstream3.syncproviders.providers.MALApi.Companion.MAL_CACHED_LIST
 import com.lagradost.cloudstream3.syncproviders.providers.KitsuApi.Companion.KITSU_CACHED_LIST
+import com.lagradost.cloudstream3.utils.AppUtils.parseJson
+import com.lagradost.cloudstream3.utils.AppUtils.toJson
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.main
 import com.lagradost.cloudstream3.utils.DataStore.getDefaultSharedPrefs
 import com.lagradost.cloudstream3.utils.DataStore.getSharedPrefs
-import com.lagradost.cloudstream3.utils.DataStore.mapper
 import com.lagradost.cloudstream3.utils.UIHelper.checkWrite
 import com.lagradost.cloudstream3.utils.UIHelper.requestRW
 import com.lagradost.cloudstream3.utils.downloader.VideoDownloadManager.setupStream
@@ -62,6 +62,7 @@ object BackupUtils {
         AccountManager.ACCOUNT_TOKEN,
         AccountManager.ACCOUNT_IDS,
 
+        // TODO proper getter for string res keys to ensure that they are updated
         "biometric_key", // can lock down users if backup is shared on a incompatible device
         "nginx_user", // Nginx user key
 
@@ -103,7 +104,10 @@ object BackupUtils {
         // Prevent backups from automatically starting downloads
         KEY_RESUME_IN_QUEUE,
         KEY_RESUME_PACKAGES,
-        QUEUE_KEY
+        QUEUE_KEY,
+
+        // Prevent automatic plugin download after restoring backup
+        "auto_download_plugins_key2"
     )
 
     /** false if key should not be contained in backup */
@@ -129,9 +133,7 @@ object BackupUtils {
     )
 
     @Suppress("UNCHECKED_CAST")
-    private fun getBackup(context: Context?): BackupFile? {
-        if (context == null) return null
-
+    private fun getBackup(context: Context): BackupFile {
         val allData = context.getSharedPrefs().all.filter { it.key.isTransferable() }
         val allSettings = context.getDefaultSharedPrefs().all.filter { it.key.isTransferable() }
 
@@ -204,13 +206,13 @@ object BackupUtils {
             }
 
             val date = SimpleDateFormat("yyyy_MM_dd_HH_mm", Locale.getDefault()).format(Date(currentTimeMillis()))
-            val displayName = "PluginStream_Backup_${date}"
+            val displayName = "CS3_Backup_${date}"
             val backupFile = getBackup(context)
             val stream = setupBackupStream(context, displayName)
 
             fileStream = stream.openNew()
             printStream = PrintWriter(fileStream)
-            printStream.print(mapper.writeValueAsString(backupFile))
+            printStream.print(backupFile.toJson())
 
             showToast(
                 R.string.backup_success,
@@ -255,8 +257,8 @@ object BackupUtils {
                             val input = activity.contentResolver.openInputStream(uri)
                                 ?: return@ioSafe
 
-                            val restoredValue =
-                                mapper.readValue<BackupFile>(input)
+                            val text = input.bufferedReader().readText()
+                            val restoredValue = parseJson<BackupFile>(text)
 
                             restore(
                                 activity,

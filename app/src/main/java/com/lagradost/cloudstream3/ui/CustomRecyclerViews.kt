@@ -3,11 +3,25 @@ package com.lagradost.cloudstream3.ui
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import android.widget.ListView
 import androidx.core.content.withStyledAttributes
 import androidx.core.view.children
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.abs
+
+class NonScrollListView @JvmOverloads constructor(
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : ListView(context, attrs, defStyleAttr) {
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val heightMeasureSpecCustom = MeasureSpec.makeMeasureSpec(
+            Int.MAX_VALUE shr 2, MeasureSpec.AT_MOST
+        )
+        super.onMeasure(widthMeasureSpec, heightMeasureSpecCustom)
+        val params = layoutParams
+        params.height = measuredHeight
+    }
+}
 
 class GrdLayoutManager(val context: Context, spanCount: Int) :
     GridLayoutManager(context, spanCount) {

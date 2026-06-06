@@ -6,20 +6,19 @@
     android:id="@+id/extensions_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/primaryBlackBackground"
+    android:background="?attr/primaryGrayBackground"
     android:orientation="vertical">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/primaryBlackBackground"
-        app:elevation="0dp">
+        android:background="?attr/primaryGrayBackground">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/settings_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/primaryBlackBackground"
+            android:background="?attr/primaryGrayBackground"
             android:paddingTop="@dimen/navbar_height"
             app:layout_scrollFlags="scroll|enterAlways"
             app:menu="@menu/repository"
@@ -30,8 +29,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/primaryBlackBackground"
-            android:paddingHorizontal="16dp"
+            android:background="?attr/primaryGrayBackground"
             android:paddingBottom="10dp"
             app:layout_scrollFlags="scroll|enterAlways">
 
@@ -47,7 +45,7 @@
         android:layout_height="match_parent"
         android:background="?attr/primaryBlackBackground"
         android:clipToPadding="false"
-        android:paddingVertical="8dp"
+
         android:nextFocusLeft="@id/nav_rail_view"
         android:nextFocusUp="@id/tvtypes_chips"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"

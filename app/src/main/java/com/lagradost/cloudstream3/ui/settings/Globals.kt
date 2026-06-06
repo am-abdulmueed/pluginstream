@@ -32,14 +32,13 @@ object Globals {
     }
 
     private fun Context.layoutIntCorrected(): Int {
-        /*return when(getLayoutInt()) {
+        return when(getLayoutInt()) {
             -1 -> if (isAutoTv()) TV else PHONE
             0 -> PHONE
             1 -> TV
             2 -> EMULATOR
             else -> PHONE
-        }*/
-        return PHONE
+        }
     }
 
     fun Context.updateTv() {

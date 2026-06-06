@@ -2,13 +2,15 @@
 # https://docs.gradle.org/current/userguide/dependency_versions.html#sec:strict-version
 [versions]
 activityKtx = "1.13.0"
-composeCompiler = "2.3.0"
 androidGradlePlugin = "9.1.1"
+animeDb = "1.0.2"
+annotation = "1.10.0"
 appcompat = "1.7.1"
-biometric = "1.4.0-alpha06"
-buildkonfigGradlePlugin = "0.18.0"
-coil = { strictly = "3.3.0" }
-colorpicker = "6b46b49bd5"
+biometric = "1.4.0-alpha07"
+buildkonfigGradlePlugin = "0.21.2"
+classgraph = "4.8.184"
+coil = { strictly = "3.3.0" } # Later versions require jvmTarget 11 or later
+colorpicker = "6b46b49"
 conscryptAndroid = { strictly = "2.5.2" } # 2.5.3 crashes everything
 constraintlayout = "2.2.1"
 coreKtx = "1.18.0"
@@ -16,22 +18,25 @@ desugar_jdk_libs_nio = "2.1.5"
 dokkaGradlePlugin = "2.2.0"
 espressoCore = "3.7.0"
 fragmentKtx = "1.8.9"
-fuzzywuzzy = "1.4.0"
+instancioCore = "5.6.0"
 jacksonModuleKotlin = { strictly = "2.13.1" } # Later versions don't support minSdk <26 (Crashes on Android TV's and FireSticks)
-json = "20251224"
+json = "20260522"
 jsoup = "1.22.1"
 junit = "4.13.2"
 junitKtx = "1.3.0"
 junitVersion = "1.3.0"
 juniversalchardet = "2.5.0"
 kotlinGradlePlugin = "2.3.20"
-markwon = "4.6.2"
-kotlinxCoroutinesCore = "1.10.2"
+kotlinxAtomicfu = "0.33.0"
+kotlinxCollectionsImmutable = "0.4.0"
+kotlinxCoroutinesCore = "1.11.0"
+kotlinxDatetime = "0.8.0"
+kotlinxSerializationJson = "1.11.0"
 lifecycleKtx = "2.10.0"
-material = "1.14.0-beta01"
+material = "1.14.0"
 media3 = "1.9.3"
-navigationKtx = "2.9.7"
-newpipeextractor = "v0.26.0"
+navigationKtx = "2.9.8"
+newpipeextractor = "v0.26.2"
 nextlibMedia3 = "1.9.3-0.12.0"
 nicehttp = "0.4.18"
 overlappingpanels = "0.1.5"
@@ -42,57 +47,30 @@ qrcodeKotlin = "4.5.0"
 rhino = { strictly = "1.8.1" } # Requires minSdk 26 or later beginning at version 1.9.0
 safefile = "0.0.8"
 shimmer = "0.5.0"
-swiperefreshlayout = "1.1.0"
 tmdbJava = "2.13.0"
 torrentserver = "7861970"
 tvprovider = "1.1.0"
 video = "1.0.0"
 workRuntimeKtx = "2.11.2"
 zipline = "1.27.0"
-lottie = "6.4.0"
-webkit = "1.15.0"
-media = "1.7.0"
 
-jvmTarget = "17"
+jvmTarget = "1.8"
 jdkToolchain = "17"
 minSdk = "23"
 compileSdk = "36"
 targetSdk = "36"
 
-# Flow module versions
-composeBom = "2024.09.00"
-activityCompose = "1.9.1"
-navigationCompose = "2.8.0"
-lifecycle = "2.8.4"
-constraintlayoutCompose = "1.1.0"
-hilt = "2.59"
-hiltNavigationCompose = "1.2.0"
-okhttp = "4.12.0"
-ktor = "2.3.12"
-kotlinxSerialization = "1.6.3"
-gson = "2.11.0"
-room = "2.7.0-alpha11"
-datastore = "1.1.1"
-coroutines = "1.8.1"
-paging = "3.3.2"
-rxjava = "3.1.8"
-rxandroid = "3.0.2"
-ksp = "2.3.7"
-apkupdater = "v2.1.0"
-multidex = "2.0.1"
-brotli = "0.1.2"
-re2j = "1.7"
-picasso = "2.8"
-core-splashscreen = "1.0.1"
-
+versionCode = "512"
+versionName = "5.1.2"
 
 [libraries]
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+anime-db = { module = "com.github.recloudstream:anime-db", version.ref = "animeDb" }
+annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
+classgraph = { group = "io.github.classgraph", name = "classgraph", version.ref = "classgraph" }
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 colorpicker = { module = "com.github.recloudstream:color-picker-android", version.ref = "colorpicker" }
 conscrypt-android = { module = "org.conscrypt:conscrypt-android", version.ref = "conscryptAndroid" }
@@ -104,20 +82,22 @@ desugar_jdk_libs_nio = { module = "com.android.tools:desugar_jdk_libs_nio", vers
 espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
 ext-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }
 fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
-fuzzywuzzy = { module = "me.xdrop:fuzzywuzzy", version.ref = "fuzzywuzzy" }
+instancio-core = { group = "org.instancio", name = "instancio-core", version.ref = "instancioCore" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jacksonModuleKotlin" }
 json = { module = "org.json:json", version.ref = "json" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 junit = { module = "junit:junit", version.ref = "junit" }
 junit-ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "junitKtx" }
 juniversalchardet = { module = "com.github.albfernandez:juniversalchardet", version.ref = "juniversalchardet" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlinGradlePlugin" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinxAtomicfu" }
+kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollectionsImmutable" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleKtx" }
 lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleKtx" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
-markwon-core = { module = "io.noties.markwon:core", version.ref = "markwon" }
-markwon-linkify = { module = "io.noties.markwon:linkify", version.ref = "markwon" }
-markwon-strikethrough = { module = "io.noties.markwon:ext-strikethrough", version.ref = "markwon" }
 media3-cast = { module = "androidx.media3:media3-cast", version.ref = "media3" }
 media3-common = { module = "androidx.media3:media3-common", version.ref = "media3" }
 media3-container  = { module = "androidx.media3:media3-container", version.ref = "media3" }
@@ -142,59 +122,12 @@ qrcode-kotlin = { module = "io.github.g0dkar:qrcode-kotlin", version.ref = "qrco
 rhino = { module = "org.mozilla:rhino", version.ref = "rhino" }
 safefile = { module = "com.github.LagradOst:SafeFile", version.ref = "safefile" }
 shimmer = { module = "com.facebook.shimmer:shimmer", version.ref = "shimmer" }
-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 tmdb-java = { module = "com.uwetrottmann.tmdb2:tmdb-java", version.ref = "tmdbJava" }
 torrentserver = { module = "com.github.recloudstream:torrentserver", version.ref = "torrentserver" }
 tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "tvprovider" }
 video = { module = "com.google.android.mediahome:video", version.ref = "video" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 zipline = { module = "app.cash.zipline:zipline-android", version.ref = "zipline" }
-lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
-media = { module = "androidx.media:media", version.ref = "media" }
-
-# Flow module libraries
-androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-material = { group = "androidx.compose.material", name = "material" }
-androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
-androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
-androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
-androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
-androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-hilt-android-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
-ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
-ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
-ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
-ktor-client-encoding = { group = "io.ktor", name = "ktor-client-encoding", version.ref = "ktor" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
-androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
-androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
-androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
-androidx-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
-androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-rxjava = { group = "io.reactivex.rxjava3", name = "rxjava", version.ref = "rxjava" }
-rxandroid = { group = "io.reactivex.rxjava3", name = "rxandroid", version.ref = "rxandroid" }
-apkupdater = { group = "com.github.supersu-man", name = "apkupdater-library", version.ref = "apkupdater" }
-androidx-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
-brotli = { group = "org.brotli", name = "dec", version.ref = "brotli" }
-re2j = { group = "com.google.re2j", name = "re2j", version.ref = "re2j" }
-picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "picasso" }
-androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
@@ -202,10 +135,9 @@ android-lint = { id = "com.android.lint", version.ref = "androidGradlePlugin" }
 android-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidGradlePlugin" }
 buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildkonfigGradlePlugin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokkaGradlePlugin" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinGradlePlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm" , version.ref = "kotlinGradlePlugin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlinGradlePlugin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "composeCompiler" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinGradlePlugin" }
 
 [bundles]
 coil = ["coil", "coil-network-okhttp"]

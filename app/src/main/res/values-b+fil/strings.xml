@@ -18,7 +18,7 @@
     <string name="software_decoding_desc">Binibigyang-daan ng software decoding ang player na mag-play ng mga video file na hindi sinusuportahan ng iyong telepono, ngunit maaaring magdulot ng laggy o hindi maayos na pag-playback sa mataas na resolution</string>
     <string name="backup_path_title">Lokasyon ng backup na folder</string>
     <string name="hide_player_control_names">Itago ang mga pangalan ng mga kontrol ng player</string>
-    <string name="biometric_warning">Na-back up na ngayon ang iyong data sa CloudStream. Bagama\'t napakababa ng posibilidad nito, lahat ng device ay maaaring kumilos nang iba. Sa pambihirang kaso, na ma-lock out ka mula sa pag-access sa app, ganap na i-clear ang data ng app at i-restore mula sa isang backup. Lubos kaming humihingi ng paumanhin para sa anumang abala na dulot nito.</string>
+    <string name="biometric_warning">Na-back up na ngayon ang iyong data sa PluginStream. Bagama\'t napakababa ng posibilidad nito, lahat ng device ay maaaring kumilos nang iba. Sa pambihirang kaso, na ma-lock out ka mula sa pag-access sa app, ganap na i-clear ang data ng app at i-restore mula sa isang backup. Lubos kaming humihingi ng paumanhin para sa anumang abala na dulot nito.</string>
     <string name="skip_startup_account_select_pref">Laktawan ang pagpili ng account sa pagsisimula</string>
     <string name="duplicate_message_multiple" formatted="true">May nakitang potensyal na mga nag-doble na mga items sa iyong library: \n\n%s \n\nGusto mo pa rin bang idagdag ang item na ito, palitan ang mga nauna na, o kanselahin ito?</string>
     <string name="favorites_list_name">Mga paborito &lt;3</string>
@@ -28,9 +28,9 @@
     <string name="action_remove_from_favorites">Alisin sa mga paborito &lt;/3</string>
     <string name="duplicate_title">May Natagpuan na Nag-doble</string>
     <string name="duplicate_message_single" formatted="true">Lumalabas na mayroong potensyal na nag-doble na item sa iyong library: \'%s.\' \n\nGusto mo pa rin bang idagdag ang item na ito, palitan ang nauna, o kanselahin ito?</string>
-    <string name="battery_dialog_message">Para matiyak ang mga walang patid na pag-download at notification para sa mga naka-subscribe na palabas sa TV, kailangan ng PluginStreamng pahintulot na tumakbo sa background. Sa pamamagitan ng pagpindot sa OK, ipapakita sa iyo ang isang dialog. Mangyaring pindutin ang \'Allow\'.\n\nPakitandaan, ang pahintulot na ito ay hindi nangangahulugan na maubos ng PluginStream ang iyong baterya. Ito ay gagana lamang sa background kung kinakailangan, tulad ng kapag tumatanggap ng mga notification o nagda-download ng mga video mula sa mga opisyal na extension.</string>
-    <string name="blank_repo_message">Ang PluginStreamay walang mga site na naka-install sa umpisa. Kailangan mong i-install ang mga site mula sa mga repositoryo. \n \nSumali sa aming Telegram o maghanap online.</string>
-    <string name="download_all_plugins_from_repo">Babala: Walang pananagutan ang PluginStream3 sa paggamit ng mga extension ng third-party at hindi kami nagbibigay ng anumang suporta para sa kanila!</string>
+    <string name="battery_dialog_message">Para matiyak ang mga walang patid na pag-download at notification para sa mga naka-subscribe na palabas sa TV, kailangan ng PluginStream ng pahintulot na tumakbo sa background. Sa pamamagitan ng pagpindot sa OK, ipapakita sa iyo ang isang dialog. Mangyaring pindutin ang \'Allow\'.\n\nPakitandaan, ang pahintulot na ito ay hindi nangangahulugan na maubos ng CS3 ang iyong baterya. Ito ay gagana lamang sa background kung kinakailangan, tulad ng kapag tumatanggap ng mga notification o nagda-download ng mga video mula sa mga opisyal na extension.</string>
+    <string name="blank_repo_message">Ang PluginStream ay walang mga site na naka-install sa umpisa. Kailangan mong i-install ang mga site mula sa mga repositoryo. \n \nSumali sa aming Discord o maghanap online.</string>
+    <string name="download_all_plugins_from_repo">Babala: Walang pananagutan ang PluginStream 3 sa paggamit ng mga extension ng third-party at hindi kami nagbibigay ng anumang suporta para sa kanila!</string>
     <string name="speech_recognition_unavailable">Hindi available ang speech recognition</string>
     <string name="result_open_in_browser">Buksan sa Browser</string>
     <string name="torrent_info">Ang video na ito ay isang Torrent, nangangahulugan ito na ang iyong aktibidad sa video ay maaaring masubaybayan.\nTiyaking naiintindihan mo ang Torrenting bago magpatuloy.</string>
@@ -71,7 +71,7 @@
     <string name="rated_format" formatted="true">Na-rate: %.1f</string>
     <string name="new_update_format" formatted="true">May nakitang bagong update!\n%1$s -&gt; %2$s</string>
     <string name="duration_format" formatted="true">%d min</string>
-    <string name="play_with_app_name">Ipatugtog sa CloudStream</string>
+    <string name="play_with_app_name">Ipatugtog sa PluginStream</string>
     <string name="title_home">Bahay</string>
     <string name="title_search">Maghanap</string>
     <string name="title_downloads">Mga Download</string>

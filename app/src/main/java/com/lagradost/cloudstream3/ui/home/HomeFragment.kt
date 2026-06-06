@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.ArrayAdapter
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
@@ -22,7 +21,6 @@ import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
@@ -114,34 +112,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             if (apiName.contains("XPrimeHub", ignoreCase = true)) return false
             
             return pinKeywords.any { keyword -> apiName.contains(keyword, ignoreCase = true) }
-        }
-
-        fun getDisplayApiName(apiName: String?): String? {
-            if (apiName == null) return null
-            if (apiName == noneApi.name) return "Select"
-            
-            // Normalize spaces and case for better matching
-            val normalizedName = apiName.replace("\\s+".toRegex(), " ").trim()
-            
-            return normalizedName
-                .replace("moviebox", "Max", ignoreCase = true)
-                .replace("moveibox", "Max", ignoreCase = true)
-                .replace("castle tv (use vlc)", "PluginStream", ignoreCase = true)
-                .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
-                .replace("castle", "PluginStream", ignoreCase = true)
-                .replace("castel", "PluginStream", ignoreCase = true)
-                .replace("caslte", "PluginStream", ignoreCase = true)
-                .replace("TV (use vlc)", "", ignoreCase = true)
-                .replace("TV (usevlc)", "", ignoreCase = true)
-                .replace("(use vlc)", "", ignoreCase = true)
-                .replace("(usevlc)", "", ignoreCase = true)
-                .trim()
-                .replace("Bilibili (Use USA VPN) (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
-                .replace("Bilibili TV (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
-                .replace("BilibiliTV (Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
-                .replace("BilibiliTV(Requires CS Prerelease)", "Bilibili (Use USA VPN)", ignoreCase = true)
-                .replace("Bilibili TV", "Bilibili (Use USA VPN)", ignoreCase = true)
-                .replace("BilibiliTV", "Bilibili (Use USA VPN)", ignoreCase = true)
         }
 
         //fun Activity.loadHomepageList(
@@ -406,14 +376,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         fun Context.selectHomepage(selectedApiName: String?, callback: (String) -> Unit) {
             val validAPIs = filterProviderByPreferredMedia().toMutableList()
-            // Ensure XPrimeHub is included even if it doesn't match preferred media
-            synchronized(apis) {
-                apis.find { it.name.contains("XPrimeHub", ignoreCase = true) }?.let { api ->
-                    if (validAPIs.none { it.name == api.name }) {
-                        validAPIs.add(api)
-                    }
-                }
-            }
 
             validAPIs.add(0, randomApi)
             validAPIs.add(0, noneApi)
@@ -422,6 +384,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             val builder =
                 BottomSheetDialog(this)
 
+            builder.behavior.state = BottomSheetBehavior.STATE_EXPANDED
             val binding: HomeSelectMainpageBinding = HomeSelectMainpageBinding.inflate(
                 builder.layoutInflater,
                 null,
@@ -429,9 +392,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             )
 
             builder.setContentView(binding.root)
-
-            builder.behavior.state = BottomSheetBehavior.STATE_EXPANDED
-
             builder.show()
             builder.let { dialog ->
                 val isMultiLang = getApiProviderLangSettings().let { set ->
@@ -456,121 +416,53 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                 }
 
                 var pinnedphashset = DataStoreHelper.pinnedProviders.toHashSet()
-                var isPinningMode = false
-                val tempPinnedProviders = pinnedphashset.toMutableSet()
 
-                val recyclerView = dialog.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.listview1)
-                val selfPinBtt = dialog.findViewById<View>(R.id.self_pin_btt)
-                selfPinBtt?.visibility = View.GONE
-                val donePinBtt = dialog.findViewById<View>(R.id.done_pin_btt)
-                val searchBar = dialog.findViewById<EditText>(R.id.search_bar_edit_text)
-                
-                val providerNames = mutableListOf<String>()
-                var currentSearchQuery = ""
-                var localUpdateList: (() -> Unit)? = null
-                val providerAdapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
-                    inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
-                        val titleText: TextView = view.findViewById(R.id.text1)
-                        val pinIcon: ImageView = view.findViewById(R.id.pinicon)
-                        val prefixIcon: ImageView = view.findViewById(R.id.prefix_icon)
-                        val pinCheckbox: com.google.android.material.checkbox.MaterialCheckBox = view.findViewById(R.id.pin_checkbox)
-                    }
+                val listView = dialog.findViewById<ListView>(R.id.listview1)
 
-                    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
-                        val view = LayoutInflater.from(parent.context)
+                val arrayAdapter = object : ArrayAdapter<String>(
+                    this, R.layout.sort_bottom_single_provider_choice,
+                    mutableListOf()
+                ) {
+                    override fun getView(
+                        position: Int,
+                        convertView: View?,
+                        parent: ViewGroup
+                    ): View {
+                        val view = convertView ?: LayoutInflater.from(context)
                             .inflate(R.layout.sort_bottom_single_provider_choice, parent, false)
-                        return ViewHolder(view)
+                        val titleText = view.findViewById<TextView>(R.id.text1)
+                        val pinIcon = view.findViewById<ImageView>(R.id.pinicon)
+                        val name = getItem(position)
+                        titleText?.text = name
+                        val apiName = currentValidApis[position].name
+                        val isPinned =
+                            pinnedphashset.contains(apiName) || isSmartPinned(apiName)
+                        pinIcon.visibility = if (isPinned) View.VISIBLE else View.GONE
+                        return view
                     }
-
-                    override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
-                        val api = currentValidApis[position]
-                        val name = providerNames[position]
-                        val vh = holder as ViewHolder
-                        vh.titleText.text = name
-
-                        // Set prefix icons for Select and Random
-                        if (!isPinningMode) {
-                            when (position) {
-                                0 -> { // Select
-                                    vh.prefixIcon.setImageResource(R.drawable.ic_baseline_check_24)
-                                    vh.prefixIcon.visibility = View.VISIBLE
-                                }
-                                1 -> { // Random
-                                    vh.prefixIcon.setImageResource(R.drawable.ic_baseline_autorenew_24)
-                                    vh.prefixIcon.visibility = View.VISIBLE
-                                }
-                                else -> {
-                                    vh.prefixIcon.visibility = View.GONE
-                                }
-                            }
-                        } else {
-                            vh.prefixIcon.visibility = View.GONE
-                        }
-                        
-                        if (isPinningMode) {
-                            vh.pinIcon.visibility = View.GONE
-                            vh.pinCheckbox.visibility = View.VISIBLE
-                            vh.pinCheckbox.isChecked = tempPinnedProviders.contains(api.name)
-                            
-                            vh.pinCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                                if (isChecked) tempPinnedProviders.add(api.name)
-                                else tempPinnedProviders.remove(api.name)
-                            }
-                            
-                            vh.itemView.setOnClickListener {
-                                vh.pinCheckbox.toggle()
-                            }
-                        } else {
-                            vh.pinCheckbox.visibility = View.GONE
-                            val isPinned = pinnedphashset.contains(api.name) || isSmartPinned(api.name)
-                            vh.pinIcon.visibility = if (isPinned) View.VISIBLE else View.GONE
-                            vh.pinCheckbox.setOnCheckedChangeListener(null)
-
-                            vh.itemView.setOnClickListener {
-                                if (currentValidApis.isNotEmpty()) {
-                                    currentApiName = currentValidApis[position].name
-                                    currentApiName.let(callback)
-                                    dialog.dismissSafe()
-                                }
-                            }
-                        }
-
-                        vh.itemView.setOnLongClickListener {
-                            if (!isPinningMode && currentValidApis.isNotEmpty() && position > 1) {
-                                val pinnedp = DataStoreHelper.pinnedProviders.toMutableList()
-                                val thisapi = currentValidApis[position].name
-                                if (pinnedp.contains(thisapi)) {
-                                    pinnedp.remove(thisapi)
-                                } else {
-                                    pinnedp.add(thisapi)
-                                }
-                                DataStoreHelper.pinnedProviders = pinnedp.toTypedArray()
-                                // Calling updateList via a side effect since it's defined below
-                                localUpdateList?.invoke()
-                            }
-                            true
-                        }
-                    }
-
-                    override fun getItemCount(): Int = providerNames.size
                 }
+                listView?.adapter = arrayAdapter
+                listView?.choiceMode = AbsListView.CHOICE_MODE_SINGLE
 
-                recyclerView?.adapter = providerAdapter
+                listView?.setOnItemClickListener { _, _, i, _ ->
+                    if (currentValidApis.isNotEmpty()) {
+                        currentApiName = currentValidApis[i].name
+                        //to switch to apply simply remove this
+                        currentApiName.let(callback)
+                        dialog.dismissSafe()
+                    }
+                }
 
                 fun updateList() {
                     DataStoreHelper.homePreference = preSelectedTypes
                     val pinnedp = DataStoreHelper.pinnedProviders.toList()
                     pinnedphashset = pinnedp.toHashSet()
-                    if (!isPinningMode) {
-                        tempPinnedProviders.clear()
-                        tempPinnedProviders.addAll(pinnedphashset)
-                    }
-                    
+                    arrayAdapter.clear()
                     val sortedApis = validAPIs
                         .filter {
-                            it.hasMainPage && (pinnedphashset.contains(it.name) || it.supportedTypes.any(
+                            it.hasMainPage && (pinnedphashset.contains(it.name) || isSmartPinned(it.name) || it.supportedTypes.any(
                                 preSelectedTypes::contains
-                            ) || it.name.contains("XPrimeHub", ignoreCase = true))
+                            ))
                         }
                         .sortedBy { it.name.lowercase() }
 
@@ -583,61 +475,38 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                     }
 
                     val remainingApis = sortedApis.filterNot { pinnedphashset.contains(it.name) }
-
-                    val pluginStreamApis = remainingApis.filter { it.name.contains("castle", ignoreCase = true) || it.name.contains("caslte", ignoreCase = true) || it.name.contains("castel", ignoreCase = true) }
-                    val bilibiliApis = remainingApis.filter { it.name.contains("bilibili", ignoreCase = true) }
-                    val maxApis = remainingApis.filter { it.name.contains("moviebox", ignoreCase = true) || it.name.contains("moveibox", ignoreCase = true) }
-                    val otherSmartPinnedApis = remainingApis.filter { isSmartPinned(it.name) && !pluginStreamApis.contains(it) && !maxApis.contains(it) && !bilibiliApis.contains(it) }
-                        .sortedBy { api -> pinKeywords.indexOfFirst { api.name.contains(it, ignoreCase = true) } }
-                    val actualRemainingApis = remainingApis.filterNot { isSmartPinned(it.name) || pluginStreamApis.contains(it) || maxApis.contains(it) || bilibiliApis.contains(it) }
-
-                    val filteredPluginStreamApis = pluginStreamApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
-                    val filteredOtherSmartPinnedApis = otherSmartPinnedApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
-                    val filteredMaxApis = maxApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
-                    val filteredBilibiliApis = bilibiliApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
-                    val filteredPinnedApis = pinnedApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
-                    val filteredActualRemainingApis = actualRemainingApis.filter { it.name.contains(currentSearchQuery, ignoreCase = true) }
+                    
+                    val smartPinnedApis = remainingApis.filter { isSmartPinned(it.name) }
+                    val actualRemainingApis = remainingApis.filterNot { isSmartPinned(it.name) }
 
                     currentValidApis = mutableListOf<MainAPI>().apply {
                         addAll(validAPIs.take(2))
-                        addAll(filteredPluginStreamApis)
-                        addAll(filteredOtherSmartPinnedApis)
-                        addAll(filteredMaxApis)
-                        addAll(filteredBilibiliApis)
-                        addAll(filteredPinnedApis)
-                        addAll(filteredActualRemainingApis)
+                        addAll(pinnedApis)
+                        addAll(smartPinnedApis)
+                        addAll(actualRemainingApis)
                     }
 
-                    providerNames.clear()
-                    providerNames.addAll(
-                        currentValidApis.map {
-                            val displayName = getDisplayApiName(it.name) ?: it.name
-                            if (isMultiLang) "${getFlagFromIso(it.lang)?.plus(" ") ?: ""}$displayName" else displayName
+                    val names =
+                        currentValidApis.map { if (isMultiLang) "${getFlagFromIso(it.lang)?.plus(" ") ?: ""}${it.name}" else it.name }
+                    val index = currentValidApis.map { it.name }.indexOf(currentApiName)
+                    listView?.setItemChecked(index, true)
+                    arrayAdapter.addAll(names)
+                    arrayAdapter.notifyDataSetChanged()
+                }
+                // pin provider on hold
+                listView?.setOnItemLongClickListener { _, _, i, _ ->
+                    if (currentValidApis.isNotEmpty() && i > 1) {
+                        val pinnedp = DataStoreHelper.pinnedProviders.toMutableList()
+                        val thisapi = currentValidApis[i].name
+                        if (pinnedp.contains(thisapi)) {
+                            pinnedp.remove(thisapi)
+                        } else {
+                            pinnedp.add(thisapi)
                         }
-                    )
-                    providerAdapter.notifyDataSetChanged()
-                }
-
-                localUpdateList = ::updateList
-
-                searchBar?.addTextChangedListener { text ->
-                    currentSearchQuery = text?.toString() ?: ""
-                    updateList()
-                }
-
-                /* selfPinBtt?.setOnClickListener {
-                    isPinningMode = true
-                    selfPinBtt.visibility = View.GONE
-                    donePinBtt?.visibility = View.VISIBLE
-                    providerAdapter.notifyDataSetChanged()
-                } */
-
-                donePinBtt?.setOnClickListener {
-                    isPinningMode = false
-                    donePinBtt.visibility = View.GONE
-                    // selfPinBtt?.visibility = View.VISIBLE
-                    DataStoreHelper.pinnedProviders = tempPinnedProviders.toTypedArray()
-                    updateList()
+                        DataStoreHelper.pinnedProviders = pinnedp.toTypedArray()
+                        updateList()
+                    }
+                    true
                 }
 
                 bindChips(
@@ -737,7 +606,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
     private var toggleRandomButton = false
 
     private var bottomSheetDialog: BottomSheetDialog? = null
-    private var updateListFunc: (() -> Unit)? = null
     private var homeMasterAdapter: HomeParentItemAdapterPreview? = null
 
     var lastSavedHomepage: String? = null
@@ -796,7 +664,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             }
 
             homeMasterAdapter = HomeParentItemAdapterPreview(
-                fragment = this@HomeFragment,
                 homeViewModel, accountViewModel
             )
             homeMasterRecycler.setRecycledViewPool(ParentItemAdapter.sharedPool)
@@ -880,10 +747,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         observe(homeViewModel.apiName) { apiName ->
             currentApiName = apiName
-            val displayApiName = getDisplayApiName(apiName) ?: apiName
             binding.apply {
-                homeApiFab.text = displayApiName
-                homeChangeApi.text = displayApiName
+                homeApiFab.text = apiName
+                homeChangeApi.text = apiName
                 homePreviewReloadProvider.isGone = (apiName == noneApi.name)
                 homePreviewSearchButton.isGone = (apiName == noneApi.name)
             }

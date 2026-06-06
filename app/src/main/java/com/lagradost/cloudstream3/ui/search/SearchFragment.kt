@@ -12,24 +12,18 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.AbsListView
 import android.widget.ArrayAdapter
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
-import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import android.Manifest
-import android.content.pm.PackageManager
-import com.airbnb.lottie.LottieAnimationView
+import androidx.core.view.doOnLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -119,18 +113,17 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     private val searchViewModel: SearchViewModel by activityViewModels()
     private var bottomSheetDialog: BottomSheetDialog? = null
 
-    private lateinit var voiceSearchManager: VoiceSearchManager
-    private var voiceBottomSheetDialog: BottomSheetDialog? = null
-
-    private val requestAudioPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            startModernVoiceSearch()
-        } else {
-            showToast("Microphone permission required for voice search")
+    private val speechRecognizerLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data: Intent? = result.data
+                val matches = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                if (!matches.isNullOrEmpty()) {
+                    val recognizedText = matches[0]
+                    binding?.mainSearch?.setQuery(recognizedText, true)
+                }
+            }
         }
-    }
 
     override fun pickLayout(): Int? =
         if (isLayout(TV or EMULATOR)) R.layout.fragment_search_tv else R.layout.fragment_search
@@ -151,9 +144,6 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         hideKeyboard()
         bottomSheetDialog?.ownHide()
         activity?.detachBackPressedCallback("SearchFragment")
-        if (::voiceSearchManager.isInitialized) {
-            voiceSearchManager.destroy()
-        }
         super.onDestroyView()
     }
 
@@ -227,55 +217,6 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         }
     }
 
-    private fun setupVoiceSearch() {
-        voiceSearchManager = VoiceSearchManager(requireContext(), object : VoiceSearchManager.VoiceSearchCallback {
-            override fun onListeningStarted() {
-                showVoiceBottomSheet()
-            }
-
-            override fun onResultsFound(text: String) {
-                voiceBottomSheetDialog?.dismiss()
-                binding?.mainSearch?.setQuery(text, true)
-            }
-
-            override fun onErrorOccurred(errorMsg: String) {
-                voiceBottomSheetDialog?.dismiss()
-                showToast(errorMsg)
-            }
-
-            override fun onListeningStopped() {
-                val lottieView = voiceBottomSheetDialog?.findViewById<LottieAnimationView>(R.id.voiceLottieAnimation)
-                lottieView?.pauseAnimation()
-            }
-        })
-    }
-
-    private fun showVoiceBottomSheet() {
-        if (voiceBottomSheetDialog == null) {
-            voiceBottomSheetDialog = BottomSheetDialog(requireContext(), R.style.AppBottomSheetDialogTheme).apply {
-                setContentView(R.layout.dialog_voice_search)
-                setOnDismissListener { voiceSearchManager.stopListening() }
-            }
-        }
-        
-        voiceBottomSheetDialog?.findViewById<TextView>(R.id.voiceStatusText)?.text = "Listening for movie name..."
-        voiceBottomSheetDialog?.findViewById<LottieAnimationView>(R.id.voiceLottieAnimation)?.playAnimation()
-        
-        voiceBottomSheetDialog?.show()
-    }
-
-    private fun onMicButtonClicked() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            startModernVoiceSearch()
-        } else {
-            requestAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-        }
-    }
-
-    private fun startModernVoiceSearch() {
-        voiceSearchManager.startListening()
-    }
-
     override fun fixLayout(view: View) {
         fixSystemBarsPadding(
             view,
@@ -294,7 +235,6 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         savedInstanceState: Bundle?
     ) {
         reloadRepos()
-        setupVoiceSearch()
         binding.apply {
             val adapter =
                 SearchAdapter(
@@ -310,8 +250,30 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
             searchLoadingBar.alpha = 0f
         }
 
-        binding.voiceSearch.setOnClickListener {
-            onMicButtonClicked()
+        binding.voiceSearch.setOnClickListener { searchView ->
+            searchView?.context?.let { ctx ->
+                try {
+                    if (!SpeechRecognizer.isRecognitionAvailable(ctx)) {
+                        showToast(R.string.speech_recognition_unavailable)
+                    } else {
+                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                            putExtra(
+                                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                            )
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+                            putExtra(
+                                RecognizerIntent.EXTRA_PROMPT,
+                                ctx.getString(R.string.begin_speaking)
+                            )
+                        }
+                        speechRecognizerLauncher.launch(intent)
+                    }
+                } catch (_: Throwable) {
+                    // launch may throw
+                    showToast(R.string.speech_recognition_unavailable)
+                }
+            }
         }
 
         val searchExitIcon =
@@ -349,86 +311,49 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
 
                     val cancelBtt = dialog.findViewById<MaterialButton>(R.id.cancel_btt)
                     val applyBtt = dialog.findViewById<MaterialButton>(R.id.apply_btt)
-                    val selfPinBtt = dialog.findViewById<View>(R.id.self_pin_btt)
-                    selfPinBtt?.visibility = View.GONE
-                    val donePinBtt = dialog.findViewById<View>(R.id.done_pin_btt)
-                    donePinBtt?.visibility = View.GONE
-                    val searchBar = dialog.findViewById<EditText>(R.id.search_bar_edit_text)
-                    val recyclerView = dialog.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.listview1)
 
-                    val providerNames = mutableListOf<String>()
-                    var currentSearchQuery = ""
+                    val listView = dialog.findViewById<ListView>(R.id.listview1)
+                    val arrayAdapter = ArrayAdapter<String>(ctx, R.layout.sort_bottom_single_choice)
+                    listView?.adapter = arrayAdapter
+                    listView?.choiceMode = AbsListView.CHOICE_MODE_MULTIPLE
 
-                    val providerAdapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
-                        inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
-                            val titleText: TextView = view.findViewById(R.id.text1)
-                            val pinCheckbox: com.google.android.material.checkbox.MaterialCheckBox = view.findViewById(R.id.pin_checkbox)
-                            val pinIcon: ImageView = view.findViewById(R.id.pinicon)
-                            val prefixIcon: ImageView = view.findViewById(R.id.prefix_icon)
-                        }
-
-                        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
-                            val view = LayoutInflater.from(parent.context)
-                                .inflate(R.layout.sort_bottom_single_provider_choice, parent, false)
-                            return ViewHolder(view)
-                        }
-
-                        override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
-                            val api = currentValidApis[position]
-                            val name = providerNames[position]
-                            val vh = holder as ViewHolder
-                            vh.titleText.text = name
-                            vh.pinIcon.visibility = View.GONE
-                            vh.prefixIcon.visibility = View.GONE
-                            
-                            vh.pinCheckbox.visibility = View.VISIBLE
-                            vh.pinCheckbox.setOnCheckedChangeListener(null)
-                            vh.pinCheckbox.isChecked = currentSelectedApis.contains(api.name)
-                            
-                            vh.pinCheckbox.setOnCheckedChangeListener { _, isChecked ->
-                                if (isChecked) currentSelectedApis += api.name
-                                else currentSelectedApis -= api.name
-                            }
-                            
-                            vh.itemView.setOnClickListener {
-                                vh.pinCheckbox.toggle()
+                    listView?.setOnItemClickListener { _, _, i, _ ->
+                        if (currentValidApis.isNotEmpty()) {
+                            val api = currentValidApis[i].name
+                            if (currentSelectedApis.contains(api)) {
+                                listView.setItemChecked(i, false)
+                                currentSelectedApis -= api
+                            } else {
+                                listView.setItemChecked(i, true)
+                                currentSelectedApis += api
                             }
                         }
-
-                        override fun getItemCount(): Int = currentValidApis.size
                     }
-
-                    recyclerView?.adapter = providerAdapter
 
                     fun updateList(types: List<TvType>) {
                         DataStoreHelper.searchPreferenceTags = types
 
-                        val allFilteredApis = validAPIs.filter { api ->
+                        arrayAdapter.clear()
+                        currentValidApis = validAPIs.filter { api ->
                             api.supportedTypes.any {
                                 types.contains(it)
                             }
                         }.sortedBy { it.name.lowercase() }
 
-                        currentValidApis = allFilteredApis.filter { 
-                            it.name.contains(currentSearchQuery, ignoreCase = true)
-                        }
-
-                        providerNames.clear()
-                        providerNames.addAll(currentValidApis.map {
-                            val displayName = HomeFragment.getDisplayApiName(it.name) ?: it.name
+                        val names = currentValidApis.map {
                             if (isMultiLang) "${
                                 SubtitleHelper.getFlagFromIso(
                                     it.lang
                                 )?.plus(" ") ?: ""
-                            }$displayName" else displayName
-                        })
-                        
-                        providerAdapter.notifyDataSetChanged()
-                    }
+                            }${it.name}" else it.name
+                        }
+                        for ((index, api) in currentValidApis.map { it.name }.withIndex()) {
+                            listView?.setItemChecked(index, currentSelectedApis.contains(api))
+                        }
 
-                    searchBar?.addTextChangedListener { text ->
-                        currentSearchQuery = text?.toString() ?: ""
-                        updateList(selectedSearchTypes.toList())
+                        //arrayAdapter.notifyDataSetChanged()
+                        arrayAdapter.addAll(names)
+                        arrayAdapter.notifyDataSetChanged()
                     }
 
                     bindChips(
@@ -448,6 +373,11 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                             )
 
                         }
+                    }
+
+
+                    cancelBtt?.setOnClickListener {
+                        dialog.dismissSafe()
                     }
 
                     cancelBtt?.setOnClickListener {
@@ -485,7 +415,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
             binding.searchFilter.isFocusable = true
             binding.searchFilter.isFocusableInTouchMode = true
         }
-        
+
         // Hide suggestions when search view loses focus (phone only)
         if (isLayout(PHONE)) {
             binding.mainSearch.setOnQueryTextFocusChangeListener { _, hasFocus ->
@@ -643,7 +573,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                     removeKey("$currentAccount/$SEARCH_HISTORY_KEY", searchItem.key)
                     searchViewModel.updateHistory()
                 }
-                
+
                 SEARCH_HISTORY_CLEAR -> {
                     // Show confirmation dialog (from footer button)
                     activity?.let { ctx ->
@@ -724,7 +654,11 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
 
             sq?.let { query ->
                 if (query.isBlank()) return@let
-                mainSearch.setQuery(query, true)
+
+                // Queries are dropped if you are submitted before layout finishes
+                mainSearch.doOnLayout {
+                    mainSearch.setQuery(query, true)
+                }
                 // Clear the query as to not make it request the same query every time the page is opened
                 arguments?.remove(SEARCH_QUERY)
                 savedInstanceState?.remove(SEARCH_QUERY)
@@ -745,7 +679,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
             val hasSuggestions = suggestions.isNotEmpty()
             binding.searchSuggestionsRecycler.isVisible = hasSuggestions
             (binding.searchSuggestionsRecycler.adapter as? SearchSuggestionAdapter?)?.submitList(suggestions)
-            
+
             // On non-phone layouts, redirect focus and handle back button
             if (!isLayout(PHONE)) {
                 if (hasSuggestions) {

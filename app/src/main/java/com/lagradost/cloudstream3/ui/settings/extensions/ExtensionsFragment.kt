@@ -20,7 +20,6 @@ import com.lagradost.cloudstream3.MainActivity.Companion.afterRepositoryLoadedEv
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.AddRepoInputBinding
 import com.lagradost.cloudstream3.databinding.FragmentExtensionsBinding
-import com.lagradost.cloudstream3.mvvm.logError
 import com.lagradost.cloudstream3.mvvm.observe
 import com.lagradost.cloudstream3.mvvm.observeNullable
 import com.lagradost.cloudstream3.plugins.RepositoryManager
@@ -36,10 +35,8 @@ import com.lagradost.cloudstream3.utils.AppContextUtils.addRepositoryDialog
 import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.main
-import com.lagradost.cloudstream3.plugins.PluginManager
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.setText
-import com.google.android.material.appbar.MaterialToolbar
 
 class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentExtensionsBinding::inflate)
@@ -79,49 +76,6 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
         setUpToolbar(R.string.extensions)
         setToolBarScrollFlags()
 
-        val settingsToolbar = view?.findViewById<MaterialToolbar>(R.id.settings_toolbar)
-        settingsToolbar?.inflateMenu(R.menu.menu_extensions)
-        settingsToolbar?.setOnMenuItemClickListener {
-            when (it.itemId) {
-                R.id.action_delete_all -> {
-                    val ctx = context ?: return@setOnMenuItemClickListener true
-                    val builder = AlertDialog.Builder(ctx, R.style.AlertDialogCustomTransparent)
-                    val dialogBinding = com.lagradost.cloudstream3.databinding.DialogDeleteConfirmationBinding.inflate(layoutInflater)
-                    
-                    builder.setView(dialogBinding.root)
-                    val dialog = builder.create()
-
-                    dialogBinding.btnDelete.setOnClickListener {
-                        ioSafe {
-                            try {
-                                PluginManager.deleteAllOnlinePlugins(ctx)
-                                main {
-                                    showToast(activity, R.string.apply_on_restart, Toast.LENGTH_LONG)
-                                    reloadRepositories()
-                                    dialog.dismiss()
-                                }
-                            } catch (e: Exception) {
-                                logError(e)
-                                main {
-                                    showToast(activity, "Error deleting plugins", Toast.LENGTH_SHORT)
-                                    dialog.dismiss()
-                                }
-                            }
-                        }
-                    }
-
-                    dialogBinding.btnCancel.setOnClickListener {
-                        dialog.dismiss()
-                    }
-
-                    dialog.show()
-                    dialog.setDefaultFocus()
-                    true
-                }
-                else -> false
-            }
-        }
-
         binding.repoRecyclerView.apply {
             setLinearListLayout(
                 isHorizontal = false,
@@ -131,21 +85,17 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                 nextLeft = R.id.nav_rail_view
             )
 
-            if (!isLayout(TV)) {
+            if (!isLayout(TV))
                 binding.addRepoButton.let { button ->
                     button.post {
-                        val margin = button.marginBottom + button.marginTop
-                        val statsHeight = binding.pluginStorageAppbar.measuredHeight + binding.pluginStorageAppbar.marginBottom + binding.pluginStorageAppbar.marginTop
-                        
-                        binding.repoRecyclerView.setPadding(
-                            binding.repoRecyclerView.paddingLeft,
-                            binding.repoRecyclerView.paddingTop,
-                            binding.repoRecyclerView.paddingRight,
-                            button.measuredHeight + margin + statsHeight
+                        setPadding(
+                            paddingLeft,
+                            paddingTop,
+                            paddingRight,
+                            button.measuredHeight + button.marginTop + button.marginBottom
                         )
                     }
                 }
-            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
@@ -169,13 +119,14 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             }, { repo ->
                 // Prompt user before deleting repo
                 main {
-                    val builder = AlertDialog.Builder(context ?: binding.root.context)
+                    val uiContext = context ?: binding.root.context
+                    val builder = AlertDialog.Builder(uiContext)
                     val dialogClickListener =
                         DialogInterface.OnClickListener { _, which ->
                             when (which) {
                                 DialogInterface.BUTTON_POSITIVE -> {
                                     ioSafe {
-                                        RepositoryManager.removeRepository(binding.root.context, repo)
+                                        RepositoryManager.removeRepository(uiContext.applicationContext, repo)
                                         extensionViewModel.loadStats()
                                         extensionViewModel.loadRepositories()
                                     }
@@ -186,9 +137,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                         }
 
                     builder.setTitle(R.string.delete_repository)
-                        .setMessage(
-                            context?.getString(R.string.delete_repository_plugins)
-                        )
+                        .setMessage(uiContext.getString(R.string.delete_repository_plugins))
                         .setPositiveButton(R.string.delete, dialogClickListener)
                         .setNegativeButton(R.string.cancel, dialogClickListener)
                         .show().setDefaultFocus()
@@ -260,9 +209,9 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
             binding.applyBtt.setOnClickListener secondListener@{
                 val name = binding.repoNameInput.text?.toString()
+                val urlInput = binding.repoUrlInput.text?.toString()
                 ioSafe {
-                    val url = binding.repoUrlInput.text?.toString()
-                        ?.let { it1 -> RepositoryManager.parseRepoUrl(it1) }
+                    val url = urlInput?.let { it1 -> RepositoryManager.parseRepoUrl(it1) }
                     if (url.isNullOrBlank()) {
                         main {
                             showToast(R.string.error_invalid_data, Toast.LENGTH_SHORT)
@@ -303,12 +252,15 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
         val isTv = isLayout(TV)
         binding.apply {
-            // addRepoButton.isGone = isTv // Keep it visible for now so TV users can add repos
+            addRepoButton.isGone = isTv
+            addRepoButtonImageviewHolder.isVisible = isTv
 
             // Band-aid for Fire TV
             pluginStorageAppbar.isFocusableInTouchMode = isTv
+            addRepoButtonImageview.isFocusableInTouchMode = isTv
 
             addRepoButton.setOnClickListener(addRepositoryClick)
+            addRepoButtonImageview.setOnClickListener(addRepositoryClick)
         }
         reloadRepositories()
     }

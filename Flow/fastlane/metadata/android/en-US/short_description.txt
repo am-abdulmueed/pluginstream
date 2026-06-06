@@ -1,1 +1,0 @@
-Privacy-respecting YouTube and Music client with local recommendations.

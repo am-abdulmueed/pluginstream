@@ -135,54 +135,29 @@ object TvChannelUtils {
         Log.d("ProgramDelete", "Finished deleting stored programs")
     }
 
-    private fun isTvProviderAvailable(context: Context): Boolean {
-        return try {
-            context.contentResolver.query(
-                TvContractCompat.Channels.CONTENT_URI,
-                null,
-                null,
-                null,
-                null
-            ) != null
-        } catch (e: Exception) {
-            false
-        }
-    }
-
     fun createTvChannel(context: Context) {
-        try {
-            if (!isTvProviderAvailable(context)) {
-                Log.w("TvChannel", "TV Provider not available on this device")
-                return
-            }
+        val componentName = ComponentName(context, MainActivity::class.java)
+        val iconUri = "android.resource://${context.packageName}/mipmap/ic_launcher".toUri()
+        val inputId = TvContractCompat.buildInputId(componentName)
+        val channel = Channel.Builder()
+            .setType(TvContractCompat.Channels.TYPE_PREVIEW)
+            .setAppLinkIconUri(iconUri)
+            .setDisplayName(context.getString(R.string.app_name))
+            .setAppLinkIntent(Intent(Intent.ACTION_VIEW).apply {
+                data = "cloudstreamapp://open".toUri()
+            })
+            .setInputId(inputId)
+            .build()
 
-            val componentName = ComponentName(context, MainActivity::class.java)
-            val iconUri = "android.resource://${context.packageName}/mipmap/ic_launcher".toUri()
-            val inputId = TvContractCompat.buildInputId(componentName)
-            val channel = Channel.Builder()
-                .setType(TvContractCompat.Channels.TYPE_PREVIEW)
-                .setAppLinkIconUri(iconUri)
-                .setDisplayName(context.getString(R.string.app_name))
-                .setAppLinkIntent(Intent(Intent.ACTION_VIEW).apply {
-                    data = "cloudstreamapp://open".toUri()
-                })
-                .setInputId(inputId)
-                .build()
+        val channelUri = context.contentResolver.insert(
+            TvContractCompat.Channels.CONTENT_URI,
+            channel.toContentValues()
+        )
 
-            val channelUri = context.contentResolver.insert(
-                TvContractCompat.Channels.CONTENT_URI,
-                channel.toContentValues()
-            )
-
-            channelUri?.let {
-                val channelId = ContentUris.parseId(it)
-                TvContractCompat.requestChannelBrowsable(context, channelId)
-                Log.d("TvChannelUtils", "Channel Created: $channelId")
-            }
-        } catch (e: IllegalArgumentException) {
-            Log.w("TvChannel", "Unknown URL for TV Provider - ignoring crash", e)
-        } catch (e: Exception) {
-            Log.e("TvChannel", "Unexpected error creating TV channel", e)
+        channelUri?.let {
+            val channelId = ContentUris.parseId(it)
+            TvContractCompat.requestChannelBrowsable(context, channelId)
+            Log.d("TvChannelUtils", "Channel Created: $channelId")
         }
     }
 

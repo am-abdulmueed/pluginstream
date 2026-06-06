@@ -58,6 +58,8 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
     }
 
     private val pathPicker = getChooseFolderLauncher { uri, path ->
+        if(uri == null) return@getChooseFolderLauncher
+
         val context = context ?: CloudStreamApp.context ?: return@getChooseFolderLauncher
         (path ?: uri.toString()).let {
             PreferenceManager.getDefaultSharedPreferences(context).edit {
@@ -67,7 +69,6 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
         }
     }
 
-    @Suppress("DEPRECATION_ERROR")
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         hideKeyboard()
         setPreferencesFromResource(R.xml.settings_updates, rootKey)
@@ -143,13 +144,6 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
-        getPref(R.string.whats_new_key)?.setOnPreferenceClickListener {
-            activity?.let {
-                com.lagradost.cloudstream3.ui.changelog.ChangelogFragment().show(it.supportFragmentManager, "changelog")
-            }
-            return@setOnPreferenceClickListener true
-        }
-
         getPref(R.string.show_logcat_key)?.setOnPreferenceClickListener { pref ->
             val builder = AlertDialog.Builder(pref.context, R.style.AlertDialogCustom)
 
@@ -200,6 +194,10 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
                     logError(t)
                     showToast(t.message)
                 }
+            }
+
+            binding.closeBtt.setOnClickListener {
+                dialog.dismissSafe(activity)
             }
 
             return@setOnPreferenceClickListener true

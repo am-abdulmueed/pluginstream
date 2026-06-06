@@ -12,6 +12,7 @@ import com.lagradost.cloudstream3.APIHolder
 import com.lagradost.cloudstream3.databinding.FragmentSetupProviderLanguagesBinding
 import com.lagradost.cloudstream3.mvvm.safe
 import com.lagradost.cloudstream3.R
+import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
 import com.lagradost.cloudstream3.ui.BaseFragment
 import com.lagradost.cloudstream3.utils.AppContextUtils.getApiProviderLangSettings
 import com.lagradost.cloudstream3.utils.SubtitleHelper.getNameNextToFlagEmoji
@@ -36,10 +37,10 @@ class SetupFragmentProviderLanguage : BaseFragment<FragmentSetupProviderLanguage
 
             val currentLangTags = ctx.getApiProviderLangSettings()
 
-            val languagesTagName = synchronized(APIHolder.apis) {
-                listOf( Pair(AllLanguagesName, getString(R.string.all_languages_preference)) ) +
+            val languagesTagName = APIHolder.apis.withLock {
+                listOf(Pair(AllLanguagesName, getString(R.string.all_languages_preference))) +
                 APIHolder.apis.map { Pair(it.lang, getNameNextToFlagEmoji(it.lang) ?: it.lang) }
-                    .toSet().sortedBy { it.second.substringAfter("\u00a0").lowercase() } // name ignoring flag emoji
+                    .toSet().sortedBy { it.second.substringAfter("\u00a0").lowercase() } // name ignoring flag emoji
             }
 
             val currentIndexList = currentLangTags.map { langTag ->
@@ -47,6 +48,7 @@ class SetupFragmentProviderLanguage : BaseFragment<FragmentSetupProviderLanguage
             }.filter { it > -1 }
 
             arrayAdapter.addAll(languagesTagName.map { it.second })
+            ctx.setDefaultFocus(binding.nextBtt)
             binding.apply {
                 listview1.adapter = arrayAdapter
                 listview1.choiceMode = AbsListView.CHOICE_MODE_MULTIPLE
@@ -68,7 +70,6 @@ class SetupFragmentProviderLanguage : BaseFragment<FragmentSetupProviderLanguage
                 }
 
                 nextBtt.setOnClickListener {
-                    if (findNavController().currentDestination?.id != R.id.navigation_setup_provider_languages) return@setOnClickListener
                     findNavController().navigate(R.id.navigation_setup_provider_languages_to_navigation_setup_media)
                 }
 

@@ -181,11 +181,10 @@ class DownloadQueueService : Service() {
                 }
             }
 
-            if (timeTaken == null) {
-                Log.w(TAG, "Abnormally long downloader startup time of: ${timeout.inWholeMilliseconds}ms (timed out waiting for plugins)")
-            } else if (timeTaken > 3_000) {
-                Log.w(TAG, "Abnormally long downloader startup time of: ${timeTaken}ms")
-            }
+            debugWarning({ timeTaken == null || timeTaken > 3_000 }, {
+                "Abnormally long downloader startup time of: ${timeTaken ?: timeout.inWholeMilliseconds}ms"
+            })
+            debugAssert({ timeTaken == null }, { "Downloader startup should not time out" })
 
             totalDownloadFlow
                 .debounce { (instances, queue) ->

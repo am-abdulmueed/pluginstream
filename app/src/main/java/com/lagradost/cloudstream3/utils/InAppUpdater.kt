@@ -5,9 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
-import android.text.method.LinkMovementMethod
 import android.util.Log
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -18,8 +16,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.BuildConfig
 import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.lagradost.cloudstream3.MainActivity.Companion.deleteFileOnExit
-import io.noties.markwon.Markwon
-import io.noties.markwon.linkify.LinkifyPlugin
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.mvvm.logError
@@ -40,30 +36,30 @@ import java.io.IOException
 import java.io.InputStreamReader
 
 object InAppUpdater {
-    private const val GITHUB_USER_NAME = "am-abdulmueed"
-    private const val GITHUB_REPO = "pluginstream"
+    private const val GITHUB_USER_NAME = "PluginStream"
+    private const val GITHUB_REPO = "pluginstream-tv"
 
     private const val PRERELEASE_PACKAGE_NAME = "com.betapix.pluginstream.prerelease"
     private const val LOG_TAG = "InAppUpdater"
 
     private data class GithubAsset(
         @JsonProperty("name") val name: String,
-        @JsonProperty("size") val size: Int,
+        @JsonProperty("size") val size: Int, // Size in bytes
         @JsonProperty("browser_download_url") val browserDownloadUrl: String,
-        @JsonProperty("content_type") val contentType: String,
+        @JsonProperty("content_type") val contentType: String, // application/vnd.android.package-archive
     )
 
     private data class GithubRelease(
-        @JsonProperty("tag_name") val tagName: String,
-        @JsonProperty("body") val body: String,
+        @JsonProperty("tag_name") val tagName: String, // Version code
+        @JsonProperty("body") val body: String, // Description
         @JsonProperty("assets") val assets: List<GithubAsset>,
-        @JsonProperty("target_commitish") val targetCommitish: String,
+        @JsonProperty("target_commitish") val targetCommitish: String, // Branch
         @JsonProperty("prerelease") val prerelease: Boolean,
         @JsonProperty("node_id") val nodeId: String,
     )
 
     private data class GithubObject(
-        @JsonProperty("sha") val sha: String,
+        @JsonProperty("sha") val sha: String, // SHA-256 hash
         @JsonProperty("type") val type: String,
         @JsonProperty("url") val url: String,
     )
@@ -83,6 +79,7 @@ object InAppUpdater {
     private suspend fun Activity.getAppUpdate(installPrerelease: Boolean): Update {
         return try {
             when {
+                // No updates on debug version
                 BuildConfig.DEBUG -> Update(false, null, null, null, null)
                 BuildConfig.FLAVOR == "prerelease" || installPrerelease -> getPreReleaseUpdate()
                 else -> getReleaseUpdate()
@@ -96,9 +93,9 @@ object InAppUpdater {
     private suspend fun Activity.getReleaseUpdate(): Update {
         val url = "https://api.github.com/repos/$GITHUB_USER_NAME/$GITHUB_REPO/releases"
         val headers = mapOf("Accept" to "application/vnd.github.v3+json")
-        val response = parseJson<List<GithubRelease>>(
+        val response = parseJson<Array<GithubRelease>>(
             app.get(url, headers = headers).text
-        )
+        ).toList()
 
         val versionRegex = Regex("""(.*?((\d+)\.(\d+)\.(\d+))\.apk)""")
         val versionRegexLocal = Regex("""(.*?((\d+)\.(\d+)\.(\d+)).*)""")
@@ -106,9 +103,7 @@ object InAppUpdater {
             !rel.prerelease
         }.sortedWith(compareBy { release ->
             release.assets.firstOrNull { it.contentType == "application/vnd.android.package-archive" }?.name?.let { it1 ->
-                versionRegex.find(
-                    it1
-                )?.groupValues?.let {
+                versionRegex.find(it1)?.groupValues?.let {
                     it[3].toInt() * 100_000_000 + it[4].toInt() * 10_000 + it[5].toInt()
                 }
             }
@@ -153,9 +148,9 @@ object InAppUpdater {
             "https://api.github.com/repos/$GITHUB_USER_NAME/$GITHUB_REPO/git/ref/tags/pre-release"
         val releaseUrl = "https://api.github.com/repos/$GITHUB_USER_NAME/$GITHUB_REPO/releases"
         val headers = mapOf("Accept" to "application/vnd.github.v3+json")
-        val response = parseJson<List<GithubRelease>>(
+        val response = parseJson<Array<GithubRelease>>(
             app.get(releaseUrl, headers = headers).text
-        )
+        ).toList()
 
         val found = response.lastOrNull { rel ->
             rel.prerelease || rel.tagName == "pre-release"
@@ -187,9 +182,10 @@ object InAppUpdater {
     private suspend fun Activity.downloadUpdate(url: String): Boolean {
         try {
             Log.d(LOG_TAG, "Downloading update: $url")
-            val appUpdateName = "PluginStream"
+            val appUpdateName = "CloudStream"
             val appUpdateSuffix = "apk"
 
+            // Delete all old updates
             this.cacheDir.listFiles()?.filter {
                 it.name.startsWith(appUpdateName) && it.extension == appUpdateSuffix
             }?.forEach { deleteFileOnExit(it) }
@@ -239,6 +235,11 @@ object InAppUpdater {
         }
     }
 
+
+    /**
+     * @param checkAutoUpdate if the update check was launched automatically
+     * @param installPrerelease if we want to install the pre-release version
+     */
     suspend fun Activity.runAutoUpdate(
         checkAutoUpdate: Boolean = true, installPrerelease: Boolean = false
     ): Boolean {
@@ -254,10 +255,13 @@ object InAppUpdater {
             return false
         }
 
+        // Check if update should be skipped
         val updateNodeId = settingsManager.getString(
             getString(R.string.skip_update_key), ""
         )
 
+        // Skips the update if its an automatic update and the update is skipped
+        // This allows updating manually
         if (update.updateNodeId.equals(updateNodeId) && checkAutoUpdate) {
             return false
         }
@@ -275,22 +279,25 @@ object InAppUpdater {
                     )
                 )
 
-                val markwon = Markwon.builder(this)
-                    .usePlugin(LinkifyPlugin.create())
-                    .build()
-                val spannedChangelog = update.changelog?.let { markwon.toMarkdown(it) }
+                val logRegex = Regex("\\[(.*?)]\\((.*?)\\)")
+                val sanitizedChangelog = update.changelog?.replace(logRegex) { matchResult ->
+                    matchResult.groupValues[1]
+                } // Sanitized because it looks cluttered
 
-                builder.setMessage(spannedChangelog)
+                builder.setMessage(sanitizedChangelog)
                 builder.apply {
                     setPositiveButton(R.string.update) { _, _ ->
+                        // Forcefully start any delayed installations
                         if (ApkInstaller.delayedInstaller?.startInstallation() == true) return@setPositiveButton
 
                         showToast(R.string.download_started, Toast.LENGTH_LONG)
 
+                        // Check if the setting hasn't been changed
                         if (settingsManager.getInt(
                                 getString(R.string.apk_installer_key), -1
                             ) == -1
                         ) {
+                            // Set to legacy installer if using MIUI
                             if (isMiUi()) {
                                 settingsManager.edit {
                                     putInt(getString(R.string.apk_installer_key), 1)
@@ -303,6 +310,7 @@ object InAppUpdater {
                         )
 
                         when (currentInstaller) {
+                            // New method
                             0 -> {
                                 val intent = PackageInstallerService.Companion.getIntent(
                                     this@runAutoUpdate, update.updateURL
@@ -311,6 +319,7 @@ object InAppUpdater {
                                     this@runAutoUpdate, intent
                                 )
                             }
+                            // Legacy
                             1 -> {
                                 ioSafe {
                                     if (!downloadUpdate(update.updateURL)) {
@@ -337,9 +346,7 @@ object InAppUpdater {
                         }
                     }
                 }
-                val dialog = builder.show()
-                dialog.findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
-                dialog.setDefaultFocus()
+                builder.show().setDefaultFocus()
             }
         }
         return true

@@ -27,6 +27,7 @@ import com.lagradost.cloudstream3.CloudStreamApp.Companion.getKey
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.removeKey
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.setKey
 import com.lagradost.cloudstream3.CommonActivity.showToast
+import com.lagradost.cloudstream3.InternalAPI
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MainAPI.Companion.settingsForProvider
 import com.lagradost.cloudstream3.MainActivity.Companion.afterPluginsLoadedEvent
@@ -141,42 +142,6 @@ object PluginManager {
                 val plugins = getPluginsLocal().filter { it.filePath != data.filePath }
                 setKey(PLUGINS_KEY_LOCAL, plugins)
             }
-        }
-    }
-
-    suspend fun deleteAllOnlinePlugins(context: Context) {
-        lock.withLock {
-            val extensionsDir = File(context.filesDir, ONLINE_PLUGINS_FOLDER)
-            
-            // 1. Unload all currently loaded plugins that belong to the Extensions folder
-            val loadedPaths = plugins.keys.filter { it.contains(ONLINE_PLUGINS_FOLDER) }
-            loadedPaths.forEach { path ->
-                unloadPlugin(path)
-            }
-            
-            // 2. Unload all registered online plugins (just in case they weren't in the plugins map)
-            val onlinePlugins = getPluginsOnline()
-            onlinePlugins.forEach {
-                unloadPlugin(it.filePath)
-            }
-
-            // 3. Delete the directory recursively
-            if (extensionsDir.exists()) {
-                try {
-                    val success = extensionsDir.deleteRecursively()
-                    Log.i(TAG, "deleteAllOnlinePlugins: Deleted $ONLINE_PLUGINS_FOLDER success=$success")
-                } catch (e: Exception) {
-                    logError(e)
-                    // Fallback: try to delete files individually if recursive delete fails
-                    extensionsDir.listFiles()?.forEach { it.deleteRecursively() }
-                }
-            }
-            
-            // 4. Clear the metadata - Use setKey with empty array to be sure
-            setKey(PLUGINS_KEY, emptyArray<PluginData>())
-            setKey(REPOSITORIES_KEY, emptyArray<RepositoryData>())
-            setKey("PREBUILT_REPOSITORIES", emptyArray<RepositoryData>())
-            loadedOnlinePlugins = false
         }
     }
 
@@ -300,12 +265,8 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName", "DEPRECATION_ERROR")
-    @Deprecated(
-        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
-        replaceWith = ReplaceWith("loadPlugin"),
-        level = DeprecationLevel.ERROR
-    )
+    @Suppress("FunctionName")
+    @InternalAPI
     @Throws
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_updateAllOnlinePluginsAndLoadThem(activity: Activity) {
         assertNonRecursiveCallstack()
@@ -382,12 +343,8 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName", "DEPRECATION_ERROR")
-    @Deprecated(
-        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
-        replaceWith = ReplaceWith("loadPlugin"),
-        level = DeprecationLevel.ERROR
-    )
+    @Suppress("FunctionName")
+    @InternalAPI
     @Throws
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_downloadNotExistingPluginsAndLoad(
         activity: Activity,
@@ -497,12 +454,8 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName", "DEPRECATION_ERROR")
-    @Deprecated(
-        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
-        replaceWith = ReplaceWith("loadPlugin"),
-        level = DeprecationLevel.ERROR
-    )
+    @Suppress("FunctionName")
+    @InternalAPI
     @Throws
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins(context: Context) {
         assertNonRecursiveCallstack()
@@ -515,7 +468,6 @@ object PluginManager {
                 pluginData
             )
         }
-        loadedOnlinePlugins = true
     }
 
     /**
@@ -524,13 +476,9 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName", "DEPRECATION_ERROR")
+    @Suppress("FunctionName")
+    @InternalAPI
     @Throws
-    @Deprecated(
-        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
-        replaceWith = ReplaceWith("loadPlugin"),
-        level = DeprecationLevel.ERROR
-    )
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_hotReloadAllLocalPlugins(activity: FragmentActivity?) {
         assertNonRecursiveCallstack()
 
@@ -549,12 +497,8 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName", "DEPRECATION_ERROR")
-    @Deprecated(
-        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
-        replaceWith = ReplaceWith("loadPlugin"),
-        level = DeprecationLevel.ERROR
-    )
+    @Suppress("FunctionName")
+    @InternalAPI
     @Throws
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_loadAllLocalPlugins(context: Context, forceReload: Boolean) {
         assertNonRecursiveCallstack()
@@ -666,7 +610,7 @@ object PluginManager {
                     return false
                 }
                 InputStreamReader(stream).use { reader ->
-                    manifest = parseJson(reader, BasePlugin.Manifest::class.java)
+                    manifest = parseJson<BasePlugin.Manifest>(reader.readText())
                 }
             }
 
@@ -707,9 +651,15 @@ object PluginManager {
                     context.resources.configuration
                 )
             }
-            plugins[filePath] = pluginInstance
-            classLoaders[loader] = pluginInstance
-            urlPlugins[data.url ?: filePath] = pluginInstance
+            synchronized(plugins) {
+                plugins[filePath] = pluginInstance
+            }
+            synchronized(classLoaders) {
+                classLoaders[loader] = pluginInstance
+            }
+            synchronized(urlPlugins) {
+                urlPlugins[data.url ?: filePath] = pluginInstance
+            }
             if (pluginInstance is Plugin) {
                 pluginInstance.load(context)
             } else {
@@ -745,25 +695,33 @@ object PluginManager {
         }
 
         // remove all registered apis
-        synchronized(APIHolder.apis) {
-            APIHolder.apis.filter { api -> api.sourcePlugin == plugin.filename }.forEach {
-                removePluginMapping(it)
-            }
-        }
-        synchronized(APIHolder.allProviders) {
-            APIHolder.allProviders.removeIf { provider: MainAPI -> provider.sourcePlugin == plugin.filename }
+        APIHolder.apis.filter { api -> api.sourcePlugin == plugin.filename }.forEach {
+            removePluginMapping(it)
         }
 
-        extractorApis.removeIf { provider: ExtractorApi -> provider.sourcePlugin == plugin.filename }
-
-        synchronized(VideoClickActionHolder.allVideoClickActions) {
-            VideoClickActionHolder.allVideoClickActions.removeIf { action: VideoClickAction -> action.sourcePlugin == plugin.filename }
+        APIHolder.allProviders.withLock {
+            APIHolder.allProviders.removeAll { provider -> provider.sourcePlugin == plugin.filename }
         }
 
-        classLoaders.values.removeIf { v -> v == plugin }
+        extractorApis.withLock {
+            extractorApis.removeAll { provider -> provider.sourcePlugin == plugin.filename }
+        }
 
-        plugins.remove(absolutePath)
-        urlPlugins.values.removeIf { v -> v == plugin }
+        VideoClickActionHolder.allVideoClickActions.withLock {
+            VideoClickActionHolder.allVideoClickActions.removeAll { action -> action.sourcePlugin == plugin.filename }
+        }
+
+        synchronized(classLoaders) {
+            classLoaders.values.removeIf { v -> v == plugin }
+        }
+
+        synchronized(plugins) {
+            plugins.remove(absolutePath)
+        }
+
+        synchronized(urlPlugins) {
+            urlPlugins.values.removeIf { v -> v == plugin }
+        }
     }
 
     /**
@@ -808,7 +766,7 @@ object PluginManager {
         pluginHash: String?,
         internalName: String,
         file: File,
-        loadPlugin: Boolean
+        loadPlugin: Boolean,
     ): Boolean {
         try {
             Log.d(TAG, "Downloading plugin: $pluginUrl to ${file.absolutePath}")
@@ -860,13 +818,9 @@ object PluginManager {
      * DO NOT USE THIS IN A PLUGIN! It may case an infinite recursive loop lagging or crashing everyone's devices.
      * If you use it from a plugin, do not expect a stable jvmName, SO DO NOT USE IT!
      */
-    @Suppress("FunctionName", "DEPRECATION_ERROR")
+    @Suppress("FunctionName")
+    @InternalAPI
     @Throws
-    @Deprecated(
-        "Calling this function from a plugin will lead to crashes, use loadPlugin and unloadPlugin",
-        replaceWith = ReplaceWith("loadPlugin"),
-        level = DeprecationLevel.ERROR
-    )
     suspend fun ___DO_NOT_CALL_FROM_A_PLUGIN_manuallyReloadAndUpdatePlugins(activity: Activity) {
         assertNonRecursiveCallstack()
 

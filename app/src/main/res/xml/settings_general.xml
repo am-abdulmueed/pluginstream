@@ -78,4 +78,16 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/pref_category_links">
+
+        <Preference
+            android:icon="@drawable/ic_github_logo"
+            android:title="@string/github"
+            app:summary="https://github.com/am-abdulmueed/pluginstream">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://github.com/am-abdulmueed/pluginstream" />
+        </Preference>
+
+    </PreferenceCategory>
 </PreferenceScreen>

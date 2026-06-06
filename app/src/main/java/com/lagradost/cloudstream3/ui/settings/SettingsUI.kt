@@ -93,7 +93,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
-        /*getPref(R.string.app_layout_key)?.setOnPreferenceClickListener {
+        getPref(R.string.app_layout_key)?.setOnPreferenceClickListener {
             val prefNames = resources.getStringArray(R.array.app_layout)
             val prefValues = resources.getIntArray(R.array.app_layout_values)
 
@@ -108,7 +108,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
                 dismissCallback = {},
                 callback = {
                     try {
-                        settingsManager.edit(commit = true) {
+                        settingsManager.edit {
                             putInt(getString(R.string.app_layout_key), prefValues[it])
                         }
                         context?.updateTv()
@@ -119,7 +119,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
                 }
             )
             return@setOnPreferenceClickListener true
-        }*/
+        }
 
         getPref(R.string.app_theme_key)?.setOnPreferenceClickListener {
             val prefNames = resources.getStringArray(R.array.themes_names).toMutableList()
@@ -153,7 +153,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
                 {}
             ) {
                 try {
-                    settingsManager.edit(commit = true) {
+                    settingsManager.edit {
                         putString(getString(R.string.app_theme_key), prefValues[it])
                     }
                     activity?.recreate()
@@ -191,7 +191,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
                 {}
             ) {
                 try {
-                    settingsManager.edit(commit = true) {
+                    settingsManager.edit {
                         putString(getString(R.string.primary_color_key), prefValues[it])
                     }
                     activity?.recreate()

@@ -18,5 +18,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "CloudStream"
-include(":app", ":library", ":docs", ":flow")
-project(":flow").projectDir = file("Flow/app")
+include(":app", ":library", ":docs")

@@ -7,6 +7,7 @@ import androidx.core.content.edit
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.setKey
+import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.FragmentSetupLayoutBinding
 import com.lagradost.cloudstream3.mvvm.safe
@@ -22,7 +23,7 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
     }
 
     override fun onBindingCreated(binding: FragmentSetupLayoutBinding) {
-        /*safe {
+        safe {
             val ctx = context ?: return@safe
 
             val settingsManager = PreferenceManager.getDefaultSharedPreferences(ctx)
@@ -37,7 +38,9 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
                 ArrayAdapter<String>(ctx, R.layout.sort_bottom_single_choice)
 
             arrayAdapter.addAll(prefNames.toList())
+            ctx.setDefaultFocus(binding.nextBtt)
             binding.apply {
+                listview1.visibility = View.VISIBLE
                 listview1.adapter = arrayAdapter
                 listview1.choiceMode = AbsListView.CHOICE_MODE_SINGLE
                 listview1.setItemChecked(
@@ -52,7 +55,6 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
                 }
 
                 nextBtt.setOnClickListener {
-                    if (findNavController().currentDestination?.id != R.id.navigation_setup_layout) return@setOnClickListener
                     setKey(HAS_DONE_SETUP_KEY, true)
                     findNavController().navigate(R.id.navigation_home)
                 }
@@ -61,6 +63,6 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
                     findNavController().popBackStack()
                 }
             }
-        }*/
+        }
     }
 }

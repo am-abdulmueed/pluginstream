@@ -3,18 +3,13 @@ package com.lagradost.cloudstream3
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.app.PictureInPictureParams
-import android.util.Rational
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Rect
-import android.graphics.PorterDuff
-import android.net.Uri
 import android.os.Bundle
-import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
@@ -24,7 +19,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -37,19 +31,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.edit
 import androidx.core.net.toUri
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
 import androidx.core.view.get
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.marginStart
-import androidx.core.view.updateLayoutParams
-import androidx.core.content.FileProvider
-import androidx.core.graphics.drawable.toBitmap
-import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.tabs.TabLayoutMediator
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -63,6 +50,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.Session
 import com.google.android.gms.cast.framework.SessionManager
@@ -98,12 +86,6 @@ import com.lagradost.cloudstream3.mvvm.safe
 import com.lagradost.cloudstream3.mvvm.observe
 import com.lagradost.cloudstream3.mvvm.observeNullable
 import com.lagradost.cloudstream3.network.initClient
-import com.lagradost.cloudstream3.utils.UIHelper.toPx
-import com.lagradost.cloudstream3.ui.settings.Globals.isLandscape
-import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
-import com.lagradost.cloudstream3.ui.settings.Globals.TV
-import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
-import androidx.constraintlayout.widget.ConstraintLayout
 import com.lagradost.cloudstream3.plugins.PluginManager
 import com.lagradost.cloudstream3.plugins.PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins
 import com.lagradost.cloudstream3.plugins.PluginManager.loadSinglePlugin
@@ -143,7 +125,6 @@ import com.lagradost.cloudstream3.ui.settings.Globals.updateTv
 import com.lagradost.cloudstream3.ui.settings.SettingsGeneral
 import com.lagradost.cloudstream3.ui.setup.HAS_DONE_SETUP_KEY
 import com.lagradost.cloudstream3.ui.setup.SetupFragmentExtensions
-import com.lagradost.cloudstream3.utils.AdsManager
 import com.lagradost.cloudstream3.utils.ApkInstaller
 import com.lagradost.cloudstream3.utils.AppContextUtils.getApiDubstatusSettings
 import com.lagradost.cloudstream3.utils.AppContextUtils.html
@@ -181,7 +162,6 @@ import com.lagradost.cloudstream3.utils.SingleSelectionHelper.showBottomDialog
 import com.lagradost.cloudstream3.utils.SnackbarHelper.showSnackbar
 import com.lagradost.cloudstream3.utils.TvChannelUtils
 import com.lagradost.cloudstream3.utils.UIHelper.changeStatusBarState
-import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
 import com.lagradost.cloudstream3.utils.UIHelper.checkWrite
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.UIHelper.enableEdgeToEdgeCompat
@@ -192,52 +172,33 @@ import com.lagradost.cloudstream3.utils.UIHelper.navigate
 import com.lagradost.cloudstream3.utils.UIHelper.requestRW
 import com.lagradost.cloudstream3.utils.UIHelper.setNavigationBarColorCompat
 import com.lagradost.cloudstream3.utils.UIHelper.toPx
-import com.lagradost.cloudstream3.utils.FirebaseHelper
-import androidx.compose.ui.platform.ComposeView
-import io.github.aedev.flow.data.recommendation.FlowNeuroEngine
-import io.github.aedev.flow.player.DeepFlowManager
 import com.lagradost.cloudstream3.utils.USER_PROVIDER_API
 import com.lagradost.cloudstream3.utils.USER_SELECTED_HOMEPAGE_API
 import com.lagradost.cloudstream3.utils.setText
 import com.lagradost.cloudstream3.utils.setTextHtml
 import com.lagradost.cloudstream3.utils.txt
 import com.lagradost.safefile.SafeFile
-import io.noties.markwon.*
-import io.noties.markwon.utils.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
-import java.io.FileOutputStream
 import java.lang.ref.WeakReference
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.Charset
-import java.util.*
-import kotlin.concurrent.thread
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.system.exitProcess
-import com.lagradost.cloudstream3.ui.dialog.EMAIL_ADDRESS
-import com.lagradost.cloudstream3.ui.dialog.sendEmailIntent
-import com.lagradost.cloudstream3.utils.AppDiagnostics
 import com.lagradost.cloudstream3.utils.downloader.DownloadQueueManager
-import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 
-@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCallback {
-    private var navController: NavController? = null
-    
     companion object {
-        private var isAdShownInSession = false
         var activityResultLauncher: ActivityResultLauncher<Intent>? = null
 
         const val TAG = "MAINACT"
         const val ANIMATED_OUTLINE: Boolean = false
         var lastError: String? = null
-
-        // Floating menu state
-        var isFloatingMenuVisible = false
-            private set
 
         /** Update lastError variable based on error file, to check if app crashed.
          * Can be called multiple times without changing the lastError variable changing.
@@ -311,19 +272,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
          */
         val reloadAccountEvent = Event<Boolean>()
 
-        const val LAST_INSTAGRAM_DIALOG_SHOW_TIME = "last_instagram_dialog_show_time"
-        const val INSTAGRAM_ALREADY_FOLLOWED = "instagram_already_followed"
-        const val LAST_TELEGRAM_DIALOG_SHOW_TIME = "last_telegram_dialog_show_time"
-        const val TELEGRAM_ALREADY_JOINED = "telegram_already_joined"
-        const val LAST_DIALOG_AD_SHOW_TIME = "last_dialog_ad_show_time"
-        const val DIALOG_AD_VIEWS_TODAY = "dialog_ad_views_today"
-        const val DIALOG_AD_LAST_VIEW_DATE = "dialog_ad_last_view_date"
-
         /**
          * @return true if the str has launched an app task (be it successful or not)
          * @param isWebview does not handle providers and opening download page if true. Can still add repos and login.
          * */
-        @Suppress("DEPRECATION_ERROR")
         fun handleAppIntentUrl(
             activity: FragmentActivity?,
             str: String?,
@@ -410,7 +362,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                                 LinkGenerator(
                                     listOf(BasicLink(url, name)),
                                     extract = true,
-                                )
+                                    id = url.hashCode()
+                                ), 0
                             )
                         )
                     } else if (safeURI(str)?.scheme == APP_STRING_RESUME_WATCHING) {
@@ -455,13 +408,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                                 return true
                             }
 
-                            synchronized(apis) {
-                                for (api in apis) {
-                                    if (str.startsWith(api.mainUrl)) {
-                                        loadResult(str, api.name, "")
-                                        return true
-                                    }
-                                }
+                            val matchedApi = apis.filter { str.startsWith(it.mainUrl) }.firstOrNull()
+                            if (matchedApi != null) {
+                                loadResult(str, matchedApi.name, "")
+                                return true
                             }
                         }
                     }
@@ -490,6 +440,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
 
     var lastPopup: SearchResponse? = null
+    var lastPopupJob: Job? = null
     fun loadPopup(result: SearchResponse, load: Boolean = true) {
         lastPopup = result
         val syncName = syncViewModel.syncName(result.apiName)
@@ -505,7 +456,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             syncViewModel.clear()
         }
 
-        if (load) {
+        lastPopupJob?.cancel()
+        lastPopupJob = if (load) {
             viewModel.load(
                 this, result.url, result.apiName, false, if (getApiDubstatusSettings()
                         .contains(DubStatus.Dubbed)
@@ -524,237 +476,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         onDialogDismissedEvent.invoke(dialogId)
     }
 
-    // Floating menu functions
-    private fun setupFloatingMenu() {
-        val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
-        val fabOffers = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabOffers)
-        val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
-        val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
-        val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
-
-        // FAB click handlers
-        fabOffers?.setOnClickListener {
-            hideFloatingMenu()
-            val navOptions = NavOptions.Builder()
-                .setLaunchSingleTop(true)
-                .setRestoreState(true)
-                .setEnterAnim(R.anim.enter_anim)
-                .setExitAnim(R.anim.exit_anim)
-                .setPopEnterAnim(R.anim.pop_enter)
-                .setPopExitAnim(R.anim.pop_exit)
-                .setPopUpTo(
-                    navController?.graph?.findStartDestination()?.id ?: R.id.navigation_home,
-                    inclusive = true,
-                    saveState = true
-                )
-                .build()
-            navController?.navigate(R.id.navigation_offers, null, navOptions)
-        }
-
-        fabLibrary?.setOnClickListener {
-            hideFloatingMenu()
-            val navOptions = NavOptions.Builder()
-                .setLaunchSingleTop(true)
-                .setRestoreState(true)
-                .setEnterAnim(R.anim.enter_anim)
-                .setExitAnim(R.anim.exit_anim)
-                .setPopEnterAnim(R.anim.pop_enter)
-                .setPopExitAnim(R.anim.pop_exit)
-                .setPopUpTo(
-                    navController?.graph?.findStartDestination()?.id ?: R.id.navigation_home,
-                    inclusive = true,
-                    saveState = true
-                )
-                .build()
-            navController?.navigate(R.id.navigation_library, null, navOptions)
-        }
-
-        fabDownloads?.setOnClickListener {
-            hideFloatingMenu()
-            val navOptions = NavOptions.Builder()
-                .setLaunchSingleTop(true)
-                .setRestoreState(true)
-                .setEnterAnim(R.anim.enter_anim)
-                .setExitAnim(R.anim.exit_anim)
-                .setPopEnterAnim(R.anim.pop_enter)
-                .setPopExitAnim(R.anim.pop_exit)
-                .setPopUpTo(
-                    navController?.graph?.findStartDestination()?.id ?: R.id.navigation_home,
-                    inclusive = true,
-                    saveState = true
-                )
-                .build()
-            navController?.navigate(R.id.navigation_downloads, null, navOptions)
-        }
-
-        fabSettings?.setOnClickListener {
-            hideFloatingMenu()
-            val navOptions = NavOptions.Builder()
-                .setLaunchSingleTop(true)
-                .setRestoreState(true)
-                .setEnterAnim(R.anim.enter_anim)
-                .setExitAnim(R.anim.exit_anim)
-                .setPopEnterAnim(R.anim.pop_enter)
-                .setPopExitAnim(R.anim.pop_exit)
-                .setPopUpTo(
-                    navController?.graph?.findStartDestination()?.id ?: R.id.navigation_home,
-                    inclusive = true,
-                    saveState = true
-                )
-                .build()
-            navController?.navigate(R.id.navigation_settings, null, navOptions)
-        }
-    }
-
-    private fun showFloatingMenu() {
-        val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
-        val fabOffers = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabOffers)
-        val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
-        val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
-        val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
-
-        updateFloatingMenuPosition()
-        floatingContainer?.visibility = View.VISIBLE
-        isFloatingMenuVisible = true
-
-        val isLandscape = isLandscape()
-        val fabs = if (isLandscape) {
-            listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
-        } else {
-            listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
-        }
-
-        fabs.forEachIndexed { index, fab ->
-            fab?.apply {
-                if (isLandscape) {
-                    translationX = 100f
-                    translationY = 0f
-                } else {
-                    translationY = 100f
-                    translationX = 0f
-                }
-                alpha = 0f
-                animate()
-                    .translationY(0f)
-                    .translationX(0f)
-                    .alpha(1f)
-                    .setStartDelay(index * 50L)
-                    .setDuration(200)
-                    .start()
-            }
-        }
-
-        // Change More icon to X
-        updateMoreIconToShow(isShowing = true)
-    }
-
-    private fun hideFloatingMenu() {
-        val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer)
-        val fabOffers = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabOffers)
-        val fabLibrary = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabLibrary)
-        val fabDownloads = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabDownloads)
-        val fabSettings = findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabSettings)
-
-        val isLandscape = isLandscape()
-        val fabs = if (isLandscape) {
-            listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
-        } else {
-            listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
-        }
-
-        fabs.forEachIndexed { index, fab ->
-            fab?.apply {
-                animate()
-                    .translationY(if (isLandscape) 0f else 100f)
-                    .translationX(if (isLandscape) 100f else 0f)
-                    .alpha(0f)
-                    .setStartDelay(index * 30L)
-                    .setDuration(150)
-                    .withEndAction {
-                        if (index == fabs.size - 1) {
-                            floatingContainer?.visibility = View.GONE
-                            isFloatingMenuVisible = false
-                            // Change X icon back to More
-                            updateMoreIconToShow(isShowing = false)
-                        }
-                    }
-                    .start()
-            }
-        }
-    }
-
-    private fun updateFloatingMenuPosition() {
-        val floatingContainer = findViewById<LinearLayout>(R.id.floatingMenuContainer) ?: return
-        val params = floatingContainer.layoutParams as? ConstraintLayout.LayoutParams ?: return
-        val isLandscape = isLandscape()
-
-        if (isLandscape) {
-            floatingContainer.orientation = LinearLayout.HORIZONTAL
-            params.bottomToTop = ConstraintLayout.LayoutParams.UNSET
-            params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
-            params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-            params.startToStart = ConstraintLayout.LayoutParams.UNSET
-            
-            // Landscape: Right side, horizontal layout
-            params.marginEnd = 80.toPx // Shift left to avoid overlapping with Select FAB
-            params.bottomMargin = 16.toPx
-            params.horizontalBias = 1.0f
-
-            // Adjust children margins for horizontal layout
-            for (i in 0 until floatingContainer.childCount) {
-                val child = floatingContainer.getChildAt(i)
-                (child.layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    setMargins(12.toPx, 0, 0, 0) // Margin between horizontal items
-                }
-            }
-        } else {
-            floatingContainer.orientation = LinearLayout.VERTICAL
-            params.bottomToTop = R.id.nav_view_container
-            params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-            params.endToEnd = R.id.nav_view_container
-            params.startToStart = R.id.nav_view_container
-            
-            // Portrait: Bottom bar center-right, vertical layout
-            params.marginEnd = 0
-            params.bottomMargin = 4.toPx
-            params.horizontalBias = 0.91f
-
-            // Adjust children margins for vertical layout
-            for (i in 0 until floatingContainer.childCount) {
-                val child = floatingContainer.getChildAt(i)
-                (child.layoutParams as? LinearLayout.LayoutParams)?.apply {
-                    setMargins(0, 0, 0, 12.toPx) // Margin between vertical items
-                }
-            }
-        }
-        floatingContainer.layoutParams = params
-    }
-
-    private fun updateMoreIconToShow(isShowing: Boolean) {
-        binding?.apply {
-            val moreMenuItem = navView.menu.findItem(R.id.navigation_more)
-            val moreRailItem = navRailView.menu.findItem(R.id.navigation_more)
-            
-            if (isShowing) {
-                // Show X icon
-                moreMenuItem?.setIcon(R.drawable.ic_close_x)
-                moreRailItem?.setIcon(R.drawable.ic_close_x)
-            } else {
-                // Show hamburger icon
-                moreMenuItem?.setIcon(R.drawable.ic_more_menu)
-                moreRailItem?.setIcon(R.drawable.ic_more_menu)
-            }
-        }
-    }
-
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         updateLocale() // android fucks me by chaining lang when rotating the phone
         updateTheme(this) // Update if system theme
-
-        if (isFloatingMenuVisible) {
-            updateFloatingMenuPosition()
-        }
 
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
@@ -772,19 +497,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 R.id.navigation_player
             ).contains(destination.id)
 
-        binding?.bannerContainer?.isVisible =
-            !listOf(
-                R.id.navigation_results_phone,
-                R.id.navigation_results_tv,
-                R.id.navigation_player
-            ).contains(destination.id)
-
         val isNavVisible = listOf(
             R.id.navigation_home,
             R.id.navigation_search,
-            R.id.navigation_flow,
-            R.id.navigation_game,
-            R.id.navigation_offers,
             R.id.navigation_library,
             R.id.navigation_downloads,
             R.id.navigation_settings,
@@ -840,12 +555,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         binding?.apply {
             navRailView.isVisible = isNavVisible && isLandscape()
             navView.isVisible = isNavVisible && !isLandscape()
-            navViewContainer.isVisible = isNavVisible && !isLandscape()
             navHostFragment.apply {
                 val marginPx = resources.getDimensionPixelSize(R.dimen.nav_rail_view_width)
-                layoutParams = (navHostFragment.layoutParams as ViewGroup.MarginLayoutParams).apply {
-                    marginStart = if (isNavVisible && isLandscape() && isLayout(TV or EMULATOR)) marginPx else 0
-                }
+                layoutParams =
+                    (navHostFragment.layoutParams as ViewGroup.MarginLayoutParams).apply {
+                        marginStart =
+                            if (isNavVisible && isLandscape() && isLayout(TV or EMULATOR)) marginPx else 0
+                    }
             }
 
             /**
@@ -854,21 +570,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
              * highlight the wrong one in UI.
              */
             when (destination.id) {
-                R.id.navigation_home -> {
-                    navRailView.menu.findItem(R.id.navigation_home)?.isChecked = true
-                    navView.menu.findItem(R.id.navigation_home)?.isChecked = true
-                }
-                R.id.navigation_search -> {
-                    navRailView.menu.findItem(R.id.navigation_search)?.isChecked = true
-                    navView.menu.findItem(R.id.navigation_search)?.isChecked = true
-                }
-                R.id.navigation_library -> {
-                    navRailView.menu.findItem(R.id.navigation_library)?.isChecked = true
-                    navView.menu.findItem(R.id.navigation_library)?.isChecked = true
-                }
-                in listOf(R.id.navigation_downloads, R.id.navigation_download_child, R.id.navigation_download_queue) -> {
-                    navRailView.menu.findItem(R.id.navigation_downloads)?.isChecked = true
-                    navView.menu.findItem(R.id.navigation_downloads)?.isChecked = true
+                in listOf(
+                    R.id.navigation_downloads,
+                    R.id.navigation_download_child,
+                    R.id.navigation_download_queue
+                ) -> {
+                    navRailView.menu.findItem(R.id.navigation_downloads).isChecked = true
+                    navView.menu.findItem(R.id.navigation_downloads).isChecked = true
                 }
 
                 in listOf(
@@ -885,8 +593,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     R.id.navigation_settings_plugins,
                     R.id.navigation_test_providers
                 ) -> {
-                    navRailView.menu.findItem(R.id.navigation_settings)?.isChecked = true
-                    navView.menu.findItem(R.id.navigation_settings)?.isChecked = true
+                    navRailView.menu.findItem(R.id.navigation_settings).isChecked = true
+                    navView.menu.findItem(R.id.navigation_settings).isChecked = true
                 }
             }
         }
@@ -931,10 +639,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         super.onResume()
         afterPluginsLoadedEvent += ::onAllPluginsLoaded
         setActivityInstance(this)
-        if (BuildConfig.USE_FIREBASE) {
-            FirebaseHelper.logScreenView("MainActivity", "MainActivity")
-            FirebaseHelper.logEvent("session_start")
-        }
         try {
             if (isCastApiAvailable()) {
                 mSessionManager?.addSessionManagerListener(mSessionManagerListener)
@@ -942,16 +646,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         } catch (e: Exception) {
             logError(e)
         }
-        // Show custom ads dialog first, then review dialog after delay
-        showDialogAd()
-        showReviewDialogIfNeeded()
     }
 
     override fun onPause() {
         super.onPause()
-
-        if (BuildConfig.USE_FIREBASE) {
-        }
 
         // Start any delayed updates
         if (ApkInstaller.delayedInstaller?.startInstallation() == true) {
@@ -967,80 +665,16 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
     }
 
-    private fun showReviewDialogIfNeeded() {
-        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
-        if (!hasDoneSetup) return
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean =
+        CommonActivity.dispatchKeyEvent(this, event) ?: super.dispatchKeyEvent(event)
 
-        val reviewPrefs = getSharedPreferences("review_prefs", Context.MODE_PRIVATE)
-        val movieCount = reviewPrefs.getInt("movie_count", 0)
-        val hasReviewed = reviewPrefs.getBoolean("has_reviewed", false)
-        val hasShownBefore = reviewPrefs.getBoolean("has_shown_before", false)
-        
-        // Don't show if user has already reviewed
-        if (hasReviewed) return
-        
-        // Show only once after 5 movies watched
-        if (movieCount >= 5 && !hasShownBefore) {
-            val handler = android.os.Handler(android.os.Looper.getMainLooper())
-            handler.postDelayed({
-                showReviewDialog()
-                
-                // Update preferences - mark as shown and reset movie count
-                reviewPrefs.edit().apply {
-                    putBoolean("has_shown_before", true)
-                    putInt("movie_count", 0) // Reset count after showing
-                    apply()
-                }
-            }, 8000) // Show after 8 seconds (after custom ads)
-        }
-    }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean =
+        CommonActivity.onKeyDown(this, keyCode, event) ?: super.onKeyDown(keyCode, event)
 
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-
         onUserLeaveHint(this)
-    }
-
-    fun setFullscreen(isFullscreen: Boolean) {
-        main {
-            binding?.apply {
-                val isNavVisible = !isFullscreen && listOf(
-                    R.id.navigation_home,
-                    R.id.navigation_search,
-                    R.id.navigation_flow,
-                    R.id.navigation_game,
-                    R.id.navigation_offers,
-                    R.id.navigation_library,
-                    R.id.navigation_downloads,
-                    R.id.navigation_settings,
-                    R.id.navigation_download_child,
-                    R.id.navigation_download_queue,
-                    R.id.navigation_subtitles,
-                    R.id.navigation_chrome_subtitles,
-                    R.id.navigation_settings_player,
-                    R.id.navigation_settings_updates,
-                    R.id.navigation_settings_ui,
-                    R.id.navigation_settings_account,
-                    R.id.navigation_settings_providers,
-                    R.id.navigation_settings_general,
-                    R.id.navigation_settings_extensions,
-                    R.id.navigation_settings_plugins,
-                    R.id.navigation_test_providers,
-                ).contains(navController?.currentDestination?.id)
-
-                navRailView.isVisible = isNavVisible && isLandscape()
-                navView.isVisible = isNavVisible && !isLandscape()
-                navViewContainer.isVisible = isNavVisible && !isLandscape()
-                
-                navHostFragment.apply {
-                    val marginPx = resources.getDimensionPixelSize(R.dimen.nav_rail_view_width)
-                    layoutParams = (navHostFragment.layoutParams as ViewGroup.MarginLayoutParams).apply {
-                        marginStart = if (isNavVisible && isLandscape() && isLayout(TV or EMULATOR)) marginPx else 0
-                    }
-                }
-            }
-        }
     }
 
     @SuppressLint("ApplySharedPref") // commit since the op needs to be synchronous
@@ -1075,7 +709,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     }
 
     override fun onDestroy() {
-        AdsManager.destroyBannerAd()
         filesToDelete.forEach { path ->
             val result = File(path).deleteRecursively()
             if (result) {
@@ -1101,10 +734,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     private fun handleAppIntent(intent: Intent?) {
         if (intent == null) return
-        var str = intent.dataString
-        if (intent.action == Intent.ACTION_SEND) {
-            str = intent.getStringExtra(Intent.EXTRA_TEXT)
-        }
+        val str = intent.dataString
         loadCache()
 
         handleAppIntentUrl(this, str, false, intent.extras)
@@ -1135,7 +765,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_search -> R.id.main_search
             R.id.navigation_library -> R.id.main_search
             R.id.navigation_downloads -> R.id.download_appbar
-            R.id.navigation_settings -> R.id.settings_toolbar
             else -> null
         }
         if (targetView != null && isLayout(TV or EMULATOR)) {
@@ -1147,7 +776,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     R.id.navigation_downloads,
                     R.id.navigation_home,
                     R.id.navigation_search,
-                    R.id.navigation_flow,
                     R.id.navigation_library,
                     R.id.navigation_settings,
                 )) {
@@ -1165,7 +793,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         if (item.order and Menu.CATEGORY_SECONDARY == 0) {
             builder.setPopUpTo(
                 navController.graph.findStartDestination().id,
-                inclusive = true,
+                inclusive = false,
                 saveState = true
             )
         }
@@ -1178,12 +806,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
     }
 
-
     private val pluginsLock = Mutex()
     private fun onAllPluginsLoaded(success: Boolean = false) {
         ioSafe {
             pluginsLock.withLock {
-                synchronized(allProviders) {
+                allProviders.withLock {
                     // Load cloned sites after plugins have been loaded since clones depend on plugins.
                     try {
                         getKey<Array<SettingsGeneral.CustomSite>>(USER_PROVIDER_API)?.let { list ->
@@ -1229,6 +856,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
     private fun hidePreviewPopupDialog() {
         bottomPreviewPopup.dismissSafe(this)
+        lastPopupJob?.cancel()
+        lastPopupJob = null
         bottomPreviewPopup = null
         bottomPreviewBinding = null
     }
@@ -1548,550 +1177,12 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
     }
 
-    private fun showInstagramFollowDialog() {
-        val alreadyFollowed = getKey(INSTAGRAM_ALREADY_FOLLOWED, false) ?: false
-        val lastShowTime = getKey<Long>(LAST_INSTAGRAM_DIALOG_SHOW_TIME) ?: 0L
-        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
-        val currentTime = System.currentTimeMillis()
-
-        // Show only if setup is done and not already followed
-        if (!hasDoneSetup || alreadyFollowed) {
-            showTelegramFollowDialog()
-            return
-        }
-
-        // Show only if it's a new day (at least 24 hours passed) or first time (lastShowTime == 0)
-        val oneDayMillis = 24 * 60 * 60 * 1000
-        if (lastShowTime != 0L && currentTime - lastShowTime < oneDayMillis) {
-            showTelegramFollowDialog()
-            return
-        }
-
-        val dialog = Dialog(this, R.style.DialogHalfFullscreen)
-        val dialogView = layoutInflater.inflate(R.layout.instagram_follow_dialog, null)
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        val followButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.follow_button)
-
-        val alreadyFollowedCheckbox = dialogView.findViewById<CheckBox>(R.id.already_followed_checkbox)
-
-        fun openUrl(url: String?) {
-            if (url.isNullOrBlank()) return
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, url.trim().removeSurrounding("`").toUri())
-                startActivity(intent)
-            } catch (e: Exception) {
-                logError(e)
-            }
-        }
-
-        var instagramUrl = "https://instagram.com/pluginstreamofficial"
-        CommonActivity.getSocialLinks { json ->
-            val handles = json?.optJSONArray("social_handles")
-            if (handles != null) {
-                for (i in 0 until handles.length()) {
-                    val handle = handles.getJSONObject(i)
-                    if (handle.optString("platform").lowercase() == "instagram") {
-                        instagramUrl = handle.optString("url")
-                        break
-                    }
-                }
-            }
-        }
-
-        dialog.setOnDismissListener {
-            showTelegramFollowDialog()
-        }
-
-        // Only show checkbox if it's NOT the first time (lastShowTime != 0)
-        if (lastShowTime != 0L) {
-            alreadyFollowedCheckbox.isVisible = true
-        }
-
-        alreadyFollowedCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                followButton.text = "DISMISS"
-            } else {
-                followButton.text = "FOLLOW NOW"
-            }
-        }
-
-        followButton.setOnClickListener {
-            if (alreadyFollowedCheckbox.isChecked) {
-                setKey(INSTAGRAM_ALREADY_FOLLOWED, true)
-                dialog.dismiss()
-            } else {
-                // Open Instagram URL
-                openUrl(instagramUrl)
-                dialog.dismiss()
-            }
-        }
-
-        // Update last show time
-        setKey(LAST_INSTAGRAM_DIALOG_SHOW_TIME, currentTime)
-
-        dialog.show()
-    }
-
-    private fun showTelegramFollowDialog() {
-        val alreadyJoined = getKey(TELEGRAM_ALREADY_JOINED, false) ?: false
-        val lastShowTime = getKey<Long>(LAST_TELEGRAM_DIALOG_SHOW_TIME) ?: 0L
-        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
-        val currentTime = System.currentTimeMillis()
-
-        // Show only if setup is done and not already joined
-        if (!hasDoneSetup || alreadyJoined) {
-            return
-        }
-
-        // Show only if it's a new day (at least 24 hours passed) or first time (lastShowTime == 0)
-        val oneDayMillis = 24 * 60 * 60 * 1000
-        if (lastShowTime != 0L && currentTime - lastShowTime < oneDayMillis) {
-            return
-        }
-
-        val dialog = Dialog(this, R.style.DialogHalfFullscreen)
-        val dialogView = layoutInflater.inflate(R.layout.telegram_follow_dialog, null)
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        val joinButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.join_button)
-
-        val alreadyJoinedCheckbox = dialogView.findViewById<CheckBox>(R.id.already_joined_checkbox)
-
-        fun openUrl(url: String?) {
-            if (url.isNullOrBlank()) return
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, url.trim().removeSurrounding("`").toUri())
-                startActivity(intent)
-            } catch (e: Exception) {
-                logError(e)
-            }
-        }
-
-        var telegramUrl = "https://t.me/pluginstreamofficial"
-        CommonActivity.getSocialLinks { json ->
-            val handles = json?.optJSONArray("social_handles")
-            if (handles != null) {
-                for (i in 0 until handles.length()) {
-                    val handle = handles.getJSONObject(i)
-                    if (handle.optString("platform").lowercase() == "telegram") {
-                        telegramUrl = handle.optString("url")
-                        break
-                    }
-                }
-            }
-        }
-
-        // Only show checkbox if it's NOT the first time (lastShowTime != 0)
-        if (lastShowTime != 0L) {
-            alreadyJoinedCheckbox.isVisible = true
-        }
-
-        alreadyJoinedCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                joinButton.text = "DISMISS"
-            } else {
-                joinButton.text = "JOIN NOW"
-            }
-        }
-
-        joinButton.setOnClickListener {
-            if (alreadyJoinedCheckbox.isChecked) {
-                setKey(TELEGRAM_ALREADY_JOINED, true)
-                dialog.dismiss()
-            } else {
-                // Open Telegram URL
-                openUrl(telegramUrl)
-                dialog.dismiss()
-            }
-        }
-
-        // Update last show time
-        setKey(LAST_TELEGRAM_DIALOG_SHOW_TIME, currentTime)
-
-        dialog.show()
-    }
-
-    private fun showDialogAd() {
-        if (isAdShownInSession) return
-        showReviewDialogIfNeeded()
-        val currentTime = System.currentTimeMillis()
-        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
-
-        if (!hasDoneSetup) return
-
-        ioSafe {
-            try {
-                val client = okhttp3.OkHttpClient.Builder()
-                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .build()
-
-                val request = okhttp3.Request.Builder()
-                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/ads-json@main/ads.json")
-                    .get()
-                    .build()
-
-                val response = client.newCall(request).execute()
-
-                val jsonString = response.use {
-                    if (!it.isSuccessful) throw Exception("Failed to fetch ads config")
-                    it.body?.string() ?: throw Exception("Empty response")
-                }
-
-                val jsonObject = org.json.JSONObject(jsonString)
-                val dialogAd = jsonObject.getJSONObject("dialog_ad")
-
-                val enabled = dialogAd.optBoolean("enabled", true)
-                if (!enabled) return@ioSafe
-
-                // All values must come from online JSON - no hardcoded fallbacks
-                val badge = dialogAd.optString("badge", "")
-                val title = dialogAd.optString("title", "")
-                val message = dialogAd.optString("message", "")
-                val buttonText = dialogAd.optString("button_text", "")
-                
-                val imageList = mutableListOf<String>()
-                val imagesArray = dialogAd.optJSONArray("images")
-                if (imagesArray != null) {
-                    for (i in 0 until imagesArray.length()) {
-                        imageList.add(imagesArray.getString(i))
-                    }
-                } else {
-                    val singleImage = dialogAd.optString("image_url", "")
-                    if (singleImage.isNotEmpty()) imageList.add(singleImage)
-                }
-                
-                val showIndicator = dialogAd.optBoolean("show_indicator", true)
-                val clickUrl = dialogAd.optString("click_url", "")
-                val showAfterSeconds = dialogAd.optInt("show_after_seconds", 0)
-                val autoCloseSeconds = dialogAd.optInt("auto_close_seconds", 0)
-                val startDate = dialogAd.optString("start_date", "")
-                val endDate = dialogAd.optString("end_date", "")
-                
-                val maxDailyViewsRaw = dialogAd.opt("max_daily_views")
-                val isNoLimit = maxDailyViewsRaw?.toString()?.lowercase()?.trim() == "no limit"
-                val maxDailyViews = if (isNoLimit) Int.MAX_VALUE else dialogAd.optInt("max_daily_views", 0)
-                
-                val intervalHours = dialogAd.optInt("interval_hours", 0)
-
-                // Validate required fields - if any essential field is empty, don't show dialog
-                if (title.isEmpty() || message.isEmpty() || buttonText.isEmpty() || 
-                    imageList.isEmpty() || clickUrl.isEmpty() || 
-                    showAfterSeconds <= 0 || autoCloseSeconds <= 0) {
-                    return@ioSafe
-                }
-
-                val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                val today = sdf.format(java.util.Date())
-                val startDateObj = sdf.parse(startDate)
-                val endDateObj = sdf.parse(endDate)
-                val todayObj = sdf.parse(today)
-
-                if (startDateObj != null && endDateObj != null && todayObj != null) {
-                    if (todayObj.before(startDateObj) || todayObj.after(endDateObj)) return@ioSafe
-                }
-
-                val lastViewDate = getKey<String>(DIALOG_AD_LAST_VIEW_DATE)
-                var viewsToday = getKey<Int>(DIALOG_AD_VIEWS_TODAY) ?: 0
-
-                if (lastViewDate != today) {
-                    viewsToday = 0
-                    setKey(DIALOG_AD_LAST_VIEW_DATE, today)
-                }
-
-                if (viewsToday >= maxDailyViews) return@ioSafe
-
-                val lastShowTime = getKey<Long>(LAST_DIALOG_AD_SHOW_TIME) ?: 0L
-                val intervalMillis = intervalHours * 60 * 60 * 1000L
-
-                if (lastShowTime != 0L && currentTime - lastShowTime < intervalMillis) return@ioSafe
-
-                val handler = android.os.Handler(android.os.Looper.getMainLooper())
-
-                handler.postDelayed({
-                    if (isAdShownInSession) return@postDelayed
-                    isAdShownInSession = true
-                    val dialog = Dialog(this@MainActivity, R.style.DialogHalfFullscreen)
-                    val dialogView = layoutInflater.inflate(R.layout.dialog_ad, null)
-                    dialog.setContentView(dialogView)
-                    
-                    dialog.window?.apply {
-                        setBackgroundDrawableResource(android.R.color.transparent)
-                        setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                        setGravity(Gravity.CENTER)
-                        
-                        // Ensure dialog doesn't exceed screen height and is responsive
-                        val displayMetrics = resources.displayMetrics
-                        val maxHeight = (displayMetrics.heightPixels * 0.85).toInt()
-                        val card = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.dialog_card)
-                        card.updateLayoutParams {
-                            height = ViewGroup.LayoutParams.WRAP_CONTENT
-                        }
-                    }
-                    dialog.setCancelable(false)
-
-                    val adViewPager = dialogView.findViewById<ViewPager2>(R.id.ad_viewpager)
-                    val adIndicator = dialogView.findViewById<com.google.android.material.tabs.TabLayout>(R.id.ad_indicator)
-                    val adBadge = dialogView.findViewById<android.widget.TextView>(R.id.ad_badge)
-                    val adTitle = dialogView.findViewById<android.widget.TextView>(R.id.ad_title)
-                    val adMessage = dialogView.findViewById<android.widget.TextView>(R.id.ad_message)
-                    val adButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.ad_button)
-                    val adShareButton = dialogView.findViewById<android.view.View>(R.id.ad_share_button)
-                    val adDebugButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.ad_debug_button)
-                    val skipButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.skip_button)
-                    val closeIcon = dialogView.findViewById<android.widget.ImageView>(R.id.close_icon)
-                    val debugLogPanel = dialogView.findViewById<android.widget.LinearLayout>(R.id.debug_log_panel)
-                    val debugLogText = dialogView.findViewById<android.widget.TextView>(R.id.debug_log_text)
-                    val copyAdDebugLog = dialogView.findViewById<android.widget.ImageView>(R.id.copy_ad_debug_log)
-
-                    val adLogEntries = mutableListOf<String>()
-                    fun addAdLog(message: String) {
-                        val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
-                        adLogEntries.add("[$timestamp] $message")
-                        debugLogText.text = adLogEntries.joinToString("\n")
-                    }
-
-                    if (com.lagradost.cloudstream3.BuildConfig.DEBUG) {
-                        adDebugButton.visibility = View.VISIBLE
-                        adDebugButton.setOnClickListener {
-                            debugLogPanel.visibility = if (debugLogPanel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
-                            adDebugButton.text = if (debugLogPanel.visibility == View.VISIBLE) "Hide Debug Logs" else "Show Debug Logs"
-                        }
-                        
-                        copyAdDebugLog.setOnClickListener {
-                            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                            val clip = android.content.ClipData.newPlainText("Ad Debug Logs", adLogEntries.joinToString("\n"))
-                            clipboard.setPrimaryClip(clip)
-                            showToast("Logs copied!", Toast.LENGTH_SHORT)
-                        }
-
-                        addAdLog("Ad Dialog Initialized")
-                        addAdLog("Found ${imageList.size} images")
-                    }
-
-                    if (badge.isNotEmpty()) {
-                        adBadge.text = badge
-                        adBadge.isVisible = true
-                        
-                        when (badge.lowercase()) {
-                            "sponsored" -> {
-                                adBadge.setBackgroundResource(R.drawable.badge_bg_blue)
-                                adBadge.setTextColor(android.graphics.Color.WHITE)
-                            }
-                            "promotion" -> {
-                                adBadge.setBackgroundResource(R.drawable.badge_bg_green)
-                                adBadge.setTextColor(android.graphics.Color.WHITE)
-                            }
-                            "hot offer", "hot" -> {
-                                adBadge.setBackgroundResource(R.drawable.badge_bg_orange)
-                                adBadge.setTextColor(android.graphics.Color.WHITE)
-                            }
-                            "exclusive" -> {
-                                adBadge.setBackgroundResource(R.drawable.badge_bg_purple)
-                                adBadge.setTextColor(android.graphics.Color.WHITE)
-                            }
-                            "announcement", "new feature", "update" -> {
-                                adBadge.setBackgroundResource(R.drawable.badge_bg_announcement)
-                                adBadge.setTextColor(android.graphics.Color.WHITE)
-                            }
-                            "premium", "vip" -> {
-                                adBadge.setBackgroundResource(R.drawable.badge_bg_gold)
-                                adBadge.setTextColor(android.graphics.Color.BLACK)
-                            }
-                            else -> {
-                                adBadge.setBackgroundResource(R.drawable.badge_bg_red)
-                                adBadge.setTextColor(android.graphics.Color.WHITE)
-                            }
-                        }
-                    } else {
-                        adBadge.isGone = true
-                    }
-                    adTitle.text = title
-                    
-                    // Apply markdown rendering to message with Linkify and Strikethrough support
-                    val markwon = Markwon.builder(this@MainActivity)
-                        .usePlugin(io.noties.markwon.linkify.LinkifyPlugin.create())
-                        .usePlugin(io.noties.markwon.ext.strikethrough.StrikethroughPlugin.create())
-                        .build()
-                    adMessage.text = markwon.toMarkdown(message)
-                    adMessage.movementMethod = android.text.method.LinkMovementMethod.getInstance()
-                    
-                    adButton.text = buttonText
-
-                    val carouselAdapter = AdCarouselAdapter(imageList, onImageLog = { log ->
-                        if (com.lagradost.cloudstream3.BuildConfig.DEBUG) {
-                            addAdLog(log)
-                        }
-                    }) { currentImageUrl ->
-                        try {
-                            val fullScreenDialog = Dialog(this@MainActivity, R.style.DialogFullscreen)
-                            val fullScreenView = layoutInflater.inflate(R.layout.dialog_fullscreen_image, null)
-                            fullScreenDialog.setContentView(fullScreenView)
-                            
-                            // Adjust for status bar padding dynamically
-                            val closeFull = fullScreenView.findViewById<android.widget.ImageView>(R.id.close_fullscreen)
-                            ViewCompat.setOnApplyWindowInsetsListener(fullScreenView) { v, insets ->
-                                val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-                                closeFull.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                                    topMargin = statusBarHeight + 16.toPx
-                                }
-                                insets
-                            }
-                            
-                            val fullImage = fullScreenView.findViewById<android.widget.ImageView>(R.id.fullscreen_image)
-                            val fullProgress = fullScreenView.findViewById<android.widget.ProgressBar>(R.id.fullscreen_progress)
-                            
-                            fullProgress.visibility = View.VISIBLE
-                            fullImage.loadImage(currentImageUrl, builder = {
-                                listener(
-                                    onStart = { fullProgress.visibility = View.VISIBLE },
-                                    onSuccess = { _, _ -> fullProgress.visibility = View.GONE },
-                                    onError = { _, _ -> fullProgress.visibility = View.GONE }
-                                )
-                            })
-                            
-                            // Add Smooth Zoom Functionality
-                            var scaleFactor = 1.0f
-                            val detector = android.view.ScaleGestureDetector(this@MainActivity, object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
-                                override fun onScale(d: android.view.ScaleGestureDetector): Boolean {
-                                    scaleFactor *= d.scaleFactor
-                                    scaleFactor = scaleFactor.coerceIn(1.0f, 5.0f)
-                                    fullImage.scaleX = scaleFactor
-                                    fullImage.scaleY = scaleFactor
-                                    return true
-                                }
-                            })
-                            
-                            fullScreenView.setOnTouchListener { _, event ->
-                                detector.onTouchEvent(event)
-                                true
-                            }
-                            
-                            closeFull.setOnClickListener {
-                                fullScreenDialog.dismiss()
-                            }
-                            
-                            fullScreenDialog.show()
-                        } catch (e: Exception) {
-                            logError(e)
-                        }
-                    }
-
-                    adViewPager.adapter = carouselAdapter
-                    
-                    // Add clear gap between images in the carousel
-                    if (imageList.size > 1) {
-                        val marginPx = (20 * resources.displayMetrics.density).toInt()
-                        adViewPager.setPageTransformer(androidx.viewpager2.widget.MarginPageTransformer(marginPx))
-                        adViewPager.offscreenPageLimit = 1
-                    }
-
-                    if (imageList.size > 1 && showIndicator) {
-                        adIndicator.isVisible = true
-                        TabLayoutMediator(adIndicator, adViewPager) { _, _ -> }.attach()
-                    } else {
-                        adIndicator.isGone = true
-                    }
-
-                    adButton.setOnClickListener {
-                        try {
-                            val intent = Intent(Intent.ACTION_VIEW, clickUrl.toUri())
-                            startActivity(intent)
-                        } catch (e: Exception) {
-                            logError(e)
-                        }
-                        dialog.dismiss()
-                    }
-
-                    adShareButton.setOnClickListener {
-                        try {
-                            val shareMessage = buildString {
-                                append("🚀 *PluginStream Special Offer!*\n\n")
-                                if (badge.isNotEmpty()) append("[$badge] ")
-                                appendLine("*$title*")
-                                appendLine()
-                                appendLine(message)
-                                appendLine()
-                                appendLine("🔗 *Check it out here:* $clickUrl")
-                                appendLine()
-                                appendLine("🌐 *Download PluginStream:* https://pluginstream.pages.dev")
-                                appendLine("🛡 *Official Community:* https://t.me/pluginstreamofficial")
-                            }
-
-                            // Get current image from ViewPager
-                            val currentPos = adViewPager.currentItem
-                            val recyclerView = adViewPager.getChildAt(0) as? androidx.recyclerview.widget.RecyclerView
-                            val viewHolder = recyclerView?.findViewHolderForAdapterPosition(currentPos) as? AdCarouselAdapter.ViewHolder
-                            val bitmap = viewHolder?.imageView?.drawable?.toBitmap()
-
-                            if (bitmap != null) {
-                                val cachePath = File(cacheDir, "images")
-                                cachePath.mkdirs()
-                                val imageFile = File(cachePath, "ad_share_image.png")
-                                val stream = FileOutputStream(imageFile)
-                                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-                                stream.close()
-
-                                val contentUri = FileProvider.getUriForFile(this@MainActivity, "$packageName.provider", imageFile)
-
-                                if (contentUri != null) {
-                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                         type = "image/*"
-                                         putExtra(Intent.EXTRA_STREAM, contentUri)
-                                         putExtra(Intent.EXTRA_SUBJECT, title)
-                                         putExtra(Intent.EXTRA_TEXT, shareMessage)
-                                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                     }
-                                     startActivity(Intent.createChooser(shareIntent, "Share Ad"))
-                                 }
-                            } else {
-                                // Fallback to text only if image is not loaded
-                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_SUBJECT, title)
-                                    putExtra(Intent.EXTRA_TEXT, shareMessage)
-                                }
-                                startActivity(Intent.createChooser(shareIntent, "Share Ad"))
-                            }
-                        } catch (e: Exception) {
-                            logError(e)
-                        }
-                    }
-
-                    closeIcon.setOnClickListener {
-                        dialog.dismiss()
-                    }
-
-                    skipButton.setOnClickListener {
-                        dialog.dismiss()
-                    }
-
-                    setKey(LAST_DIALOG_AD_SHOW_TIME, currentTime)
-                    viewsToday++
-                    setKey(DIALOG_AD_VIEWS_TODAY, viewsToday)
-
-                    dialog.show()
-                }, (showAfterSeconds * 1000L))
-
-            } catch (e: Exception) {
-                logError(e)
-            }
-        }
-    }
-
-    @Suppress("DEPRECATION_ERROR")
     override fun onCreate(savedInstanceState: Bundle?) {
-        val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as android.app.UiModeManager
-        if (uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION) {
-            Toast.makeText(this, "This version is for Phones only! Please install the TV version.", Toast.LENGTH_LONG).show()
-            finish()
-            return
-        }
 
-        app.initClient(this)
+        app.initClient(this, ignoreSSL = false)
+        @OptIn(UnsafeSSL::class)
+        insecureApp.initClient(this, ignoreSSL = true)
+
         val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
 
         setLastError(this)
@@ -2107,17 +1198,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         setNavigationBarColorCompat(R.attr.primaryGrayBackground)
         updateLocale()
         super.onCreate(savedInstanceState)
-
-        // Pre-initialize Flow engines in background to speed up Flow tab opening
-        ioSafe {
-            try {
-                FlowNeuroEngine.initialize(this@MainActivity)
-                DeepFlowManager.initialize(this@MainActivity)
-            } catch (e: Throwable) {
-                logError(e)
-            }
-        }
-
         try {
             if (isCastApiAvailable()) {
                 CastContext.getSharedInstance(this) { it.run() }
@@ -2145,11 +1225,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     // Recompile oat on new version
                     PluginManager.deleteAllOatFiles(this)
                 }
-
-                // Show changelog on update
-                main {
-                    com.lagradost.cloudstream3.ui.changelog.ChangelogFragment().show(supportFragmentManager, "changelog")
-                }
             }
         }
 
@@ -2158,16 +1233,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             if (isLayout(TV or EMULATOR)) {
                 val newLocalBinding = ActivityMainTvBinding.inflate(layoutInflater, null, false)
                 setContentView(newLocalBinding.root)
-
-                // Warm up Compose runtime to avoid delay on first click of Flow tab
-                // This initializes the Compose runtime early
-                try {
-                    ComposeView(this).apply {
-                        setContent {}
-                    }
-                } catch (e: Throwable) {
-                    logError(e)
-                }
 
                 if (isLayout(TV) && ANIMATED_OUTLINE) {
                     TvFocus.focusOutline = WeakReference(newLocalBinding.focusOutline)
@@ -2209,17 +1274,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             } else {
                 val newLocalBinding = ActivityMainBinding.inflate(layoutInflater, null, false)
                 setContentView(newLocalBinding.root)
-
-                // Warm up Compose runtime to avoid delay on first click of Flow tab
-                // This initializes the Compose runtime early
-                try {
-                    ComposeView(this).apply {
-                        setContent {}
-                    }
-                } catch (e: Throwable) {
-                    logError(e)
-                }
-
                 newLocalBinding
             }
         } catch (t: Throwable) {
@@ -2227,26 +1281,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             null
         }
 
-        // Setup floating menu
-        setupFloatingMenu()
-
         binding?.apply {
-            // Apply insets to the container for floating bottom nav
-            ViewCompat.setOnApplyWindowInsetsListener(navViewContainer) { view, windowInsets ->
-                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-                // Set the container margins based on system bars for modern floating look
-                // This removes the "extra space" below the card while keeping it floating above the system bars
-                view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    // Margin should be system bar height + our desired floating margin (12dp)
-                    // If system bar height is 0 (gesture nav), it will still have 12dp margin
-                    bottomMargin = insets.bottom + 12.toPx
-                    leftMargin = insets.left + 24.toPx
-                    rightMargin = insets.right + 24.toPx
-                }
-
-                WindowInsetsCompat.CONSUMED
-            }
+            fixSystemBarsPadding(
+                navView,
+                heightResId = R.dimen.nav_view_height,
+                padTop = false,
+                overlayCutout = false
+            )
 
             fixSystemBarsPadding(
                 navRailView,
@@ -2351,47 +1392,20 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
             }
         } else {
-            val dialogView = layoutInflater.inflate(R.layout.crash_initial_dialog, null)
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder.setView(dialogView)
-            val dialog = builder.create()
+            builder.setTitle(R.string.safe_mode_title)
+            builder.setMessage(R.string.safe_mode_description)
+            builder.apply {
+                setPositiveButton(R.string.safe_mode_crash_info) { _, _ ->
+                    val tbBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
+                    tbBuilder.setTitle(R.string.safe_mode_title)
+                    tbBuilder.setMessage(lastError)
+                    tbBuilder.show()
+                }
 
-            dialogView.findViewById<View>(R.id.crash_btn_ok).setOnClickListener {
-                dialog.dismiss()
+                setNegativeButton("Ok") { _, _ -> }
             }
-            dialogView.findViewById<View>(R.id.crash_btn_report).setOnClickListener {
-                lastError?.let {
-                    val subject = "⚠️ Crash Report - PluginStream v${BuildConfig.VERSION_NAME}"
-                    val body = "${AppDiagnostics.getDeviceInfo()}\n---\nLatest Logs:\n$it"
-                    sendEmailIntent(this@MainActivity, subject, body) {
-                        Toast.makeText(this@MainActivity, "No email client found", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                dialog.dismiss()
-            }
-            dialogView.findViewById<View>(R.id.crash_btn_info).setOnClickListener {
-                val tbBuilder: AlertDialog.Builder = AlertDialog.Builder(this@MainActivity)
-                tbBuilder.setTitle(R.string.safe_mode_title)
-                tbBuilder.setMessage(lastError)
-                tbBuilder.setNeutralButton(R.string.sort_copy) { _, _ ->
-                    lastError?.let {
-                        clipboardHelper(txt(R.string.safe_mode_title), it)
-                    }
-                }
-                tbBuilder.setPositiveButton("Report Crash") { _, _ ->
-                    lastError?.let {
-                        val subject = "⚠️ Crash Report - PluginStream v${BuildConfig.VERSION_NAME}"
-                        val body = "${AppDiagnostics.getDeviceInfo()}\n---\nLatest Logs:\n$it"
-                        sendEmailIntent(this@MainActivity, subject, body) {
-                            Toast.makeText(this@MainActivity, "No email client found", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-                tbBuilder.show()
-                dialog.dismiss()
-            }
-
-            dialog.show()
+            builder.show().setDefaultFocus()
         }
 
 
@@ -2640,9 +1654,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         ioSafe {
             initAll()
             // No duplicates (which can happen by registerMainAPI)
-            apis = synchronized(allProviders) {
-                allProviders.distinctBy { it }
-            }
+            apis = allProviders.distinctBy { it }
         }
 
         //  val navView: BottomNavigationView = findViewById(R.id.nav_view)
@@ -2651,41 +1663,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         CommonActivity.init(this)
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
+        val navController = navHostFragment.navController
 
-        // Handle More button click to toggle floating menu
-        binding?.navView?.menu?.findItem(R.id.navigation_more)?.setOnMenuItemClickListener {
-            if (isFloatingMenuVisible) {
-                hideFloatingMenu()
-            } else {
-                showFloatingMenu()
-            }
-            true
-        }
-
-        binding?.navRailView?.menu?.findItem(R.id.navigation_more)?.setOnMenuItemClickListener {
-            if (isFloatingMenuVisible) {
-                hideFloatingMenu()
-            } else {
-                showFloatingMenu()
-            }
-            true
-        }
-
-        navController?.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, bundle: Bundle? ->
-            // Hide floating menu when navigating to any destination
-            if (isFloatingMenuVisible) {
-                hideFloatingMenu()
-            }
-
-            updateNavBar(navDestination)
+        navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, bundle: Bundle? ->
             // Intercept search and add a query
-            if (navDestination.id == R.id.navigation_setup_language || navDestination.id == R.id.navigation_setup_extensions || navDestination.id == R.id.navigation_setup_provider_languages || navDestination.id == R.id.navigation_setup_media || navDestination.id == R.id.navigation_setup_layout) {
-                binding?.bannerContainer?.isVisible = false
-                binding?.navView?.isVisible = false
-                binding?.navViewContainer?.isVisible = false
-                binding?.navRailView?.isVisible = false
-            }
+            updateNavBar(navDestination)
             if (navDestination.matchDestination(R.id.navigation_search) && !nextSearchQuery.isNullOrBlank()) {
                 bundle?.apply {
                     this.putString(SearchFragment.SEARCH_QUERY, nextSearchQuery)
@@ -2696,7 +1678,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 attachBackPressedCallback("MainActivity") {
                     showConfirmExitDialog(settingsManager)
                 }
-                showInstagramFollowDialog()
             } else detachBackPressedCallback("MainActivity")
         }
 
@@ -2712,73 +1693,16 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             .build()*/
 
         val rippleColor = ColorStateList.valueOf(getResourceColor(R.attr.colorPrimary, 0.1f))
-        val navIconColor = ColorStateList(
-            arrayOf(
-                intArrayOf(android.R.attr.state_checked),
-                intArrayOf(-android.R.attr.state_checked)
-            ),
-            intArrayOf(
-                getResourceColor(R.attr.textColor).let { if (it == 0) getResourceColor(android.R.attr.textColorPrimary) else it },
-                getResourceColor(R.attr.textColor, 0.6f).let { if (it == 0) getResourceColor(android.R.attr.textColorSecondary, 0.6f) else it }
-            )
-        )
-
-        fun updateNavIconTint(view: View?) {
-            val navView = view as? com.google.android.material.navigation.NavigationBarView ?: return
-            navView.apply {
-                itemIconTintList = null // Clear global tint
-                val menu = menu
-                for (i in 0 until menu.size()) {
-                    val item = menu.getItem(i)
-                    val itemView = findViewById<View>(item.itemId)
-                    
-                    // All icons follow theme and standard behavior
-                    item.iconTintList = navIconColor
-                    itemView?.let { v ->
-                        val iconView = v.findViewById<ImageView>(com.google.android.material.R.id.navigation_bar_item_icon_view)
-                        val indicator = v.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_active_indicator_view)
-                        
-                        // Theme adaptive colors
-                        val context = v.context
-                        val typedValue = android.util.TypedValue()
-                        context.theme.resolveAttribute(R.attr.textColor, typedValue, true)
-                        val textColor = typedValue.data
-                        context.theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
-                        val primaryColor = typedValue.data
-
-                        // Reset animations/scaling for all icons
-                        iconView?.scaleX = 1.0f
-                        iconView?.scaleY = 1.0f
-                        v.translationY = 0f
-
-                        if (item.isChecked) {
-                            indicator?.visibility = View.VISIBLE
-                            indicator?.alpha = 1f
-                            iconView?.setColorFilter(primaryColor)
-                        } else {
-                            // Only hide indicator if it's not checked
-                            indicator?.alpha = 0f
-                            iconView?.setColorFilter(textColor)
-                        }
-                    }
-                }
-            }
-        }
 
         binding?.navView?.apply {
             itemRippleColor = rippleColor
             itemActiveIndicatorColor = rippleColor
-            navController?.let { setupWithNavController(it) }
-            updateNavIconTint(this)
+            setupWithNavController(navController)
             setOnItemSelectedListener { item ->
-                val handled = navController?.let {
-                    onNavDestinationSelected(
-                        item,
-                        it
-                    )
-                } ?: false
-                if (handled) updateNavIconTint(this)
-                handled
+                onNavDestinationSelected(
+                    item,
+                    navController
+                )
             }
 
         }
@@ -2795,18 +1719,18 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 itemRippleColor = rippleColorTransparent
                 itemActiveIndicatorColor = rippleColor
             }
-            navController?.let { setupWithNavController(it) }
-            updateNavIconTint(this)
-            
+            setupWithNavController(navController)
+            /*if (isLayout(TV or EMULATOR)) {
+                background?.alpha = 200
+            } else {
+                background?.alpha = 255
+            }*/
+
             setOnItemSelectedListener { item ->
-                val handled = navController?.let {
-                    onNavDestinationSelected(
-                        item,
-                        it
-                    )
-                } ?: false
-                if (handled) updateNavIconTint(this)
-                handled
+                onNavDestinationSelected(
+                    item,
+                    navController
+                )
             }
 
 
@@ -2861,25 +1785,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             // write a nextFocus for the navrail
             rail.findViewById<View?>(R.id.navigation_settings)?.nextFocusDownId =
                 R.id.nav_footer_profile_card
-            
-            val navItems = if (isLayout(TV or EMULATOR)) {
-                arrayOf(
-                    R.id.navigation_home,
-                    R.id.navigation_search,
-                    R.id.navigation_downloads,
-                    R.id.navigation_library,
-                    R.id.navigation_settings
-                )
-            } else {
-                arrayOf(
-                    R.id.navigation_home,
-                    R.id.navigation_search,
-                    R.id.navigation_game,
-                    R.id.navigation_more
-                )
-            }
-
-            for (id in navItems) {
+            for (id in arrayOf(
+                R.id.navigation_home,
+                R.id.navigation_search,
+                R.id.navigation_library,
+                R.id.navigation_downloads,
+                R.id.navigation_settings
+            )) {
                 val view = rail.findViewById<View?>(id) ?: continue
                 prevId?.let { view.nextFocusUpId = it }
                 prevView?.nextFocusDownId = id
@@ -3050,7 +1962,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         if (BuildConfig.DEBUG) {
             var providersAndroidManifestString = "Current androidmanifest should be:\n"
-            synchronized(allProviders) {
+            allProviders.withLock {
                 for (api in allProviders) {
                     providersAndroidManifestString += "<data android:scheme=\"https\" android:host=\"${
                         api.mainUrl.removePrefix(
@@ -3104,13 +2016,13 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         try {
             if (getKey(HAS_DONE_SETUP_KEY, false) != true) {
-                navController?.navigate(R.id.navigation_setup_language)
+                navController.navigate(R.id.navigation_setup_language)
                 // If no plugins bring up extensions screen
             } else if (PluginManager.getPluginsOnline().isEmpty()
                 && PluginManager.getPluginsLocal().isEmpty()
 //                && PREBUILT_REPOSITORIES.isNotEmpty()
             ) {
-                navController?.navigate(
+                navController.navigate(
                     R.id.navigation_setup_extensions,
                     SetupFragmentExtensions.newInstance(false)
                 )
@@ -3133,12 +2045,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             updateLocale()
             runDefault()
         }
-        
+
         // Start the download queue
         DownloadQueueManager.init(this)
-        binding?.bannerContainer?.let {
-             AdsManager.initBannerAd(this, it)
-         }
     }
 
     /** Biometric stuff **/
@@ -3160,113 +2069,5 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         } catch (t: Throwable) {
             false
         }
-    }
-
-    private inner class AdCarouselAdapter(
-        private val images: List<String>,
-        private val onImageLog: ((String) -> Unit)? = null,
-        private val onImageClick: (String) -> Unit
-    ) : androidx.recyclerview.widget.RecyclerView.Adapter<AdCarouselAdapter.ViewHolder>() {
-
-        inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
-            val imageView: com.google.android.material.imageview.ShapeableImageView = view.findViewById(R.id.ad_carousel_image)
-            val progressBar: android.widget.ProgressBar = view.findViewById(R.id.ad_image_progress)
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = layoutInflater.inflate(R.layout.item_ad_image, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val url = images[position]
-            
-            holder.progressBar.visibility = View.VISIBLE
-            holder.imageView.loadImage(url, builder = {
-                listener(
-                    onStart = { 
-                        holder.progressBar.visibility = View.VISIBLE 
-                        onImageLog?.invoke("Loading Image ${position + 1}: $url")
-                    },
-                    onSuccess = { _, _ -> 
-                        holder.progressBar.visibility = View.GONE 
-                        onImageLog?.invoke("Successfully Loaded Image ${position + 1}")
-                    },
-                    onError = { _, _ -> 
-                        holder.progressBar.visibility = View.GONE 
-                        onImageLog?.invoke("Failed to Load Image ${position + 1}: $url")
-                    }
-                )
-            })
-            
-            holder.imageView.setOnClickListener { onImageClick(url) }
-        }
-
-        override fun getItemCount(): Int = images.size
-    }
-
-    private fun showReviewDialog() {
-        val dialog = Dialog(this, R.style.AlertDialogResponsive)
-        val dialogView = layoutInflater.inflate(R.layout.dialog_review, null)
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.setCancelable(true)
-
-        val closeButton = dialogView.findViewById<ImageView>(R.id.closeButton)
-        val apkPureButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.apkPureButton)
-        val githubButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.githubButton)
-        val productHuntButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.productHuntButton)
-        val sourceForgeButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.sourceForgeButton)
-        val productCoolButton = dialogView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.productCoolButton)
-
-        closeButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        apkPureButton.setOnClickListener {
-            openReviewUrl("https://apkpure.com/reviews/com.betapix.pluginstream")
-            markAsReviewed()
-            dialog.dismiss()
-        }
-
-        githubButton.setOnClickListener {
-            openReviewUrl("https://github.com/am-abdulmueed/pluginstream")
-            markAsReviewed()
-            dialog.dismiss()
-        }
-
-        productHuntButton.setOnClickListener {
-            openReviewUrl("https://www.producthunt.com/products/pluginstream/reviews/new")
-            markAsReviewed()
-            dialog.dismiss()
-        }
-
-        sourceForgeButton.setOnClickListener {
-            openReviewUrl("https://sourceforge.net/projects/pluginstream/reviews/new?stars=5")
-            markAsReviewed()
-            dialog.dismiss()
-        }
-
-        productCoolButton.setOnClickListener {
-            openReviewUrl("https://www.productcool.com/product/pluginstream")
-            markAsReviewed()
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
-
-    private fun openReviewUrl(url: String) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            startActivity(intent)
-        } catch (e: Exception) {
-            logError(e)
-        }
-    }
-
-    private fun markAsReviewed() {
-        val reviewPrefs = getSharedPreferences("review_prefs", Context.MODE_PRIVATE)
-        reviewPrefs.edit().putBoolean("has_reviewed", true).apply()
     }
 }

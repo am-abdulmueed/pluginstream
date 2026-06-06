@@ -259,10 +259,12 @@ object UIHelper {
     }
 
     // Open activities from an activity outside the nav graph
-    fun Context.openActivity(activity: Class<*>, args: Bundle? = null) {
+    fun Context.openActivity(activity: Class<*>, args: Bundle? = null, baseIntent: Intent? = null) {
         val tag = "NavComponent"
         try {
-            val intent = Intent(this, activity)
+            val intent = baseIntent ?: Intent()
+            intent.setClass(this, activity)
+
             if (args != null) {
                 intent.putExtras(args)
             }
@@ -339,7 +341,6 @@ object UIHelper {
     }
 
     fun Activity.hideSystemUI() {
-        if (isLayout(TV)) return
         // Enables regular immersive mode.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val controller = WindowCompat.getInsetsController(window, window.decorView)
@@ -539,7 +540,6 @@ object UIHelper {
     // Shows the system bars by removing all the flags
     // except for the ones that make the content appear under the system bars.
     fun Activity.showSystemUI() {
-        if (isLayout(TV)) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val controller = WindowCompat.getInsetsController(window, window.decorView)
             if (isLayout(EMULATOR)) {

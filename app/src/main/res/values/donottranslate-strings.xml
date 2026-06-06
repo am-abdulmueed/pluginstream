@@ -40,6 +40,7 @@
     <string name="autoplay_next_key">autoplay_next_key</string>
     <string name="display_sub_key">display_sub_key</string>
     <string name="show_fillers_key">show_fillers_key</string>
+    <string name="show_player_metadata_key">show_player_metadata_key</string>
     <string name="show_trailers_key">show_trailers_key</string>
     <string name="show_kitsu_posters_key">show_kitsu_posters_key</string>
     <string name="show_cast_in_details_key">show_cast_in_details_key</string>
@@ -51,7 +52,7 @@
     <string name="download_parallel_key">download_parallel_key</string>
     <string name="download_concurrent_key">download_concurrent_key</string>
     <string name="download_path_key_visual">download_path_key_visual</string>
-    <string name="app_name_download_path">PluginStream</string>
+    <string name="app_name_download_path">Cloudstream</string>
     <string name="app_layout_key">app_layout_key</string>
     <string name="primary_color_key">primary_color_key</string>
     <string name="restore_key">restore_key</string>
@@ -92,7 +93,6 @@
     <string name="software_decoding_key">software_decoding_key2</string>
     <string name="manual_update_plugins_key">manual_update_plugins</string>
     <string name="legal_notice_key">legal_notice_key</string>
-    <string name="share_plugin_key">share_plugin_key</string>
     <string name="speedup_key">speedup_key</string>
     <string name="anilist_key">anilist_key</string>
     <string name="simkl_key">simkl_key</string>
@@ -100,6 +100,7 @@
     <string name="kitsu_key">kitsu_key</string>
     <string name="opensubtitles_key">opensubtitles_key</string>
     <string name="subdl_key">subdl_key</string>
+    <string name="animeskip_key">animeskip_key</string>
 
     <string name="pref_category_security_key">pref_category_security_key</string>
     <string name="pref_category_gestures_key">pref_category_gestures_key</string>
@@ -144,14 +145,14 @@
 
         The app is purely for educational and personal use.
 
-        PluginStream does not host any content on the app, and has no control over what media is put up or taken down.
-        PluginStream functions like any other search engine, such as Google. PluginStream does not host, upload or
+        CloudStream does not host any content on the app, and has no control over what media is put up or taken down.
+        CloudStream functions like any other search engine, such as Google. CloudStream does not host, upload or
         manage any videos, films or content. It simply crawls, aggregates and displayes links in a convenient,
         user-friendly interface.
 
         It merely scrapes 3rd-party websites that are publicly accessible via any regular web browser. It is the
         responsibility of user to avoid any actions that might violate the laws governing his/her locality. Use
-        PluginStream at your own risk.
+        CloudStream at your own risk.
     </string>
 
     <plurals name="episodes">

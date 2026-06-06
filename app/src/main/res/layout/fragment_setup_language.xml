@@ -1,102 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/setup_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="?attr/primaryBlackBackground"
-    android:padding="16dp">
+    android:background="?attr/primaryBlackBackground">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/button_container"
+        android:clipToPadding="false"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="24dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/app_icon_image"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_baseline_translate_24"
+                    app:tint="?attr/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/google_sans"
+                    android:gravity="center"
+                    android:text="@string/app_language"
+                    android:textColor="?attr/textColor"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="@string/setup_language_subtext"
+                    android:textColor="?attr/grayTextColor"
+                    android:textSize="14sp"
+                    tools:text="Choose your preferred language" />
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="4dp"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="?attr/primaryBlackBackground"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeColor="?attr/primaryGrayBackground"
+                app:strokeWidth="1dp">
+
+                <!-- Wrap ListView in a way it can expand, or use a fixed height if needed. 
+                     For NestedScrollView, we usually use a fixed height or a custom ListView that expands.
+                     But for setup, a reasonable height or just letting it be is fine. -->
+                <com.lagradost.cloudstream3.ui.NonScrollListView
+                    android:id="@+id/listview1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="@android:color/transparent"
+                    android:dividerHeight="0dp"
+                    android:padding="8dp"
+                    tools:listitem="@layout/sort_bottom_single_choice" />
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
     <LinearLayout
+        android:id="@+id/button_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="24dp"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <ImageView
-            android:id="@+id/app_icon_image"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_baseline_translate_24"
-            android:scaleType="fitCenter"
-            app:tint="?attr/white" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/next_btt"
+            style="@style/WhiteButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
             android:fontFamily="@font/google_sans"
-            android:gravity="center"
-            android:text="@string/app_language"
-            android:textColor="?attr/textColor"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:text="@string/next"
+            android:textAllCaps="false"
+            app:cornerRadius="28dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/skip_btt"
+            style="@style/BlackButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
             android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:text="@string/setup_language_subtext"
-            android:textColor="?attr/grayTextColor"
-            android:textSize="14sp"
-            tools:text="Choose your preferred language" />
+            android:fontFamily="@font/google_sans"
+            android:text="@string/skip_setup"
+            android:textAllCaps="false"
+            android:visibility="gone"
+            app:backgroundTint="?attr/primaryBlackBackground"
+            app:cornerRadius="28dp"
+            app:strokeColor="?attr/primaryGrayBackground"
+            app:strokeWidth="1dp"
+            app:textColor="?attr/textColor" />
     </LinearLayout>
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginBottom="16dp"
-        android:layout_marginHorizontal="4dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/primaryGrayBackground"
-        app:cardBackgroundColor="?attr/primaryBlackBackground">
-
-        <ListView
-            android:id="@+id/listview1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:divider="@android:color/transparent"
-            android:dividerHeight="0dp"
-            android:padding="8dp"
-            android:clipToPadding="false"
-            android:scrollbarStyle="outsideOverlay"
-            android:requiresFadingEdge="vertical"
-            tools:listitem="@layout/sort_bottom_single_choice" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/next_btt"
-        style="@style/WhiteButton"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/google_sans"
-        android:text="@string/next"
-        android:textAllCaps="false"
-        app:cornerRadius="28dp" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/skip_btt"
-        style="@style/BlackButton"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
-        android:fontFamily="@font/google_sans"
-        android:text="@string/skip_setup"
-        android:textAllCaps="false"
-        android:visibility="gone"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/primaryGrayBackground"
-        app:backgroundTint="?attr/primaryBlackBackground"
-        app:textColor="?attr/textColor"
-        app:cornerRadius="28dp" />
-
-</LinearLayout>
+</RelativeLayout>

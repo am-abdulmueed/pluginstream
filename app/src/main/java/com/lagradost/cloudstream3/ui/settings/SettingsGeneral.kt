@@ -1,7 +1,6 @@
 package com.lagradost.cloudstream3.ui.settings
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -9,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.edit
 import androidx.core.os.ConfigurationCompat
+import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.APIHolder.allProviders
@@ -156,14 +156,21 @@ class SettingsGeneral : BasePreferenceFragmentCompat() {
         val lang: String,
     )
 
-    private val pathPicker = getChooseFolderLauncher { uri, path ->
-        val context = context ?: CloudStreamApp.context ?: return@getChooseFolderLauncher
-        (path ?: uri.toString()).let {
+    companion object {
+        fun Fragment.pickDownloadPath(uri: Uri?, path: String?) {
+            if (uri == null) return
+
+            val context = context ?: CloudStreamApp.context ?: return
+            val visual = path ?: uri.toString()
             PreferenceManager.getDefaultSharedPreferences(context).edit {
                 putString(getString(R.string.download_path_key), uri.toString())
-                putString(getString(R.string.download_path_key_visual), it)
+                putString(context.getString(R.string.download_path_key_visual), visual)
             }
         }
+    }
+
+    private val pathPicker = getChooseFolderLauncher { uri, path ->
+        pickDownloadPath(uri, path)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -188,7 +195,7 @@ class SettingsGeneral : BasePreferenceFragmentCompat() {
                 try {
                     val langTagIETF = languageTagsIETF[selectedLangIndex]
                     CommonActivity.setLocale(activity, langTagIETF)
-                    settingsManager.edit(commit = true) {
+                    settingsManager.edit {
                         putString(getString(R.string.locale_key), langTagIETF)
                     }
                     activity?.recreate()
@@ -212,7 +219,7 @@ class SettingsGeneral : BasePreferenceFragmentCompat() {
         }
 
         fun showAdd() {
-            val providers = synchronized(allProviders) { allProviders.distinctBy { it.javaClass }.sortedBy { it.name } }
+            val providers = allProviders.distinctBy { it::class }.sortedBy { it.name }
             activity?.showDialog(
                 providers.map { "${it.name} (${it.mainUrl})" },
                 -1,

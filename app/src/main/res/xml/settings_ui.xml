@@ -11,10 +11,10 @@
             android:icon="@drawable/ic_baseline_color_lens_24"
             android:key="@string/app_theme_key"
             android:title="@string/app_theme_settings" />
-        <!--<Preference
+        <Preference
             android:icon="@drawable/ic_baseline_tv_24"
             android:key="@string/app_layout_key"
-            android:title="@string/app_layout" />-->
+            android:title="@string/app_layout" />
         <SwitchPreference
             android:defaultValue="true"
             android:icon="@drawable/title_24px"
@@ -84,6 +84,11 @@
             android:icon="@drawable/ic_baseline_skip_next_24"
             android:key="@string/show_fillers_key"
             android:title="@string/show_fillers_settings" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:icon="@drawable/metadata_overlay_icon"
+            android:key="@string/show_player_metadata_key"
+            android:title="@string/show_player_metadata_overlay" />
         <SwitchPreference
             android:icon="@drawable/ic_baseline_play_arrow_24"
             android:summary="@string/random_button_settings_desc"

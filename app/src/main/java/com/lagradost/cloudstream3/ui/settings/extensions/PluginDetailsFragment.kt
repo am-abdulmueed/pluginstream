@@ -60,9 +60,9 @@ class PluginDetailsFragment(val data: PluginViewData) : BaseBottomSheetDialogFra
                 ?.replace("%exact_size%", "$iconSizeExact")) {
                 error { getImageFromDrawable(context ?: return@error null , R.drawable.ic_baseline_extension_24) }
             }
-            pluginName.text = metadata.name.removeSuffix("Provider")
+            pluginName.text = metadata.name.removeSuffix("Provider").replace("cloudstream", "PluginStream", ignoreCase = true)
             pluginVersion.text = metadata.version.toString()
-            pluginDescription.text = metadata.description ?: getString(R.string.no_data)
+            pluginDescription.text = metadata.description?.replace("cloudstream", "PluginStream", ignoreCase = true) ?: getString(R.string.no_data)
             pluginSize.text =
                 if (metadata.fileSize == null) getString(R.string.no_data) else formatFileSize(
                     context,

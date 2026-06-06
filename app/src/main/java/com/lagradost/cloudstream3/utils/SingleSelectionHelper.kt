@@ -173,8 +173,8 @@ object SingleSelectionHelper {
                     if (listView.checkedItemPositions[index])
                         list.add(index)
                 }
-                dialog.dismissSafe(this)
                 callback.invoke(list)
+                dialog.dismissSafe(this)
             }
             cancelButton.setOnClickListener {
                 dialog.dismissSafe(this)

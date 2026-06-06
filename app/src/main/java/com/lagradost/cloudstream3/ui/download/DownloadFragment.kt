@@ -348,8 +348,9 @@ class DownloadFragment : BaseFragment<FragmentDownloadsBinding>(
                         LinkGenerator(
                             listOf(BasicLink(url)),
                             extract = true,
-                            refererUrl = referer
-                        )
+                            refererUrl = referer,
+                            id = url.hashCode()
+                        ), 0
                     )
                 )
                 dialog.dismissSafe(activity)

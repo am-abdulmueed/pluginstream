@@ -7,33 +7,56 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     alias(libs.plugins.android.application)
-    id("com.google.dagger.hilt.android")
     alias(libs.plugins.dokka)
-    alias(libs.plugins.kotlin.compose)
-    id("com.google.gms.google-services") version "4.4.4"
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 val javaTarget = JvmTarget.fromTarget(libs.versions.jvmTarget.get())
 
-fun getGitCommitHash(): String {
-    return try {
-        val headFile = file("${project.rootDir}/.git/HEAD")
+abstract class GenerateGitHashTask : DefaultTask() {
 
-        // Read the commit hash from .git/HEAD
-        if (headFile.exists()) {
-            val headContent = headFile.readText().trim()
-            if (headContent.startsWith("ref:")) {
-                val refPath = headContent.substring(5) // e.g., refs/heads/main
-                val commitFile = file("${project.rootDir}/.git/$refPath")
-                if (commitFile.exists()) commitFile.readText().trim() else ""
-            } else headContent // If it's a detached HEAD (commit hash directly)
-        } else {
-            "" // If .git/HEAD doesn't exist
-        }.take(7) // Return the short commit hash
-    } catch (_: Throwable) {
-        "" // Just return an empty string if any exception occurs
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val headFile: RegularFileProperty
+
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val headsDir: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun generate() {
+        val head = headFile.get().asFile
+
+        val hash = try {
+            if (head.exists()) {
+                // Read the commit hash from .git/HEAD
+                val headContent = head.readText().trim()
+                if (headContent.startsWith("ref:")) {
+                    val refPath = headContent.substring(5) // e.g., refs/heads/main
+                    val commitFile = File(head.parentFile, refPath)
+                    if (commitFile.exists()) commitFile.readText().trim() else ""
+                } else headContent // If it's a detached HEAD (commit hash directly)
+            } else "" // If .git/HEAD doesn't exist
+        } catch (_: Throwable) {
+            "" // Just set to an empty string if any exception occurs
+        }.take(7) // Get the short commit hash
+
+        val outFile = outputDir.file("git-hash.txt").get().asFile
+        outFile.parentFile.mkdirs()
+        outFile.writeText(hash)
     }
+}
+
+val generateGitHash = tasks.register<GenerateGitHashTask>("generateGitHash") {
+    val gitDir = layout.projectDirectory.dir("../.git")
+
+    headFile.set(gitDir.file("HEAD"))
+    headsDir.set(gitDir.dir("refs/heads"))
+
+    outputDir.set(layout.buildDirectory.dir("generated/git"))
 }
 
 android {
@@ -42,8 +65,21 @@ android {
         unitTests.isReturnDefaultValues = true
     }
 
-    viewBinding {
-        enable = true
+    // Looks like google likes to add metadata only they can read https://gitlab.com/IzzyOnDroid/repo/-/work_items/491
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
+    }
+
+    androidComponents {
+        onVariants { variant ->
+            variant.sources.assets?.addGeneratedSourceDirectory(
+                generateGitHash,
+                GenerateGitHashTask::outputDir
+            )
+        }
     }
 
     signingConfigs {
@@ -82,20 +118,16 @@ android {
         }
     }
 
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "com.betapix.pluginstream"
-        minSdk = 23
-        targetSdk = 36
-        versionCode = 512
-        versionName = "5.1.2"
-
-        resValue("string", "commit_hash", getGitCommitHash())
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
+        versionCode = libs.versions.versionCode.get().toInt()
+        versionName = libs.versions.versionName.get()
 
         manifestPlaceholders["target_sdk_version"] = libs.versions.targetSdk.get()
-
-        missingDimensionStrategy("version", "github")
 
         // Reads local.properties
         val localProperties = gradleLocalProperties(rootDir, project.providers)
@@ -115,11 +147,7 @@ android {
             "SIMKL_CLIENT_SECRET",
             "\"" + (System.getenv("SIMKL_CLIENT_SECRET") ?: localProperties["simkl.secret"]) + "\""
         )
-        buildConfigField(
-            "Boolean",
-            "USE_FIREBASE",
-            "true"
-        )
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -149,10 +177,10 @@ android {
 
     androidComponents {
         onVariants { variant ->
-            val vName = "5.1.2"
+            val vName = libs.versions.versionName.get()
             variant.outputs.forEach { output ->
                 val apkOutput = output as? com.android.build.api.variant.impl.VariantOutputImpl
-                apkOutput?.outputFileName?.set("pluginstream-phone-$vName.apk")
+                apkOutput?.outputFileName?.set("pluginstream-tv-$vName.apk")
             }
         }
 
@@ -201,26 +229,20 @@ android {
     }
 
     java {
-	    // Use Java 17 toolchain even if a higher JDK runs the build.
+        // Use Java 17 toolchain even if a higher JDK runs the build.
         // We still use Java 8 for now which higher JDKs have deprecated.
-	    toolchain {
-		    languageVersion.set(JavaLanguageVersion.of(libs.versions.jdkToolchain.get()))
-    	}
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(libs.versions.jdkToolchain.get()))
+        }
     }
 
     lint {
-        abortOnError = false
         checkReleaseBuilds = false
     }
 
     buildFeatures {
         buildConfig = true
-        resValues = true
-        compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.10"
+        viewBinding = true
     }
 
     packaging {
@@ -239,39 +261,28 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.json)
     androidTestImplementation(libs.core)
-    implementation(libs.junit.ktx)
-    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.classgraph)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.instancio.core)
+    androidTestImplementation(libs.junit.ktx)
+    androidTestImplementation(libs.kotlin.test)
 
     // Android Core & Lifecycle
     implementation(libs.core.ktx)
     implementation(libs.activity.ktx)
+    implementation(libs.annotation)
     implementation(libs.appcompat)
     implementation(libs.fragment.ktx)
     implementation(libs.bundles.lifecycle)
     implementation(libs.bundles.navigation)
+    implementation(libs.kotlinx.collections.immutable)
+    implementation(libs.kotlinx.serialization.json) // JSON Parser
 
     // Design & UI
     implementation(libs.preference.ktx)
     implementation(libs.material)
-    implementation(libs.swiperefreshlayout)
-    implementation(libs.markwon.core)
-    implementation(libs.markwon.linkify)
-    implementation(libs.markwon.strikethrough)
     implementation(libs.constraintlayout)
-
-    // Compose
-    implementation(platform("androidx.compose:compose-bom:2024.04.00")) // Use a recent stable version
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-core")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.activity:activity-compose")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Coil Image Loading
     implementation(libs.bundles.coil)
@@ -283,9 +294,8 @@ dependencies {
     // FFmpeg Decoding
     implementation(libs.bundles.nextlib)
 
-    // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
-    implementation("com.google.firebase:firebase-analytics")
+    // Anime-db for filler
+    implementation(libs.anime.db)
 
     // PlayBack
     implementation(libs.colorpicker) // Subtitle Color Picker
@@ -294,7 +304,6 @@ dependencies {
 
     // UI Stuff
     implementation(libs.shimmer) // Shimmering Effect (Loading Skeleton)
-    implementation(libs.lottie)
     implementation(libs.palette.ktx) // Palette for Images -> Colors
     implementation(libs.tvprovider)
     implementation(libs.overlappingpanels) // Gestures
@@ -305,12 +314,14 @@ dependencies {
     // Extensions & Other Libs
     implementation(libs.jsoup) // HTML Parser
     implementation(libs.rhino) // Run JavaScript
-    implementation(libs.fuzzywuzzy) // Library/Ext Searching with Levenshtein Distance
     implementation(libs.safefile) // To Prevent the URI File Fu*kery
     coreLibraryDesugaring(libs.desugar.jdk.libs.nio) // NIO Flavor Needed for NewPipeExtractor
     implementation(libs.conscrypt.android) // To Fix SSL Fu*kery on Android 9
     implementation(libs.jackson.module.kotlin) // JSON Parser
     implementation(libs.zipline)
+
+    // Deprecated; will be removed once extensions have time to migrate from using it
+    implementation("me.xdrop:fuzzywuzzy:1.4.0")
 
     // Torrent Support
     implementation(libs.torrentserver)
@@ -318,17 +329,8 @@ dependencies {
     // Downloading & Networking
     implementation(libs.work.runtime.ktx)
     implementation(libs.nicehttp) // HTTP Lib
-    
-    implementation(libs.webkit)
-    implementation(libs.media)
-    
-    implementation(project(":library"))
-    implementation(project(":flow"))
 
-    // Hilt Setup
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler)
-    implementation(libs.hilt.navigation.compose)
+    implementation(project(":library"))
 }
 
 tasks.register<Jar>("androidSourcesJar") {
@@ -369,6 +371,7 @@ tasks.withType<KotlinJvmCompile> {
         optIn.addAll(
             "com.lagradost.cloudstream3.InternalAPI",
             "com.lagradost.cloudstream3.Prerelease",
+            "kotlin.uuid.ExperimentalUuidApi",
         )
     }
 }
@@ -377,7 +380,9 @@ dokka {
     moduleName = "App"
     dokkaSourceSets {
         configureEach {
+            suppress = name != "prereleaseDebug"
             analysisPlatform = KotlinPlatform.JVM
+            displayName = "JVM"
             documentedVisibilities(
                 VisibilityModifier.Public,
                 VisibilityModifier.Protected

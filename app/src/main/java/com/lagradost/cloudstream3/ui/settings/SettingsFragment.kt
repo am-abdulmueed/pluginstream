@@ -15,7 +15,6 @@ import androidx.preference.PreferenceFragmentCompat
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.lagradost.cloudstream3.BuildConfig
-import com.lagradost.cloudstream3.CommonActivity
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.MainSettingsBinding
 import com.lagradost.cloudstream3.mvvm.logError
@@ -30,6 +29,7 @@ import com.lagradost.cloudstream3.ui.settings.Globals.TV
 import com.lagradost.cloudstream3.ui.settings.Globals.isLandscape
 import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
 import com.lagradost.cloudstream3.utils.DataStoreHelper
+import com.lagradost.cloudstream3.utils.GitInfo.currentCommitHash
 import com.lagradost.cloudstream3.utils.ImageLoader.loadImage
 import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
@@ -39,13 +39,6 @@ import com.lagradost.cloudstream3.utils.getImageFromDrawable
 import com.lagradost.cloudstream3.utils.txt
 import com.lagradost.cloudstream3.ui.dialog.ContactDeveloperDialog
 import android.app.Dialog
-import java.io.File
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.TimeZone
-
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Build
@@ -55,6 +48,12 @@ import android.provider.Settings
 import android.widget.Toast
 import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.io.File
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 class SettingsFragment : BaseFragment<MainSettingsBinding>(
     BaseFragment.BindingCreator.Inflate(MainSettingsBinding::inflate)
@@ -196,8 +195,6 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             activity?.navigate(id, Bundle())
         }
 
-
-
         /** used to debug leaks
         showToast(activity,"${VideoDownloadManager.downloadStatusEvent.size} :
         ${VideoDownloadManager.downloadProgressEvent.size}") **/
@@ -239,12 +236,12 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         binding.apply {
             listOf(
                 settingsGeneral to R.id.action_navigation_global_to_navigation_settings_general,
-                settingsAccount to R.id.action_navigation_global_to_navigation_settings_account,
-                settingsProviders to R.id.action_navigation_global_to_navigation_settings_providers,
-                settingsExtensions to R.id.action_navigation_global_to_navigation_settings_extensions,
-                settingsUi to R.id.action_navigation_global_to_navigation_settings_ui,
                 settingsPlayer to R.id.action_navigation_global_to_navigation_settings_player,
+                settingsCredits to R.id.action_navigation_global_to_navigation_settings_account,
+                settingsUi to R.id.action_navigation_global_to_navigation_settings_ui,
+                settingsProviders to R.id.action_navigation_global_to_navigation_settings_providers,
                 settingsUpdates to R.id.action_navigation_global_to_navigation_settings_updates,
+                settingsExtensions to R.id.action_navigation_global_to_navigation_settings_extensions,
                 settingsAbout to R.id.action_navigation_global_to_navigation_developer,
             ).forEach { (view, navigationId) ->
                 view.apply {
@@ -269,7 +266,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                     i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_plugin))
                     i.putExtra(
                         Intent.EXTRA_TEXT,
-                        "🚀 *Stream Unlimited Movies & Shows – Ad-Free!*\n\nExperience the next-gen *PluginStream Max.* No subscriptions, no hidden fees—just pure entertainment.\n\n🌐 *Download Now:* https://pluginstream.pages.dev\n🛡 *Join Official Community:* https://t.me/pluginstreamofficial (Official APK available here for easy download)\n\nEnjoy high-speed streaming without limits.\n\n❎ ~Netflix | Prime | HBO | Disney+~\n✅ *PluginStream Max* (Everything in ONE place!)"
+                        "🚀 *Stream Unlimited Movies & Shows – Ad-Free!*\n\nExperience the next-gen *CloudStream Max.* No subscriptions, no hidden fees—just pure entertainment.\n\n🌐 *Download Now:* https://cloudstream.pages.dev\n🛡 *Join Official Community:* https://t.me/cloudstreamofficial (Official APK available here for easy download)\n\nEnjoy high-speed streaming without limits.\n\n❎ ~Netflix | Prime | HBO | Disney+~\n✅ *CloudStream Max* (Everything in ONE place!)"
                     )
                     startActivity(Intent.createChooser(i, getString(R.string.share_plugin)))
                 } catch (e: Exception) {
@@ -325,29 +322,44 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 settingsGeneral.requestFocus()
             }
         }
+
+        val appVersion = BuildConfig.VERSION_NAME
+        val commitHash = activity?.currentCommitHash() ?: ""
+        val buildTimestamp = SimpleDateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG,
+            Locale.getDefault()
+        ).apply { timeZone = TimeZone.getTimeZone("UTC")
+        }.format(Date(BuildConfig.BUILD_DATE)).replace("UTC", "")
+
+        binding.appVersion.text = appVersion
+        binding.buildDate.text = buildTimestamp
+        binding.commitHash.text = commitHash
+        binding.appVersionInfo.setOnLongClickListener {
+            clipboardHelper(txt(R.string.extension_version), "$appVersion $commitHash $buildTimestamp")
+            true
+        }
     }
 
     private fun showSystemCompatibilityDialog() {
         val context = context ?: return
-        
+
         // 1. Check RAM Info
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
-        
+
         val totalRamGb = memoryInfo.totalMem / (1024 * 1024 * 1024)
         val availableRamGb = memoryInfo.availMem / (1024 * 1024 * 1024)
-        
+
         // 2. Check Storage Info (Internal Storage)
         val path: File = Environment.getDataDirectory()
         val stat = StatFs(path.path)
         val blockSize = stat.blockSizeLong
         val availableBlocks = stat.availableBlocksLong
         val totalBlocks = stat.blockCountLong
-        
+
         val totalStorageGb = (totalBlocks * blockSize) / (1024 * 1024 * 1024)
         val freeStorageGb = (availableBlocks * blockSize) / (1024 * 1024 * 1024)
-        
+
         // 3. Device Model and Android Version
         val deviceModel = Build.MODEL
         val androidVersion = Build.VERSION.RELEASE
@@ -389,7 +401,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             (context.resources.displayMetrics.widthPixels * 0.85).toInt(),
             android.view.ViewGroup.LayoutParams.WRAP_CONTENT
         )
-        
+
         // No hardcoded colors - uses theme attributes automatically
         dialog.findViewById<android.widget.TextView>(android.R.id.message)?.apply {
             textSize = 14f
@@ -429,32 +441,32 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         }
 
         apkPureButton.setOnClickListener {
-            openUrl("https://apkpure.com/reviews/com.betapix.pluginstream")
+            openUrl("https://apkpure.com/reviews/com.betapix.cloudstream")
             dialog.dismiss()
         }
 
         githubButton.setOnClickListener {
-            openUrl("https://github.com/am-abdulmueed/pluginstream")
+            openUrl("https://github.com/am-abdulmueed/cloudstream")
             dialog.dismiss()
         }
 
         productHuntButton.setOnClickListener {
-            openUrl("https://www.producthunt.com/products/pluginstream/reviews/new")
+            openUrl("https://www.producthunt.com/products/cloudstream/reviews/new")
             dialog.dismiss()
         }
 
         sourceForgeButton.setOnClickListener {
-            openUrl("https://sourceforge.net/projects/pluginstream/reviews/new?stars=5")
+            openUrl("https://sourceforge.net/projects/cloudstream/reviews/new?stars=5")
             dialog.dismiss()
         }
 
         productCoolButton.setOnClickListener {
-            openUrl("https://www.productcool.com/product/pluginstream")
+            openUrl("https://www.productcool.com/product/cloudstream")
             dialog.dismiss()
         }
 
         saasHubButton.setOnClickListener {
-            openUrl("https://www.saashub.com/pluginstream-reviews/new")
+            openUrl("https://www.saashub.com/cloudstream-reviews/new")
             dialog.dismiss()
         }
 

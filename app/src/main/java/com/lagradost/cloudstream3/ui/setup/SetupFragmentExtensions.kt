@@ -11,30 +11,19 @@ import com.lagradost.cloudstream3.MainActivity.Companion.afterRepositoryLoadedEv
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.FragmentSetupExtensionsBinding
 import com.lagradost.cloudstream3.mvvm.safe
+import com.lagradost.cloudstream3.plugins.MasterRepo
 import com.lagradost.cloudstream3.plugins.RepositoryManager
 import com.lagradost.cloudstream3.plugins.RepositoryManager.PREBUILT_REPOSITORIES
 import com.lagradost.cloudstream3.ui.BaseFragment
 import com.lagradost.cloudstream3.ui.settings.extensions.PluginsViewModel
 import com.lagradost.cloudstream3.ui.settings.extensions.RepoAdapter
 import com.lagradost.cloudstream3.ui.settings.extensions.RepositoryData
+import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
+import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.main
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-data class MasterRepo(
-    @JsonProperty("name") val name: String,
-    @JsonProperty("version") val version: Int,
-    @JsonProperty("last_updated") val last_updated: String,
-    @JsonProperty("repositories") val repositories: List<MasterRepoEntry>
-)
-
-data class MasterRepoEntry(
-    @JsonProperty("name") val name: String,
-    @JsonProperty("url") val url: String,
-    @JsonProperty("description") val description: String?
-)
 
 class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentSetupExtensionsBinding::inflate)
@@ -67,7 +56,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
     }
 
     private fun setRepositories(success: Boolean = true) {
-        main {
+        main { _ ->
             val ctx = context ?: return@main
             binding?.loadingSpinner?.isVisible = true
             
@@ -98,35 +87,36 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                 }
             }
 
-            val masterRepoRepos = pluginstreamJson?.let {
-                tryParseJson<MasterRepo>(it)?.repositories?.map { entry ->
-                    RepositoryData(null, entry.name, entry.url, entry.description)
+            val masterRepoRepos = pluginstreamJson?.let { json ->
+                tryParseJson<MasterRepo>(json)?.repositories?.map { entry ->
+                    RepositoryData(null, entry.name, entry.url)
                 }
             } ?: emptyList()
 
-            val repositories = RepositoryManager.getRepositories() + PREBUILT_REPOSITORIES + masterRepoRepos
-            val hasRepos = repositories.isNotEmpty()
+            val repositoriesList = (RepositoryManager.getRepositories().toList() + PREBUILT_REPOSITORIES.toList() + masterRepoRepos).distinctBy { it.url }
+            val hasRepos = repositoriesList.isNotEmpty()
             binding?.loadingSpinner?.isVisible = false
             binding?.repoRecyclerView?.isVisible = hasRepos
             binding?.blankRepoScreen?.isVisible = !hasRepos
 
             if (hasRepos) {
-                val repos = repositories.distinctBy { it.url }
                 binding?.repoRecyclerView?.adapter = RepoAdapter(true, { item ->
                     val builder = AlertDialog.Builder(ctx)
                     builder.setTitle(item.name)
-                    builder.setMessage(item.description ?: item.url)
+                    builder.setMessage(item.url)
                     builder.setPositiveButton(R.string.dismiss) { dialog, _ ->
                         dialog.dismiss()
                     }
                     builder.show()
                 }, { item ->
                     PluginsViewModel.downloadAll(activity, item.url, null)
-                }).apply { submitList(repos) }
+                }).apply { submitList(repositoriesList) }
 
-                repos.forEach {
-                    PluginsViewModel.downloadAll(activity, it.url, null)
-                    RepositoryManager.addRepository(it)
+                repositoriesList.forEach { repo ->
+                    PluginsViewModel.downloadAll(activity, repo.url, null)
+                    repo.ioSafe {
+                        RepositoryManager.addRepository(repo)
+                    }
                 }
             }
         }
@@ -136,14 +126,8 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
         val isSetup = arguments?.getBoolean(SETUP_EXTENSION_BUNDLE_IS_SETUP) ?: false
 
         safe {
-            PluginsViewModel.downloadingRepos.observe(viewLifecycleOwner) {
-                binding.repoRecyclerView.adapter?.notifyDataSetChanged()
-            }
-            PluginsViewModel.downloadedRepos.observe(viewLifecycleOwner) {
-                binding.repoRecyclerView.adapter?.notifyDataSetChanged()
-            }
-
             setRepositories()
+            context?.setDefaultFocus(binding.nextBtt)
             binding.apply {
                 if (!isSetup) {
                     nextBtt.setText(R.string.setup_done)
@@ -157,7 +141,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                         if (currentDestination == R.id.navigation_setup_extensions) {
                             if (
                             // If any available languages
-                                synchronized(apis) { apis.distinctBy { it.lang }.size > 1 }
+                                apis.distinctBy { it.lang }.size > 1
                             ) {
                                 findNavController().navigate(R.id.action_navigation_setup_extensions_to_navigation_setup_provider_languages)
                             } else {
