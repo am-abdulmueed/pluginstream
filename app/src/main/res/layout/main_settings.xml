@@ -345,43 +345,6 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Support -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="8dp"
-            android:fontFamily="@font/google_sans"
-            android:text="@string/category_support"
-            android:textColor="?attr/grayTextColor"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            app:cardBackgroundColor="?attr/primaryGrayBackground">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/settings_faq"
-                    style="@style/SettingsItem"
-                    android:drawableStart="@drawable/baseline_help_outline_24"
-                    android:drawablePadding="16dp"
-                    android:text="@string/support_faq"
-                    app:drawableTint="?attr/textColor" />
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
         <!-- Support & About -->
         <TextView
             android:layout_width="wrap_content"
@@ -407,6 +370,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/settings_about"
+                    style="@style/SettingsItem"
+                    android:drawableStart="@drawable/ic_outline_info_24"
+                    android:drawablePadding="16dp"
+                    android:text="@string/dev_profile"
+                    app:drawableTint="?attr/textColor" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:background="?attr/dividerColor" />
 
                 <TextView
                     android:id="@+id/settings_privacy"

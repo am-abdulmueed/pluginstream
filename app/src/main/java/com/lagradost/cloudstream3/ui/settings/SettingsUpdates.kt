@@ -41,6 +41,9 @@ import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.UIHelper.hideKeyboard
 import com.lagradost.cloudstream3.utils.downloader.VideoDownloadManager
 import com.lagradost.cloudstream3.utils.txt
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.noties.markwon.Markwon
+import io.noties.markwon.linkify.LinkifyPlugin
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStream
@@ -50,6 +53,40 @@ import java.util.Date
 import java.util.Locale
 
 class SettingsUpdates : BasePreferenceFragmentCompat() {
+    private fun showChangelogDialog() {
+        val context = context ?: return
+        val markwon = Markwon.builder(context)
+            .usePlugin(LinkifyPlugin.create())
+            .build()
+
+        val changelog = """
+            # PluginStream Max v${BuildConfig.VERSION_NAME}
+            
+            ### 🚀 What's New
+            - **Settings Migration**: Migrated all settings from PluginStream.
+            - **Developer Profile**: Added a beautiful new developer profile.
+            - **FAQ Section**: Integrated a comprehensive FAQ section.
+            - **Legal & Privacy**: Added detailed privacy policy and terms of service.
+            - **System Compatibility**: New tool to check if your device is ready for PluginStream.
+            - **App Info & Cache**: Quick access to app settings and cache management.
+            - **Markdown Support**: Changelogs and legal texts now support rich formatting.
+            
+            ### 🛠 Fixes & Improvements
+            - Improved stability on Android TV.
+            - Faster extension loading.
+            - Fixed various UI bugs in the settings screen.
+            - Optimized performance for low-end devices.
+            
+            *Thanks for using PluginStream!*
+        """.trimIndent()
+
+        MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.whats_new)
+            .setMessage(markwon.toMarkdown(changelog))
+            .setPositiveButton(R.string.close, null)
+            .show()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setUpToolbar(R.string.category_updates)
@@ -111,6 +148,17 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
             activity?.restorePrompt()
             return@setOnPreferenceClickListener true
         }
+
+        getPref(R.string.whats_new_key)?.setOnPreferenceClickListener {
+            showChangelogDialog()
+            return@setOnPreferenceClickListener true
+        }
+
+        getPref(R.string.faq_key)?.setOnPreferenceClickListener {
+            findNavController().navigate(R.id.navigation_faq)
+            return@setOnPreferenceClickListener true
+        }
+
         getPref(R.string.backup_path_key)?.hideOn(EMULATOR)?.setOnPreferenceClickListener {
             val dirs = getBackupDirsForDisplay()
             val currentDir =

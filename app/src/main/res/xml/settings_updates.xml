@@ -10,6 +10,16 @@
             app:key="@string/manual_check_update_key" />
 
         <Preference
+            android:title="@string/whats_new"
+            app:icon="@drawable/ic_baseline_notifications_active_24"
+            app:key="@string/whats_new_key" />
+
+        <Preference
+            android:title="@string/support_faq"
+            app:icon="@drawable/baseline_help_outline_24"
+            app:key="@string/faq_key" />
+
+        <Preference
             android:icon="@drawable/ic_baseline_developer_mode_24"
             android:title="@string/install_prerelease"
             app:key="@string/install_prerelease_key" />

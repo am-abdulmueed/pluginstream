@@ -20,6 +20,7 @@ import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
 import com.lagradost.cloudstream3.utils.UIHelper.navigate
 import com.lagradost.cloudstream3.utils.txt
+import com.lagradost.cloudstream3.utils.GitInfo.currentCommitHash
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -122,7 +123,7 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
             devPhilosophy.setLineSpacing(8f, 1f) // Use setLineSpacing instead of property assignment
 
             val appVersionStr = BuildConfig.VERSION_NAME
-            val commitInfo = getString(R.string.commit_hash)
+            val commitInfo = activity?.currentCommitHash() ?: ""
             val buildTimestamp = SimpleDateFormat(
                 "yyyy-MM-dd",
                 Locale.getDefault()

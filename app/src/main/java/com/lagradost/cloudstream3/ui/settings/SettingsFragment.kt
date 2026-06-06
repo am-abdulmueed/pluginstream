@@ -266,7 +266,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                     i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_plugin))
                     i.putExtra(
                         Intent.EXTRA_TEXT,
-                        "🚀 *Stream Unlimited Movies & Shows – Ad-Free!*\n\nExperience the next-gen *CloudStream Max.* No subscriptions, no hidden fees—just pure entertainment.\n\n🌐 *Download Now:* https://cloudstream.pages.dev\n🛡 *Join Official Community:* https://t.me/cloudstreamofficial (Official APK available here for easy download)\n\nEnjoy high-speed streaming without limits.\n\n❎ ~Netflix | Prime | HBO | Disney+~\n✅ *CloudStream Max* (Everything in ONE place!)"
+                        "🚀 *Stream Unlimited Movies & Shows – Ad-Free!*\n\nExperience the next-gen *PluginStream Max.* No subscriptions, no hidden fees—just pure entertainment.\n\n🌐 *Download Now:* https://PluginStream.pages.dev\n🛡 *Join Official Community:* https://t.me/PluginStreamofficial (Official APK available here for easy download)\n\nEnjoy high-speed streaming without limits.\n\n❎ ~Netflix | Prime | HBO | Disney+~\n✅ *PluginStream Max* (Everything in ONE place!)"
                     )
                     startActivity(Intent.createChooser(i, getString(R.string.share_plugin)))
                 } catch (e: Exception) {
@@ -298,12 +298,8 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 showReviewDialog()
             }
 
-            settingsFaq.setOnClickListener {
-                navigate(R.id.action_navigation_global_to_navigation_faq)
-            }
-
             if (isLayout(TV)) {
-                listOf(settingsRateApp, settingsFaq).forEach {
+                listOf<View>(settingsRateApp).forEach {
                     it.isFocusable = true
                     it.isFocusableInTouchMode = true
                 }
@@ -403,8 +399,8 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         )
 
         // No hardcoded colors - uses theme attributes automatically
-        dialog.findViewById<android.widget.TextView>(android.R.id.message)?.apply {
-            textSize = 14f
+        dialog.findViewById<android.widget.TextView>(android.R.id.message)?.let {
+            it.textSize = 14f
         }
     }
 
@@ -422,7 +418,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
     }
 
     private fun showReviewDialog() {
-        val dialog = Dialog(requireContext(), R.style.AlertDialogResponsive)
+        val dialog = Dialog(requireContext(), R.style.AlertDialogCustom)
         val dialogView = layoutInflater.inflate(R.layout.dialog_review, null)
         dialog.setContentView(dialogView)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -441,32 +437,32 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         }
 
         apkPureButton.setOnClickListener {
-            openUrl("https://apkpure.com/reviews/com.betapix.cloudstream")
+            openUrl("https://apkpure.com/reviews/com.betapix.pluginstream")
             dialog.dismiss()
         }
 
         githubButton.setOnClickListener {
-            openUrl("https://github.com/am-abdulmueed/cloudstream")
+            openUrl("https://github.com/am-abdulmueed/pluginstream")
             dialog.dismiss()
         }
 
         productHuntButton.setOnClickListener {
-            openUrl("https://www.producthunt.com/products/cloudstream/reviews/new")
+            openUrl("https://www.producthunt.com/products/pluginstream/reviews/new")
             dialog.dismiss()
         }
 
         sourceForgeButton.setOnClickListener {
-            openUrl("https://sourceforge.net/projects/cloudstream/reviews/new?stars=5")
+            openUrl("https://sourceforge.net/projects/pluginstream/reviews/new?stars=5")
             dialog.dismiss()
         }
 
         productCoolButton.setOnClickListener {
-            openUrl("https://www.productcool.com/product/cloudstream")
+            openUrl("https://www.productcool.com/product/pluginstream")
             dialog.dismiss()
         }
 
         saasHubButton.setOnClickListener {
-            openUrl("https://www.saashub.com/cloudstream-reviews/new")
+            openUrl("https://www.saashub.com/pluginstream-reviews/new")
             dialog.dismiss()
         }
 

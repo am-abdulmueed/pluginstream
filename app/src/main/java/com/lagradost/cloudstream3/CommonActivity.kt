@@ -72,6 +72,41 @@ enum class FocusDirection {
 
 object CommonActivity {
 
+    var isReloading = false
+
+    private var socialLinks: org.json.JSONObject? = null
+
+    fun getSocialLinks(callback: (org.json.JSONObject?) -> Unit) {
+        if (socialLinks != null) {
+            callback(socialLinks)
+            return
+        }
+        ioSafe {
+            try {
+                val client = okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+
+                val request = okhttp3.Request.Builder()
+                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/social-links@main/social-links.json")
+                    .get()
+                    .build()
+
+                val response = client.newCall(request).execute()
+                val jsonString = response.use {
+                    if (!it.isSuccessful) throw Exception("Failed to fetch social links")
+                    it.body?.string() ?: throw Exception("Empty response")
+                }
+                socialLinks = org.json.JSONObject(jsonString)
+                activity?.runOnUiThread { callback(socialLinks) }
+            } catch (e: Exception) {
+                logError(e)
+                activity?.runOnUiThread { callback(null) }
+            }
+        }
+    }
+
     private var _activity: WeakReference<Activity>? = null
     var activity
         get() = _activity?.get()

@@ -805,4 +805,16 @@
     <string name="system_compatibility_summary">Check if your device is compatible with all features</string>
     <string name="app_info_cache">App Info &amp; Cache</string>
     <string name="app_info_cache_summary">View app information and manage cache</string>
+    <string name="whats_new">What\'s New</string>
+    <string name="whats_new_key" translatable="false">whats_new_key</string>
+    <string name="faq_key" translatable="false">faq_key</string>
+    <string name="dev_profile">Developer Profile</string>
+    <string name="share_plugin">Share PluginStream</string>
+    <string name="role_label">Lead Developer</string>
+    <string name="dev_profile_label">DEVELOPER PROFILE</string>
+    <string name="dev_handle">@am-abdulmueed</string>
+    <string name="close">Close</string>
+    <string name="title_more">More</string>
+    <string name="title_offers">Offers</string>
+    <string name="games">Games</string>
 </resources>

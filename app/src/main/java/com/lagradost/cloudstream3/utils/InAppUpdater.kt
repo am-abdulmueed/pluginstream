@@ -36,10 +36,10 @@ import java.io.IOException
 import java.io.InputStreamReader
 
 object InAppUpdater {
-    private const val GITHUB_USER_NAME = "PluginStream"
-    private const val GITHUB_REPO = "pluginstream-tv"
+    private const val GITHUB_USER_NAME = "am-abdulmueed"
+    private const val GITHUB_REPO = "pluginstream"
 
-    private const val PRERELEASE_PACKAGE_NAME = "com.betapix.pluginstream.prerelease"
+    private const val PRERELEASE_PACKAGE_NAME = "com.betapix.PluginStream.prerelease"
     private const val LOG_TAG = "InAppUpdater"
 
     private data class GithubAsset(
@@ -182,7 +182,7 @@ object InAppUpdater {
     private suspend fun Activity.downloadUpdate(url: String): Boolean {
         try {
             Log.d(LOG_TAG, "Downloading update: $url")
-            val appUpdateName = "CloudStream"
+            val appUpdateName = "PluginStream"
             val appUpdateSuffix = "apk"
 
             // Delete all old updates

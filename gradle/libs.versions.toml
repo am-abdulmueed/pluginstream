@@ -33,6 +33,7 @@ kotlinxCoroutinesCore = "1.11.0"
 kotlinxDatetime = "0.8.0"
 kotlinxSerializationJson = "1.11.0"
 lifecycleKtx = "2.10.0"
+markwon = "4.6.2"
 material = "1.14.0"
 media3 = "1.9.3"
 navigationKtx = "2.9.8"
@@ -97,6 +98,9 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleKtx" }
 lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleKtx" }
+markwon-core = { module = "io.noties.markwon:core", version.ref = "markwon" }
+markwon-linkify = { module = "io.noties.markwon:linkify", version.ref = "markwon" }
+markwon-strikethrough = { module = "io.noties.markwon:ext-strikethrough", version.ref = "markwon" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 media3-cast = { module = "androidx.media3:media3-cast", version.ref = "media3" }
 media3-common = { module = "androidx.media3:media3-common", version.ref = "media3" }
@@ -142,6 +146,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 [bundles]
 coil = ["coil", "coil-network-okhttp"]
 lifecycle = ["lifecycle-livedata-ktx", "lifecycle-viewmodel-ktx"]
+markwon = ["markwon-core", "markwon-linkify", "markwon-strikethrough"]
 media3 = ["media3-cast", "media3-common", "media3-container", "media3-datasource-cronet", "media3-datasource-okhttp", "media3-exoplayer", "media3-exoplayer-dash", "media3-exoplayer-hls", "media3-session", "media3-ui"]
 navigation = ["navigation-fragment-ktx", "navigation-ui-ktx"]
 nextlib = ["nextlib-media3ext", "nextlib-mediainfo"]
