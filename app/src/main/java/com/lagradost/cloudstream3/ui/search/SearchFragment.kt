@@ -81,6 +81,11 @@ import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
 import com.lagradost.cloudstream3.utils.UIHelper.getSpanCount
 import com.lagradost.cloudstream3.utils.UIHelper.hideKeyboard
+import com.airbnb.lottie.LottieAnimationView
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
 
@@ -113,6 +118,19 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     private val searchViewModel: SearchViewModel by activityViewModels()
     private var bottomSheetDialog: BottomSheetDialog? = null
 
+    private lateinit var voiceSearchManager: VoiceSearchManager
+    private var voiceDialog: AlertDialog? = null
+
+    private val requestAudioPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            startModernVoiceSearch()
+        } else {
+            showToast("Microphone permission required for voice search")
+        }
+    }
+
     private val speechRecognizerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -144,7 +162,58 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         hideKeyboard()
         bottomSheetDialog?.ownHide()
         activity?.detachBackPressedCallback("SearchFragment")
+        if (::voiceSearchManager.isInitialized) {
+            voiceSearchManager.destroy()
+        }
         super.onDestroyView()
+    }
+
+    private fun setupVoiceSearch() {
+        voiceSearchManager = VoiceSearchManager(requireContext(), object : VoiceSearchManager.VoiceSearchCallback {
+            override fun onListeningStarted() {
+                showVoiceSearchDialog()
+            }
+
+            override fun onResultsFound(text: String) {
+                voiceDialog?.dismiss()
+                binding?.mainSearch?.setQuery(text, true)
+            }
+
+            override fun onErrorOccurred(errorMsg: String) {
+                voiceDialog?.dismiss()
+                showToast(errorMsg)
+            }
+
+            override fun onListeningStopped() {
+                val lottieView = voiceDialog?.findViewById<LottieAnimationView>(R.id.voiceLottieAnimation)
+                lottieView?.pauseAnimation()
+            }
+        })
+    }
+
+    private fun showVoiceSearchDialog() {
+        if (voiceDialog?.isShowing == true) return
+        
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_voice_search, null)
+        voiceDialog = AlertDialog.Builder(requireContext(), R.style.AlertDialogCustom)
+            .setView(dialogView)
+            .setOnDismissListener { voiceSearchManager.stopListening() }
+            .create()
+        
+        voiceDialog?.show()
+        voiceDialog?.findViewById<LottieAnimationView>(R.id.voiceLottieAnimation)?.playAnimation()
+    }
+
+    private fun onMicButtonClicked() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startModernVoiceSearch()
+        } else {
+            requestAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    private fun startModernVoiceSearch() {
+        voiceSearchManager.startListening()
     }
 
     override fun onResume() {
@@ -235,6 +304,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         savedInstanceState: Bundle?
     ) {
         reloadRepos()
+        setupVoiceSearch()
         binding.apply {
             val adapter =
                 SearchAdapter(
@@ -250,30 +320,8 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
             searchLoadingBar.alpha = 0f
         }
 
-        binding.voiceSearch.setOnClickListener { searchView ->
-            searchView?.context?.let { ctx ->
-                try {
-                    if (!SpeechRecognizer.isRecognitionAvailable(ctx)) {
-                        showToast(R.string.speech_recognition_unavailable)
-                    } else {
-                        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                            putExtra(
-                                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-                            )
-                            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-                            putExtra(
-                                RecognizerIntent.EXTRA_PROMPT,
-                                ctx.getString(R.string.begin_speaking)
-                            )
-                        }
-                        speechRecognizerLauncher.launch(intent)
-                    }
-                } catch (_: Throwable) {
-                    // launch may throw
-                    showToast(R.string.speech_recognition_unavailable)
-                }
-            }
+        binding.voiceSearch.setOnClickListener {
+            onMicButtonClicked()
         }
 
         val searchExitIcon =

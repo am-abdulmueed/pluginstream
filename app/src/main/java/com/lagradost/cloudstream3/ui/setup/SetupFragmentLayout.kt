@@ -51,7 +51,6 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
                     settingsManager.edit {
                         putInt(getString(R.string.app_layout_key), prefValues[position])
                     }
-                    activity?.recreate()
                 }
 
                 nextBtt.setOnClickListener {

@@ -39,8 +39,6 @@ class EasterEggMonkeFragment : BaseFragment<FragmentEasterEggMonkeBinding>(
         R.drawable.monke_sob,
         R.drawable.monke_drink,
         R.drawable.benene,
-        R.drawable.ic_launcher_foreground,
-        R.drawable.quick_novel_icon,
     )
 
     private val activeMonkeys = mutableListOf<ImageView>()
