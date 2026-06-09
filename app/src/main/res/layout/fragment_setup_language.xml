@@ -33,7 +33,7 @@
                     android:layout_height="120dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_baseline_translate_24"
-                    app:tint="?attr/white" />
+                    app:tint="?attr/textColor" />
 
                 <TextView
                     android:layout_width="wrap_content"

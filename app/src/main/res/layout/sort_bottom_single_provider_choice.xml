@@ -1,22 +1,76 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-     >
-    <TextView
-        android:id="@+id/text1"
+    android:layout_marginHorizontal="14dp"
+    android:layout_marginVertical="5dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/dividerColor"
+    app:cardBackgroundColor="?attr/primaryBlackBackground">
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/CheckLabel"
-        android:layout_gravity="center"
-        tools:text="hello" />
-    <ImageView
-        android:id="@+id/pinicon"
-        android:layout_width="50dp"
-        android:layout_height="24dp"
-        android:layout_gravity="end|center_vertical"
-        android:src="@drawable/pin_ic"
-        android:visibility="gone"
-        tools:visibility="visible"
-        tools:ignore="RtlHardcoded" />
-</FrameLayout>
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackground"
+        android:paddingHorizontal="16dp">
+
+        <ImageView
+            android:id="@+id/prefix_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="12dp"
+            android:visibility="gone"
+            app:tint="?attr/textColor"
+            tools:src="@drawable/search_icon"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/text1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/prefix_icon"
+            android:layout_toStartOf="@id/icon_container"
+            android:fontFamily="@font/google_sans"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textColor="?attr/textColor"
+            android:textSize="14sp"
+            android:textStyle="normal"
+            tools:text="Provider Name" />
+
+        <FrameLayout
+            android:id="@+id/icon_container"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true">
+
+            <ImageView
+                android:id="@+id/pinicon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center"
+                android:src="@drawable/pin_ic"
+                android:visibility="gone"
+                app:tint="?attr/textColor"
+                tools:visibility="visible" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/pin_checkbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                app:useMaterialThemeColors="true"
+                tools:visibility="visible" />
+        </FrameLayout>
+
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

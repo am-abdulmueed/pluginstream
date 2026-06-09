@@ -15,11 +15,6 @@
             app:key="@string/whats_new_key" />
 
         <Preference
-            android:title="@string/support_faq"
-            app:icon="@drawable/baseline_help_outline_24"
-            app:key="@string/faq_key" />
-
-        <Preference
             android:icon="@drawable/ic_baseline_developer_mode_24"
             android:title="@string/install_prerelease"
             app:key="@string/install_prerelease_key" />

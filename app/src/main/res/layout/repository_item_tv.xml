@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/repository_item_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/outline_drawable"
-    android:nextFocusRight="@id/action_settings"
-    android:orientation="horizontal"
-    android:clickable="true"
-    android:focusable="true"
-    android:padding="12dp">
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:id="@+id/item_main_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/focusBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:nextFocusRight="@id/action_settings"
+        android:orientation="horizontal"
+        android:padding="12dp">
 
     <ImageView
         android:id="@+id/entry_icon"
@@ -48,7 +57,6 @@
                 android:layout_height="match_parent"
                 android:layout_marginEnd="5dp"
                 android:text="🇷🇼"
-
                 android:textColor="?attr/grayTextColor"
                 android:visibility="gone"
                 tools:visibility="visible" />
@@ -114,27 +122,46 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:padding="12dp"
-        android:background="@drawable/outline_drawable"
+        android:background="?attr/focusBackground"
         android:contentDescription="@string/title_settings"
         android:visibility="gone"
         android:focusable="true"
-        android:nextFocusLeft="@id/repository_item_root"
+        android:nextFocusLeft="@id/item_main_content"
         android:nextFocusRight="@id/action_button"
+        app:tint="?attr/iconColor"
         app:srcCompat="@drawable/ic_baseline_tune_24"
         tools:visibility="visible" />
 
-    <ImageView
-        android:id="@+id/action_button"
+    <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|end"
-        android:layout_marginStart="10dp"
-        android:background="@drawable/outline_drawable"
-        android:clickable="true"
-        android:contentDescription="@string/download"
-        android:focusable="true"
-        android:nextFocusLeft="@id/action_settings"
-        android:padding="12dp"
-        tools:src="@drawable/ic_baseline_add_24" />
+        android:layout_gravity="center_vertical|end">
 
-</LinearLayout>
+        <ImageView
+            android:id="@+id/action_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="?attr/focusBackground"
+            android:clickable="true"
+            android:contentDescription="@string/download"
+            android:focusable="true"
+            android:nextFocusLeft="@id/action_settings"
+            android:padding="12dp"
+            app:tint="?attr/iconColor"
+            tools:src="@drawable/ic_baseline_add_24" />
+
+        <ProgressBar
+            android:id="@+id/action_progress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </FrameLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
+

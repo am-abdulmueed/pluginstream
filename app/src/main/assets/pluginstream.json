@@ -1,5 +1,5 @@
 {
-  "name": "PluginStream Repositories Master List",
+  "name": "CloudStream Repositories Master List",
   "version": 1,
   "last_updated": "2026-05-02",
   "repositories": [
@@ -17,6 +17,11 @@
       "name": "CSX",
       "url": "https://raw.githubusercontent.com/SaurabhKaperwan/CSX/builds/CS.json",
       "description": "Hindi & English content (Bollyflix, CineStream, Moviesmod, VegaMovies etc.)"
+    },
+    {
+      "name": "3arabi",
+      "url": "https://raw.githubusercontent.com/Abodabodd/re-3arabi/refs/heads/main/repo.json",
+      "description": "Arabic repository (CimaClub, Akwam, Mycima, Shahid, Anime etc.)"
     },
     {
       "name": "IndoStream",

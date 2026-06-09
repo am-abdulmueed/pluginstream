@@ -32,6 +32,7 @@ import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setSyst
 import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setToolBarScrollFlags
 import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setUpToolbar
 import com.lagradost.cloudstream3.utils.AppContextUtils.addRepositoryDialog
+import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.main
@@ -76,11 +77,18 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
         setUpToolbar(R.string.extensions)
         setToolBarScrollFlags()
 
+        PluginsViewModel.downloadingRepos.observe(viewLifecycleOwner) {
+            binding.repoRecyclerView.adapter?.notifyDataSetChanged()
+        }
+        PluginsViewModel.downloadedRepos.observe(viewLifecycleOwner) {
+            binding.repoRecyclerView.adapter?.notifyDataSetChanged()
+        }
+
         binding.repoRecyclerView.apply {
             setLinearListLayout(
                 isHorizontal = false,
                 nextUp = R.id.settings_toolbar, // FOCUS_SELF, // back has no id so we cant :pensive:
-                nextDown = R.id.plugin_storage_appbar,
+                nextDown = R.id.storage_info_clickable,
                 nextRight = FOCUS_SELF,
                 nextLeft = R.id.nav_rail_view
             )
@@ -92,7 +100,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                             paddingLeft,
                             paddingTop,
                             paddingRight,
-                            button.measuredHeight + button.marginTop + button.marginBottom
+                            button.measuredHeight + button.marginTop + button.marginBottom + 40.toPx
                         )
                     }
                 }
@@ -108,14 +116,16 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                 }
             }
             adapter = RepoAdapter(false, {
-                findNavController().navigate(
-                    R.id.navigation_settings_extensions_to_navigation_settings_plugins,
-                    PluginsFragment.newInstance(
-                        it.name,
-                        it.url,
-                        false
+                if (findNavController().currentDestination?.id == R.id.navigation_settings_extensions) {
+                    findNavController().navigate(
+                        R.id.navigation_settings_extensions_to_navigation_settings_plugins,
+                        PluginsFragment.newInstance(
+                            it.name,
+                            it.url,
+                            false
+                        )
                     )
-                )
+                }
             }, { repo ->
                 // Prompt user before deleting repo
                 main {
@@ -174,7 +184,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             }
         }
 
-        binding.pluginStorageAppbar.setOnClickListener {
+        val storageClick = View.OnClickListener {
             findNavController().navigate(
                 R.id.navigation_settings_extensions_to_navigation_settings_plugins,
                 PluginsFragment.newInstance(
@@ -184,6 +194,9 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                 )
             )
         }
+
+        binding.pluginStorageAppbar.setOnClickListener(storageClick)
+        binding.storageInfoClickable.setOnClickListener(storageClick)
 
         val addRepositoryClick = View.OnClickListener {
             val ctx = context ?: return@OnClickListener
@@ -229,6 +242,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                         else repository.name
                         val newRepo = RepositoryData(repository.iconUrl,fixedName, url)
                         RepositoryManager.addRepository(newRepo)
+                        PluginsViewModel.downloadAll(activity, url, null)
                         extensionViewModel.loadStats()
                         extensionViewModel.loadRepositories()
 
@@ -256,11 +270,25 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             addRepoButtonImageviewHolder.isVisible = isTv
 
             // Band-aid for Fire TV
-            pluginStorageAppbar.isFocusableInTouchMode = isTv
+            pluginStorageAppbar.isFocusable = false // The parent shouldn't be focusable, only children
+            storageInfoClickable.isFocusable = isTv
+            storageInfoClickable.isFocusableInTouchMode = isTv
+            addRepoButtonImageview.isFocusable = isTv
             addRepoButtonImageview.isFocusableInTouchMode = isTv
 
             addRepoButton.setOnClickListener(addRepositoryClick)
             addRepoButtonImageview.setOnClickListener(addRepositoryClick)
+            
+            if (isTv) {
+                 // Focus on the first item if exists, else focus on add repo
+                 if (extensionViewModel.repositories.value?.isNotEmpty() == true) {
+                     repoRecyclerView.post {
+                         repoRecyclerView.requestFocus()
+                     }
+                 } else {
+                     context?.setDefaultFocus(addRepoButtonImageview)
+                 }
+             }
         }
         reloadRepositories()
     }

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/floatingMenuContainer"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:visibility="gone"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- Offers Icon -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabOffers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:contentDescription="@string/title_offers"
+        app:tooltipText="@string/title_offers"
+        android:src="@drawable/ic_offers"
+        android:backgroundTint="?attr/primaryBlackBackground"
+        app:tint="?attr/textColor"
+        app:borderWidth="0dp"
+        app:elevation="8dp"
+        app:fabSize="normal" />
+
+    <!-- Downloads Icon -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabDownloads"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:contentDescription="@string/title_downloads"
+        app:tooltipText="@string/title_downloads"
+        android:src="@drawable/netflix_download"
+        android:backgroundTint="?attr/primaryBlackBackground"
+        app:tint="?attr/textColor"
+        app:borderWidth="0dp"
+        app:elevation="8dp"
+        app:fabSize="normal" />
+
+    <!-- Library Icon -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabLibrary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:contentDescription="@string/library"
+        app:tooltipText="@string/library"
+        android:src="@drawable/library_icon_selector"
+        android:backgroundTint="?attr/primaryBlackBackground"
+        app:tint="?attr/textColor"
+        app:borderWidth="0dp"
+        app:elevation="8dp"
+        app:fabSize="normal" />
+
+    <!-- Settings Icon -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:contentDescription="@string/title_settings"
+        app:tooltipText="@string/title_settings"
+        android:src="@drawable/settings_icon_selector"
+        android:backgroundTint="?attr/primaryBlackBackground"
+        app:tint="?attr/textColor"
+        app:borderWidth="0dp"
+        app:elevation="8dp"
+        app:fabSize="normal" />
+
+</LinearLayout>

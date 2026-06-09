@@ -91,7 +91,7 @@ class PluginAdapter(
         binding.actionButton.setOnClickListener {
             iconClickCallback.invoke(item.plugin)
         }
-        itemView.setOnClickListener {
+        binding.itemMainContent.setOnClickListener {
             if (isLocal) return@setOnClickListener
 
             val sheet = PluginDetailsFragment(item)

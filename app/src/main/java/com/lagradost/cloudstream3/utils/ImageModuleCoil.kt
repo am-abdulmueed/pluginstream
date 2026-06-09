@@ -43,16 +43,17 @@ object ImageLoader {
             .allowHardware(SDK_INT >= 28 && !isBrokenHardware)
             .diskCachePolicy(CachePolicy.ENABLED)
             .networkCachePolicy(CachePolicy.ENABLED)
+            .memoryCachePolicy(CachePolicy.ENABLED)
             .memoryCache {
-                MemoryCache.Builder().maxSizePercent(context, 0.1)//10 % of heap for mem-cache
-                    .strongReferencesEnabled(false)
+                MemoryCache.Builder().maxSizePercent(context, 0.2)// 20% of heap for mem-cache
+                    .strongReferencesEnabled(true)
                     .build()
             }
             .diskCache {
                 DiskCache.Builder()
                     .directory(context.cacheDir.resolve("cs3_image_cache").toOkioPath())
-                    .maxSizeBytes(512L * 1024 * 1024) // 512 MB
-                    .maxSizePercent(0.04) // max 4% of storage for disk caching
+                    .maxSizeBytes(1024L * 1024 * 1024) // 1 GB
+                    .maxSizePercent(0.1) // max 10% of storage for disk caching
                     .build()
             }
             /** Pass interceptors with care, unnecessary passing tokens to servers

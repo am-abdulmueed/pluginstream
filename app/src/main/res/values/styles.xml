@@ -138,6 +138,7 @@
         <item name="white">@color/white</item>
         <item name="black">@color/black</item>
         <item name="colorOnPrimary">@color/whiteText</item>
+        <item name="dividerColor">#1AFFFFFF</item>
     </style>
 
     <style name="DubButton" parent="@style/SearchBox">
@@ -172,18 +173,34 @@
         <item name="android:text">@string/quality_hd</item>
     </style>
 
-    <style name="LightMode">
+    <style name="LightMode" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">@color/lightBitDarkerGrayBackground</item>
+        <item name="android:colorEdgeEffect">?attr/textColor</item>
+        <item name="android:navigationBarColor">@color/lightBitDarkerGrayBackground</item>
+        <item name="android:statusBarColor">@color/lightGrayBackground</item>
+
         <item name="primaryGrayBackground">@color/lightPrimaryGrayBackground</item>
         <item name="primaryBlackBackground">@color/lightBitDarkerGrayBackground</item>
         <item name="iconGrayBackground">@color/lightGrayBackground</item>
         <item name="boxItemBackground">@color/lightItemBackground</item>
         <item name="textColor">@color/lightTextColor</item>
         <item name="grayTextColor">@color/lightGrayTextColor</item>
+        <item name="iconColor">@color/lightIconColor</item>
         <item name="white">@color/black</item>
         <item name="black">@color/white</item>
         <item name="colorOnPrimary">@color/blackText</item>
+        <item name="dividerColor">#1A000000</item>
         <item name="isLightTheme">true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+
+        <!-- Preference -->
+        <item name="android:textColor">?attr/textColor</item>
+        <item name="android:textColorSecondary">?attr/grayTextColor</item>
+        <item name="android:textColorHint">?attr/grayTextColor</item>
+        <item name="android:editTextColor">?attr/textColor</item>
+        <item name="android:colorForeground">?attr/textColor</item>
+        <item name="android:colorControlHighlight">?attr/textColor</item>
     </style>
 
     <style name="DraculaMode">
@@ -196,6 +213,7 @@
         <item name="white">@color/DraculaTextColor</item>
         <item name="black">@color/DraculaPrimaryGrayBackground</item>
         <item name="colorOnPrimary">@color/DraculaTextColor</item>
+        <item name="dividerColor">#1AFFFFFF</item>
     </style>
 
 
@@ -209,6 +227,7 @@
         <item name="white">@color/SilentBlueTextColor</item>
         <item name="black">@color/SilentBluePrimaryGrayBackground</item>
         <item name="colorOnPrimary">@color/SilentBlueTextColor</item>
+        <item name="dividerColor">#1AFFFFFF</item>
     </style>
 
     <style name="LavenderMode">
@@ -221,6 +240,7 @@
         <item name="white">@color/LavenderTextColor</item>
         <item name="black">@color/LavenderPrimaryGrayBackground</item>
         <item name="colorOnPrimary">@color/LavenderTextColor</item>
+        <item name="dividerColor">#1A000000</item>
         <item name="isLightTheme">true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
     </style>
@@ -235,6 +255,7 @@
         <item name="white">@color/material_dynamic_neutral90</item>
         <item name="black">@color/material_dynamic_neutral10</item>
         <item name="colorOnPrimary">@color/material_on_primary_emphasis_medium</item>
+        <item name="dividerColor">#1AFFFFFF</item>
     </style>
 
     <style name="OverlayPrimaryColorNormal">
@@ -648,10 +669,13 @@
 
     <style name="SettingsItem">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">50dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">72dp</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:paddingStart">20dp</item>
         <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
         <item name="android:selectAllOnFocus">true</item>
         <item name="android:background">?attr/focusBackground</item>
         <item name="android:textColor">?attr/textColor</item>
@@ -695,13 +719,13 @@
         <item name="android:padding">5dp</item>
         <item name="android:layout_marginStart">5dp</item>
         <item name="android:layout_marginEnd">5dp</item>
-        <item name="android:layout_height">40dp</item>
+        <item name="android:layout_height">56dp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAllCaps">false</item>
         <item name="iconGravity">textStart</item>
         <item name="iconSize">20dp</item>
-        <item name="cornerRadius">@dimen/rounded_button_radius</item>
-        <item name="android:textSize">15sp</item>
+        <item name="cornerRadius">28dp</item>
+        <item name="android:textSize">16sp</item>
 
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>

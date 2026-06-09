@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/detailSwipeRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/primaryBlackBackground">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:paddingBottom="100dp"
+            android:clipToPadding="false">
+
+        <!-- Profile Style Icon Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/dividerColor"
+            app:cardBackgroundColor="?attr/primaryGrayBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="40dp">
+
+                <!-- Social Media Profile Style Icon -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="140dp"
+                    android:layout_height="140dp"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="45dp"
+                    app:cardElevation="8dp"
+                    app:strokeWidth="4dp"
+                    app:strokeColor="?attr/colorPrimary">
+
+                    <ImageView
+                        android:id="@+id/detailOfferImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:background="?attr/primaryBlackBackground"
+                        android:contentDescription="Offer Image" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Offer Title -->
+                <TextView
+                    android:id="@+id/detailOfferTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/google_sans"
+                    android:text="Offer Title"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/textColor"
+                    android:gravity="center"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/detailPayoutLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/badge_bg_green"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="6dp"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/google_sans"
+                    tools:text="$5.00 Reward" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Subtitle -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Complete this offer to earn rewards"
+            android:textSize="14sp"
+            android:textColor="?attr/grayTextColor"
+            android:gravity="center"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Install Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/detailInstallButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Install Now"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingVertical="14dp"
+            app:cornerRadius="12dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Share Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/detailShareButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Share Offer"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingVertical="12dp"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/ic_outline_share_24"
+            app:iconGravity="textStart"
+            app:iconTint="?attr/textColor"
+            android:layout_marginBottom="8dp"
+            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+        <!-- Refresh Notice -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp"
+            android:layout_marginBottom="20dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_refresh"
+                app:tint="?attr/colorPrimary"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NOTE:\nIf the website doesn't load after clicking Install, please pull down to refresh in your browser."
+                android:textSize="12sp"
+                android:textColor="?attr/grayTextColor"
+                android:textStyle="italic" />
+        </LinearLayout>
+
+        <!-- Country Flag Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/detailCountryLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="?attr/primaryGrayBackground"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:gravity="center_vertical"
+                android:background="?attr/focusBackground">
+
+                <TextView
+                    android:id="@+id/detailCountryFlag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🇺🇸"
+                    android:textSize="24sp"
+                    android:layout_marginEnd="16dp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Available Countries"
+                        android:textSize="12sp"
+                        android:textColor="?attr/grayTextColor" />
+
+                    <TextView
+                        android:id="@+id/detailCountryName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="United States"
+                        android:textSize="16sp"
+                        android:textColor="?attr/textColor"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
+                    app:tint="?attr/textColor" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Device Icons Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/detailDeviceLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="?attr/primaryGrayBackground"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:gravity="center_vertical"
+                android:background="?attr/focusBackground">
+
+                <ImageView
+                    android:id="@+id/detailDeviceIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="Device Icon"
+                    app:tint="?attr/textColor" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Supported Device"
+                        android:textSize="12sp"
+                        android:textColor="?attr/grayTextColor" />
+
+                    <TextView
+                        android:id="@+id/detailDeviceName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Android"
+                        android:textSize="16sp"
+                        android:textColor="?attr/textColor"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
+                    app:tint="?attr/textColor" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Description Section -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="?attr/primaryGrayBackground"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Description"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/detailDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Offer description will appear here..."
+                    android:textSize="14sp"
+                    android:textColor="?attr/textColor"
+                    android:lineSpacingExtra="2dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Conversion Requirements -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/detailConversionLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="?attr/primaryGrayBackground"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Conversion Requirements"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/textColor"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/detailConversion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Complete the required actions"
+                    android:textSize="14sp"
+                    android:textColor="?attr/textColor"
+                    android:lineSpacingExtra="2dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+    </ScrollView>
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

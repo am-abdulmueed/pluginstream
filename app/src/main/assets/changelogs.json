@@ -1,0 +1,18 @@
+[
+  {
+    "version": "5.1.2",
+    "title": "PluginStream v5.1.2 - What's New?",
+    "logs": [
+      {
+        "icon": "📺",
+        "title": "Brand New TV Version",
+        "description": "Optimized and fully compatible TV version released for a larger screen experience."
+      },
+      {
+        "icon": "🎵",
+        "title": "Introducing FLOW",
+        "description": "Stream your favorite videos and audio seamlessly with our new YouTube and YouTube Music inspired feature."
+      }
+    ]
+  }
+]

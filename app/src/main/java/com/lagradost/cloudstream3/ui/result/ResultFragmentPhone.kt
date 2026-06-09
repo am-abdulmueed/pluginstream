@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
@@ -18,6 +19,8 @@ import android.widget.AbsListView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -65,6 +68,7 @@ import com.lagradost.cloudstream3.ui.player.IPlayer
 import com.lagradost.cloudstream3.ui.player.PlayerView
 import com.lagradost.cloudstream3.ui.player.source_priority.QualityProfileDialog
 import com.lagradost.cloudstream3.ui.quicksearch.QuickSearchFragment
+import com.lagradost.cloudstream3.ui.home.HomeFragment.Companion.toPluginStream
 import com.lagradost.cloudstream3.ui.result.ResultFragment.bindLogo
 import com.lagradost.cloudstream3.ui.result.ResultFragment.getStoredData
 import com.lagradost.cloudstream3.ui.result.ResultFragment.updateUIEvent
@@ -97,6 +101,9 @@ import com.lagradost.cloudstream3.utils.UIHelper.populateChips
 import com.lagradost.cloudstream3.utils.UIHelper.popupMenuNoIconsAndNoStringRes
 import com.lagradost.cloudstream3.utils.UIHelper.setListViewHeightBasedOnItems
 import com.lagradost.cloudstream3.utils.UIHelper.setNavigationBarColorCompat
+import java.io.File
+import java.io.FileOutputStream
+import java.net.URLEncoder
 import com.lagradost.cloudstream3.utils.downloader.DownloadFileManagement.getBasePath
 import com.lagradost.cloudstream3.utils.downloader.DownloadObjects
 import com.lagradost.cloudstream3.utils.downloader.VideoDownloadManager
@@ -104,7 +111,6 @@ import com.lagradost.cloudstream3.utils.getImageFromDrawable
 import com.lagradost.cloudstream3.utils.setText
 import com.lagradost.cloudstream3.utils.setTextHtml
 import com.lagradost.cloudstream3.utils.txt
-import java.net.URLEncoder
 import java.util.concurrent.ConcurrentLinkedDeque
 import kotlin.math.roundToInt
 
@@ -938,7 +944,7 @@ open class ResultFragmentPhone : BaseFragment<FragmentResultSwipeBinding>(
                     resultInfo.setText(d.metaText)
                     resultNoEpisodes.setText(d.noEpisodesFoundText)
                     resultTitle.setText(d.titleText)
-                    resultMetaSite.setText(d.apiName)
+                    resultMetaSite.setText(d.apiName.toPluginStream())
                     resultMetaType.setText(d.typeText)
                     resultMetaYear.setText(d.yearText)
                     resultMetaDuration.setText(d.durationText)
@@ -1021,7 +1027,7 @@ open class ResultFragmentPhone : BaseFragment<FragmentResultSwipeBinding>(
 
                         resultShare.setOnClickListener {
                             try {
-                                val i = Intent(Intent.ACTION_SEND)
+                                val genres = d.tags.joinToString(", ")
                                 val nameBase64 =
                                     base64Encode(d.apiName.toString().toByteArray(Charsets.UTF_8))
                                 val urlBase64 = base64Encode(d.url.toByteArray(Charsets.UTF_8))
@@ -1030,11 +1036,43 @@ open class ResultFragmentPhone : BaseFragment<FragmentResultSwipeBinding>(
                                     "UTF-8"
                                 )
                                 val redirectUrl =
-                                    "https://recloudstream.github.io/csredirect?redirectto=$encodedUri"
-                                i.type = "text/plain"
-                                i.putExtra(Intent.EXTRA_SUBJECT, d.title)
-                                i.putExtra(Intent.EXTRA_TEXT, redirectUrl)
-                                startActivity(Intent.createChooser(i, d.title))
+                                    "https://pluginstream.pages.dev/psredirect?redirectto=$encodedUri"
+
+                                val finalMessage = """
+                                    🚀 Stream Unlimited Movies & Shows – Ad-Free! ... 
+                                    🎥 Now Watching: ${d.title}
+                                    🎭 Genre: $genres
+                                    🔗 Movei Link: $redirectUrl
+                                    
+                                    Free Install: https://pluginstream.pages.dev
+                                """.trimIndent()
+
+                                val intent = Intent(Intent.ACTION_SEND)
+                                val bitmap = resultBinding?.resultPoster?.drawable?.toBitmap()
+                                if (bitmap != null) {
+                                    val cachePath = File(requireContext().cacheDir, "images")
+                                    cachePath.mkdirs()
+                                    val file = File(cachePath, "image.png")
+                                    val stream = FileOutputStream(file)
+                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                    stream.close()
+
+                                    val contentUri = FileProvider.getUriForFile(
+                                        requireContext(),
+                                        "${requireContext().packageName}.provider",
+                                        file
+                                    )
+
+                                    intent.type = "image/*"
+                                    intent.putExtra(Intent.EXTRA_STREAM, contentUri)
+                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                } else {
+                                    intent.type = "text/plain"
+                                }
+
+                                intent.putExtra(Intent.EXTRA_SUBJECT, d.title)
+                                intent.putExtra(Intent.EXTRA_TEXT, finalMessage)
+                                startActivity(Intent.createChooser(intent, d.title))
                             } catch (e: Exception) {
                                 logError(e)
                             }

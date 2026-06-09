@@ -31,7 +31,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.core.content.edit
 import androidx.core.net.toUri
+import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.children
+import androidx.core.view.isVisible
+import androidx.core.view.isGone
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.lagradost.cloudstream3.databinding.FloatingMoreMenuBinding
 import androidx.core.view.get
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
@@ -163,6 +171,7 @@ import com.lagradost.cloudstream3.utils.SnackbarHelper.showSnackbar
 import com.lagradost.cloudstream3.utils.TvChannelUtils
 import com.lagradost.cloudstream3.utils.UIHelper.changeStatusBarState
 import com.lagradost.cloudstream3.utils.UIHelper.checkWrite
+import com.lagradost.cloudstream3.utils.UIHelper.clipboardHelper
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.UIHelper.enableEdgeToEdgeCompat
 import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
@@ -174,6 +183,8 @@ import com.lagradost.cloudstream3.utils.UIHelper.setNavigationBarColorCompat
 import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.USER_PROVIDER_API
 import com.lagradost.cloudstream3.utils.USER_SELECTED_HOMEPAGE_API
+import com.lagradost.cloudstream3.ui.dialog.sendEmailIntent
+import com.lagradost.cloudstream3.utils.AppDiagnostics
 import com.lagradost.cloudstream3.utils.setText
 import com.lagradost.cloudstream3.utils.setTextHtml
 import com.lagradost.cloudstream3.utils.txt
@@ -191,6 +202,23 @@ import kotlin.system.exitProcess
 import com.lagradost.cloudstream3.utils.downloader.DownloadQueueManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.lagradost.cloudstream3.utils.UIHelper.toPx
+import com.lagradost.cloudstream3.utils.UIHelper.navigate
+import com.lagradost.cloudstream3.ui.settings.Globals.PHONE
+import com.lagradost.cloudstream3.ui.settings.Globals.TV
+import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
+import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
+import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
+import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
+import com.lagradost.cloudstream3.utils.Coroutines.main
+import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
+import com.lagradost.cloudstream3.utils.UIHelper.getResourceColor
+import com.lagradost.cloudstream3.utils.UIHelper.hideKeyboard
+import com.lagradost.cloudstream3.utils.UIHelper.setNavigationBarColorCompat
+import kotlin.system.exitProcess
+import kotlinx.coroutines.delay
 
 class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCallback {
     companion object {
@@ -439,6 +467,156 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     }
 
 
+    private var isFloatingMenuVisible = false
+
+    private fun updateMoreIconToShow(isShowing: Boolean) {
+        binding?.apply {
+            val moreMenuItem = navView.menu.findItem(R.id.navigation_more)
+            val moreRailItem = navRailView.menu.findItem(R.id.navigation_more)
+            
+            if (isShowing) {
+                // Show X icon
+                moreMenuItem?.setIcon(R.drawable.ic_close_x)
+                moreRailItem?.setIcon(R.drawable.ic_close_x)
+            } else {
+                // Show hamburger icon
+                moreMenuItem?.setIcon(R.drawable.ic_more_menu)
+                moreRailItem?.setIcon(R.drawable.ic_more_menu)
+            }
+        }
+    }
+
+    private fun updateFloatingMenuPosition() {
+        val floatingContainer = binding?.moreMenuLayout?.floatingMenuContainer ?: return
+        val params = floatingContainer.layoutParams as? ConstraintLayout.LayoutParams ?: return
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        if (isLandscape) {
+            floatingContainer.orientation = LinearLayout.HORIZONTAL
+            params.bottomToTop = ConstraintLayout.LayoutParams.UNSET
+            params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            params.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            params.startToStart = ConstraintLayout.LayoutParams.UNSET
+            
+            // Landscape: Right side, horizontal layout
+            params.marginEnd = 80.toPx
+            params.bottomMargin = 16.toPx
+            params.horizontalBias = 1.0f
+
+            // Adjust children margins for horizontal layout
+            for (i in 0 until floatingContainer.childCount) {
+                val child = floatingContainer.getChildAt(i)
+                (child.layoutParams as? LinearLayout.LayoutParams)?.apply {
+                    setMargins(12.toPx, 0, 0, 0)
+                }
+            }
+        } else {
+            floatingContainer.orientation = LinearLayout.VERTICAL
+            params.bottomToTop = R.id.nav_view_container
+            params.bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+            params.endToEnd = R.id.nav_view_container
+            params.startToStart = R.id.nav_view_container
+            
+            // Portrait: Bottom bar center-right, vertical layout
+            params.marginEnd = 0
+            params.bottomMargin = 4.toPx
+            params.horizontalBias = 0.91f
+
+            // Adjust children margins for vertical layout
+            for (i in 0 until floatingContainer.childCount) {
+                val child = floatingContainer.getChildAt(i)
+                (child.layoutParams as? LinearLayout.LayoutParams)?.apply {
+                    setMargins(0, 0, 0, 12.toPx)
+                }
+            }
+        }
+        floatingContainer.layoutParams = params
+    }
+
+    private fun showFloatingMenu() {
+        val menuBinding = binding?.moreMenuLayout ?: return
+        val floatingContainer = menuBinding.floatingMenuContainer
+        val fabOffers = menuBinding.fabOffers
+        val fabLibrary = menuBinding.fabLibrary
+        val fabDownloads = menuBinding.fabDownloads
+        val fabSettings = menuBinding.fabSettings
+
+        updateFloatingMenuPosition()
+        floatingContainer.visibility = View.VISIBLE
+        isFloatingMenuVisible = true
+        updateMoreIconToShow(isShowing = true)
+
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val fabs = if (isLandscape) {
+            listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
+        } else {
+            listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
+        }
+
+        fabs.forEachIndexed { index, fab ->
+            fab.apply {
+                alpha = 0f
+                if (isLandscape) {
+                    translationX = 100f
+                    translationY = 0f
+                } else {
+                    translationX = 0f
+                    translationY = 100f
+                }
+                animate()
+                    .translationY(0f)
+                    .translationX(0f)
+                    .alpha(1f)
+                    .setStartDelay(index * 50L)
+                    .setDuration(200)
+                    .start()
+            }
+        }
+    }
+
+    private fun hideFloatingMenu() {
+        val menuBinding = binding?.moreMenuLayout ?: return
+        val floatingContainer = menuBinding.floatingMenuContainer
+        val fabOffers = menuBinding.fabOffers
+        val fabLibrary = menuBinding.fabLibrary
+        val fabDownloads = menuBinding.fabDownloads
+        val fabSettings = menuBinding.fabSettings
+
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val fabs = if (isLandscape) {
+            listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
+        } else {
+            listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
+        }
+
+        fabs.forEachIndexed { index, fab ->
+            fab.apply {
+                animate()
+                    .translationY(if (isLandscape) 0f else 100f)
+                    .translationX(if (isLandscape) 100f else 0f)
+                    .alpha(0f)
+                    .setStartDelay(index * 30L)
+                    .setDuration(150)
+                    .withEndAction {
+                        if (index == fabs.size - 1) {
+                            floatingContainer.visibility = View.GONE
+                            isFloatingMenuVisible = false
+                            updateMoreIconToShow(isShowing = false)
+                        }
+                    }
+                    .start()
+            }
+        }
+    }
+
+    private fun toggleFloatingMenu() {
+        if (isFloatingMenuVisible) {
+            hideFloatingMenu()
+        } else {
+            showFloatingMenu()
+        }
+    }
+
     var lastPopup: SearchResponse? = null
     var lastPopupJob: Job? = null
     fun loadPopup(result: SearchResponse, load: Boolean = true) {
@@ -503,6 +681,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_library,
             R.id.navigation_downloads,
             R.id.navigation_settings,
+            R.id.navigation_game,
+            R.id.navigation_offers,
+            R.id.navigation_more,
             R.id.navigation_download_child,
             R.id.navigation_download_queue,
             R.id.navigation_subtitles,
@@ -555,6 +736,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         binding?.apply {
             navRailView.isVisible = isNavVisible && isLandscape()
             navView.isVisible = isNavVisible && !isLandscape()
+            navViewContainer.isVisible = isNavVisible && !isLandscape()
+            
             navHostFragment.apply {
                 val marginPx = resources.getDimensionPixelSize(R.dimen.nav_rail_view_width)
                 layoutParams =
@@ -575,8 +758,54 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     R.id.navigation_download_child,
                     R.id.navigation_download_queue
                 ) -> {
-                    navRailView.menu.findItem(R.id.navigation_downloads).isChecked = true
-                    navView.menu.findItem(R.id.navigation_downloads).isChecked = true
+                    navRailView.menu.findItem(R.id.navigation_downloads)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_downloads)?.isChecked = true
+                    // If we are on phone, Downloads is in More
+                    if (navRailView.menu.findItem(R.id.navigation_downloads) == null) {
+                        navRailView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                        navView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                    }
+                }
+
+                in listOf(
+                    R.id.navigation_library
+                ) -> {
+                    navRailView.menu.findItem(R.id.navigation_library)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_library)?.isChecked = true
+                    // If we are on phone, Library is in More
+                    if (navRailView.menu.findItem(R.id.navigation_library) == null) {
+                        navRailView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                        navView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                    }
+                }
+
+                in listOf(
+                    R.id.navigation_game,
+                    R.id.navigation_game_player,
+                    R.id.navigation_saved_games
+                ) -> {
+                    navRailView.menu.findItem(R.id.navigation_game)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_game)?.isChecked = true
+                }
+
+                in listOf(
+                    R.id.navigation_offers,
+                    R.id.navigation_offer_detail
+                ) -> {
+                    navRailView.menu.findItem(R.id.navigation_offers)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_offers)?.isChecked = true
+                    // If we are on phone, Offers is in More
+                    if (navRailView.menu.findItem(R.id.navigation_offers) == null) {
+                        navRailView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                        navView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                    }
+                }
+
+                in listOf(
+                    R.id.navigation_more
+                ) -> {
+                    navRailView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_more)?.isChecked = true
                 }
 
                 in listOf(
@@ -593,10 +822,65 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     R.id.navigation_settings_plugins,
                     R.id.navigation_test_providers
                 ) -> {
-                    navRailView.menu.findItem(R.id.navigation_settings).isChecked = true
-                    navView.menu.findItem(R.id.navigation_settings).isChecked = true
+                    navRailView.menu.findItem(R.id.navigation_settings)?.isChecked = true
+                    navView.menu.findItem(R.id.navigation_settings)?.isChecked = true
+                    // If we are on phone, Settings is in More
+                    if (navRailView.menu.findItem(R.id.navigation_settings) == null) {
+                        navRailView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                        navView.menu.findItem(R.id.navigation_more)?.isChecked = true
+                    }
                 }
             }
+            updateFloatingMenuSelection(destination.id)
+        }
+    }
+
+    private fun updateFloatingMenuSelection(destinationId: Int) {
+        val menuBinding = binding?.moreMenuLayout ?: return
+
+        val primaryColor = getResourceColor(R.attr.colorPrimary)
+        val backgroundColor = getResourceColor(R.attr.primaryBlackBackground)
+        val textColor = getResourceColor(R.attr.textColor)
+
+        val isOffers =
+            destinationId == R.id.navigation_offers || destinationId == R.id.navigation_offer_detail
+        val isLibrary = destinationId == R.id.navigation_library
+        val isDownloads =
+            destinationId == R.id.navigation_downloads || destinationId == R.id.navigation_download_child || destinationId == R.id.navigation_download_queue
+        val isSettings = listOf(
+            R.id.navigation_settings,
+            R.id.navigation_subtitles,
+            R.id.navigation_chrome_subtitles,
+            R.id.navigation_settings_player,
+            R.id.navigation_settings_updates,
+            R.id.navigation_settings_ui,
+            R.id.navigation_settings_account,
+            R.id.navigation_settings_providers,
+            R.id.navigation_settings_general,
+            R.id.navigation_settings_extensions,
+            R.id.navigation_settings_plugins,
+            R.id.navigation_test_providers
+        ).contains(destinationId)
+
+        menuBinding.fabOffers.apply {
+            backgroundTintList =
+                ColorStateList.valueOf(if (isOffers) primaryColor else backgroundColor)
+            imageTintList = ColorStateList.valueOf(if (isOffers) primaryColor else textColor)
+        }
+        menuBinding.fabLibrary.apply {
+            backgroundTintList =
+                ColorStateList.valueOf(if (isLibrary) primaryColor else backgroundColor)
+            imageTintList = ColorStateList.valueOf(if (isLibrary) primaryColor else textColor)
+        }
+        menuBinding.fabDownloads.apply {
+            backgroundTintList =
+                ColorStateList.valueOf(if (isDownloads) primaryColor else backgroundColor)
+            imageTintList = ColorStateList.valueOf(if (isDownloads) primaryColor else textColor)
+        }
+        menuBinding.fabSettings.apply {
+            backgroundTintList =
+                ColorStateList.valueOf(if (isSettings) primaryColor else backgroundColor)
+            imageTintList = ColorStateList.valueOf(if (isSettings) primaryColor else textColor)
         }
     }
 
@@ -746,14 +1030,21 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     private var lastNavTime = 0L
     private fun onNavDestinationSelected(item: MenuItem, navController: NavController): Boolean {
         val currentTime = System.currentTimeMillis()
-        // safeDebounce: Check if a previous tap happened within the last 400ms
-        if (currentTime - lastNavTime < 400) return false
+        // safeDebounce: Check if a previous tap happened within the last 100ms
+        if (currentTime - lastNavTime < 100) return false
         lastNavTime = currentTime
 
         val destinationId = item.itemId
 
+        if (isFloatingMenuVisible) {
+            hideFloatingMenu()
+        }
+
         // Check if we are already at the selected destination
-        if (navController.currentDestination?.id == destinationId) return false
+        if (navController.currentDestination?.id == destinationId) {
+            // If on TV, we might want to refresh or scroll to top, but for now just return true to indicate it's handled
+            return true
+        }
 
         // Make all nav buttons focus on this specific view when nextFocusRightId
         val targetView = when (destinationId) {
@@ -765,6 +1056,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_search -> R.id.main_search
             R.id.navigation_library -> R.id.main_search
             R.id.navigation_downloads -> R.id.download_appbar
+            R.id.navigation_settings -> R.id.settings_toolbar
             else -> null
         }
         if (targetView != null && isLayout(TV or EMULATOR)) {
@@ -799,10 +1091,65 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
         return try {
             navController.navigate(destinationId, null, builder.build())
-            navController.currentDestination?.matchDestination(destinationId) == true
-        } catch (e: IllegalArgumentException) {
+            updateNavIconTint(binding?.navRailView)
+            updateNavIconTint(binding?.navView)
+            true
+        } catch (e: Exception) {
             Log.e("NavigationError", "Failed to navigate: ${e.message}")
             false
+        }
+    }
+
+    private fun updateNavIconTint(view: View?) {
+        val navView = view as? com.google.android.material.navigation.NavigationBarView ?: return
+        val navIconColor = ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf(-android.R.attr.state_checked)
+            ),
+            intArrayOf(
+                getResourceColor(R.attr.textColor).let { if (it == 0) getResourceColor(android.R.attr.textColorPrimary) else it },
+                getResourceColor(R.attr.textColor, 0.6f).let { if (it == 0) getResourceColor(android.R.attr.textColorSecondary, 0.6f) else it }
+            )
+        )
+        navView.apply {
+            itemIconTintList = null // Clear global tint
+            val menu = menu
+            for (i in 0 until menu.size()) {
+                val item = menu.getItem(i)
+                val itemView = findViewById<View>(item.itemId)
+
+                // All icons follow theme and standard behavior
+                item.iconTintList = navIconColor
+                itemView?.let { v ->
+                    val iconView = v.findViewById<ImageView>(com.google.android.material.R.id.navigation_bar_item_icon_view)
+                    val indicator = v.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_active_indicator_view)
+
+                    // Theme adaptive colors
+                    val context = v.context
+                    val typedValue = android.util.TypedValue()
+                    context.theme.resolveAttribute(R.attr.textColor, typedValue, true)
+                    val textColor = typedValue.data
+                    context.theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
+                    val primaryColor = typedValue.data
+
+                    // Reset animations/scaling for all icons
+                    iconView?.scaleX = 1.0f
+                    iconView?.scaleY = 1.0f
+                    v.translationY = 0f
+
+                    if (item.isChecked) {
+                        indicator?.visibility = if (isLayout(TV or EMULATOR)) View.VISIBLE else View.GONE
+                        indicator?.alpha = 1f
+                        iconView?.setColorFilter(primaryColor)
+                    } else {
+                        // Only hide indicator if it's not checked
+                        indicator?.alpha = 0f
+                        indicator?.visibility = View.GONE
+                        iconView?.setColorFilter(textColor)
+                    }
+                }
+            }
         }
     }
 
@@ -1282,12 +1629,22 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
 
         binding?.apply {
-            fixSystemBarsPadding(
-                navView,
-                heightResId = R.dimen.nav_view_height,
-                padTop = false,
-                overlayCutout = false
-            )
+            // Apply insets to the container for floating bottom nav
+            ViewCompat.setOnApplyWindowInsetsListener(navViewContainer) { view, windowInsets ->
+                val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+                // Set the container margins based on system bars for modern floating look
+                // This removes the "extra space" below the card while keeping it floating above the system bars
+                view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    // Margin should be system bar height + our desired floating margin (12dp)
+                    // If system bar height is 0 (gesture nav), it will still have 12dp margin
+                    bottomMargin = insets.bottom + 12.toPx
+                    leftMargin = insets.left + 24.toPx
+                    rightMargin = insets.right + 24.toPx
+                }
+
+                WindowInsetsCompat.CONSUMED
+            }
 
             fixSystemBarsPadding(
                 navRailView,
@@ -1392,20 +1749,47 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
             }
         } else {
+            val dialogView = layoutInflater.inflate(R.layout.crash_initial_dialog, null)
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder.setTitle(R.string.safe_mode_title)
-            builder.setMessage(R.string.safe_mode_description)
-            builder.apply {
-                setPositiveButton(R.string.safe_mode_crash_info) { _, _ ->
-                    val tbBuilder: AlertDialog.Builder = AlertDialog.Builder(context)
-                    tbBuilder.setTitle(R.string.safe_mode_title)
-                    tbBuilder.setMessage(lastError)
-                    tbBuilder.show()
-                }
+            builder.setView(dialogView)
+            val dialog = builder.create()
 
-                setNegativeButton("Ok") { _, _ -> }
+            dialogView.findViewById<View>(R.id.crash_btn_ok).setOnClickListener {
+                dialog.dismiss()
             }
-            builder.show().setDefaultFocus()
+            dialogView.findViewById<View>(R.id.crash_btn_report).setOnClickListener {
+                lastError?.let {
+                    val subject = "⚠️ Crash Report - PluginStream v${BuildConfig.VERSION_NAME}"
+                    val body = "${AppDiagnostics.getDeviceInfo()}\n---\nLatest Logs:\n$it"
+                    sendEmailIntent(this@MainActivity, subject, body) {
+                        Toast.makeText(this@MainActivity, "No email client found", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                dialog.dismiss()
+            }
+            dialogView.findViewById<View>(R.id.crash_btn_info).setOnClickListener {
+                val tbBuilder: AlertDialog.Builder = AlertDialog.Builder(this@MainActivity)
+                tbBuilder.setTitle(R.string.safe_mode_title)
+                tbBuilder.setMessage(lastError)
+                tbBuilder.setNeutralButton(R.string.sort_copy) { _, _ ->
+                    lastError?.let {
+                        clipboardHelper(txt(R.string.safe_mode_title), it)
+                    }
+                }
+                tbBuilder.setPositiveButton("Report Crash") { _, _ ->
+                    lastError?.let {
+                        val subject = "⚠️ Crash Report - PluginStream v${BuildConfig.VERSION_NAME}"
+                        val body = "${AppDiagnostics.getDeviceInfo()}\n---\nLatest Logs:\n$it"
+                        sendEmailIntent(this@MainActivity, subject, body) {
+                            Toast.makeText(this@MainActivity, "No email client found", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                tbBuilder.show()
+                dialog.dismiss()
+            }
+
+            dialog.show()
         }
 
 
@@ -1668,6 +2052,35 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, bundle: Bundle? ->
             // Intercept search and add a query
             updateNavBar(navDestination)
+            
+            val isTv = isLayout(TV or EMULATOR)
+            if (!isTv) {
+                // hideFloatingMenu if nav is not visible
+                // updateNavBar already handles navViewContainer visibility
+                val hideBottomNavDestinations = setOf(
+                    R.id.navigation_player,
+                    R.id.navigation_setup_media,
+                    R.id.navigation_setup_layout,
+                    R.id.navigation_setup_extensions,
+                    R.id.navigation_setup_language,
+                    R.id.navigation_setup_provider_languages,
+                    R.id.navigation_game_player,
+                    R.id.navigation_results_phone,
+                    R.id.navigation_results_tv
+                )
+                if (hideBottomNavDestinations.contains(navDestination.id)) {
+                    hideFloatingMenu()
+                }
+            } else {
+                // TV Rail handling if needed
+                val hideRailDestinations = setOf(
+                    R.id.navigation_player,
+                    R.id.navigation_game_player,
+                    R.id.navigation_results_tv
+                )
+                binding?.navRailView?.isVisible = !hideRailDestinations.contains(navDestination.id)
+            }
+
             if (navDestination.matchDestination(R.id.navigation_search) && !nextSearchQuery.isNullOrBlank()) {
                 bundle?.apply {
                     this.putString(SearchFragment.SEARCH_QUERY, nextSearchQuery)
@@ -1698,13 +2111,19 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             itemRippleColor = rippleColor
             itemActiveIndicatorColor = rippleColor
             setupWithNavController(navController)
+            updateNavIconTint(this)
+
+            menu.findItem(R.id.navigation_more)?.setOnMenuItemClickListener {
+                toggleFloatingMenu()
+                true
+            }
+
             setOnItemSelectedListener { item ->
                 onNavDestinationSelected(
                     item,
                     navController
                 )
             }
-
         }
 
         binding?.navRailView?.apply {
@@ -1712,19 +2131,21 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 itemRippleColor = rippleColor
                 itemActiveIndicatorColor = rippleColor
             } else {
-                val rippleColor = ColorStateList.valueOf(getResourceColor(R.attr.textColor, 1.0f))
+                val rippleColorText = ColorStateList.valueOf(getResourceColor(R.attr.textColor, 1.0f))
                 val rippleColorTransparent =
                     ColorStateList.valueOf(getResourceColor(R.attr.textColor, 0.2f))
-                itemSpacing = 12.toPx // expandedItemSpacing does not have an attr
+                itemSpacing = 12.toPx
                 itemRippleColor = rippleColorTransparent
-                itemActiveIndicatorColor = rippleColor
+                itemActiveIndicatorColor = rippleColorText
             }
+
             setupWithNavController(navController)
-            /*if (isLayout(TV or EMULATOR)) {
-                background?.alpha = 200
-            } else {
-                background?.alpha = 255
-            }*/
+            updateNavIconTint(this)
+
+            menu.findItem(R.id.navigation_more)?.setOnMenuItemClickListener {
+                toggleFloatingMenu()
+                true
+            }
 
             setOnItemSelectedListener { item ->
                 onNavDestinationSelected(
@@ -1733,12 +2154,22 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 )
             }
 
+            for (id in arrayOf(
+                R.id.navigation_home,
+                R.id.navigation_search,
+                R.id.navigation_library,
+                R.id.navigation_downloads,
+                R.id.navigation_settings
+            )) {
+                val v = findViewById<View>(id)
+                v?.nextFocusRightId = R.id.nav_host_fragment
+            }
 
             fun noFocus(view: View) {
                 view.tag = view.context.getString(R.string.tv_no_focus_tag)
-                (view as? ViewGroup)?.let {
-                    for (child in it.children) {
-                        noFocus(child)
+                (view as? ViewGroup)?.let { vg ->
+                    for (i in 0 until vg.childCount) {
+                        vg.getChildAt(i)?.let { noFocus(it) }
                     }
                 }
             }
@@ -1772,6 +2203,54 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
         }
 
+        // Setup Floating Menu FABs (Phone/Tablet)
+        val navOptions = NavOptions.Builder()
+            .setLaunchSingleTop(true)
+            .setRestoreState(true)
+            .setEnterAnim(R.anim.enter_anim)
+            .setExitAnim(R.anim.exit_anim)
+            .setPopEnterAnim(R.anim.pop_enter)
+            .setPopExitAnim(R.anim.pop_exit)
+            .setPopUpTo(navController.graph.findStartDestination().id, inclusive = false, saveState = true)
+            .build()
+
+        findViewById<View?>(R.id.fabOffers)?.apply {
+            TooltipCompat.setTooltipText(this, context.getString(R.string.title_offers))
+            setOnClickListener {
+                if (navController.currentDestination?.id != R.id.navigation_offers) {
+                    hideFloatingMenu()
+                    navController.navigate(R.id.navigation_offers, null, navOptions)
+                }
+            }
+        }
+        findViewById<View?>(R.id.fabLibrary)?.apply {
+            TooltipCompat.setTooltipText(this, context.getString(R.string.library))
+            setOnClickListener {
+                if (navController.currentDestination?.id != R.id.navigation_library) {
+                    hideFloatingMenu()
+                    navController.navigate(R.id.navigation_library, null, navOptions)
+                }
+            }
+        }
+        findViewById<View?>(R.id.fabDownloads)?.apply {
+            TooltipCompat.setTooltipText(this, context.getString(R.string.title_downloads))
+            setOnClickListener {
+                if (navController.currentDestination?.id != R.id.navigation_downloads) {
+                    hideFloatingMenu()
+                    navController.navigate(R.id.navigation_downloads, null, navOptions)
+                }
+            }
+        }
+        findViewById<View?>(R.id.fabSettings)?.apply {
+            TooltipCompat.setTooltipText(this, context.getString(R.string.title_settings))
+            setOnClickListener {
+                if (navController.currentDestination?.id != R.id.navigation_settings) {
+                    hideFloatingMenu()
+                    navController.navigate(R.id.navigation_settings, null, navOptions)
+                }
+            }
+        }
+
         val rail = binding?.navRailView
         if (rail != null) {
             binding?.navRailView?.labelVisibilityMode =
@@ -1785,19 +2264,51 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             // write a nextFocus for the navrail
             rail.findViewById<View?>(R.id.navigation_settings)?.nextFocusDownId =
                 R.id.nav_footer_profile_card
-            for (id in arrayOf(
+            
+            val navIds = if (isLayout(TV or EMULATOR)) arrayOf(
                 R.id.navigation_home,
                 R.id.navigation_search,
-                R.id.navigation_library,
                 R.id.navigation_downloads,
-                R.id.navigation_settings
-            )) {
+                R.id.navigation_library,
+                R.id.navigation_settings,
+            ) else arrayOf(
+                R.id.navigation_home,
+                R.id.navigation_search,
+                R.id.navigation_game,
+                R.id.navigation_more,
+            )
+
+            for (id in navIds) {
                 val view = rail.findViewById<View?>(id) ?: continue
                 prevId?.let { view.nextFocusUpId = it }
                 prevView?.nextFocusDownId = id
 
+                view.isFocusable = true
+                view.isClickable = true
+                if (isLayout(TV or EMULATOR)) {
+                    view.setOnClickListener {
+                        rail.menu.findItem(id)?.let { item ->
+                            onNavDestinationSelected(item, navController)
+                            item.isChecked = true
+                        }
+                    }
+                    view.setOnKeyListener { _, keyCode, event ->
+                        if (event.action == KeyEvent.ACTION_DOWN &&
+                            (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER)
+                        ) {
+                            rail.menu.findItem(id)?.let { item ->
+                                onNavDestinationSelected(item, navController)
+                                item.isChecked = true
+                            }
+                            return@setOnKeyListener true
+                        }
+                        false
+                    }
+                }
+
                 prevView = view
                 prevId = id
+
                 // Uncomment for focus expand
                 /*if (!isLayout(TV)) {
                     view.onFocusChangeListener = null
@@ -1836,10 +2347,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 val viewPager = binding?.root?.findViewById<ViewPager2?>(R.id.viewpager)
                     ?: return@setOnLongClickListener false
                 try {
-                    val children = (viewPager[0] as? RecyclerView)?.children
+                    val recycler = viewPager.getChildAt(0) as? RecyclerView
                         ?: return@setOnLongClickListener false
-                    for (child in children) {
-                        child.findViewById<RecyclerView?>(R.id.page_recyclerview)
+                    for (i in 0 until recycler.childCount) {
+                        val child = recycler.getChildAt(i)
+                        child?.findViewById<RecyclerView?>(R.id.page_recyclerview)
                             ?.smoothScrollToPosition(0)
                     }
                 } catch (_: IndexOutOfBoundsException) {
@@ -2041,6 +2553,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 //        }
 
         attachBackPressedCallback("MainActivityDefault") {
+            if (isFloatingMenuVisible) {
+                hideFloatingMenu()
+                return@attachBackPressedCallback
+            }
             setNavigationBarColorCompat(R.attr.primaryGrayBackground)
             updateLocale()
             runDefault()

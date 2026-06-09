@@ -318,7 +318,11 @@ class GeneratorPlayer : FullScreenPlayer() {
                 override fun getCurrentContentText(player: Player): CharSequence? {
                     return when (val meta = currentMeta) {
                         is ResultEpisode -> {
-                            meta.name
+                            val apiName = meta.apiName.replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+                                .replace("castle", "PluginStream", ignoreCase = true)
+                                .replace("castel", "PluginStream", ignoreCase = true)
+                                .replace("caslte", "PluginStream", ignoreCase = true)
+                            "${meta.name} - $apiName"
                         }
 
                         is ExtractorUri -> {
@@ -1802,7 +1806,27 @@ class GeneratorPlayer : FullScreenPlayer() {
     private fun getHeaderName(): String? {
         return when (val meta = currentMeta) {
             is ResultEpisode -> meta.headerName
+                ?.replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+                ?.replace("castle tv (use vlc)", "PluginStream", ignoreCase = true)
+                ?.replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
+                ?.replace("castle tv ( use vlc)", "PluginStream", ignoreCase = true)
+                ?.replace("castle tv", "PluginStream", ignoreCase = true)
+                ?.replace("castel tv", "PluginStream", ignoreCase = true)
+                ?.replace("castle", "PluginStream", ignoreCase = true)
+                ?.replace("castel", "PluginStream", ignoreCase = true)
+                ?.replace("caslte", "PluginStream", ignoreCase = true)
+
             is ExtractorUri -> meta.headerName
+                ?.replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+                ?.replace("castle tv (use vlc)", "PluginStream", ignoreCase = true)
+                ?.replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
+                ?.replace("castle tv ( use vlc)", "PluginStream", ignoreCase = true)
+                ?.replace("castle tv", "PluginStream", ignoreCase = true)
+                ?.replace("castel tv", "PluginStream", ignoreCase = true)
+                ?.replace("castle", "PluginStream", ignoreCase = true)
+                ?.replace("castel", "PluginStream", ignoreCase = true)
+                ?.replace("caslte", "PluginStream", ignoreCase = true)
+
             else -> null
         }
     }
@@ -1876,7 +1900,16 @@ class GeneratorPlayer : FullScreenPlayer() {
 
     fun setPlayerDimen(widthHeight: Pair<Int, Int>?) {
         val resolution = widthHeight?.let { "${it.first}x${it.second}" }
-        val name = currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name
+        val name = (currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name)
+             ?.replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
+             ?.replace("castle tv (use vlc)", "PluginStream", ignoreCase = true)
+             ?.replace("castel tv ( use vlc)", "PluginStream", ignoreCase = true)
+             ?.replace("castle tv ( use vlc)", "PluginStream", ignoreCase = true)
+             ?.replace("castle tv", "PluginStream", ignoreCase = true)
+             ?.replace("castel tv", "PluginStream", ignoreCase = true)
+             ?.replace("castle", "PluginStream", ignoreCase = true)
+             ?.replace("castel", "PluginStream", ignoreCase = true)
+             ?.replace("caslte", "PluginStream", ignoreCase = true)
         val title = getHeaderName()
 
         val result = listOfNotNull(

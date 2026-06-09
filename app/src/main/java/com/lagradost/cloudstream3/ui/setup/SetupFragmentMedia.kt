@@ -67,11 +67,15 @@ class SetupFragmentMedia : BaseFragment<FragmentSetupMediaBinding>(
                 }
 
                 nextBtt.setOnClickListener {
-                    findNavController().navigate(R.id.navigation_setup_media_to_navigation_setup_layout)
+                    if (findNavController().currentDestination?.id == R.id.navigation_setup_media) {
+                        findNavController().navigate(R.id.navigation_setup_media_to_navigation_setup_layout)
+                    }
                 }
 
                 prevBtt.setOnClickListener {
-                    findNavController().popBackStack()
+                    if (findNavController().currentDestination?.id == R.id.navigation_setup_media) {
+                        findNavController().popBackStack()
+                    }
                 }
             }
         }

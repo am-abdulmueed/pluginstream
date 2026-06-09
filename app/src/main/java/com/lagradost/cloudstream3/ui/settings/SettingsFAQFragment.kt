@@ -52,28 +52,52 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
 
     private val fullFaqList = listOf(
         FAQItem(
-            "🚀 What is PluginStream?",
-            "PluginStream is a modular media player that allows you to stream content from various sources using community-built extensions. It's ad-free, open-source, and privacy-focused."
+            "New Features & Suggestions 💡",
+            "We're always looking for your ideas! If you want something new added to PluginStream, you can **contact us** through the Contact Us button or **DM us** on our official Instagram/Telegram."
         ),
         FAQItem(
-            "🔌 How do I add content?",
-            "You need to install extensions. Go to **Settings > Extensions**, click on **Add Repository**, and enter a repository URL. You can find popular repositories in our [Telegram channel](https://t.me/pluginstreamofficial)."
+            "Movie Plugin Issues & Fix 🎬",
+            "1. First try **switching** to a different plugin.\n2. If the problem persists, go to **[Settings > Extensions](app://extensions)**.\n3. Click the **[bin icon](app://extensions)** at the top to remove all plugins.\n4. **Restart the app** (close and reopen) to fresh install all plugins."
         ),
         FAQItem(
-            "📺 Does it work on Android TV?",
-            "Yes! PluginStream has a dedicated UI for Android TV and Firestick. It supports D-pad navigation and leanback experience."
+            "If Bilibili and other providers not working? 🌐",
+            "• **VPN Usage:** Some regional providers or plugins may require a **VPN (USA/Region specific)** to function correctly.\n• **Indian Content:** All Indian plugins work perfectly **without VPN**.\n• **Troubleshooting:** If any provider or plugin is not working, try connecting to a **VPN**. If you are already connected, try **disconnecting** it and refresh."
         ),
         FAQItem(
-            "🛠 A provider is not working, what to do?",
-            "Providers are maintained by the community. If one stops working, check for updates in **Settings > Extensions**. If it's still broken, you can report it via **Settings > Report a Bug**."
+            "If any provider or plugin is not working? 🌐",
+            "• **Regional Restrictions:** Some providers restrict content based on your location. This is why you might see **'Content not available'** or 'Failed to load' errors.\n• **Solution:** Using a **VPN** is the best way to bypass these regional issues. Connect to a server in the **USA or UK** for the best results with English providers."
         ),
         FAQItem(
-            "📥 Can I download movies?",
-            "Yes, PluginStream supports downloading. Just click the download icon on any episode or movie page. You can manage your downloads in the **Downloads** tab."
+            "App Crashing & Bug Reports ⚠️",
+            "We strive to keep PluginStream stable. If the app crashes, please click **'Report Crash'** in the dialog that appears on screen. This sends **error reports** directly to our developers."
         ),
         FAQItem(
-            "🛡 Is it safe to use?",
-            "PluginStream is open-source and doesn't collect personal data. However, the safety of content depends on the extensions you use. Always use trusted repository URLs."
+            "Offers Tab & Supporting PluginStream 💎",
+            "PluginStream is ad-free. When you complete tasks from the **Offers Tab**, it helps developers earn a small income that is used to **improve servers and hardware**."
+        ),
+        FAQItem(
+            "ProTube (YouTube Integration) 📺",
+            "**ProTube** is PluginStream's own feature where you can enjoy **YouTube and YouTube Music** without going to any other app."
+        ),
+        FAQItem(
+            "App running slow, what to do? 🔌",
+            "• Check your **internet connection**.\n• **[Clear Cache](app://clear_cache)** in Settings.\n• Always use the **Latest Version**."
+        ),
+        FAQItem(
+            "Account & Privacy 🔒",
+            "Absolutely! PluginStream takes your **privacy** very seriously. We've designed the app with a **'Safety-First'** approach to keep your data secure."
+        ),
+        FAQItem(
+            "Download Issues (Movies/Games) 📥",
+            "1. Check your **phone storage**.\n2. **Disable VPN**.\n3. **Update or reinstall** the plugin."
+        ),
+        FAQItem(
+            "Game Performance & Lag 🕹️",
+            "• **Close background apps**.\n• Set graphics to **'Medium' or 'Low'**.\n• Check for phone **overheating**."
+        ),
+        FAQItem(
+            "Subscription & Payments 💸",
+            "PluginStream is **completely free**. We don't charge any monthly fees. You can help us by **completing tasks** in the 'Offer Tab'."
         )
     )
 

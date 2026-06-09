@@ -34,21 +34,6 @@
                               app:labelVisibilityMode="unlabeled"
 
                   -->
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/nav_view"
-            android:layout_height="@dimen/nav_view_height"
-            android:layout_width="0dp"
-            app:labelVisibilityMode="unlabeled"
-            android:background="?attr/primaryGrayBackground"
-
-            app:itemIconTint="@color/item_select_color"
-            app:itemTextColor="@color/item_select_color"
-
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:menu="@menu/bottom_nav_menu" />
-
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/nav_host_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
@@ -65,7 +50,7 @@
             android:id="@+id/cast_mini_controller_holder"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@+id/nav_view"
+            app:layout_constraintBottom_toTopOf="@+id/nav_view_container"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/nav_rail_view"
             tools:layout_height="100dp">
@@ -81,5 +66,52 @@
                 app:customCastBackgroundColor="?attr/primaryGrayBackground"
                 tools:ignore="FragmentTagUsage" />
         </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/nav_view_container"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/nav_view_height"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="?attr/primaryBlackBackground"
+            app:strokeWidth="0.8dp"
+            app:strokeColor="#15FFFFFF"
+            app:contentPadding="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_max="420dp">
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/nav_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:paddingTop="0dp"
+                android:paddingBottom="0dp"
+                android:layout_gravity="center"
+                app:elevation="0dp"
+                app:labelVisibilityMode="unlabeled"
+                app:itemIconSize="28dp"
+                app:itemIconTint="@color/item_select_color"
+                app:itemRippleColor="?attr/colorControlHighlight"
+                app:menu="@menu/bottom_nav_menu" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Floating More Menu -->
+        <include
+            android:id="@+id/more_menu_layout"
+            layout="@layout/floating_more_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintBottom_toTopOf="@+id/nav_view_container"
+            app:layout_constraintEnd_toEndOf="@+id/nav_view_container"
+            app:layout_constraintStart_toStartOf="@+id/nav_view_container"
+            app:layout_constraintHorizontal_bias="0.91" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

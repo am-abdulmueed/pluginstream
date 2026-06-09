@@ -25,6 +25,7 @@ import com.lagradost.cloudstream3.utils.Coroutines.main
 import com.lagradost.cloudstream3.utils.Coroutines.runOnMainThread
 import com.lagradost.cloudstream3.utils.Levenshtein
 import java.io.File
+import java.util.Collections
 
 // String => repository url
 typealias Plugin = Pair<String, SitePlugin>
@@ -61,9 +62,25 @@ class PluginsViewModel : ViewModel() {
     var selectedLanguages = listOf<String>()
     private var currentQuery: String? = null
 
+    private val downloadingPlugins = Collections.synchronizedSet(mutableSetOf<String>())
+
+    fun setDownloading(pluginUrl: String, isDownloading: Boolean) {
+        if (isDownloading) downloadingPlugins.add(pluginUrl)
+        else downloadingPlugins.remove(pluginUrl)
+        updateFilteredPlugins()
+    }
+
     companion object {
         private val repositoryCache: MutableMap<String, List<Plugin>> = mutableMapOf()
         const val TAG = "PLG"
+
+        val currentDownloadingRepos = Collections.synchronizedSet(mutableSetOf<String>())
+        private val _downloadingRepos = MutableLiveData<Set<String>>(emptySet())
+        val downloadingRepos: LiveData<Set<String>> = _downloadingRepos
+
+        val currentDownloadedRepos = Collections.synchronizedSet(mutableSetOf<String>())
+        private val _downloadedRepos = MutableLiveData<Set<String>>(emptySet())
+        val downloadedRepos: LiveData<Set<String>> = _downloadedRepos
 
         private fun isDownloaded(
             context: Context,
@@ -93,6 +110,9 @@ class PluginsViewModel : ViewModel() {
         fun downloadAll(activity: Activity?, repositoryUrl: String, viewModel: PluginsViewModel?) =
             ioSafe {
                 if (activity == null) return@ioSafe
+                currentDownloadingRepos.add(repositoryUrl)
+                _downloadingRepos.postValue(currentDownloadingRepos.toSet())
+                viewModel?.updateFilteredPlugins()
                 val plugins = getPlugins(repositoryUrl)
 
                 plugins.filter { plugin ->
@@ -102,6 +122,11 @@ class PluginsViewModel : ViewModel() {
                         repositoryUrl
                     )
                 }.also { list ->
+                    if (list.isEmpty() && plugins.isNotEmpty()) {
+                        currentDownloadedRepos.add(repositoryUrl)
+                        _downloadedRepos.postValue(currentDownloadedRepos.toSet())
+                        viewModel?.updateFilteredPlugins()
+                    }
                     main {
                         showToast(
                             when {
@@ -125,7 +150,8 @@ class PluginsViewModel : ViewModel() {
                         )
                     }
                 }.amap { (repo, metadata) ->
-                    PluginManager.downloadPlugin(
+                    viewModel?.setDownloading(metadata.url, true)
+                    val res = PluginManager.downloadPlugin(
                         activity,
                         metadata.url,
                         metadata.fileHash,
@@ -133,6 +159,8 @@ class PluginsViewModel : ViewModel() {
                         repo,
                         metadata.status != PROVIDER_STATUS_DOWN
                     )
+                    viewModel?.setDownloading(metadata.url, false)
+                    res
                 }.main { list ->
                     if (list.any { it }) {
                         showToast(
@@ -147,6 +175,11 @@ class PluginsViewModel : ViewModel() {
                     } else if (list.isNotEmpty()) {
                         showToast(R.string.download_failed, Toast.LENGTH_SHORT)
                     }
+                    currentDownloadingRepos.remove(repositoryUrl)
+                    _downloadingRepos.postValue(currentDownloadingRepos.toSet())
+                    currentDownloadedRepos.add(repositoryUrl)
+                    _downloadedRepos.postValue(currentDownloadedRepos.toSet())
+                    viewModel?.updateFilteredPlugins()
                 }
             }
     }

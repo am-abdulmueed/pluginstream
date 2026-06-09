@@ -31,7 +31,7 @@ class SettingsLegalFragment : BaseFragment<FragmentLegalBinding>(
             markwon.setMarkdown(binding.legalText, getTermsMarkdown())
         }
 
-        binding.legalFooter.text = "Last Edited: May 13, 2026\n© 2026 CloudStream"
+        binding.legalFooter.text = "Last Edited: May 13, 2026\n© 2026 PluginStream"
     }
 
     override fun fixLayout(view: View) {
@@ -44,10 +44,10 @@ class SettingsLegalFragment : BaseFragment<FragmentLegalBinding>(
 
 **Effective Date:** May 12, 2026
 
-At **CloudStream**, we take your privacy seriously. This policy explains how we handle your information.
+At **PluginStream**, we take your privacy seriously. This policy explains how we handle your information.
 
 ### 1. Data Collection
-CloudStream is designed with a **Privacy-First** approach:
+PluginStream is designed with a **Privacy-First** approach:
 - **No Personal Data:** We do not collect names, email addresses, or phone numbers.
 - **No Data Selling:** Since we don't collect your personal data, we have nothing to sell to third parties.
 
@@ -76,10 +76,10 @@ If you have any questions about this policy, feel free to contact us via the sup
 
 **Effective Date:** May 12, 2026
 
-By using **CloudStream**, you agree to the following terms and conditions.
+By using **PluginStream**, you agree to the following terms and conditions.
 
 ### 1. Content Disclaimer
-- **Third-Party Plugins:** CloudStream is a modular media player. All content is fetched from original websites through community-developed plugins.
+- **Third-Party Plugins:** PluginStream is a modular media player. All content is fetched from original websites through community-developed plugins.
 - **Copyright:** We do not host or upload any media. Content availability depends on the source sites. Users are responsible for complying with local laws regarding the use of such content.
 - **ProTube:** ProTube fetches content directly from YouTube's website for playback.
 
@@ -91,7 +91,7 @@ By using certain features, you agree to the terms of our partners:
 - [PlayGama Terms of Use](https://playgama.com/termsofuse)
 
 ### 3. Limitation of Liability
-CloudStream is provided "as is" without any warranties. We are not responsible for the content provided by third-party plugins or external websites.
+PluginStream is provided "as is" without any warranties. We are not responsible for the content provided by third-party plugins or external websites.
 
 ### 4. Changes to Terms
 We reserve the right to update these terms at any time. Continued use of the app constitutes acceptance of the new terms.

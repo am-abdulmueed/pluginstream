@@ -236,12 +236,12 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         binding.apply {
             listOf(
                 settingsGeneral to R.id.action_navigation_global_to_navigation_settings_general,
-                settingsPlayer to R.id.action_navigation_global_to_navigation_settings_player,
-                settingsCredits to R.id.action_navigation_global_to_navigation_settings_account,
-                settingsUi to R.id.action_navigation_global_to_navigation_settings_ui,
+                settingsAccount to R.id.action_navigation_global_to_navigation_settings_account,
                 settingsProviders to R.id.action_navigation_global_to_navigation_settings_providers,
-                settingsUpdates to R.id.action_navigation_global_to_navigation_settings_updates,
                 settingsExtensions to R.id.action_navigation_global_to_navigation_settings_extensions,
+                settingsUi to R.id.action_navigation_global_to_navigation_settings_ui,
+                settingsPlayer to R.id.action_navigation_global_to_navigation_settings_player,
+                settingsUpdates to R.id.action_navigation_global_to_navigation_settings_updates,
                 settingsAbout to R.id.action_navigation_global_to_navigation_developer,
             ).forEach { (view, navigationId) ->
                 view.apply {
@@ -257,6 +257,10 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
 
             settingsBugReport.setOnClickListener {
                 ContactDeveloperDialog().show(childFragmentManager, "ContactDeveloperDialog")
+            }
+
+            settingsFaq.setOnClickListener {
+                activity?.navigate(R.id.action_navigation_global_to_navigation_faq)
             }
 
             settingsShare.setOnClickListener {
@@ -317,21 +321,6 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             if (isLayout(TV)) {
                 settingsGeneral.requestFocus()
             }
-        }
-
-        val appVersion = BuildConfig.VERSION_NAME
-        val commitHash = activity?.currentCommitHash() ?: ""
-        val buildTimestamp = SimpleDateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG,
-            Locale.getDefault()
-        ).apply { timeZone = TimeZone.getTimeZone("UTC")
-        }.format(Date(BuildConfig.BUILD_DATE)).replace("UTC", "")
-
-        binding.appVersion.text = appVersion
-        binding.buildDate.text = buildTimestamp
-        binding.commitHash.text = commitHash
-        binding.appVersionInfo.setOnLongClickListener {
-            clipboardHelper(txt(R.string.extension_version), "$appVersion $commitHash $buildTimestamp")
-            true
         }
     }
 

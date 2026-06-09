@@ -579,7 +579,7 @@
     <string name="battery_dialog_title">Disable Battery optimization</string>
     <string name="battery_dialog_message">To ensure uninterrupted downloads and notifications for subscribed
         TV shows, PluginStream needs permission to run in background. By pressing "OK", you\'ll be shown a request dialog.
-        Please press \'Allow\'.\n\nPlease note, this permission does not mean CS3 will drain your battery. It will only operate in the background when necessary, such as
+        Please press \'Allow\'.\n\nPlease note, this permission does not mean PluginStream will drain your battery. It will only operate in the background when necessary, such as
         when receiving notifications or downloading videos from official extensions.</string>
     <string name="app_unrestricted_toast">App battery usage is already set to unrestricted</string>
     <string name="app_info_intent_error">Unable to open PluginStream\'s App info.</string>
@@ -795,6 +795,7 @@
     <string name="category_system_updates">System and Updates</string>
     <string name="category_support">Support</string>
     <string name="category_about_legal">About and Legal</string>
+    <string name="about">About</string>
     <string name="rate_our_app">Rate our App</string>
     <string name="share_app">Share App</string>
     <string name="report_a_bug">Report a Bug</string>
@@ -817,4 +818,12 @@
     <string name="title_more">More</string>
     <string name="title_offers">Offers</string>
     <string name="games">Games</string>
+    <string name="total_games">Total Games</string>
+    <string name="saved_games">Saved Games</string>
+    <string name="no_saved_games">No Saved Games Found</string>
+    <string name="clear_all_games">Clear All Saved Games</string>
+    <string name="search_games">Search Games...</string>
+    <string name="game_details">Game Details</string>
+    <string name="play_now">Play Now</string>
+    <string name="game_icon">Game Icon</string>
 </resources>

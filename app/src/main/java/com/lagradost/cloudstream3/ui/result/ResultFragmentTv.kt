@@ -36,6 +36,7 @@ import com.lagradost.cloudstream3.ui.player.ExtractorLinkGenerator
 import com.lagradost.cloudstream3.ui.player.GeneratorPlayer
 import com.lagradost.cloudstream3.ui.player.NEXT_WATCH_EPISODE_PERCENTAGE
 import com.lagradost.cloudstream3.ui.quicksearch.QuickSearchFragment
+import com.lagradost.cloudstream3.ui.home.HomeFragment.Companion.toPluginStream
 import com.lagradost.cloudstream3.ui.result.ResultFragment.bindLogo
 import com.lagradost.cloudstream3.ui.result.ResultFragment.getStoredData
 import com.lagradost.cloudstream3.ui.result.ResultFragment.updateUIEvent
@@ -867,7 +868,7 @@ class ResultFragmentTv : BaseFragment<FragmentResultTvBinding>(
                         resultInfo.setText(d.metaText)
                         resultNoEpisodes.setText(d.noEpisodesFoundText)
                         resultTitle.setText(d.titleText)
-                        resultMetaSite.setText(d.apiName)
+                        resultMetaSite.setText(d.apiName.toPluginStream())
                         resultMetaType.setText(d.typeText)
                         resultMetaYear.setText(d.yearText)
                         resultMetaDuration.setText(d.durationText)

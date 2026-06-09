@@ -28,6 +28,9 @@ import kotlinx.coroutines.withContext
 class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentSetupExtensionsBinding::inflate)
 ) {
+    private var isDownloadingStarted = false
+    private var cachedRepositoriesList: List<RepositoryData>? = null
+
     companion object {
         const val SETUP_EXTENSION_BUNDLE_IS_SETUP = "isSetup"
 
@@ -43,7 +46,11 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
 
     override fun onResume() {
         super.onResume()
-        afterRepositoryLoadedEvent += ::setRepositories
+        if (cachedRepositoriesList == null) {
+            afterRepositoryLoadedEvent += ::setRepositories
+        } else {
+            setRepositories()
+        }
     }
 
     override fun onStop() {
@@ -58,49 +65,63 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
     private fun setRepositories(success: Boolean = true) {
         main { _ ->
             val ctx = context ?: return@main
-            binding?.loadingSpinner?.isVisible = true
             
-            val pluginstreamJson = try {
-                // Try to fetch from GitHub first for fresh repositories
-                val client = okhttp3.OkHttpClient.Builder()
-                    .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
-                    .build()
-                val request = okhttp3.Request.Builder()
-                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/repo-json@main/pluginstream.json")
-                    .build()
-                
-                val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    client.newCall(request).execute()
+            // Only show spinner if we don't have cached data
+            if (cachedRepositoriesList == null) {
+                binding?.loadingSpinner?.isVisible = true
+            }
+            
+            val masterRepoRepos = if (cachedRepositoriesList == null) {
+                val pluginstreamJson = try {
+                    // Try to fetch from GitHub first for fresh repositories
+                    val client = okhttp3.OkHttpClient.Builder()
+                        .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                        .build()
+                    val request = okhttp3.Request.Builder()
+                        .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/repo-json@main/pluginstream.json")
+                        .build()
+                    
+                    val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        client.newCall(request).execute()
+                    }
+                    
+                    if (response.isSuccessful) {
+                        response.body?.string()
+                    } else {
+                        throw Exception("Online fetch failed")
+                    }
+                } catch (e: Exception) {
+                    // Fallback to local assets if offline or error
+                    try {
+                        ctx.assets.open("pluginstream.json").bufferedReader().use { it.readText() }
+                    } catch (localError: Exception) {
+                        null
+                    }
                 }
-                
-                if (response.isSuccessful) {
-                    response.body?.string()
-                } else {
-                    throw Exception("Online fetch failed")
-                }
-            } catch (e: Exception) {
-                // Fallback to local assets if offline or error
-                try {
-                    ctx.assets.open("pluginstream.json").bufferedReader().use { it.readText() }
-                } catch (localError: Exception) {
-                    null
-                }
+
+                pluginstreamJson?.let { json ->
+                    tryParseJson<MasterRepo>(json)?.repositories?.map { entry ->
+                        RepositoryData(null, entry.name, entry.url)
+                    }
+                } ?: emptyList()
+            } else {
+                emptyList()
             }
 
-            val masterRepoRepos = pluginstreamJson?.let { json ->
-                tryParseJson<MasterRepo>(json)?.repositories?.map { entry ->
-                    RepositoryData(null, entry.name, entry.url)
-                }
-            } ?: emptyList()
-
-            val repositoriesList = (RepositoryManager.getRepositories().toList() + PREBUILT_REPOSITORIES.toList() + masterRepoRepos).distinctBy { it.url }
+            if (cachedRepositoriesList == null) {
+                cachedRepositoriesList = (RepositoryManager.getRepositories().toList() + PREBUILT_REPOSITORIES.toList() + masterRepoRepos).distinctBy { it.url }
+            }
+            
+            val repositoriesList = cachedRepositoriesList ?: emptyList()
             val hasRepos = repositoriesList.isNotEmpty()
+            
             binding?.loadingSpinner?.isVisible = false
             binding?.repoRecyclerView?.isVisible = hasRepos
             binding?.blankRepoScreen?.isVisible = !hasRepos
 
             if (hasRepos) {
-                binding?.repoRecyclerView?.adapter = RepoAdapter(true, { item ->
+                // Always setup adapter and observer
+                val adapter = RepoAdapter(true, { item ->
                     val builder = AlertDialog.Builder(ctx)
                     builder.setTitle(item.name)
                     builder.setMessage(item.url)
@@ -110,12 +131,18 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                     builder.show()
                 }, { item ->
                     PluginsViewModel.downloadAll(activity, item.url, null)
-                }).apply { submitList(repositoriesList) }
+                })
+                binding?.repoRecyclerView?.adapter = adapter
+                adapter.submitList(repositoriesList)
 
-                repositoriesList.forEach { repo ->
-                    PluginsViewModel.downloadAll(activity, repo.url, null)
-                    repo.ioSafe {
-                        RepositoryManager.addRepository(repo)
+                // Only trigger automatic downloads once
+                if (!isDownloadingStarted) {
+                    isDownloadingStarted = true
+                    repositoriesList.forEach { repo ->
+                        PluginsViewModel.downloadAll(activity, repo.url, null)
+                        repo.ioSafe {
+                            RepositoryManager.addRepository(repo)
+                        }
                     }
                 }
             }
@@ -126,6 +153,13 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
         val isSetup = arguments?.getBoolean(SETUP_EXTENSION_BUNDLE_IS_SETUP) ?: false
 
         safe {
+            PluginsViewModel.downloadingRepos.observe(viewLifecycleOwner) {
+                binding.repoRecyclerView.adapter?.notifyDataSetChanged()
+            }
+            PluginsViewModel.downloadedRepos.observe(viewLifecycleOwner) {
+                binding.repoRecyclerView.adapter?.notifyDataSetChanged()
+            }
+
             setRepositories()
             context?.setDefaultFocus(binding.nextBtt)
             binding.apply {

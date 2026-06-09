@@ -55,12 +55,16 @@ class SetupFragmentLayout : BaseFragment<FragmentSetupLayoutBinding>(
                 }
 
                 nextBtt.setOnClickListener {
-                    setKey(HAS_DONE_SETUP_KEY, true)
-                    findNavController().navigate(R.id.navigation_home)
+                    if (findNavController().currentDestination?.id == R.id.navigation_setup_layout) {
+                        setKey(HAS_DONE_SETUP_KEY, true)
+                        findNavController().navigate(R.id.navigation_home)
+                    }
                 }
 
                 prevBtt.setOnClickListener {
-                    findNavController().popBackStack()
+                    if (findNavController().currentDestination?.id == R.id.navigation_setup_layout) {
+                        findNavController().popBackStack()
+                    }
                 }
             }
         }
