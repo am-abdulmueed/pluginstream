@@ -173,34 +173,19 @@
         <item name="android:text">@string/quality_hd</item>
     </style>
 
-    <style name="LightMode" parent="Theme.Material3.Light.NoActionBar">
-        <item name="android:windowBackground">@color/lightBitDarkerGrayBackground</item>
-        <item name="android:colorEdgeEffect">?attr/textColor</item>
-        <item name="android:navigationBarColor">@color/lightBitDarkerGrayBackground</item>
-        <item name="android:statusBarColor">@color/lightGrayBackground</item>
+    <style name="LightMode">
 
         <item name="primaryGrayBackground">@color/lightPrimaryGrayBackground</item>
         <item name="primaryBlackBackground">@color/lightBitDarkerGrayBackground</item>
         <item name="iconGrayBackground">@color/lightGrayBackground</item>
         <item name="boxItemBackground">@color/lightItemBackground</item>
         <item name="textColor">@color/lightTextColor</item>
-        <item name="grayTextColor">@color/lightGrayTextColor</item>
-        <item name="iconColor">@color/lightIconColor</item>
         <item name="white">@color/black</item>
         <item name="black">@color/white</item>
         <item name="colorOnPrimary">@color/blackText</item>
         <item name="dividerColor">#1A000000</item>
         <item name="isLightTheme">true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
-
-        <!-- Preference -->
-        <item name="android:textColor">?attr/textColor</item>
-        <item name="android:textColorSecondary">?attr/grayTextColor</item>
-        <item name="android:textColorHint">?attr/grayTextColor</item>
-        <item name="android:editTextColor">?attr/textColor</item>
-        <item name="android:colorForeground">?attr/textColor</item>
-        <item name="android:colorControlHighlight">?attr/textColor</item>
     </style>
 
     <style name="DraculaMode">
