@@ -80,6 +80,7 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
             *Thanks for using PluginStream!*
         """.trimIndent()
 
+        // Theme adaptive and stylish Material Dialog
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.whats_new)
             .setMessage(markwon.toMarkdown(changelog))

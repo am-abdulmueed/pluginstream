@@ -48,6 +48,8 @@ import android.provider.Settings
 import android.widget.Toast
 import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.noties.markwon.Markwon
+import io.noties.markwon.linkify.LinkifyPlugin
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -326,14 +328,20 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
 
     private fun showSystemCompatibilityDialog() {
         val context = context ?: return
+        val markwon = Markwon.builder(context)
+            .usePlugin(LinkifyPlugin.create())
+            .build()
 
         // 1. Check RAM Info
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
 
-        val totalRamGb = memoryInfo.totalMem / (1024 * 1024 * 1024)
-        val availableRamGb = memoryInfo.availMem / (1024 * 1024 * 1024)
+        val totalRamMb = memoryInfo.totalMem / (1024 * 1024)
+        val availableRamMb = memoryInfo.availMem / (1024 * 1024)
+        
+        val totalRamDisplay = if (totalRamMb >= 1000) String.format("%.1f GB", totalRamMb / 1024.0) else "$totalRamMb MB"
+        val availableRamDisplay = if (availableRamMb >= 1000) String.format("%.1f GB", availableRamMb / 1024.0) else "$availableRamMb MB"
 
         // 2. Check Storage Info (Internal Storage)
         val path: File = Environment.getDataDirectory()
@@ -349,48 +357,44 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         val deviceModel = Build.MODEL
         val androidVersion = Build.VERSION.RELEASE
 
-        // Smoothness Recommendation Logic (Thresholds: 2GB RAM & 1GB Storage)
-        val isCompatible = availableRamGb >= 2 && freeStorageGb >= 1
-        val statusMessage = if (isCompatible) {
-            "✅ Your device meets the recommended requirements! App will run smoothly."
-        } else {
-            "⚠️ Low resources detected. (Recommended: 2GB+ Free RAM & 1GB+ Free Space)"
+        // Logic (Realistic thresholds)
+        val hasMinTotalRam = totalRamMb >= 1500 // 1.5GB+ Total
+        val hasMinAvailableRam = availableRamMb >= 200 // 200MB+ Available
+        val hasMinStorage = freeStorageGb >= 0.5 // 500MB+ Free
+
+        val isExcellent = totalRamMb >= 3500 && availableRamMb >= 1000 && freeStorageGb >= 2
+        
+        val statusMessage = when {
+            isExcellent -> "✅ **Your device is powerful! App will run perfectly.**"
+            hasMinTotalRam && hasMinAvailableRam && hasMinStorage -> "✅ **Device meets requirements. App will run smoothly.**"
+            else -> "⚠️ **Low resources detected. You might experience some lag.**"
         }
 
         val infoText = """
-            📱 Device Model: $deviceModel
-            🤖 Android Version: OS $androidVersion
+            📱 **Device Info**
+            🔹 **Model**: $deviceModel
+            🔹 **Android**: OS $androidVersion
             
-            🧠 Total RAM: ${totalRamGb} GB
-            💡 Available RAM: ${availableRamGb} GB (Req: 2GB)
+            🧠 **Memory & RAM**
+            🔹 **Total RAM**: $totalRamDisplay
+            🔹 **Available**: $availableRamDisplay
             
-            📁 Total Storage: ${totalStorageGb} GB
-            🚀 Free Space: ${freeStorageGb} GB (Req: 1GB)
+            📁 **Storage Info**
+            🔹 **Total**: $totalStorageGb GB
+            🔹 **Free Space**: $freeStorageGb GB
             
-            ---------
+            🚀 **Compatibility Status**
             $statusMessage
+            
+            *(Recommended: 2GB+ Total RAM & 1GB+ Free Space)*
         """.trimIndent()
 
         // Theme adaptive and stylish Material Dialog
-        val dialog = MaterialAlertDialogBuilder(context)
+        MaterialAlertDialogBuilder(context)
             .setTitle(R.string.system_compatibility)
-            .setMessage(infoText)
+            .setMessage(markwon.toMarkdown(infoText))
             .setPositiveButton(R.string.close, null)
-            .create()
-
-        dialog.show()
-
-        // Responsive width and auto-height
-        val window = dialog.window
-        window?.setLayout(
-            (context.resources.displayMetrics.widthPixels * 0.85).toInt(),
-            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        // No hardcoded colors - uses theme attributes automatically
-        dialog.findViewById<android.widget.TextView>(android.R.id.message)?.let {
-            it.textSize = 14f
-        }
+            .show()
     }
 
     private fun openAppSystemInfo() {

@@ -246,6 +246,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         private const val FILE_DELETE_KEY = "FILES_TO_DELETE_KEY"
         const val API_NAME_EXTRA_KEY = "API_NAME_EXTRA_KEY"
 
+        const val INSTAGRAM_ALREADY_FOLLOWED = "INSTAGRAM_ALREADY_FOLLOWED"
+        const val LAST_INSTAGRAM_DIALOG_SHOW_TIME = "LAST_INSTAGRAM_DIALOG_SHOW_TIME"
+        const val TELEGRAM_ALREADY_JOINED = "TELEGRAM_ALREADY_JOINED"
+        const val LAST_TELEGRAM_DIALOG_SHOW_TIME = "LAST_TELEGRAM_DIALOG_SHOW_TIME"
+
         /**
          * Transient files to delete on application exit.
          * Deletes files on onDestroy().
@@ -2091,6 +2096,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 attachBackPressedCallback("MainActivity") {
                     showConfirmExitDialog(settingsManager)
                 }
+                showInstagramFollowDialog()
             } else detachBackPressedCallback("MainActivity")
         }
 
@@ -2585,5 +2591,171 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         } catch (t: Throwable) {
             false
         }
+    }
+
+    private fun showInstagramFollowDialog() {
+        val alreadyFollowed = getKey(INSTAGRAM_ALREADY_FOLLOWED, false) ?: false
+        val lastShowTime = getKey<Long>(LAST_INSTAGRAM_DIALOG_SHOW_TIME) ?: 0L
+        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
+        val currentTime = System.currentTimeMillis()
+
+        // Show only if setup is done and not already followed
+        if (!hasDoneSetup || alreadyFollowed) {
+            showTelegramFollowDialog()
+            return
+        }
+
+        // Show only if it's a new day (at least 24 hours passed) or first time (lastShowTime == 0)
+        val oneDayMillis = 24 * 60 * 60 * 1000
+        if (lastShowTime != 0L && currentTime - lastShowTime < oneDayMillis) {
+            showTelegramFollowDialog()
+            return
+        }
+
+        val dialog = Dialog(this, R.style.DialogHalfFullscreen)
+        val dialogView = layoutInflater.inflate(R.layout.instagram_follow_dialog, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val followButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.follow_button)
+
+        val alreadyFollowedCheckbox = dialogView.findViewById<CheckBox>(R.id.already_followed_checkbox)
+
+        fun openUrl(url: String?) {
+            if (url.isNullOrBlank()) return
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, url.trim().removeSurrounding("`").toUri())
+                startActivity(intent)
+            } catch (e: Exception) {
+                logError(e)
+            }
+        }
+
+        var instagramUrl = "https://instagram.com/pluginstreamofficial"
+        CommonActivity.getSocialLinks { json ->
+            val handles = json?.optJSONArray("social_handles")
+            if (handles != null) {
+                for (i in 0 until handles.length()) {
+                    val handle = handles.getJSONObject(i)
+                    if (handle.optString("platform").lowercase() == "instagram") {
+                        instagramUrl = handle.optString("url")
+                        break
+                    }
+                }
+            }
+        }
+
+        dialog.setOnDismissListener {
+            showTelegramFollowDialog()
+        }
+
+        // Only show checkbox if it's NOT the first time (lastShowTime != 0)
+        if (lastShowTime != 0L) {
+            alreadyFollowedCheckbox.isVisible = true
+        }
+
+        alreadyFollowedCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                followButton.text = "DISMISS"
+            } else {
+                followButton.text = "FOLLOW NOW"
+            }
+        }
+
+        followButton.setOnClickListener {
+            if (alreadyFollowedCheckbox.isChecked) {
+                setKey(INSTAGRAM_ALREADY_FOLLOWED, true)
+                dialog.dismiss()
+            } else {
+                // Open Instagram URL
+                openUrl(instagramUrl)
+                dialog.dismiss()
+            }
+        }
+
+        // Update last show time
+        setKey(LAST_INSTAGRAM_DIALOG_SHOW_TIME, currentTime)
+
+        dialog.show()
+    }
+
+    private fun showTelegramFollowDialog() {
+        val alreadyJoined = getKey(TELEGRAM_ALREADY_JOINED, false) ?: false
+        val lastShowTime = getKey<Long>(LAST_TELEGRAM_DIALOG_SHOW_TIME) ?: 0L
+        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
+        val currentTime = System.currentTimeMillis()
+
+        // Show only if setup is done and not already joined
+        if (!hasDoneSetup || alreadyJoined) {
+            return
+        }
+
+        // Show only if it's a new day (at least 24 hours passed) or first time (lastShowTime == 0)
+        val oneDayMillis = 24 * 60 * 60 * 1000
+        if (lastShowTime != 0L && currentTime - lastShowTime < oneDayMillis) {
+            return
+        }
+
+        val dialog = Dialog(this, R.style.DialogHalfFullscreen)
+        val dialogView = layoutInflater.inflate(R.layout.telegram_follow_dialog, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val joinButton = dialogView.findViewById<com.google.android.material.button.MaterialButton>(R.id.join_button)
+
+        val alreadyJoinedCheckbox = dialogView.findViewById<CheckBox>(R.id.already_joined_checkbox)
+
+        fun openUrl(url: String?) {
+            if (url.isNullOrBlank()) return
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, url.trim().removeSurrounding("`").toUri())
+                startActivity(intent)
+            } catch (e: Exception) {
+                logError(e)
+            }
+        }
+
+        var telegramUrl = "https://t.me/pluginstreamofficial"
+        CommonActivity.getSocialLinks { json ->
+            val handles = json?.optJSONArray("social_handles")
+            if (handles != null) {
+                for (i in 0 until handles.length()) {
+                    val handle = handles.getJSONObject(i)
+                    if (handle.optString("platform").lowercase() == "telegram") {
+                        telegramUrl = handle.optString("url")
+                        break
+                    }
+                }
+            }
+        }
+
+        // Only show checkbox if it's NOT the first time (lastShowTime != 0)
+        if (lastShowTime != 0L) {
+            alreadyJoinedCheckbox.isVisible = true
+        }
+
+        alreadyJoinedCheckbox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                joinButton.text = "DISMISS"
+            } else {
+                joinButton.text = "JOIN NOW"
+            }
+        }
+
+        joinButton.setOnClickListener {
+            if (alreadyJoinedCheckbox.isChecked) {
+                setKey(TELEGRAM_ALREADY_JOINED, true)
+                dialog.dismiss()
+            } else {
+                // Open Telegram URL
+                openUrl(telegramUrl)
+                dialog.dismiss()
+            }
+        }
+
+        // Update last show time
+        setKey(LAST_TELEGRAM_DIALOG_SHOW_TIME, currentTime)
+
+        dialog.show()
     }
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#333333" /> <!-- Slightly lighter than dialog for contrast -->
+    <corners android:radius="16dp" />
+    <stroke
+        android:width="2dp"
+        android:color="#66FFFFFF" /> <!-- Prominent white border for icon card -->
+</shape>
