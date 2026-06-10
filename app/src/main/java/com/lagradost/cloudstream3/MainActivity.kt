@@ -1007,10 +1007,16 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
         }
         filesToDelete = setOf()
-        val broadcastIntent = Intent()
-        broadcastIntent.action = "restart_service"
-        broadcastIntent.setClass(this, VideoDownloadRestartReceiver::class.java)
-        this.sendBroadcast(broadcastIntent)
+
+        // Download service restart broadcast (important)
+        try {
+            val broadcastIntent = Intent("restart_service")
+            broadcastIntent.setClass(this, VideoDownloadRestartReceiver::class.java)
+            sendBroadcast(broadcastIntent)
+        } catch (e: Exception) {
+            logError(e)
+        }
+
         afterPluginsLoadedEvent -= ::onAllPluginsLoaded
         detachBackPressedCallback("MainActivityDefault")
         super.onDestroy()
@@ -1550,6 +1556,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         setNavigationBarColorCompat(R.attr.primaryGrayBackground)
         updateLocale()
         super.onCreate(savedInstanceState)
+        
+        // Download queue initialization
+        DownloadQueueManager.init(this)
+        
         try {
             if (isCastApiAvailable()) {
                 CastContext.getSharedInstance(this) { it.run() }
@@ -2567,9 +2577,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             updateLocale()
             runDefault()
         }
-
-        // Start the download queue
-        DownloadQueueManager.init(this)
     }
 
     /** Biometric stuff **/
