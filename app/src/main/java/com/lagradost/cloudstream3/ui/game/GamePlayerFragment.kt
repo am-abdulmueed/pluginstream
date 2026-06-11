@@ -29,6 +29,7 @@ class GamePlayerFragment : Fragment() {
     private lateinit var offlineScreen: LinearLayout
     private lateinit var offlineShimmer: ShimmerFrameLayout
     private var isOnline = true
+    private var hasMainFrameLoadError = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,8 +53,13 @@ class GamePlayerFragment : Fragment() {
         val retryButton = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.retryButton)
 
         retryButton.setOnClickListener {
-            hideOfflineScreen()
-            loadGame(gameUrl)
+            if (requireContext().isNetworkAvailable()) {
+                progressBar.visibility = View.VISIBLE
+                hasMainFrameLoadError = false
+                loadGame(gameUrl)
+            } else {
+                showOfflineScreen()
+            }
         }
 
         // Setup WebView and attempt to load game
@@ -167,12 +173,16 @@ class GamePlayerFragment : Fragment() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 progressBar.visibility = View.VISIBLE
-                hideOfflineScreen()
+                hasMainFrameLoadError = false
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 progressBar.visibility = View.GONE
+                if (!hasMainFrameLoadError) {
+                    isOnline = true
+                    hideOfflineScreen()
+                }
             }
 
             override fun onReceivedError(
@@ -184,6 +194,8 @@ class GamePlayerFragment : Fragment() {
                 
                 // Only show offline screen for main frame errors
                 if (request?.isForMainFrame == true) {
+                    hasMainFrameLoadError = true
+                    isOnline = false
                     progressBar.visibility = View.GONE
                     showOfflineScreen()
                 }
@@ -198,6 +210,8 @@ class GamePlayerFragment : Fragment() {
                 
                 // Show offline screen for 4xx or 5xx errors on main frame
                 if (request?.isForMainFrame == true && (errorResponse?.statusCode ?: 0) >= 400) {
+                    hasMainFrameLoadError = true
+                    isOnline = false
                     progressBar.visibility = View.GONE
                     showOfflineScreen()
                 }
@@ -269,12 +283,12 @@ class GamePlayerFragment : Fragment() {
         enableScreenRotation()
         // Re-check connection
         if (!isOnline && isNetworkAvailable(requireContext())) {
-            // Connection restored, reload game
             isOnline = true
-            hideOfflineScreen()
+            progressBar.visibility = View.VISIBLE
+            hasMainFrameLoadError = false
             val gameUrl = arguments?.getString("game_url") ?: ""
             if (gameUrl.isNotEmpty()) {
-                setupWebView(gameUrl)
+                loadGame(gameUrl)
             }
         }
     }

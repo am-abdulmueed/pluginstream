@@ -86,8 +86,12 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
 
         // Retry button click
         retryButton.setOnClickListener {
-            hideOfflineScreen(binding)
-            viewModel.fetchGamesIfNeeded(requireContext())
+            if (requireContext().isNetworkAvailable()) {
+                hideOfflineScreen(binding)
+                viewModel.fetchGamesIfNeeded(requireContext())
+            } else {
+                // Stay on offline screen
+            }
         }
 
         // Saved Games Card Click
@@ -175,11 +179,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         })
 
         // Fetch games only if needed
-        if (requireContext().isNetworkAvailable()) {
-            viewModel.fetchGamesIfNeeded(requireContext())
-        } else {
-            showOfflineScreen(binding)
-        }
+        viewModel.fetchGamesIfNeeded(requireContext())
     }
 
     private fun showOfflineScreen(binding: FragmentGameBinding) {
