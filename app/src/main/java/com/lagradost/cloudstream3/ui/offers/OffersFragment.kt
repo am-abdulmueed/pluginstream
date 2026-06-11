@@ -70,12 +70,21 @@ class OffersFragment : BaseFragment<FragmentOffersBinding>(
 
         // Retry button
         binding.offersRetryButton.setOnClickListener {
-            loadOffers()
+            if (requireContext().isNetworkAvailable()) {
+                hideOfflineScreen()
+                viewModel.fetchOffers(requireContext())
+            } else {
+                // Stay on offline screen - do nothing
+            }
         }
 
         // Setup SwipeRefresh
         binding.offersSwipeRefresh.setOnRefreshListener {
-            loadOffers(forceRefresh = true)
+            if (requireContext().isNetworkAvailable()) {
+                viewModel.fetchOffers(requireContext(), forceRefresh = true)
+            } else {
+                binding.offersSwipeRefresh.isRefreshing = false
+            }
         }
 
         // Debug toggle button - Only visible in DEBUG builds
