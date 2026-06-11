@@ -21,24 +21,44 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <ImageView
-            android:id="@+id/gameImageView"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:contentDescription="@string/game_icon" />
+            android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/favoriteButton"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_gravity="top|end"
-            android:layout_margin="8dp"
-            android:padding="8dp"
-            android:src="@drawable/ic_baseline_bookmark_border_24"
-            android:background="@drawable/circle_background"
-            android:backgroundTint="#80000000"
-            app:tint="@android:color/white" />
+            <!-- Loading shimmer view -->
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/gameLoadingView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:shimmer_auto_start="true"
+                app:shimmer_duration="1000">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/shimmer_placeholder_bg" />
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+            <ImageView
+                android:id="@+id/gameImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="#000000"
+                android:contentDescription="@string/game_icon" />
+
+            <ImageView
+                android:id="@+id/favoriteButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="8dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_baseline_bookmark_border_24"
+                android:background="@drawable/circle_background"
+                android:backgroundTint="#80000000"
+                app:tint="@android:color/white" />
+        </FrameLayout>
 
     </com.google.android.material.card.MaterialCardView>
 

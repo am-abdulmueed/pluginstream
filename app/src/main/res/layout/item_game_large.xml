@@ -25,11 +25,26 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <!-- Loading shimmer view -->
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/gameLoadingView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:shimmer_auto_start="true"
+                app:shimmer_duration="1000">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/shimmer_placeholder_bg" />
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
             <ImageView
                 android:id="@+id/gameImageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
+                android:background="#000000"
                 android:contentDescription="@string/game_icon" />
 
             <ImageView

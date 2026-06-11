@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Background to maintain aspect ratio and prevent cutting -->
+    <!-- Solid black background to match the image background -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@android:color/transparent" />
+            <solid android:color="#000000" />
         </shape>
     </item>
-    <!-- The actual icon centered with enough padding -->
+    <!-- The actual icon centered with fixed size and padding (more padding) -->
     <item
         android:drawable="@drawable/ic_game"
         android:gravity="center"
-        android:top="20dp"
-        android:bottom="20dp"
-        android:left="40dp"
-        android:right="40dp" />
+        android:width="96dp"
+        android:height="96dp"
+        android:top="40dp"
+        android:bottom="40dp"
+        android:left="80dp"
+        android:right="80dp" />
 </layer-list>

@@ -138,9 +138,7 @@ class SettingsUI : BasePreferenceFragmentCompat() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) { // remove monet on android 11 and less
                 removeIncompatible("Monet")
             }
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) { // Remove system on android 9 and less
-                removeIncompatible("System")
-            }
+            removeIncompatible("System") // Hide System theme option
 
             val currentLayout =
                 settingsManager.getString(getString(R.string.app_theme_key), prefValues.first())

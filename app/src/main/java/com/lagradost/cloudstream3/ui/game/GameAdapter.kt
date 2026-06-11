@@ -8,8 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import coil3.request.crossfade
-import coil3.request.error
-import coil3.request.placeholder
+import com.facebook.shimmer.ShimmerFrameLayout
 import com.lagradost.cloudstream3.utils.ImageLoader.loadImage
 import com.lagradost.cloudstream3.R
 
@@ -28,15 +27,18 @@ class GameAdapter(
     sealed class GameViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         abstract val imageView: ImageView
         abstract val favoriteButton: ImageView
+        abstract val loadingView: ShimmerFrameLayout?
         
         class NormalViewHolder(view: View) : GameViewHolder(view) {
             override val imageView: ImageView = view.findViewById(R.id.gameImageView)
             override val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
+            override val loadingView: ShimmerFrameLayout? = view.findViewById(R.id.gameLoadingView)
         }
         
         class LargeViewHolder(view: View) : GameViewHolder(view) {
             override val imageView: ImageView = view.findViewById(R.id.gameImageView)
             override val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
+            override val loadingView: ShimmerFrameLayout? = view.findViewById(R.id.gameLoadingView)
             val titleView: TextView = view.findViewById<TextView>(R.id.gameTitleTextView)
         }
     }
@@ -76,20 +78,55 @@ class GameAdapter(
         )
         holder.favoriteButton.setOnClickListener { onFavoriteClick(game) }
 
+        // Show loading shimmer initially
+        holder.loadingView?.visibility = View.VISIBLE
+        holder.loadingView?.startShimmer()
+        holder.imageView.visibility = View.INVISIBLE
+
         when (holder) {
             is GameViewHolder.NormalViewHolder -> {
                 holder.imageView.loadImage(game.images.icon) {
-                    placeholder(R.drawable.ic_game_placeholder)
-                    error(R.drawable.ic_game_placeholder)
                     crossfade(true)
+                    listener(
+                        onStart = {
+                            holder.loadingView?.visibility = View.VISIBLE
+                            holder.loadingView?.startShimmer()
+                            holder.imageView.visibility = View.INVISIBLE
+                        },
+                        onSuccess = { _, _ ->
+                            holder.loadingView?.stopShimmer()
+                            holder.loadingView?.visibility = View.GONE
+                            holder.imageView.visibility = View.VISIBLE
+                        },
+                        onError = { _, _ ->
+                            holder.loadingView?.stopShimmer()
+                            holder.loadingView?.visibility = View.GONE
+                            holder.imageView.visibility = View.VISIBLE
+                        }
+                    )
                 }
                 holder.itemView.setOnClickListener { onGameClick(game) }
             }
             is GameViewHolder.LargeViewHolder -> {
                 holder.imageView.loadImage(game.images.poster) {
-                    placeholder(R.drawable.ic_game_placeholder)
-                    error(R.drawable.ic_game_placeholder)
                     crossfade(true)
+                    listener(
+                        onStart = {
+                            holder.loadingView?.visibility = View.VISIBLE
+                            holder.loadingView?.startShimmer()
+                            holder.imageView.visibility = View.INVISIBLE
+                        },
+                        onSuccess = { _, _ ->
+                            holder.loadingView?.stopShimmer()
+                            holder.loadingView?.visibility = View.GONE
+                            holder.imageView.visibility = View.VISIBLE
+                        },
+                        onError = { _, _ ->
+                            holder.loadingView?.stopShimmer()
+                            holder.loadingView?.visibility = View.GONE
+                            holder.imageView.visibility = View.VISIBLE
+                        }
+                    )
                 }
                 // Hide title as requested for search results style consistency
                 holder.titleView.visibility = View.GONE
