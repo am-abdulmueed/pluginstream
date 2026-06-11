@@ -3,9 +3,15 @@ package com.lagradost.cloudstream3.ui.settings
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.graphics.Typeface
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.ImageView
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.core.view.children
 import androidx.core.view.updateLayoutParams
@@ -48,8 +54,8 @@ import android.provider.Settings
 import android.widget.Toast
 import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import io.noties.markwon.Markwon
-import io.noties.markwon.linkify.LinkifyPlugin
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.color.MaterialColors
 import java.io.File
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -328,73 +334,266 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
 
     private fun showSystemCompatibilityDialog() {
         val context = context ?: return
-        val markwon = Markwon.builder(context)
-            .usePlugin(LinkifyPlugin.create())
-            .build()
-
-        // 1. Check RAM Info
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memoryInfo = ActivityManager.MemoryInfo()
         activityManager.getMemoryInfo(memoryInfo)
 
         val totalRamMb = memoryInfo.totalMem / (1024 * 1024)
         val availableRamMb = memoryInfo.availMem / (1024 * 1024)
-        
-        val totalRamDisplay = if (totalRamMb >= 1000) String.format("%.1f GB", totalRamMb / 1024.0) else "$totalRamMb MB"
-        val availableRamDisplay = if (availableRamMb >= 1000) String.format("%.1f GB", availableRamMb / 1024.0) else "$availableRamMb MB"
-
-        // 2. Check Storage Info (Internal Storage)
         val path: File = Environment.getDataDirectory()
         val stat = StatFs(path.path)
         val blockSize = stat.blockSizeLong
         val availableBlocks = stat.availableBlocksLong
         val totalBlocks = stat.blockCountLong
 
-        val totalStorageGb = (totalBlocks * blockSize) / (1024 * 1024 * 1024)
-        val freeStorageGb = (availableBlocks * blockSize) / (1024 * 1024 * 1024)
-
-        // 3. Device Model and Android Version
+        val totalStorageBytes = totalBlocks * blockSize
+        val freeStorageBytes = availableBlocks * blockSize
         val deviceModel = Build.MODEL
         val androidVersion = Build.VERSION.RELEASE
 
-        // Logic (Realistic thresholds)
         val hasMinTotalRam = totalRamMb >= 1500 // 1.5GB+ Total
         val hasMinAvailableRam = availableRamMb >= 200 // 200MB+ Available
-        val hasMinStorage = freeStorageGb >= 0.5 // 500MB+ Free
+        val hasMinStorage = freeStorageBytes >= 0.5 * 1024 * 1024 * 1024 // 500MB+ Free
 
-        val isExcellent = totalRamMb >= 3500 && availableRamMb >= 1000 && freeStorageGb >= 2
-        
-        val statusMessage = when {
-            isExcellent -> "✅ **Your device is powerful! App will run perfectly.**"
-            hasMinTotalRam && hasMinAvailableRam && hasMinStorage -> "✅ **Device meets requirements. App will run smoothly.**"
-            else -> "⚠️ **Low resources detected. You might experience some lag.**"
+        val isExcellent = totalRamMb >= 3500 && availableRamMb >= 1000 &&
+            freeStorageBytes >= 2L * 1024 * 1024 * 1024
+
+        val statusTitle = when {
+            isExcellent -> "Excellent"
+            hasMinTotalRam && hasMinAvailableRam && hasMinStorage -> "Compatible"
+            else -> "Low Resources"
         }
 
-        val infoText = """
-            📱 **Device Info**
-            🔹 **Model**: $deviceModel
-            🔹 **Android**: OS $androidVersion
-            
-            🧠 **Memory & RAM**
-            🔹 **Total RAM**: $totalRamDisplay
-            🔹 **Available**: $availableRamDisplay
-            
-            📁 **Storage Info**
-            🔹 **Total**: $totalStorageGb GB
-            🔹 **Free Space**: $freeStorageGb GB
-            
-            🚀 **Compatibility Status**
-            $statusMessage
-            
-            *(Recommended: 2GB+ Total RAM & 1GB+ Free Space)*
-        """.trimIndent()
+        val statusMessage = when {
+            isExcellent -> "Your device is powerful and should run the app very smoothly."
+            hasMinTotalRam && hasMinAvailableRam && hasMinStorage -> "Your device meets the requirements and should run the app well."
+            else -> "Low resources detected. You may notice lag or slower performance."
+        }
 
-        // Theme adaptive and stylish Material Dialog
-        MaterialAlertDialogBuilder(context)
+        fun formatSize(bytes: Long): String {
+            val gb = bytes / (1024.0 * 1024.0 * 1024.0)
+            return if (gb >= 1) {
+                String.format(Locale.US, "%.1f GB", gb)
+            } else {
+                val mb = bytes / (1024.0 * 1024.0)
+                String.format(Locale.US, "%.0f MB", mb)
+            }
+        }
+
+        fun dp(value: Int): Int =
+            TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                value.toFloat(),
+                context.resources.displayMetrics
+            ).toInt()
+
+        val cardBackground = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorSurface,
+            0
+        )
+        val dialogBackground = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorSurface,
+            0
+        )
+        val strokeColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorOutline,
+            0
+        )
+        val titleColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorOnSurface,
+            0
+        )
+        val bodyColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorOnSurface,
+            0
+        )
+        val labelColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorOnSurfaceVariant,
+            titleColor
+        )
+
+        fun createInfoCard(
+            title: String,
+            rows: List<Pair<String, String>>
+        ): MaterialCardView {
+            val contentLayout = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+            }
+
+            val titleView = TextView(context).apply {
+                text = title
+                textSize = 15f
+                setTextColor(titleColor)
+                setTypeface(typeface, Typeface.BOLD)
+            }
+            contentLayout.addView(titleView)
+
+            rows.forEachIndexed { index, (label, value) ->
+                if (index > 0) {
+                    contentLayout.addView(View(context).apply {
+                        layoutParams = LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            dp(1)
+                        ).apply {
+                            topMargin = dp(10)
+                            bottomMargin = dp(10)
+                        }
+                        setBackgroundColor(strokeColor)
+                        alpha = 0.12f
+                    })
+                } else {
+                    titleView.layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        bottomMargin = dp(10)
+                    }
+                }
+
+                contentLayout.addView(TextView(context).apply {
+                    text = label
+                    textSize = 11f
+                    setTextColor(labelColor)
+                    setTypeface(typeface, Typeface.BOLD)
+                })
+
+                contentLayout.addView(TextView(context).apply {
+                    text = value
+                    textSize = 14f
+                    setTextColor(bodyColor)
+                    setTypeface(typeface, Typeface.NORMAL)
+                })
+            }
+
+            return MaterialCardView(context).apply {
+                radius = dp(14).toFloat()
+                strokeWidth = dp(1)
+                setStrokeColor(strokeColor)
+                setCardBackgroundColor(cardBackground)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    bottomMargin = dp(10)
+                }
+                setContentPadding(dp(14), dp(14), dp(14), dp(14))
+                addView(contentLayout)
+            }
+        }
+
+        val statusCard = MaterialCardView(context).apply {
+            radius = dp(14).toFloat()
+            strokeWidth = dp(1)
+            setStrokeColor(strokeColor)
+            setCardBackgroundColor(cardBackground)
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setContentPadding(dp(14), dp(14), dp(14), dp(14))
+            addView(LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                addView(TextView(context).apply {
+                    text = "Compatibility Status"
+                    textSize = 15f
+                    setTextColor(titleColor)
+                    setTypeface(typeface, Typeface.BOLD)
+                })
+                addView(TextView(context).apply {
+                    text = statusTitle
+                    textSize = 16f
+                    setTextColor(titleColor)
+                    setTypeface(typeface, Typeface.BOLD)
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        topMargin = dp(10)
+                    }
+                })
+                addView(TextView(context).apply {
+                    text = statusMessage
+                    textSize = 13f
+                    setTextColor(bodyColor)
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        topMargin = dp(6)
+                    }
+                })
+                addView(TextView(context).apply {
+                    text = "Recommended: 2 GB+ total RAM and 1 GB+ free space"
+                    textSize = 11f
+                    setTextColor(labelColor)
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        topMargin = dp(10)
+                    }
+                })
+            })
+        }
+
+        val dialogContent = ScrollView(context).apply {
+            isFillViewport = true
+            setBackgroundColor(dialogBackground)
+            addView(LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(2), dp(4), dp(2), dp(2))
+
+                addView(
+                    createInfoCard(
+                        title = "Device Info",
+                        rows = listOf(
+                            "Model" to deviceModel,
+                            "Android" to "OS $androidVersion"
+                        )
+                    )
+                )
+
+                addView(
+                    createInfoCard(
+                        title = "Memory and RAM",
+                        rows = listOf(
+                            "Total RAM" to formatSize(memoryInfo.totalMem),
+                            "Available RAM" to formatSize(memoryInfo.availMem)
+                        )
+                    )
+                )
+
+                addView(
+                    createInfoCard(
+                        title = "Storage Info",
+                        rows = listOf(
+                            "Total Storage" to formatSize(totalStorageBytes),
+                            "Free Space" to formatSize(freeStorageBytes)
+                        )
+                    )
+                )
+
+                addView(statusCard)
+            })
+        }
+
+        val dialog = MaterialAlertDialogBuilder(context)
             .setTitle(R.string.system_compatibility)
-            .setMessage(markwon.toMarkdown(infoText))
+            .setView(dialogContent)
             .setPositiveButton(R.string.close, null)
-            .show()
+            .create()
+
+        dialog.show()
+        dialog.window?.setLayout(
+            (context.resources.displayMetrics.widthPixels * 0.84f).toInt(),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
     }
 
     private fun openAppSystemInfo() {
