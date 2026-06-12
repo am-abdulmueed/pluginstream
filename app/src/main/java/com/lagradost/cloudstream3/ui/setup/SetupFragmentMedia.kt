@@ -39,6 +39,8 @@ class SetupFragmentMedia : BaseFragment<FragmentSetupMediaBinding>(
             arrayAdapter.addAll(names)
             ctx.setDefaultFocus(binding.nextBtt)
             binding.apply {
+                nextBtt.text = "Done"
+                
                 listview1.let {
                     it.adapter = arrayAdapter
                     it.choiceMode = AbsListView.CHOICE_MODE_MULTIPLE
@@ -68,7 +70,8 @@ class SetupFragmentMedia : BaseFragment<FragmentSetupMediaBinding>(
 
                 nextBtt.setOnClickListener {
                     if (findNavController().currentDestination?.id == R.id.navigation_setup_media) {
-                        findNavController().navigate(R.id.navigation_setup_media_to_navigation_setup_layout)
+                        setKey(HAS_DONE_SETUP_KEY, true)
+                        findNavController().navigate(R.id.navigation_home)
                     }
                 }
 
