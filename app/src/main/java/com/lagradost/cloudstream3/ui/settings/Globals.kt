@@ -32,13 +32,7 @@ object Globals {
     }
 
     private fun Context.layoutIntCorrected(): Int {
-        return when(getLayoutInt()) {
-            -1 -> if (isAutoTv()) TV else PHONE
-            0 -> PHONE
-            1 -> TV
-            2 -> EMULATOR
-            else -> PHONE
-        }
+        return PHONE
     }
 
     fun Context.updateTv() {
@@ -47,8 +41,7 @@ object Globals {
 
     /** Returns true if the current orientation is landscape. */
     fun isLandscape(): Boolean =
-        isLayout(TV or EMULATOR) ||
-            Resources.getSystem().configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        Resources.getSystem().configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     /** Returns true if the layout is any of the flags,
      * so isLayout(TV or EMULATOR) is a valid statement for checking if the layout is in the emulator
