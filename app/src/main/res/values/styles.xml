@@ -108,6 +108,11 @@
         <item name="checkedIconVisible">false</item>
     </style>
 
+    <style name="RoundedImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">24dp</item>
+    </style>
+
     <style name="RoundProgressbar">
         <item name="indicatorTrackGapSize">0dp</item>
         <item name="trackStopIndicatorSize">0dp</item>
@@ -1136,9 +1141,5 @@
         <item name="android:layout_width">@dimen/download_header_progress_size</item>
         <item name="android:layout_height">@dimen/download_header_progress_size</item>
         <item name="android:background">@color/playIconBackground</item>
-    </style>
-    <style name="RoundedImage">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">24dp</item>
     </style>
 </resources>

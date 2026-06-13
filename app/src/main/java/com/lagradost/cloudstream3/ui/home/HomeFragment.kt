@@ -928,7 +928,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
                     is Resource.Failure -> {
                         homeLoadingShimmer.stopShimmer()
-                        homeReloadConnectionerror.setOnClickListener(apiChangeClickListener)
+                        homeReloadConnectionerror.setOnClickListener {
+                            if (context?.isNetworkAvailable() == true) {
+                                homeViewModel.loadAndCancel(currentApiName, forceReload = true, fromUI = true)
+                            } else {
+                                showToast("Still offline...", Toast.LENGTH_SHORT)
+                            }
+                        }
                         homeReloadConnectionOpenInBrowser.setOnClickListener { view ->
                             val validAPIs = apis//.filter { api -> api.hasMainPage }
 

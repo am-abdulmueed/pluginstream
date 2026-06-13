@@ -3,17 +3,26 @@ package com.lagradost.cloudstream3
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -22,6 +31,8 @@ import android.view.WindowManager
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.IdRes
@@ -29,22 +40,19 @@ import androidx.annotation.MainThread
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import androidx.core.content.FileProvider
 import androidx.core.content.edit
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.net.toUri
-import androidx.appcompat.widget.TooltipCompat
-import androidx.core.view.children
-import androidx.core.view.isVisible
-import androidx.core.view.isGone
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updateLayoutParams
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.lagradost.cloudstream3.databinding.FloatingMoreMenuBinding
+import androidx.core.view.children
 import androidx.core.view.get
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.marginStart
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -65,10 +73,27 @@ import com.google.android.gms.cast.framework.SessionManager
 import com.google.android.gms.cast.framework.SessionManagerListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigationrail.NavigationRailView
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.google.common.collect.Comparators.min
 import com.jaredrummler.android.colorpicker.ColorPickerDialogListener
+import io.noties.markwon.Markwon
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
+import io.noties.markwon.linkify.LinkifyPlugin
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.TimeUnit
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
 import com.lagradost.cloudstream3.APIHolder.allProviders
 import com.lagradost.cloudstream3.APIHolder.apis
 import com.lagradost.cloudstream3.APIHolder.initAll
@@ -90,9 +115,9 @@ import com.lagradost.cloudstream3.databinding.ActivityMainTvBinding
 import com.lagradost.cloudstream3.databinding.BottomResultviewPreviewBinding
 import com.lagradost.cloudstream3.mvvm.Resource
 import com.lagradost.cloudstream3.mvvm.logError
-import com.lagradost.cloudstream3.mvvm.safe
 import com.lagradost.cloudstream3.mvvm.observe
 import com.lagradost.cloudstream3.mvvm.observeNullable
+import com.lagradost.cloudstream3.mvvm.safe
 import com.lagradost.cloudstream3.network.initClient
 import com.lagradost.cloudstream3.plugins.PluginManager
 import com.lagradost.cloudstream3.plugins.PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins
@@ -108,6 +133,7 @@ import com.lagradost.cloudstream3.syncproviders.AccountManager.Companion.APP_STR
 import com.lagradost.cloudstream3.syncproviders.AccountManager.Companion.APP_STRING_SHARE
 import com.lagradost.cloudstream3.syncproviders.AccountManager.Companion.localListApi
 import com.lagradost.cloudstream3.syncproviders.SyncAPI
+import androidx.appcompat.widget.TooltipCompat
 import com.lagradost.cloudstream3.ui.APIRepository
 import com.lagradost.cloudstream3.ui.SyncWatchType
 import com.lagradost.cloudstream3.ui.WatchType
@@ -191,7 +217,6 @@ import com.lagradost.cloudstream3.utils.txt
 import com.lagradost.safefile.SafeFile
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.io.File
 import java.lang.ref.WeakReference
 import java.net.URI
 import java.net.URLDecoder
@@ -245,6 +270,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         private const val FILE_DELETE_KEY = "FILES_TO_DELETE_KEY"
         const val API_NAME_EXTRA_KEY = "API_NAME_EXTRA_KEY"
+
+        private var isAdShownInSession = false
+        const val LAST_DIALOG_AD_SHOW_TIME = "last_dialog_ad_show_time"
+        const val DIALOG_AD_VIEWS_TODAY = "dialog_ad_views_today"
+        const val DIALOG_AD_LAST_VIEW_DATE = "dialog_ad_last_view_date"
 
         const val INSTAGRAM_ALREADY_FOLLOWED = "INSTAGRAM_ALREADY_FOLLOWED"
         const val LAST_INSTAGRAM_DIALOG_SHOW_TIME = "LAST_INSTAGRAM_DIALOG_SHOW_TIME"
@@ -1571,6 +1601,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         updateTv()
+        showDialogAd()
 
         // backup when we update the app, I don't trust myself to not boot lock users, might want to make this a setting?
         safe {
@@ -1774,7 +1805,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
             dialogView.findViewById<View>(R.id.crash_btn_report).setOnClickListener {
                 lastError?.let {
-                    val subject = "⚠️ Crash Report - PluginStream v${BuildConfig.VERSION_NAME}"
+                    val subject = "⚠️ Crash Report - CloudStream v${BuildConfig.VERSION_NAME}"
                     val body = "${AppDiagnostics.getDeviceInfo()}\n---\nLatest Logs:\n$it"
                     sendEmailIntent(this@MainActivity, subject, body) {
                         Toast.makeText(this@MainActivity, "No email client found", Toast.LENGTH_SHORT).show()
@@ -1793,7 +1824,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 }
                 tbBuilder.setPositiveButton("Report Crash") { _, _ ->
                     lastError?.let {
-                        val subject = "⚠️ Crash Report - PluginStream v${BuildConfig.VERSION_NAME}"
+                        val subject = "⚠️ Crash Report - CloudStream v${BuildConfig.VERSION_NAME}"
                         val body = "${AppDiagnostics.getDeviceInfo()}\n---\nLatest Logs:\n$it"
                         sendEmailIntent(this@MainActivity, subject, body) {
                             Toast.makeText(this@MainActivity, "No email client found", Toast.LENGTH_SHORT).show()
@@ -2638,7 +2669,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
         }
 
-        var instagramUrl = "https://instagram.com/pluginstreamofficial"
+        var instagramUrl = "https://instagram.com/cloudstreamofficial"
         CommonActivity.getSocialLinks { json ->
             val handles = json?.optJSONArray("social_handles")
             if (handles != null) {
@@ -2722,7 +2753,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
         }
 
-        var telegramUrl = "https://t.me/pluginstreamofficial"
+        var telegramUrl = "https://t.me/cloudstreamofficial"
         CommonActivity.getSocialLinks { json ->
             val handles = json?.optJSONArray("social_handles")
             if (handles != null) {
@@ -2765,4 +2796,433 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         dialog.show()
     }
+
+    private fun showDialogAd() {
+        if (isAdShownInSession) return
+        val currentTime = System.currentTimeMillis()
+        val hasDoneSetup = getKey(HAS_DONE_SETUP_KEY, false) ?: false
+
+        if (!hasDoneSetup) return
+
+        ioSafe {
+            try {
+                val client = OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build()
+
+                val request = Request.Builder()
+                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/aads-json@main/ads.json")
+                    .get()
+                    .build()
+
+                val response = client.newCall(request).execute()
+
+                val jsonString = response.use {
+                    if (!it.isSuccessful) throw Exception("Failed to fetch ads config")
+                    it.body?.string() ?: throw Exception("Empty response")
+                }
+
+                val jsonObject = JSONObject(jsonString)
+                val dialogAd = jsonObject.getJSONObject("dialog_ad")
+
+                val enabled = dialogAd.optBoolean("enabled", true)
+                if (!enabled) return@ioSafe
+
+                // All values must come from online JSON - no hardcoded fallbacks
+                val badge = dialogAd.optString("badge", "")
+                val title = dialogAd.optString("title", "")
+                val message = dialogAd.optString("message", "")
+                val buttonText = dialogAd.optString("button_text", "")
+                
+                val imageList = mutableListOf<String>()
+                val imagesArray = dialogAd.optJSONArray("images")
+                if (imagesArray != null) {
+                    for (i in 0 until imagesArray.length()) {
+                        imageList.add(imagesArray.getString(i))
+                    }
+                } else {
+                    val singleImage = dialogAd.optString("image_url", "")
+                    if (singleImage.isNotEmpty()) imageList.add(singleImage)
+                }
+                
+                val showIndicator = dialogAd.optBoolean("show_indicator", true)
+                val clickUrl = dialogAd.optString("click_url", "")
+                val showAfterSeconds = dialogAd.optInt("show_after_seconds", 0)
+                val autoCloseSeconds = dialogAd.optInt("auto_close_seconds", 0)
+                val startDate = dialogAd.optString("start_date", "")
+                val endDate = dialogAd.optString("end_date", "")
+                
+                val maxDailyViewsRaw = dialogAd.opt("max_daily_views")
+                val isNoLimit = maxDailyViewsRaw?.toString()?.lowercase()?.trim() == "no limit"
+                val maxDailyViews = if (isNoLimit) Int.MAX_VALUE else dialogAd.optInt("max_daily_views", 0)
+                
+                val intervalHours = dialogAd.optInt("interval_hours", 0)
+
+                // Pre-load images in background
+                imageList.forEach { url ->
+                    val imageView = ImageView(this@MainActivity)
+                    main {
+                        imageView.loadImage(url)
+                    }
+                }
+
+                // Validate required fields - if any essential field is empty, don't show dialog
+                if (title.isEmpty() || message.isEmpty() || buttonText.isEmpty() || 
+                    imageList.isEmpty() || clickUrl.isEmpty() || 
+                    showAfterSeconds <= 0 || autoCloseSeconds <= 0) {
+                    return@ioSafe
+                }
+
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val today = sdf.format(Date())
+                val startDateObj = sdf.parse(startDate)
+                val endDateObj = sdf.parse(endDate)
+                val todayObj = sdf.parse(today)
+
+                if (startDateObj != null && endDateObj != null && todayObj != null) {
+                    if (todayObj.before(startDateObj) || todayObj.after(endDateObj)) return@ioSafe
+                }
+
+                val lastViewDate = getKey<String>(DIALOG_AD_LAST_VIEW_DATE)
+                var viewsToday = getKey<Int>(DIALOG_AD_VIEWS_TODAY) ?: 0
+
+                if (lastViewDate != today) {
+                    viewsToday = 0
+                    setKey(DIALOG_AD_LAST_VIEW_DATE, today)
+                }
+
+                if (viewsToday >= maxDailyViews) return@ioSafe
+
+                val lastShowTime = getKey<Long>(LAST_DIALOG_AD_SHOW_TIME) ?: 0L
+                val intervalMillis = intervalHours * 60 * 60 * 1000L
+
+                if (lastShowTime != 0L && currentTime - lastShowTime < intervalMillis) return@ioSafe
+
+                val handler = Handler(Looper.getMainLooper())
+
+                handler.postDelayed({
+                    if (isAdShownInSession) return@postDelayed
+                    isAdShownInSession = true
+                    val dialog = Dialog(this@MainActivity, R.style.DialogHalfFullscreen)
+                    val dialogView = layoutInflater.inflate(R.layout.dialog_ad, null)
+                    dialog.setContentView(dialogView)
+                    
+                    dialog.window?.apply {
+                        setBackgroundDrawableResource(android.R.color.transparent)
+                        setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                        setGravity(Gravity.CENTER)
+                        
+                        // Ensure dialog doesn't exceed screen height and is responsive
+                        val displayMetrics = resources.displayMetrics
+                        val maxHeight = (displayMetrics.heightPixels * 0.85).toInt()
+                        val card = dialogView.findViewById<MaterialCardView>(R.id.dialog_card)
+                        card.updateLayoutParams {
+                            height = ViewGroup.LayoutParams.WRAP_CONTENT
+                        }
+                    }
+                    dialog.setCancelable(false)
+
+                    val adViewPager = dialogView.findViewById<ViewPager2>(R.id.ad_viewpager)
+                    val adIndicator = dialogView.findViewById<TabLayout>(R.id.ad_indicator)
+                    val adBadge = dialogView.findViewById<TextView>(R.id.ad_badge)
+                    val adTitle = dialogView.findViewById<TextView>(R.id.ad_title)
+                    val adMessage = dialogView.findViewById<TextView>(R.id.ad_message)
+                    val adButton = dialogView.findViewById<MaterialButton>(R.id.ad_button)
+                    val adShareButton = dialogView.findViewById<View>(R.id.ad_share_button)
+                    val adDebugButton = dialogView.findViewById<MaterialButton>(R.id.ad_debug_button)
+                    val skipButton = dialogView.findViewById<MaterialButton>(R.id.skip_button)
+                    val debugLogPanel = dialogView.findViewById<LinearLayout>(R.id.debug_log_panel)
+                    val debugLogText = dialogView.findViewById<TextView>(R.id.debug_log_text)
+                    val copyAdDebugLog = dialogView.findViewById<ImageView>(R.id.copy_ad_debug_log)
+
+                    val adLogEntries = mutableListOf<String>()
+                    fun addAdLog(message: String) {
+                        val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+                        adLogEntries.add("[$timestamp] $message")
+                        debugLogText.text = adLogEntries.joinToString("\n")
+                    }
+
+                    if (BuildConfig.DEBUG) {
+                        adDebugButton.visibility = View.VISIBLE
+                        adDebugButton.setOnClickListener {
+                            debugLogPanel.visibility = if (debugLogPanel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+                            adDebugButton.text = if (debugLogPanel.visibility == View.VISIBLE) "Hide Debug Logs" else "Show Debug Logs"
+                        }
+                        
+                        copyAdDebugLog.setOnClickListener {
+                            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("Ad Debug Logs", adLogEntries.joinToString("\n"))
+                            clipboard.setPrimaryClip(clip)
+                            showToast("Logs copied!", Toast.LENGTH_SHORT)
+                        }
+
+                        addAdLog("Ad Dialog Initialized")
+                        addAdLog("Found ${imageList.size} images")
+                    }
+
+                    if (badge.isNotEmpty()) {
+                        adBadge.text = badge
+                        adBadge.isVisible = true
+                        
+                        when (badge.lowercase()) {
+                            "sponsored" -> {
+                                adBadge.setBackgroundResource(R.drawable.badge_bg_blue)
+                                adBadge.setTextColor(Color.WHITE)
+                            }
+                            "promotion" -> {
+                                adBadge.setBackgroundResource(R.drawable.badge_bg_green)
+                                adBadge.setTextColor(Color.WHITE)
+                            }
+                            "hot offer", "hot" -> {
+                                adBadge.setBackgroundResource(R.drawable.badge_bg_orange)
+                                adBadge.setTextColor(Color.WHITE)
+                            }
+                            "exclusive" -> {
+                                adBadge.setBackgroundResource(R.drawable.badge_bg_purple)
+                                adBadge.setTextColor(Color.WHITE)
+                            }
+                            "announcement", "new feature", "update" -> {
+                                adBadge.setBackgroundResource(R.drawable.badge_bg_announcement)
+                                adBadge.setTextColor(Color.WHITE)
+                            }
+                            "premium", "vip" -> {
+                                adBadge.setBackgroundResource(R.drawable.badge_bg_gold)
+                                adBadge.setTextColor(Color.BLACK)
+                            }
+                            else -> {
+                                adBadge.setBackgroundResource(R.drawable.badge_bg_red)
+                                adBadge.setTextColor(Color.WHITE)
+                            }
+                        }
+                    } else {
+                        adBadge.isGone = true
+                    }
+                    adTitle.text = title
+                    
+                    // Apply markdown rendering to message with Linkify and Strikethrough support
+                    val markwon = Markwon.builder(this@MainActivity)
+                        .usePlugin(LinkifyPlugin.create())
+                        .usePlugin(StrikethroughPlugin.create())
+                        .build()
+                    adMessage.text = markwon.toMarkdown(message)
+                    adMessage.movementMethod = android.text.method.LinkMovementMethod.getInstance()
+                    
+                    adButton.text = buttonText
+
+                    // Timer for skip button
+                    skipButton.isEnabled = false
+                    val countDownTimer = object : CountDownTimer(autoCloseSeconds * 1000L, 1000L) {
+                        override fun onTick(millisUntilFinished: Long) {
+                            val secondsRemaining = (millisUntilFinished / 1000L).toInt()
+                            skipButton.text = "SKIP (${secondsRemaining}s)"
+                        }
+
+                        override fun onFinish() {
+                            skipButton.text = "SKIP"
+                            skipButton.isEnabled = true
+                        }
+                    }
+                    countDownTimer.start()
+
+                    val carouselAdapter = AdCarouselAdapter(imageList, onImageLog = { log ->
+                        if (BuildConfig.DEBUG) {
+                            addAdLog(log)
+                        }
+                    }) { currentImageUrl ->
+                        try {
+                            val fullScreenDialog = Dialog(this@MainActivity, R.style.DialogFullscreen)
+                            val fullScreenView = layoutInflater.inflate(R.layout.dialog_fullscreen_image, null)
+                            fullScreenDialog.setContentView(fullScreenView)
+                            
+                            // Adjust for status bar padding dynamically
+                            val closeFull = fullScreenView.findViewById<ImageView>(R.id.close_fullscreen)
+                            ViewCompat.setOnApplyWindowInsetsListener(fullScreenView) { v, insets ->
+                                val statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+                                closeFull.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                                    topMargin = statusBarHeight + 16.toPx
+                                }
+                                insets
+                            }
+                            
+                            val fullImage = fullScreenView.findViewById<ImageView>(R.id.fullscreen_image)
+                            val fullProgress = fullScreenView.findViewById<ProgressBar>(R.id.fullscreen_progress)
+                            
+                            fullProgress.visibility = View.VISIBLE
+                            fullImage.loadImage(currentImageUrl, builder = {
+                                listener(
+                                    onStart = { fullProgress.visibility = View.VISIBLE },
+                                    onSuccess = { _, _ -> fullProgress.visibility = View.GONE },
+                                    onError = { _, _ -> fullProgress.visibility = View.GONE }
+                                )
+                            })
+                            
+                            // Add Smooth Zoom Functionality
+                            var scaleFactor = 1.0f
+                            val detector = android.view.ScaleGestureDetector(this@MainActivity, object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                                override fun onScale(d: android.view.ScaleGestureDetector): Boolean {
+                                    scaleFactor *= d.scaleFactor
+                                    scaleFactor = scaleFactor.coerceIn(1.0f, 5.0f)
+                                    fullImage.scaleX = scaleFactor
+                                    fullImage.scaleY = scaleFactor
+                                    return true
+                                }
+                            })
+                            
+                            fullScreenView.setOnTouchListener { _, event ->
+                                detector.onTouchEvent(event)
+                                true
+                            }
+                            
+                            closeFull.setOnClickListener {
+                                fullScreenDialog.dismiss()
+                            }
+                            
+                            fullScreenDialog.show()
+                        } catch (e: Exception) {
+                            logError(e)
+                        }
+                    }
+
+                    adViewPager.adapter = carouselAdapter
+                    
+                    // Add clear gap between images in the carousel
+                    if (imageList.size > 1) {
+                        val marginPx = (20 * resources.displayMetrics.density).toInt()
+                        adViewPager.setPageTransformer(androidx.viewpager2.widget.MarginPageTransformer(marginPx))
+                        adViewPager.offscreenPageLimit = 1
+                    }
+
+                    if (imageList.size > 1 && showIndicator) {
+                        adIndicator.isVisible = true
+                        TabLayoutMediator(adIndicator, adViewPager) { _, _ -> }.attach()
+                    } else {
+                        adIndicator.isGone = true
+                    }
+
+                    adButton.setOnClickListener {
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, clickUrl.toUri())
+                            startActivity(intent)
+                        } catch (e: Exception) {
+                            logError(e)
+                        }
+                        dialog.dismiss()
+                    }
+
+                    adShareButton.setOnClickListener {
+                        try {
+                            val shareMessage = buildString {
+                                append("🚀 *CloudStream Special Offer!*\n\n")
+                                if (badge.isNotEmpty()) append("[$badge] ")
+                                appendLine("*$title*")
+                                appendLine()
+                                appendLine(message)
+                                appendLine()
+                                appendLine("🔗 *Check it out here:* $clickUrl")
+                                appendLine()
+                                appendLine("🌐 *Download CloudStream:* https://cloudstream.pages.dev")
+                                appendLine("🛡 *Official Community:* https://t.me/cloudstreamofficial")
+                            }
+
+                            // Get current image from ViewPager
+                            val currentPos = adViewPager.currentItem
+                            val recyclerView = adViewPager.getChildAt(0) as? RecyclerView
+                            val viewHolder = recyclerView?.findViewHolderForAdapterPosition(currentPos) as? AdCarouselAdapter.ViewHolder
+                            val bitmap = viewHolder?.imageView?.drawable?.toBitmap()
+
+                            if (bitmap != null) {
+                                val cachePath = File(cacheDir, "images")
+                                cachePath.mkdirs()
+                                val imageFile = File(cachePath, "ad_share_image.png")
+                                val stream = FileOutputStream(imageFile)
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                                stream.close()
+
+                                val contentUri = FileProvider.getUriForFile(this@MainActivity, "$packageName.provider", imageFile)
+
+                                if (contentUri != null) {
+                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                         type = "image/*"
+                                         putExtra(Intent.EXTRA_STREAM, contentUri)
+                                         putExtra(Intent.EXTRA_SUBJECT, title)
+                                         putExtra(Intent.EXTRA_TEXT, shareMessage)
+                                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                     }
+                                     startActivity(Intent.createChooser(shareIntent, "Share Ad"))
+                                 }
+                            } else {
+                                // Fallback to text only if image is not loaded
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_SUBJECT, title)
+                                    putExtra(Intent.EXTRA_TEXT, shareMessage)
+                                }
+                                startActivity(Intent.createChooser(shareIntent, "Share Ad"))
+                            }
+                        } catch (e: Exception) {
+                            logError(e)
+                        }
+                    }
+
+                    skipButton.setOnClickListener {
+                        dialog.dismiss()
+                    }
+
+                    setKey(LAST_DIALOG_AD_SHOW_TIME, currentTime)
+                    viewsToday++
+                    setKey(DIALOG_AD_VIEWS_TODAY, viewsToday)
+
+                    dialog.show()
+                }, (showAfterSeconds * 1000L))
+
+            } catch (e: Exception) {
+                logError(e)
+            }
+        }
+    }
+
+    private inner class AdCarouselAdapter(
+        private val images: List<String>,
+        private val onImageLog: ((String) -> Unit)? = null,
+        private val onImageClick: (String) -> Unit
+    ) : RecyclerView.Adapter<AdCarouselAdapter.ViewHolder>() {
+
+        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val imageView: com.google.android.material.imageview.ShapeableImageView = view.findViewById(R.id.ad_carousel_image)
+            val progressBar: ProgressBar = view.findViewById(R.id.ad_image_progress)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = layoutInflater.inflate(R.layout.item_ad_image, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val url = images[position]
+            
+            holder.progressBar.visibility = View.VISIBLE
+            holder.imageView.loadImage(url, builder = {
+                listener(
+                    onStart = { 
+                        holder.progressBar.visibility = View.VISIBLE 
+                        onImageLog?.invoke("Loading Image ${position + 1}: $url")
+                    },
+                    onSuccess = { _, _ -> 
+                        holder.progressBar.visibility = View.GONE 
+                        onImageLog?.invoke("Successfully Loaded Image ${position + 1}")
+                    },
+                    onError = { _, _ -> 
+                        holder.progressBar.visibility = View.GONE 
+                        onImageLog?.invoke("Failed to Load Image ${position + 1}: $url")
+                    }
+                )
+            })
+            
+            holder.imageView.setOnClickListener { onImageClick(url) }
+        }
+
+        override fun getItemCount(): Int = images.size
+    }
+
 }
