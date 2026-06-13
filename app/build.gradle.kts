@@ -180,7 +180,7 @@ android {
             val vName = libs.versions.versionName.get()
             variant.outputs.forEach { output ->
                 val apkOutput = output as? com.android.build.api.variant.impl.VariantOutputImpl
-                apkOutput?.outputFileName?.set("pluginstream-tv-$vName.apk")
+                apkOutput?.outputFileName?.set("pluginstream-$vName.apk")
             }
         }
 

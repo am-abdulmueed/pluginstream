@@ -30,6 +30,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
 ) {
     private var isDownloadingStarted = false
     private var cachedRepositoriesList: List<RepositoryData>? = null
+    private lateinit var repoAdapter: RepoAdapter
 
     companion object {
         const val SETUP_EXTENSION_BUNDLE_IS_SETUP = "isSetup"
@@ -63,17 +64,27 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
     }
 
     private fun setRepositories(success: Boolean = true) {
-        main { _ ->
-            val ctx = context ?: return@main
+        ioSafe {
+            val ctx = context ?: return@ioSafe
             
-            // Only show spinner if we don't have cached data
+            // 1. Show local/cached repositories first for instant feedback
             if (cachedRepositoriesList == null) {
-                binding?.loadingSpinner?.isVisible = true
-            }
-            
-            val masterRepoRepos = if (cachedRepositoriesList == null) {
+                val localRepos = (RepositoryManager.getRepositories().toList() + PREBUILT_REPOSITORIES.toList()).distinctBy { it.url }
+                if (localRepos.isNotEmpty()) {
+                    main {
+                        binding?.loadingSpinner?.isVisible = true // Still show spinner for online part
+                        binding?.repoRecyclerView?.isVisible = true
+                        binding?.blankRepoScreen?.isVisible = false
+                        repoAdapter.submitList(localRepos)
+                    }
+                } else {
+                    main {
+                        binding?.loadingSpinner?.isVisible = true
+                    }
+                }
+
+                // 2. Fetch online repositories
                 val pluginstreamJson = try {
-                    // Try to fetch from GitHub first for fresh repositories
                     val client = okhttp3.OkHttpClient.Builder()
                         .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
                         .build()
@@ -81,9 +92,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                         .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/repo-json@main/pluginstream.json")
                         .build()
                     
-                    val response = withContext(kotlinx.coroutines.Dispatchers.IO) {
-                        client.newCall(request).execute()
-                    }
+                    val response = client.newCall(request).execute()
                     
                     if (response.isSuccessful) {
                         response.body?.string()
@@ -91,7 +100,6 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                         throw Exception("Online fetch failed")
                     }
                 } catch (e: Exception) {
-                    // Fallback to local assets if offline or error
                     try {
                         ctx.assets.open("pluginstream.json").bufferedReader().use { it.readText() }
                     } catch (localError: Exception) {
@@ -99,49 +107,34 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                     }
                 }
 
-                pluginstreamJson?.let { json ->
+                val masterRepoRepos = pluginstreamJson?.let { json ->
                     tryParseJson<MasterRepo>(json)?.repositories?.map { entry ->
                         RepositoryData(null, entry.name, entry.url)
                     }
                 } ?: emptyList()
-            } else {
-                emptyList()
-            }
 
-            if (cachedRepositoriesList == null) {
-                cachedRepositoriesList = (RepositoryManager.getRepositories().toList() + PREBUILT_REPOSITORIES.toList() + masterRepoRepos).distinctBy { it.url }
+                cachedRepositoriesList = (localRepos + masterRepoRepos).distinctBy { it.url }
             }
             
             val repositoriesList = cachedRepositoriesList ?: emptyList()
             val hasRepos = repositoriesList.isNotEmpty()
             
-            binding?.loadingSpinner?.isVisible = false
-            binding?.repoRecyclerView?.isVisible = hasRepos
-            binding?.blankRepoScreen?.isVisible = !hasRepos
+            main {
+                binding?.loadingSpinner?.isVisible = false
+                binding?.repoRecyclerView?.isVisible = hasRepos
+                binding?.blankRepoScreen?.isVisible = !hasRepos
 
-            if (hasRepos) {
-                // Always setup adapter and observer
-                val adapter = RepoAdapter(true, { item ->
-                    val builder = AlertDialog.Builder(ctx)
-                    builder.setTitle(item.name)
-                    builder.setMessage(item.url)
-                    builder.setPositiveButton(R.string.dismiss) { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    builder.show()
-                }, { item ->
-                    PluginsViewModel.downloadAll(activity, item.url, null)
-                })
-                binding?.repoRecyclerView?.adapter = adapter
-                adapter.submitList(repositoriesList)
+                if (hasRepos) {
+                    repoAdapter.submitList(repositoriesList)
 
-                // Only trigger automatic downloads once
-                if (!isDownloadingStarted) {
-                    isDownloadingStarted = true
-                    repositoriesList.forEach { repo ->
-                        PluginsViewModel.downloadAll(activity, repo.url, null)
-                        repo.ioSafe {
-                            RepositoryManager.addRepository(repo)
+                    // Only trigger automatic downloads once
+                    if (!isDownloadingStarted) {
+                        isDownloadingStarted = true
+                        repositoriesList.forEach { repo ->
+                            PluginsViewModel.downloadAll(activity, repo.url, null)
+                            repo.ioSafe {
+                                RepositoryManager.addRepository(repo)
+                            }
                         }
                     }
                 }
@@ -153,16 +146,36 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
         val isSetup = arguments?.getBoolean(SETUP_EXTENSION_BUNDLE_IS_SETUP) ?: false
 
         safe {
+            val ctx = context ?: return@safe
+            repoAdapter = RepoAdapter(true, { item ->
+                val builder = AlertDialog.Builder(ctx)
+                builder.setTitle(item.name)
+                builder.setMessage(item.url)
+                builder.setPositiveButton(R.string.dismiss) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                builder.show()
+            }, { item ->
+                PluginsViewModel.downloadAll(activity, item.url, null)
+            })
+
+            binding.repoRecyclerView.apply {
+                adapter = repoAdapter
+                setHasFixedSize(true)
+                setItemViewCacheSize(20)
+            }
+
             PluginsViewModel.downloadingRepos.observe(viewLifecycleOwner) {
-                binding.repoRecyclerView.adapter?.notifyDataSetChanged()
+                repoAdapter.notifyDataSetChanged()
             }
             PluginsViewModel.downloadedRepos.observe(viewLifecycleOwner) {
-                binding.repoRecyclerView.adapter?.notifyDataSetChanged()
+                repoAdapter.notifyDataSetChanged()
             }
 
             setRepositories()
             context?.setDefaultFocus(binding.nextBtt)
             binding.apply {
+                nextBtt.isEnabled = true
                 if (!isSetup) {
                     nextBtt.setText(R.string.setup_done)
                 }
