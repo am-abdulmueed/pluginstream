@@ -81,11 +81,22 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
         """.trimIndent()
 
         // Theme adaptive and stylish Material Dialog
-        MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.whats_new)
-            .setMessage(markwon.toMarkdown(changelog))
-            .setPositiveButton(R.string.close, null)
-            .show()
+        val dialog = android.app.Dialog(context, R.style.AlertDialogCustom)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_changelog, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(true)
+
+        val closeButton = dialogView.findViewById<android.widget.ImageView>(R.id.closeButton)
+        val changelogTextView = dialogView.findViewById<android.widget.TextView>(R.id.changelogTextView)
+
+        markwon.setMarkdown(changelogTextView, changelog)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

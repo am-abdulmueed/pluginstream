@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.graphics.Typeface
 import android.util.Log
 import android.util.TypedValue
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -271,6 +272,10 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 activity?.navigate(R.id.action_navigation_global_to_navigation_faq)
             }
 
+            settingsSupport.setOnClickListener {
+                showSupportDialog()
+            }
+
             settingsShare.setOnClickListener {
                 try {
                     val i = Intent(Intent.ACTION_SEND)
@@ -387,213 +392,64 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 context.resources.displayMetrics
             ).toInt()
 
-        val cardBackground = MaterialColors.getColor(
-            context,
-            com.google.android.material.R.attr.colorSurface,
-            0
-        )
-        val dialogBackground = MaterialColors.getColor(
-            context,
-            com.google.android.material.R.attr.colorSurface,
-            0
-        )
-        val strokeColor = MaterialColors.getColor(
-            context,
-            com.google.android.material.R.attr.colorOutline,
-            0
-        )
-        val titleColor = MaterialColors.getColor(
-            context,
-            com.google.android.material.R.attr.colorOnSurface,
-            0
-        )
-        val bodyColor = MaterialColors.getColor(
-            context,
-            com.google.android.material.R.attr.colorOnSurface,
-            0
-        )
-        val labelColor = MaterialColors.getColor(
-            context,
-            com.google.android.material.R.attr.colorOnSurfaceVariant,
-            titleColor
-        )
+        // Create new theme adaptive dialog
+        val dialog = Dialog(context, R.style.AlertDialogCustom)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_system_compatibility, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(true)
 
-        fun createInfoCard(
-            title: String,
-            rows: List<Pair<String, String>>
-        ): MaterialCardView {
-            val contentLayout = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-            }
+        val closeButton = dialogView.findViewById<android.widget.ImageView>(R.id.closeButton)
+        val contentContainer = dialogView.findViewById<LinearLayout>(R.id.contentContainer)
+        
+        val layoutInflater = LayoutInflater.from(context)
 
-            val titleView = TextView(context).apply {
-                text = title
-                textSize = 15f
-                setTextColor(titleColor)
-                setTypeface(typeface, Typeface.BOLD)
-            }
-            contentLayout.addView(titleView)
-
-            rows.forEachIndexed { index, (label, value) ->
-                if (index > 0) {
-                    contentLayout.addView(View(context).apply {
-                        layoutParams = LinearLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            dp(1)
-                        ).apply {
-                            topMargin = dp(10)
-                            bottomMargin = dp(10)
-                        }
-                        setBackgroundColor(strokeColor)
-                        alpha = 0.12f
-                    })
-                } else {
-                    titleView.layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        bottomMargin = dp(10)
-                    }
-                }
-
-                contentLayout.addView(TextView(context).apply {
-                    text = label
-                    textSize = 11f
-                    setTextColor(labelColor)
-                    setTypeface(typeface, Typeface.BOLD)
-                })
-
-                contentLayout.addView(TextView(context).apply {
-                    text = value
-                    textSize = 14f
-                    setTextColor(bodyColor)
-                    setTypeface(typeface, Typeface.NORMAL)
-                })
-            }
-
-            return MaterialCardView(context).apply {
-                radius = dp(14).toFloat()
-                strokeWidth = dp(1)
-                setStrokeColor(strokeColor)
-                setCardBackgroundColor(cardBackground)
-                layoutParams = LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    bottomMargin = dp(10)
-                }
-                setContentPadding(dp(14), dp(14), dp(14), dp(14))
-                addView(contentLayout)
-            }
+        // Helper to create info cards like support dialog buttons
+        fun createInfoItem(title: String, value: String, icon: Int) {
+            val itemView = layoutInflater.inflate(R.layout.item_support_dialog, contentContainer, false)
+            
+            val iconContainer = itemView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.itemIconContainer)
+            val iconImage = itemView.findViewById<android.widget.ImageView>(R.id.itemIcon)
+            val titleText = itemView.findViewById<android.widget.TextView>(R.id.itemTitle)
+            val descText = itemView.findViewById<android.widget.TextView>(R.id.itemDesc)
+            val arrowIcon = itemView.findViewById<android.widget.ImageView>(R.id.itemArrow)
+            
+            iconImage.setImageResource(icon)
+            titleText.text = title
+            descText.text = value
+            arrowIcon.visibility = View.GONE
+            
+            contentContainer.addView(itemView)
         }
 
-        val statusCard = MaterialCardView(context).apply {
-            radius = dp(14).toFloat()
-            strokeWidth = dp(1)
-            setStrokeColor(strokeColor)
-            setCardBackgroundColor(cardBackground)
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            setContentPadding(dp(14), dp(14), dp(14), dp(14))
-            addView(LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                addView(TextView(context).apply {
-                    text = "Compatibility Status"
-                    textSize = 15f
-                    setTextColor(titleColor)
-                    setTypeface(typeface, Typeface.BOLD)
-                })
-                addView(TextView(context).apply {
-                    text = statusTitle
-                    textSize = 16f
-                    setTextColor(titleColor)
-                    setTypeface(typeface, Typeface.BOLD)
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        topMargin = dp(10)
-                    }
-                })
-                addView(TextView(context).apply {
-                    text = statusMessage
-                    textSize = 13f
-                    setTextColor(bodyColor)
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        topMargin = dp(6)
-                    }
-                })
-                addView(TextView(context).apply {
-                    text = "Recommended: 2 GB+ total RAM and 1 GB+ free space"
-                    textSize = 11f
-                    setTextColor(labelColor)
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        topMargin = dp(10)
-                    }
-                })
-            })
+        // Add all info items
+        createInfoItem("Device Model", deviceModel, R.drawable.ic_device)
+        createInfoItem("Android Version", "OS $androidVersion", R.drawable.ic_outline_info_24)
+        createInfoItem("Total RAM", formatSize(memoryInfo.totalMem), R.drawable.ic_baseline_storage_24)
+        createInfoItem("Available RAM", formatSize(memoryInfo.availMem), R.drawable.ic_baseline_storage_24)
+        createInfoItem("Total Storage", formatSize(totalStorageBytes), R.drawable.ic_baseline_storage_24)
+        createInfoItem("Free Space", formatSize(freeStorageBytes), R.drawable.ic_baseline_storage_24)
+
+        // Add status card
+        val statusView = layoutInflater.inflate(R.layout.item_support_dialog, contentContainer, false)
+        val statusIconContainer = statusView.findViewById<com.google.android.material.card.MaterialCardView>(R.id.itemIconContainer)
+        val statusIconImage = statusView.findViewById<android.widget.ImageView>(R.id.itemIcon)
+        val statusTitleText = statusView.findViewById<android.widget.TextView>(R.id.itemTitle)
+        val statusDescText = statusView.findViewById<android.widget.TextView>(R.id.itemDesc)
+        val statusArrowIcon = statusView.findViewById<android.widget.ImageView>(R.id.itemArrow)
+        
+        statusIconImage.setImageResource(R.drawable.ic_baseline_check_24)
+        statusTitleText.text = statusTitle
+        statusDescText.text = statusMessage
+        statusArrowIcon.visibility = View.GONE
+        
+        contentContainer.addView(statusView)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
         }
-
-        val dialogContent = ScrollView(context).apply {
-            isFillViewport = true
-            setBackgroundColor(dialogBackground)
-            addView(LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(dp(2), dp(4), dp(2), dp(2))
-
-                addView(
-                    createInfoCard(
-                        title = "Device Info",
-                        rows = listOf(
-                            "Model" to deviceModel,
-                            "Android" to "OS $androidVersion"
-                        )
-                    )
-                )
-
-                addView(
-                    createInfoCard(
-                        title = "Memory and RAM",
-                        rows = listOf(
-                            "Total RAM" to formatSize(memoryInfo.totalMem),
-                            "Available RAM" to formatSize(memoryInfo.availMem)
-                        )
-                    )
-                )
-
-                addView(
-                    createInfoCard(
-                        title = "Storage Info",
-                        rows = listOf(
-                            "Total Storage" to formatSize(totalStorageBytes),
-                            "Free Space" to formatSize(freeStorageBytes)
-                        )
-                    )
-                )
-
-                addView(statusCard)
-            })
-        }
-
-        val dialog = MaterialAlertDialogBuilder(context)
-            .setTitle(R.string.system_compatibility)
-            .setView(dialogContent)
-            .setPositiveButton(R.string.close, null)
-            .create()
 
         dialog.show()
-        dialog.window?.setLayout(
-            (context.resources.displayMetrics.widthPixels * 0.84f).toInt(),
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
     }
 
     private fun openAppSystemInfo() {
@@ -668,5 +524,63 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         } catch (e: Exception) {
             logError(e)
         }
+    }
+
+    private fun showSupportDialog() {
+        val dialog = Dialog(requireContext(), R.style.AlertDialogCustom)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_support, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(true)
+
+        val closeButton = dialogView.findViewById<android.widget.ImageView>(R.id.closeButton)
+        val contentContainer = dialogView.findViewById<LinearLayout>(R.id.contentContainer)
+        
+        val inflater = LayoutInflater.from(requireContext())
+
+        // Watch Ad button
+        val watchAdView = inflater.inflate(R.layout.item_support_dialog, contentContainer, false)
+        val watchAdIcon = watchAdView.findViewById<android.widget.ImageView>(R.id.itemIcon)
+        val watchAdTitle = watchAdView.findViewById<android.widget.TextView>(R.id.itemTitle)
+        val watchAdDesc = watchAdView.findViewById<android.widget.TextView>(R.id.itemDesc)
+        
+        watchAdIcon.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+        watchAdTitle.text = "Watch an Ad"
+        watchAdDesc.text = "Quick and easy way to support!"
+        
+        watchAdView.setOnClickListener {
+            openUrl("https://omg10.com/4/11143190")
+            dialog.dismiss()
+        }
+        
+        contentContainer.addView(watchAdView)
+
+        // Install Offers button
+        val installOffersView = inflater.inflate(R.layout.item_support_dialog, contentContainer, false)
+        val installOffersIcon = installOffersView.findViewById<android.widget.ImageView>(R.id.itemIcon)
+        val installOffersTitle = installOffersView.findViewById<android.widget.TextView>(R.id.itemTitle)
+        val installOffersDesc = installOffersView.findViewById<android.widget.TextView>(R.id.itemDesc)
+        
+        installOffersIcon.setImageResource(R.drawable.ic_baseline_extension_24)
+        installOffersTitle.text = "Install Offers"
+        installOffersDesc.text = "Check out available offers"
+        
+        installOffersView.setOnClickListener {
+            dialog.dismiss()
+            try {
+                val navController = androidx.navigation.fragment.NavHostFragment.findNavController(this)
+                navController.navigate(R.id.action_navigation_global_to_navigation_offers)
+            } catch (e: Exception) {
+                logError(e)
+            }
+        }
+        
+        contentContainer.addView(installOffersView)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 }

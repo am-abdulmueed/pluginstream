@@ -508,6 +508,14 @@
         app:popExitAnim="@anim/exit_anim" />
 
     <action
+        android:id="@+id/action_navigation_global_to_navigation_offers"
+        app:destination="@id/navigation_offers"
+        app:enterAnim="@anim/enter_anim"
+        app:exitAnim="@anim/exit_anim"
+        app:popEnterAnim="@anim/enter_anim"
+        app:popExitAnim="@anim/exit_anim" />
+
+    <action
         android:id="@+id/action_navigation_global_to_navigation_legal"
         app:destination="@id/navigation_legal"
         app:enterAnim="@anim/enter_anim"

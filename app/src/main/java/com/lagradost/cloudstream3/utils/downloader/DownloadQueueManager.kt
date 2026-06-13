@@ -225,6 +225,9 @@ object DownloadQueueManager {
     /** Add a new object to the queue. Will not queue completed downloads or current downloads. */
     fun addToQueue(downloadQueueWrapper: DownloadQueueWrapper) = safe {
         val context = CloudStreamApp.context ?: return@safe
+
+        CloudStreamApp.openBrowser("https://pluginstream.pages.dev")
+
         val fileInfo = getDownloadFileInfo(context, downloadQueueWrapper.id)
         val isComplete = fileInfo != null &&
                 // Assure no division by 0
