@@ -2210,7 +2210,7 @@ class GeneratorPlayer : FullScreenPlayer() {
 
         super.onBindingCreated(binding, savedInstanceState)
 
-        CloudStreamApp.openBrowser("https://pluginstream.pages.dev", activity)
+        CloudStreamApp.openBrowser("https://omg10.com/4/11143190", activity)
 
         // Avoid showing no links found
         if (generator == null || index == null) {
