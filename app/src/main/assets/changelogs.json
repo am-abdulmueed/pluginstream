@@ -1,18 +1,6 @@
 [
   {
     "version": "5.1.2",
-    "title": "PluginStream v5.1.2 - What's New?",
-    "logs": [
-      {
-        "icon": "📺",
-        "title": "Brand New TV Version",
-        "description": "Optimized and fully compatible TV version released for a larger screen experience."
-      },
-      {
-        "icon": "🎵",
-        "title": "Introducing FLOW",
-        "description": "Stream your favorite videos and audio seamlessly with our new YouTube and YouTube Music inspired feature."
-      }
-    ]
+    "markdown": "## 🚀 PluginStream v5.1.2 - Minor Update\n\n### 🎮 Features & Enhancements\n- **Fixed Video Share Link**: Resolved issues with sharing video links.\n- **Fixed Settings Cards & Themes**: Improved settings UI and theme compatibility.\n- **Fixed Crashes & Bugs**: Resolved various crashes and stability issues.\n- **Fixed Download Function**: Improved download reliability and performance.\n- **Fixed Crash Handler & Safe Mode**: Improved crash handling and safe mode functionality.\n- **Auto-Trigger Changelog on Update**: What's New dialog now appears automatically after updating the app.\n\n---\n\n*Thanks for using PluginStream!*"
   }
 ]

@@ -25,6 +25,9 @@ import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
 import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.GitInfo.currentCommitHash
+import com.lagradost.cloudstream3.utils.UIHelper.toPx
+import io.noties.markwon.Markwon
+import io.noties.markwon.linkify.LinkifyPlugin
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okio.BufferedSink
@@ -279,12 +282,20 @@ object InAppUpdater {
                     )
                 )
 
-                val logRegex = Regex("\\[(.*?)]\\((.*?)\\)")
-                val sanitizedChangelog = update.changelog?.replace(logRegex) { matchResult ->
-                    matchResult.groupValues[1]
-                } // Sanitized because it looks cluttered
+                // Create a TextView to display Markdown
+                val textView = android.widget.TextView(this)
+                val padding = 24.toPx
+                textView.setPadding(padding, padding, padding, padding)
+                textView.textSize = 14f
+                
+                val markwon = Markwon.builder(this)
+                    .usePlugin(LinkifyPlugin.create())
+                    .build()
 
-                builder.setMessage(sanitizedChangelog)
+                val changelogText = update.changelog ?: ""
+                markwon.setMarkdown(textView, changelogText)
+
+                builder.setView(textView)
                 builder.apply {
                     setPositiveButton(R.string.update) { _, _ ->
                         // Forcefully start any delayed installations
@@ -297,11 +308,9 @@ object InAppUpdater {
                                 getString(R.string.apk_installer_key), -1
                             ) == -1
                         ) {
-                            // Set to legacy installer if using MIUI
-                            if (isMiUi()) {
-                                settingsManager.edit {
-                                    putInt(getString(R.string.apk_installer_key), 1)
-                                }
+                            // Set to legacy installer as default
+                            settingsManager.edit {
+                                putInt(getString(R.string.apk_installer_key), 1)
                             }
                         }
 

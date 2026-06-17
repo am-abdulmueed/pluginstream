@@ -997,6 +997,73 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     }
 
     @SuppressLint("ApplySharedPref") // commit since the op needs to be synchronous
+    private fun showChangelogDialog() {
+        val markwon = io.noties.markwon.Markwon.builder(this)
+            .usePlugin(io.noties.markwon.linkify.LinkifyPlugin.create())
+            .build()
+
+        val changelog = try {
+            val jsonString = assets.open("changelogs.json").bufferedReader().use { it.readText() }
+            val changelogs = com.lagradost.cloudstream3.utils.AppUtils.parseJson<List<ChangelogItem>>(jsonString)
+            // Find matching version or use first one
+            val currentChangelog = changelogs.find { it.version == BuildConfig.VERSION_NAME } ?: changelogs.firstOrNull()
+            
+            if (currentChangelog != null) {
+                currentChangelog.markdown
+            } else {
+                getDefaultChangelog()
+            }
+        } catch (e: Exception) {
+            getDefaultChangelog()
+        }
+
+        // Theme adaptive and stylish Material Dialog
+        val dialog = android.app.Dialog(this, R.style.AlertDialogCustom)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_changelog, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(true)
+
+        val closeButton = dialogView.findViewById<android.widget.ImageView>(R.id.closeButton)
+        val changelogTextView = dialogView.findViewById<android.widget.TextView>(R.id.changelogTextView)
+
+        markwon.setMarkdown(changelogTextView, changelog)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private data class ChangelogItem(
+        val version: String,
+        val markdown: String
+    )
+
+    private fun getDefaultChangelog(): String {
+        return """
+            # PluginStream Max v${BuildConfig.VERSION_NAME}
+            
+            ### 🚀 What's New
+            - **Settings Migration**: Migrated all settings from PluginStream.
+            - **Developer Profile**: Added a beautiful new developer profile.
+            - **FAQ Section**: Integrated a comprehensive FAQ section.
+            - **Legal & Privacy**: Added detailed privacy policy and terms of service.
+            - **System Compatibility**: New tool to check if your device is ready for PluginStream.
+            - **App Info & Cache**: Quick access to app settings and cache management.
+            - **Markdown Support**: Changelogs and legal texts now support rich formatting.
+            
+            ### 🛠 Fixes & Improvements
+            - Improved stability on Android TV.
+            - Faster extension loading.
+            - Fixed various UI bugs in the settings screen.
+            - Optimized performance for low-end devices.
+            
+            *Thanks for using PluginStream!*
+        """.trimIndent()
+    }
+
     private fun showConfirmExitDialog(settingsManager: SharedPreferences) {
         val confirmBeforeExit = settingsManager.getInt(getString(R.string.confirm_exit_key), -1)
 
@@ -1617,6 +1684,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 safe {
                     // Recompile oat on new version
                     PluginManager.deleteAllOatFiles(this)
+                }
+                
+                // Show What's New dialog on version update
+                main {
+                    showChangelogDialog()
                 }
             }
         }

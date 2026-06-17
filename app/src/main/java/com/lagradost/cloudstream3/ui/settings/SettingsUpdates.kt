@@ -59,7 +59,47 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
             .usePlugin(LinkifyPlugin.create())
             .build()
 
-        val changelog = """
+        val changelog = try {
+            val jsonString = context.assets.open("changelogs.json").bufferedReader().use { it.readText() }
+            val changelogs = com.lagradost.cloudstream3.utils.AppUtils.parseJson<List<ChangelogItem>>(jsonString)
+            // Find matching version or use first one
+            val currentChangelog = changelogs.find { it.version == BuildConfig.VERSION_NAME } ?: changelogs.firstOrNull()
+            
+            if (currentChangelog != null) {
+                currentChangelog.markdown
+            } else {
+                getDefaultChangelog()
+            }
+        } catch (e: Exception) {
+            getDefaultChangelog()
+        }
+
+        // Theme adaptive and stylish Material Dialog
+        val dialog = android.app.Dialog(context, R.style.AlertDialogCustom)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_changelog, null)
+        dialog.setContentView(dialogView)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.setCancelable(true)
+
+        val closeButton = dialogView.findViewById<android.widget.ImageView>(R.id.closeButton)
+        val changelogTextView = dialogView.findViewById<android.widget.TextView>(R.id.changelogTextView)
+
+        markwon.setMarkdown(changelogTextView, changelog)
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private data class ChangelogItem(
+        val version: String,
+        val markdown: String
+    )
+
+    private fun getDefaultChangelog(): String {
+        return """
             # PluginStream Max v${BuildConfig.VERSION_NAME}
             
             ### 🚀 What's New
@@ -79,24 +119,6 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
             
             *Thanks for using PluginStream!*
         """.trimIndent()
-
-        // Theme adaptive and stylish Material Dialog
-        val dialog = android.app.Dialog(context, R.style.AlertDialogCustom)
-        val dialogView = layoutInflater.inflate(R.layout.dialog_changelog, null)
-        dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.setCancelable(true)
-
-        val closeButton = dialogView.findViewById<android.widget.ImageView>(R.id.closeButton)
-        val changelogTextView = dialogView.findViewById<android.widget.TextView>(R.id.changelogTextView)
-
-        markwon.setMarkdown(changelogTextView, changelog)
-
-        closeButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
