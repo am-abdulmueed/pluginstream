@@ -9,17 +9,9 @@ description: Ultimate Multi-Source Entertainment Hub for Android
 
 ---
 
-<p align="center">
-  <a href="https://pluginstream.pages.dev" target="_blank" style="position: relative; z-index: 999; display: inline-block;">
-    <img src="https://img.shields.io/badge/DOWNLOAD-APK_NOW-blue?style=for-the-badge&logo=android" alt="Download APK" />
-  </a>
-</p>
+[![Download APK](https://img.shields.io/badge/DOWNLOAD-APK_NOW-blue?style=for-the-badge&logo=android)](https://pluginstream.pages.dev)
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Version-5.1.1-green" alt="Version" />
-  <img src="https://img.shields.io/badge/Platform-Android-orange" alt="Platform" />
-  <img src="https://img.shields.io/badge/Status-Stable-brightgreen" alt="Status" />
-</p>
+![Version](https://img.shields.io/badge/Version-5.1.1-green) ![Platform](https://img.shields.io/badge/Platform-Android-orange) ![Status](https://img.shields.io/badge/Status-Stable-brightgreen)
 
 ---
 
@@ -45,13 +37,11 @@ No switching apps. No ads. Just entertainment.
 
 ## 📸 Screenshots
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/1.png" width="180" alt="Screen 1"/>
-  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/2.png" width="180" alt="Screen 2"/>
-  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/3.png" width="180" alt="Screen 3"/>
-  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/4.png" width="180" alt="Screen 4"/>
-  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/5.png" width="180" alt="Screen 5"/>
-</p>
+![Screen 1](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/1.png)
+![Screen 2](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/2.png)
+![Screen 3](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/3.png)
+![Screen 4](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/4.png)
+![Screen 5](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/5.png)
 
 ---
 
