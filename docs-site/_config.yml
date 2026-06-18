@@ -1,0 +1,8 @@
+title: PluginStream Max
+description: Ultimate Android Streaming App for Movies, Series and Live TV
+theme: minima
+
+markdown: kramdown
+
+plugins:
+  - jekyll-feed
