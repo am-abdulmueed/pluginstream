@@ -2,12 +2,22 @@ body {
   font-family: Arial, sans-serif;
   background: #0f0f0f;
   color: white;
+  margin: 0;
+  padding: 20px;
 }
 
 h1, h2, h3 {
   color: #00ffd5;
 }
 
+/* Links ko click-able aur hamesha upar rakhne ke liye */
 a {
   color: #4da3ff;
+  text-decoration: none;
+  position: relative;
+  z-index: 10;
+}
+
+a:hover {
+  text-decoration: underline;
 }

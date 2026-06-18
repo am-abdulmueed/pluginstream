@@ -10,15 +10,15 @@ description: Ultimate Multi-Source Entertainment Hub for Android
 ---
 
 <p align="center">
-  <a href="https://pluginstream.pages.dev">
-    <img src="https://img.shields.io/badge/DOWNLOAD-APK_NOW-blue?style=for-the-badge&logo=android" />
+  <a href="https://pluginstream.pages.dev" target="_blank" style="position: relative; z-index: 999; display: inline-block;">
+    <img src="https://img.shields.io/badge/DOWNLOAD-APK_NOW-blue?style=for-the-badge&logo=android" alt="Download APK" />
   </a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-5.1.1-green" />
-  <img src="https://img.shields.io/badge/Platform-Android-orange" />
-  <img src="https://img.shields.io/badge/Status-Stable-brightgreen" />
+  <img src="https://img.shields.io/badge/Version-5.1.1-green" alt="Version" />
+  <img src="https://img.shields.io/badge/Platform-Android-orange" alt="Platform" />
+  <img src="https://img.shields.io/badge/Status-Stable-brightgreen" alt="Status" />
 </p>
 
 ---
@@ -46,10 +46,11 @@ No switching apps. No ads. Just entertainment.
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="../images/1.png" width="180"/>
-  <img src="../images/2.png" width="180"/>
-  <img src="../images/3.png" width="180"/>
-  <img src="../images/4.png" width="180"/>
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/1.png" width="180" alt="Screen 1"/>
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/2.png" width="180" alt="Screen 2"/>
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/3.png" width="180" alt="Screen 3"/>
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/4.png" width="180" alt="Screen 4"/>
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/5.png" width="180" alt="Screen 5"/>
 </p>
 
 ---
@@ -58,7 +59,7 @@ No switching apps. No ads. Just entertainment.
 
 👉 Download APK:
 
-**Official Site:** https://pluginstream.pages.dev  
+**Official Site:** [https://pluginstream.pages.dev](https://pluginstream.pages.dev)  
 
 ### Steps:
 1. Enable "Unknown Sources" on Android  
@@ -116,9 +117,9 @@ Made with ❤️ by **Abdul Mueed**
 
 ## 🌍 Links
 
-- Website: https://pluginstream.pages.dev  
-- Telegram: https://t.me/pluginstreamofficial  
-- Support: https://t.me/pluginstreamsupport  
+- **Website:** [https://pluginstream.pages.dev](https://pluginstream.pages.dev)  
+- **Telegram:** [https://t.me/pluginstreamofficial](https://t.me/pluginstreamofficial)  
+- **Support:** [https://t.me/pluginstreamsupport](https://t.me/pluginstreamsupport)  
 
 ---
 
