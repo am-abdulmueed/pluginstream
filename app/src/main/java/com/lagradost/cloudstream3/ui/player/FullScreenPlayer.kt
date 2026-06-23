@@ -531,6 +531,8 @@ open class FullScreenPlayer : AbstractPlayerFragment<FragmentPlayerBinding>(
 
         var currentOffset = subtitleDelay
         binding.apply {
+                        var subtitleAdapter: SubtitleOffsetItemAdapter? = null
+
             subtitleOffsetInput.doOnTextChanged { text, _, _, _ ->
                 text?.toString()?.toLongOrNull()?.let { time ->
                     currentOffset = time
