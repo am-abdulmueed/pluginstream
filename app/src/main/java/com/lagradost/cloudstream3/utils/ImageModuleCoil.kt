@@ -13,6 +13,7 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.decode.BitmapFactoryDecoder
+import coil3.gif.GifDecoder
 import coil3.disk.DiskCache
 import coil3.dispose
 import coil3.load
@@ -60,6 +61,7 @@ object ImageLoader {
             or image hosting services causes unauthorized exceptions **/
             .components {
                 add(OkHttpNetworkFetcherFactory(callFactory = { buildDefaultClient(context) }))
+                add(GifDecoder.Factory())
                 if (isBrokenHardware) {
                     add(BitmapFactoryDecoder.Factory())
                 } // sw decoder

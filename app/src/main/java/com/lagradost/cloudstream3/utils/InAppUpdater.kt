@@ -295,7 +295,10 @@ object InAppUpdater {
                 val changelogText = update.changelog ?: ""
                 markwon.setMarkdown(textView, changelogText)
 
-                builder.setView(textView)
+                // Wrap TextView in ScrollView for smooth scrolling
+                val scrollView = android.widget.ScrollView(this)
+                scrollView.addView(textView)
+                builder.setView(scrollView)
                 builder.apply {
                     setPositiveButton(R.string.update) { _, _ ->
                         // Forcefully start any delayed installations
