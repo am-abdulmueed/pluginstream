@@ -129,6 +129,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                 .replace("castel", "PluginStream", ignoreCase = true)
                 .replace("caslte", "PluginStream", ignoreCase = true)
                 .replace("cloudstream", "PluginStream", ignoreCase = true)
+                .replace("moviebox", "MAX", ignoreCase = true)
+                .replace("moveibox", "MAX", ignoreCase = true)
                 .replace("TV (use vlc)", "", ignoreCase = true)
                 .replace("TV (usevlc)", "", ignoreCase = true)
                 .replace("(use vlc)", "", ignoreCase = true)

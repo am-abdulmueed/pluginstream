@@ -85,7 +85,7 @@
     <!-- <string name="swipe_to_seek_setthings">Swipe to seek</string> -->
     <string name="swipe_to_seek_settings_des">വീഡിയോയിൽ ഇരുവശങ്ങളിലേക്കും സ്വൈപ്പ് ചെയ്താൽ സ്ഥാനത്തെ നിയന്ത്രിക്കാം</string>
     <!-- <string name="swipe_to_change_settings">Swipe to change settings</string> -->
-    <string name="<string name="swipe_to_change_settings_des">തെളിച്ചം അല്ലെങ്കിൽ വോളിയം മാറ്റാൻ ഇടത്തോട്ടോ വലത്തോട്ടോ നീക്കുക</string>">തെളിച്ചം അല്ലെങ്കിൽ വോളിയം മാറ്റാൻ ഇടത്തോട്ടോ വലത്തോട്ടോ സ്വൈപ്പുചെയ്യുക</string>
+    <string name="swipe_to_change_settings_des">തെളിച്ചം അല്ലെങ്കിൽ വോളിയം മാറ്റാൻ ഇടത്തോട്ടോ വലത്തോട്ടോ നീക്കുക</string>
     <!-- <string name="double_tap_to_seek_setthings">Double tap to seek</string> -->
     <string name="double_tap_to_seek_settings_des">മുന്നോട്ട് അല്ലെങ്കിൽ പിന്നിലേക്ക് നീങ്ങാൻ വലത്തോട്ടോ ഇടത്തോട്ടോ രണ്ടുതവണ ടാപ്പുചെയ്യുക</string>
     <string name="search">തിരയുക</string>

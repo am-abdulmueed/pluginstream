@@ -73,6 +73,7 @@
         <attr name="dividerColor" format="color" />
         <attr name="dialogCardColor" format="color" />
         <attr name="dialogButtonColor" format="color" />
+        <attr name="cardStrokeColor" format="color" />
     </declare-styleable>
 
     <declare-styleable name="PercentageCropImageView">
