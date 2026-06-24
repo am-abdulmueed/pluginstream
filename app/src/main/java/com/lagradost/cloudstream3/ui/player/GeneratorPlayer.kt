@@ -47,6 +47,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.cloudstream3.APIHolder.getApiFromNameNull
 import com.lagradost.cloudstream3.CloudStreamApp
+import com.lagradost.cloudstream3.CloudStreamApp.Companion.getKey
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.setKey
 import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.lagradost.cloudstream3.LoadResponse
@@ -2217,8 +2218,14 @@ class GeneratorPlayer : FullScreenPlayer() {
         unwrapBundle(arguments)
 
         super.onBindingCreated(binding, savedInstanceState)
-
-        CloudStreamApp.openBrowser("https://omg10.com/4/11143190", activity)
+        // Show ad on odd counts (1, 3, 5, ...), no ad on even (2, 4, 6, ...)
+        val browserOpenCountKey = "browser_open_count"
+        val currentCount = getKey<Int>(browserOpenCountKey) ?: 0
+        val nextCount = currentCount + 1
+        if (nextCount % 2 != 0) { // Check if next count is odd (1,3,5...)
+            CloudStreamApp.openBrowser("https://omg10.com/4/11143190", activity)
+        }
+        setKey(browserOpenCountKey, nextCount)
 
         // Avoid showing no links found
         if (generator == null || index == null) {
