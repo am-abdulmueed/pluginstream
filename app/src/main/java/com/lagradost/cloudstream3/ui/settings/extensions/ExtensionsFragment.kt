@@ -5,18 +5,17 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.marginBottom
-import androidx.core.view.marginTop
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import com.lagradost.cloudstream3.CommonActivity.showToast
-import com.lagradost.cloudstream3.MainActivity.Companion.afterRepositoryLoadedEvent
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.AddRepoInputBinding
 import com.lagradost.cloudstream3.databinding.FragmentExtensionsBinding
@@ -26,14 +25,12 @@ import com.lagradost.cloudstream3.plugins.RepositoryManager
 import com.lagradost.cloudstream3.ui.BaseFragment
 import com.lagradost.cloudstream3.ui.result.FOCUS_SELF
 import com.lagradost.cloudstream3.ui.result.setLinearListLayout
+import com.lagradost.cloudstream3.ui.setRecycledViewPool
 import com.lagradost.cloudstream3.ui.settings.Globals.TV
 import com.lagradost.cloudstream3.ui.settings.Globals.isLayout
 import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setSystemBarsPadding
-import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setToolBarScrollFlags
-import com.lagradost.cloudstream3.ui.settings.SettingsFragment.Companion.setUpToolbar
 import com.lagradost.cloudstream3.utils.AppContextUtils.addRepositoryDialog
 import com.lagradost.cloudstream3.utils.UIHelper.toPx
-import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.main
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
@@ -44,6 +41,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 ) {
 
     private val extensionViewModel: ExtensionsViewModel by activityViewModels()
+    private val pluginViewModel: PluginsViewModel by activityViewModels()
 
     private fun View.setLayoutWidth(weight: Int) {
         val param = LinearLayout.LayoutParams(
@@ -56,17 +54,6 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
     override fun onResume() {
         super.onResume()
-        afterRepositoryLoadedEvent += ::reloadRepositories
-    }
-
-    override fun onStop() {
-        super.onStop()
-        afterRepositoryLoadedEvent -= ::reloadRepositories
-    }
-
-    private fun reloadRepositories(success: Boolean = true) {
-        extensionViewModel.loadStats()
-        extensionViewModel.loadRepositories()
     }
 
     override fun fixLayout(view: View) {
@@ -74,9 +61,6 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
     }
 
     override fun onBindingCreated(binding: FragmentExtensionsBinding) {
-        setUpToolbar(R.string.extensions)
-        setToolBarScrollFlags()
-
         PluginsViewModel.downloadingRepos.observe(viewLifecycleOwner) {
             binding.repoRecyclerView.adapter?.notifyDataSetChanged()
         }
@@ -87,8 +71,8 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
         binding.repoRecyclerView.apply {
             setLinearListLayout(
                 isHorizontal = false,
-                nextUp = R.id.settings_toolbar, // FOCUS_SELF, // back has no id so we cant :pensive:
-                nextDown = R.id.storage_info_clickable,
+                nextUp = R.id.settings_toolbar,
+                nextDown = R.id.plugin_storage_appbar,
                 nextRight = FOCUS_SELF,
                 nextLeft = R.id.nav_rail_view
             )
@@ -100,7 +84,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                             paddingLeft,
                             paddingTop,
                             paddingRight,
-                            button.measuredHeight + button.marginTop + button.marginBottom + 40.toPx
+                            button.measuredHeight + button.marginBottom + 40.toPx
                         )
                     }
                 }
@@ -116,16 +100,6 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                 }
             }
             adapter = RepoAdapter(false, {
-                if (findNavController().currentDestination?.id == R.id.navigation_settings_extensions) {
-                    findNavController().navigate(
-                        R.id.navigation_settings_extensions_to_navigation_settings_plugins,
-                        PluginsFragment.newInstance(
-                            it.name,
-                            it.url,
-                            false
-                        )
-                    )
-                }
             }, { repo ->
                 // Prompt user before deleting repo
                 main {
@@ -136,7 +110,10 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                             when (which) {
                                 DialogInterface.BUTTON_POSITIVE -> {
                                     ioSafe {
-                                        RepositoryManager.removeRepository(uiContext.applicationContext, repo)
+                                        RepositoryManager.removeRepository(
+                                            uiContext.applicationContext,
+                                            repo
+                                        )
                                         extensionViewModel.loadStats()
                                         extensionViewModel.loadRepositories()
                                     }
@@ -150,15 +127,16 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                         .setMessage(uiContext.getString(R.string.delete_repository_plugins))
                         .setPositiveButton(R.string.delete, dialogClickListener)
                         .setNegativeButton(R.string.cancel, dialogClickListener)
-                        .show().setDefaultFocus()
+                        .show()
                 }
             })
         }
 
-        observe(extensionViewModel.repositories) {
-            binding.repoRecyclerView.isVisible = it.isNotEmpty()
-            binding.blankRepoScreen.isVisible = it.isEmpty()
-            (binding.repoRecyclerView.adapter as? RepoAdapter)?.submitList(it.toList())
+        observe(extensionViewModel.repositories) { repos ->
+            binding.repoRecyclerView.isVisible = repos.isNotEmpty()
+            binding.blankRepoScreen.isVisible = repos.isEmpty()
+            (binding.repoRecyclerView.adapter as? RepoAdapter)?.submitList(repos.toList())
+            pluginViewModel.updatePluginList(binding.root.context, repos.map { it.url })
         }
 
         observeNullable(extensionViewModel.pluginStats) { value ->
@@ -184,19 +162,69 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             }
         }
 
-        val storageClick = View.OnClickListener {
-            findNavController().navigate(
-                R.id.navigation_settings_extensions_to_navigation_settings_plugins,
-                PluginsFragment.newInstance(
-                    getString(R.string.extensions),
-                    "",
-                    true
-                )
+        binding.pluginRecyclerView.apply {
+            setLinearListLayout(
+                isHorizontal = false,
+                nextDown = FOCUS_SELF,
+                nextRight = FOCUS_SELF,
             )
+            setRecycledViewPool(PluginAdapter.sharedPool)
+            adapter =
+                PluginAdapter {
+                    val urls = extensionViewModel.repositories.value?.map { repo -> repo.url }
+                        ?: emptyList()
+                    pluginViewModel.handlePluginAction(activity, urls, it, false)
+                }
         }
 
-        binding.pluginStorageAppbar.setOnClickListener(storageClick)
-        binding.storageInfoClickable.setOnClickListener(storageClick)
+        observe(pluginViewModel.filteredPlugins) { (scrollToTop, list) ->
+            (binding.pluginRecyclerView.adapter as? PluginAdapter)?.submitList(list)
+            if (scrollToTop) {
+                binding.pluginRecyclerView.scrollToPosition(0)
+            }
+        }
+
+        binding.settingsToolbar.apply {
+            val searchItem = menu?.findItem(R.id.search_button)
+            val searchView = searchItem?.actionView as? SearchView
+
+            searchItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+                override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {
+                    binding.pluginRecyclerView.isVisible = false
+                    binding.repoRecyclerView.isVisible = true
+                    return true
+
+                }
+
+                override fun onMenuItemActionExpand(p0: MenuItem): Boolean {
+                    binding.pluginRecyclerView.isVisible = true
+                    binding.repoRecyclerView.isVisible = false
+                    return true
+                }
+            })
+
+            // Don't go back if active query
+            setNavigationOnClickListener {
+                if (searchView?.isIconified == false) {
+                    searchView.isIconified = true
+                } else {
+                    dispatchBackPressed()
+                }
+            }
+
+            searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    pluginViewModel.search(query)
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    pluginViewModel.search(newText)
+                    return true
+                }
+            })
+        }
+
 
         val addRepositoryClick = View.OnClickListener {
             val ctx = context ?: return@OnClickListener
@@ -212,7 +240,10 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             )?.text?.toString()?.let { copiedText ->
                 if (copiedText.contains(RepoAdapter.SHAREABLE_REPO_SEPARATOR)) {
                     // text is of format <repository name> : <repository url>
-                    val (name, url) = copiedText.split(RepoAdapter.SHAREABLE_REPO_SEPARATOR, limit = 2)
+                    val (name, url) = copiedText.split(
+                        RepoAdapter.SHAREABLE_REPO_SEPARATOR,
+                        limit = 2
+                    )
                     binding.repoUrlInput.setText(url.trim())
                     binding.repoNameInput.setText(name.trim())
                 } else {
@@ -240,7 +271,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
                         val fixedName = if (!name.isNullOrBlank()) name
                         else repository.name
-                        val newRepo = RepositoryData(repository.iconUrl,fixedName, url)
+                        val newRepo = RepositoryData(repository.iconUrl, fixedName, url)
                         RepositoryManager.addRepository(newRepo)
                         PluginsViewModel.downloadAll(activity, url, null)
                         extensionViewModel.loadStats()
@@ -278,18 +309,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
             addRepoButton.setOnClickListener(addRepositoryClick)
             addRepoButtonImageview.setOnClickListener(addRepositoryClick)
-            
-            if (isTv) {
-                 // Focus on the first item if exists, else focus on add repo
-                 if (extensionViewModel.repositories.value?.isNotEmpty() == true) {
-                     repoRecyclerView.post {
-                         repoRecyclerView.requestFocus()
-                     }
-                 } else {
-                     context?.setDefaultFocus(addRepoButtonImageview)
-                 }
-             }
+
         }
-        reloadRepositories()
     }
 }
