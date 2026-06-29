@@ -3193,8 +3193,8 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                                 appendLine()
                                 appendLine("🔗 *Check it out here:* $clickUrl")
                                 appendLine()
-                                appendLine("🌐 *Download CloudStream:* https://cloudstream.pages.dev")
-                                appendLine("🛡 *Official Community:* https://t.me/cloudstreamofficial")
+                                appendLine("🌐 *Download PluginStream:* https://pluginstream.pages.dev")
+                                appendLine("🛡 *Official Community:* https://t.me/pluginstreamofficial")
                             }
 
                             // Get current image from ViewPager

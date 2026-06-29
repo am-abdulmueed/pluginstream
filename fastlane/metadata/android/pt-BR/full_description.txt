@@ -1,4 +1,4 @@
-O CloudStream-3 permite que você faça transmissões, download de filmes, séries, e anime.
+O PluginStream permite que você faça transmissões, download de filmes, séries, e anime.
 
 O aplicativo não contém anúncios ou ferramentas de análise,
 e suporta múltiplos sites de filmes e trailers, e muito mais, como:

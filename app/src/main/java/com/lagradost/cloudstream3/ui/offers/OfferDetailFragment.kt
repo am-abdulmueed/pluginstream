@@ -226,8 +226,8 @@ class OfferDetailFragment : BaseFragment<FragmentOfferDetailBinding>(
             
             // App promo
             appendLine("──────────────")
-            appendLine("📲 Download from CloudStream Max")
-            appendLine("🌐 https://cloudstream.pages.dev")
+            appendLine("📲 Download from PluginStream Max")
+            appendLine("🌐 https://pluginstream.pages.dev")
         }
         
         return message

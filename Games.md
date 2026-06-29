@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Games tab in CloudStream3 provides users with access to a curated collection of web-based games. The system features intelligent caching, offline support, and a modern UI with search functionality and featured game highlights.
+The Games tab in PluginStream provides users with access to a curated collection of web-based games. The system features intelligent caching, offline support, and a modern UI with search functionality and featured game highlights.
 
 ## File Locations
 

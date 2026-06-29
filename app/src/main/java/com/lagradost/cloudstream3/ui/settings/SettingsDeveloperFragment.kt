@@ -101,7 +101,7 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
             }
 
             settingsDevWebsite.setOnClickListener {
-                openUrl("https://abdulmueed.pages.dev")
+                openUrl("https://am-abdulmueed.vercel.app")
             }
 
             settingsEmail.setOnClickListener {

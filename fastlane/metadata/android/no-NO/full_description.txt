@@ -1,4 +1,4 @@
-CloudStream-3 lar deg strømme og laste ned filmer, TV-serier, og anime. Programmet er reklamefritt, og det utføres ingen analyse. Flere førfilmer og filmsteder støttes, med mer.
+PluginStream lar deg strømme og laste ned filmer, TV-serier, og anime. Programmet er reklamefritt, og det utføres ingen analyse. Flere førfilmer og filmsteder støttes, med mer.
 Noen av funksjonene.
 
 Bokmerker

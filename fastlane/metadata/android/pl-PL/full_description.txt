@@ -1,4 +1,4 @@
-CloudStream-3 umożliwia strumieniowe przesyłanie i pobieranie filmów, seriali telewizyjnych i anime.
+PluginStream umożliwia strumieniowe przesyłanie i pobieranie filmów, seriali telewizyjnych i anime.
 
 Aplikacja jest dostarczana bez reklam i analityki, obsługuje
 wiele witryn ze zwiastunami, filmami i nie tylko, np.
