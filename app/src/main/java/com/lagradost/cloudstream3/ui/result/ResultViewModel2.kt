@@ -332,9 +332,7 @@ fun LoadResponse.toResultData(repo: APIRepository): ResultData {
             .replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
             .replace("castle", "PluginStream", ignoreCase = true)
             .replace("castel", "PluginStream", ignoreCase = true)
-            .replace("caslte", "PluginStream", ignoreCase = true)
-            .replace("moviebox", "MAX", ignoreCase = true)
-            .replace("moveibox", "MAX", ignoreCase = true)),
+            .replace("caslte", "PluginStream", ignoreCase = true)),
         ratingText = score?.toStringNull(0.1, 10, 1, false, '.')
             ?.let { txt(R.string.rating_format, it) },
         contentRatingText = txt(contentRating),

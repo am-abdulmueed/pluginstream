@@ -2886,7 +2886,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                     .build()
 
                 val request = Request.Builder()
-                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/aads-json@refs/heads/main/ads.json")
+                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/ads-json@main/ads.json")
                     .get()
                     .build()
 

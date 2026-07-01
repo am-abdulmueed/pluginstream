@@ -55,6 +55,10 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
     override fun onResume() {
         super.onResume()
+        extensionViewModel.loadStats()
+        extensionViewModel.loadRepositories()
+        val repos = (extensionViewModel.repositories.value ?: emptyArray()).toList()
+        pluginViewModel.updatePluginList(context, repos)
     }
 
     override fun fixLayout(view: View) {
@@ -68,6 +72,14 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
         PluginsViewModel.downloadedRepos.observe(viewLifecycleOwner) {
             binding.repoRecyclerView.adapter?.notifyDataSetChanged()
         }
+
+        // Load initial data
+        extensionViewModel.loadStats()
+        extensionViewModel.loadRepositories()
+        
+        // Also load plugins initially
+        val initialRepos = (extensionViewModel.repositories.value ?: emptyArray()).toList()
+        pluginViewModel.updatePluginList(binding.root.context, initialRepos)
 
         binding.repoRecyclerView.apply {
             setLinearListLayout(
@@ -142,6 +154,14 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             binding.blankRepoScreen.isVisible = repos.isEmpty()
             (binding.repoRecyclerView.adapter as? RepoAdapter)?.submitList(repos.toList())
             pluginViewModel.updatePluginList(binding.root.context, repos.toList())
+        }
+
+        // Also load plugins on resume to ensure they're always visible
+        binding.pluginStorageAppbar.post {
+            val repos = (extensionViewModel.repositories.value ?: emptyArray()).toList()
+            if (repos.isNotEmpty()) {
+                pluginViewModel.updatePluginList(binding.root.context, repos)
+            }
         }
 
         observeNullable(extensionViewModel.pluginStats) { value ->

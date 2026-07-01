@@ -323,8 +323,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                     .replace("castle", "PluginStream", ignoreCase = true)
                     .replace("castel", "PluginStream", ignoreCase = true)
                     .replace("caslte", "PluginStream", ignoreCase = true)
-                    .replace("moviebox", "MAX", ignoreCase = true)
-                    .replace("moveibox", "MAX", ignoreCase = true)
                             "${meta.name} - $apiName"
                         }
 
@@ -1818,8 +1816,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                 ?.replace("castle", "PluginStream", ignoreCase = true)
                 ?.replace("castel", "PluginStream", ignoreCase = true)
                 ?.replace("caslte", "PluginStream", ignoreCase = true)
-                ?.replace("moviebox", "MAX", ignoreCase = true)
-                ?.replace("moveibox", "MAX", ignoreCase = true)
 
             is ExtractorUri -> meta.headerName
                 ?.replace("castel tv (use vlc)", "PluginStream", ignoreCase = true)
@@ -1831,8 +1827,6 @@ class GeneratorPlayer : FullScreenPlayer() {
                 ?.replace("castle", "PluginStream", ignoreCase = true)
                 ?.replace("castel", "PluginStream", ignoreCase = true)
                 ?.replace("caslte", "PluginStream", ignoreCase = true)
-                ?.replace("moviebox", "MAX", ignoreCase = true)
-                ?.replace("moveibox", "MAX", ignoreCase = true)
 
             else -> null
         }
@@ -1917,8 +1911,6 @@ class GeneratorPlayer : FullScreenPlayer() {
              ?.replace("castle", "PluginStream", ignoreCase = true)
              ?.replace("castel", "PluginStream", ignoreCase = true)
              ?.replace("caslte", "PluginStream", ignoreCase = true)
-             ?.replace("moviebox", "MAX", ignoreCase = true)
-             ?.replace("moveibox", "MAX", ignoreCase = true)
         val title = getHeaderName()
 
         val result = listOfNotNull(
