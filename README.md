@@ -141,7 +141,7 @@ Join our growing community to stay updated, report bugs, or suggest new features
 
 ## 💖 Acknowledgements
 Special thanks to the open-source projects and libraries that make PluginStream Max possible:
-- [PluginStream](https://github.com/recloudstream/pluginstream) - The foundation of this project.
+- [PluginStream](https://github.com/recloudstream/cloudstream) - The foundation of this project.
 - [Media3 / ExoPlayer](https://github.com/google/ExoPlayer) - For powerful media playback.
 - [JSoup](https://jsoup.org/) - For efficient HTML parsing.
 - [NiceHttp](https://github.com/Blatzar/NiceHttp) - For streamlined network requests.
