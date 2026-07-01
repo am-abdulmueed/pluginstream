@@ -99,7 +99,11 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                     }
                 }
             }
-            adapter = RepoAdapter(false, {
+            adapter = RepoAdapter(false, { repo ->
+                findNavController().navigate(
+                    R.id.navigation_settings_extensions_to_navigation_settings_plugins,
+                    PluginsFragment.newInstance(repo)
+                )
             }, { repo ->
                 // Prompt user before deleting repo
                 main {
@@ -136,7 +140,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             binding.repoRecyclerView.isVisible = repos.isNotEmpty()
             binding.blankRepoScreen.isVisible = repos.isEmpty()
             (binding.repoRecyclerView.adapter as? RepoAdapter)?.submitList(repos.toList())
-            pluginViewModel.updatePluginList(binding.root.context, repos.map { it.url })
+            pluginViewModel.updatePluginList(binding.root.context, repos.toList())
         }
 
         observeNullable(extensionViewModel.pluginStats) { value ->
@@ -162,6 +166,15 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             }
         }
 
+        binding.pluginStorageAppbar.setOnClickListener {
+            findNavController().navigate(
+                R.id.navigation_settings_extensions_to_navigation_settings_plugins,
+                PluginsFragment.newLocalInstance(
+                    getString(R.string.extensions)
+                )
+            )
+        }
+
         binding.pluginRecyclerView.apply {
             setLinearListLayout(
                 isHorizontal = false,
@@ -170,9 +183,8 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             )
             setRecycledViewPool(PluginAdapter.sharedPool)
             adapter =
-                PluginAdapter {
-                    val urls = extensionViewModel.repositories.value?.map { repo -> repo.url }
-                        ?: emptyList()
+                PluginAdapter(true) {
+                    val urls = extensionViewModel.repositories.value?.toList() ?: emptyList()
                     pluginViewModel.handlePluginAction(activity, urls, it, false)
                 }
         }
@@ -273,18 +285,15 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                         else repository.name
                         val newRepo = RepositoryData(repository.iconUrl, fixedName, url)
                         RepositoryManager.addRepository(newRepo)
-                        PluginsViewModel.downloadAll(activity, url, null)
+                        PluginsViewModel.downloadAll(activity, newRepo, null)
                         extensionViewModel.loadStats()
                         extensionViewModel.loadRepositories()
 
-                        val plugins = RepositoryManager.getRepoPlugins(url)
+                        val plugins = RepositoryManager.getRepoPlugins(newRepo)
                         if (plugins.isNullOrEmpty()) {
                             showToast(R.string.no_plugins_found_error, Toast.LENGTH_LONG)
                         } else {
-                            this@ExtensionsFragment.activity?.addRepositoryDialog(
-                                fixedName,
-                                url,
-                            )
+                            this@ExtensionsFragment.activity?.addRepositoryDialog(newRepo)
                         }
                     }
                 }

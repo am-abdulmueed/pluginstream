@@ -517,13 +517,12 @@ object AppContextUtils {
     fun Activity.loadRepository(url: String) {
         ioSafe {
             val repo = RepositoryManager.parseRepository(url) ?: return@ioSafe
-            RepositoryManager.addRepository(
-                RepositoryData(
-                    repo.iconUrl ?: "",
-                    repo.name,
-                    url
-                )
+            val data = RepositoryData(
+                repo.iconUrl ?: "",
+                repo.name,
+                url
             )
+            RepositoryManager.addRepository(data)
             main {
                 showToast(
                     getString(R.string.player_loaded_subtitles, repo.name),
@@ -531,13 +530,12 @@ object AppContextUtils {
                 )
             }
             afterRepositoryLoadedEvent.invoke(true)
-            addRepositoryDialog(repo.name, url)
+            addRepositoryDialog(data)
         }
     }
 
     fun Activity.addRepositoryDialog(
-        repositoryName: String,
-        repositoryURL: String,
+        repositoryData: RepositoryData,
     ) {
         val repos = RepositoryManager.getRepositories()
 
@@ -547,9 +545,7 @@ object AppContextUtils {
                 navigate(
                     R.id.global_to_navigation_settings_plugins,
                     PluginsFragment.newInstance(
-                        repositoryName,
-                        repositoryURL,
-                        false,
+                        repositoryData,
                     )
                 )
             }
@@ -557,7 +553,7 @@ object AppContextUtils {
 
         runOnUiThread {
             AlertDialog.Builder(this).apply {
-                setTitle(repositoryName)
+                setTitle(repositoryData.name)
                 setMessage(R.string.download_all_plugins_from_repo)
                 setPositiveButton(R.string.open_downloaded_repo) { _, _ ->
                     openAddedRepo()

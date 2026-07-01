@@ -76,6 +76,25 @@ data class SitePlugin(
     @JsonProperty("fileHash") @SerialName("fileHash") val fileHash: String?,
 )
 
+@Serializable
+data class PluginWrapper(
+    @JsonProperty("repository") @SerialName("repository") val repository: Repository,
+    @JsonProperty("repositoryData") @SerialName("repositoryData") val repositoryData: RepositoryData,
+    @JsonProperty("plugin") @SerialName("plugin") val plugin: SitePlugin
+) {
+    companion object {
+        private val localRepository = Repository("", "", "", 1, emptyList())
+        private val localRepositoryData = RepositoryData("", "", "")
+        fun getLocalPluginWrapper(plugin: SitePlugin): PluginWrapper {
+            return PluginWrapper(
+                localRepository,
+                localRepositoryData,
+                plugin
+            )
+        }
+    }
+}
+
 data class MasterRepo(
     @JsonProperty("name") val name: String,
     @JsonProperty("version") val version: Int,
@@ -150,7 +169,8 @@ object RepositoryManager {
     suspend fun parseRepository(url: String): Repository? {
         return safeAsync {
             // Take manifestVersion and such into account later
-            app.get(convertRawGitUrl(url), cacheTime = 5, cacheUnit = TimeUnit.MINUTES).parsedSafe<Repository>()
+            app.get(convertRawGitUrl(url), cacheTime = 5, cacheUnit = TimeUnit.MINUTES)
+                .parsedSafe<Repository>()
         }
     }
 
@@ -168,13 +188,14 @@ object RepositoryManager {
     /**
      * Gets all plugins from repositories and pairs them with the repository url
      * */
-    suspend fun getRepoPlugins(repositoryUrl: String): List<Pair<String, SitePlugin>>? {
-        val repo = parseRepository(repositoryUrl) ?: return null
-        return repo.pluginLists.amap { url ->
+    suspend fun getRepoPlugins(repositoryData: RepositoryData): List<PluginWrapper>? {
+        val repo = parseRepository(repositoryData.url) ?: return null
+        val list = repo.pluginLists.amap { url ->
             parsePlugins(url).map {
-                repositoryUrl to it
+                PluginWrapper(repo, repositoryData, it)
             }
         }.flatten()
+        return list
     }
 
 

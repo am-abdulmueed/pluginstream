@@ -131,7 +131,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                     if (!isDownloadingStarted) {
                         isDownloadingStarted = true
                         repositoriesList.forEach { repo ->
-                            PluginsViewModel.downloadAll(activity, repo.url, null)
+                            PluginsViewModel.downloadAll(activity, repo, null)
                             repo.ioSafe {
                                 RepositoryManager.addRepository(repo)
                             }
@@ -156,7 +156,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                 }
                 builder.show()
             }, { item ->
-                PluginsViewModel.downloadAll(activity, item.url, null)
+                PluginsViewModel.downloadAll(activity, item, null)
             })
 
             binding.repoRecyclerView.apply {
