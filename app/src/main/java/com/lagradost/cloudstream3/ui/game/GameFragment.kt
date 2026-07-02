@@ -1,8 +1,11 @@
 package com.lagradost.cloudstream3.ui.game
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ProgressBar
@@ -12,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lagradost.cloudstream3.R
@@ -30,6 +34,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
 ) {
     private var gameAdapter: GameAdapter? = null
     private lateinit var viewModel: GameViewModel
+    private var currentSearchQuery: String = ""
 
     override fun fixLayout(view: View) {
         fixSystemBarsPadding(
@@ -41,7 +46,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
 
     override fun onBindingCreated(binding: FragmentGameBinding) {
         viewModel = ViewModelProvider(requireActivity())[GameViewModel::class.java]
-        
+
         val searchEditText = binding.searchEditText
         val progressBar = binding.progressBar
         val emptyTextView = binding.emptyTextView
@@ -54,7 +59,7 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
 
         // Setup RecyclerView with GridLayoutManager (Dynamic columns for responsiveness)
         val spanCount = if (isLayout(TV or EMULATOR)) 4 else 2
-        
+
         // Use existing adapter if available to maintain state
         if (gameAdapter == null) {
             gameAdapter = GameAdapter({ game ->
@@ -78,6 +83,29 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
             }
         }
         gamesRecyclerView.adapter = gameAdapter
+
+        // Smoother add/remove/change animations for the grid (default ones feel abrupt)
+        gamesRecyclerView.itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 260
+            removeDuration = 200
+            changeDuration = 220
+            moveDuration = 260
+        }
+
+        // Subtle glow on the search bar's border while the user is typing
+        val defaultStrokeColor = 0x1AFFFFFF
+        val focusedStrokeColor = requireContext().getColor(R.color.colorPrimary)
+        searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            val fromColor = if (hasFocus) defaultStrokeColor else focusedStrokeColor
+            val toColor = if (hasFocus) focusedStrokeColor else defaultStrokeColor
+            ValueAnimator.ofObject(ArgbEvaluator(), fromColor, toColor).apply {
+                duration = 200
+                addUpdateListener { animator ->
+                    binding.searchCard.strokeColor = animator.animatedValue as Int
+                }
+                start()
+            }
+        }
 
         // 1. Offers Icon Click
         btnOffers.setOnClickListener {
@@ -104,7 +132,12 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
             val count = savedGames.size
             if (count > 0) {
                 binding.savedGamesCount.text = count.toString()
-                binding.savedGamesCount.visibility = View.VISIBLE
+                if (binding.savedGamesCount.visibility != View.VISIBLE) {
+                    binding.savedGamesCount.visibility = View.VISIBLE
+                    binding.savedGamesCount.startAnimation(
+                        AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_in)
+                    )
+                }
                 binding.savedGamesSubtitle.text = "You have $count saved games"
                 binding.savedGamesSubtitle.setTextColor(requireContext().getColor(R.color.colorPrimary))
             } else {
@@ -119,13 +152,23 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
             if (games.isNotEmpty()) {
                 shimmerLayout.stopShimmer()
                 shimmerLayout.visibility = View.GONE
+
+                val wasVisible = gamesRecyclerView.visibility == View.VISIBLE
                 gamesRecyclerView.visibility = View.VISIBLE
-                gameAdapter?.updateList(games)
+                val oldSize = gameAdapter?.itemCount ?: 0
+                // Filter games using current search query before updating adapter
+                val filteredGames = viewModel.filterGames(currentSearchQuery)
+                gameAdapter?.updateList(filteredGames)
                 emptyTextView.visibility = View.GONE
                 hideOfflineScreen(binding)
-                
-                // Restore scroll position after data is loaded
-                if (viewModel.scrollPosition > 0) {
+
+                // Play the staggered grid entrance animation only the first time the grid appears
+                if (!wasVisible) {
+                    gamesRecyclerView.scheduleLayoutAnimation()
+                }
+
+                // Restore scroll position only on first load (when old list was empty)
+                if (oldSize == 0 && viewModel.scrollPosition > 0) {
                     gamesRecyclerView.scrollToPosition(viewModel.scrollPosition)
                     // Optionally use post to ensure layout is complete
                     gamesRecyclerView.post {
@@ -134,7 +177,9 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
                 }
             } else if (viewModel.isLoading.value == false) {
                 emptyTextView.visibility = View.VISIBLE
+                emptyTextView.alpha = 0f
                 emptyTextView.text = "No games available"
+                emptyTextView.animate().alpha(1f).setDuration(220).start()
             }
         }
 
@@ -174,7 +219,8 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: android.text.Editable?) {
-                gameAdapter?.updateList(viewModel.filterGames(s.toString()))
+                currentSearchQuery = s.toString()
+                gameAdapter?.updateList(viewModel.filterGames(currentSearchQuery))
             }
         })
 
@@ -183,12 +229,21 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
     }
 
     private fun showOfflineScreen(binding: FragmentGameBinding) {
+        binding.offlineScreen.alpha = 0f
         binding.offlineScreen.visibility = View.VISIBLE
+        binding.offlineScreen.animate().alpha(1f).setDuration(260).start()
         binding.offlineShimmer.startShimmer()
     }
 
     private fun hideOfflineScreen(binding: FragmentGameBinding) {
-        binding.offlineScreen.visibility = View.GONE
-        binding.offlineShimmer.stopShimmer()
+        if (binding.offlineScreen.visibility != View.VISIBLE) return
+        binding.offlineScreen.animate()
+            .alpha(0f)
+            .setDuration(200)
+            .withEndAction {
+                binding.offlineScreen.visibility = View.GONE
+                binding.offlineShimmer.stopShimmer()
+            }
+            .start()
     }
 }

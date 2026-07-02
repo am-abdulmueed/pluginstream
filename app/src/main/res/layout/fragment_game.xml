@@ -27,38 +27,51 @@
                 android:layout_height="wrap_content"
                 android:text="Explore Games"
                 android:textColor="?attr/textColor"
-                android:textSize="26sp"
+                android:textSize="27sp"
                 android:textStyle="bold"
                 android:fontFamily="@font/google_sans"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <TextView
+                android:id="@+id/gameSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Play instantly, no downloads needed"
+                android:textColor="?attr/grayTextColor"
+                android:textSize="14sp"
+                android:fontFamily="@font/google_sans"
+                android:alpha="0.8"
+                app:layout_constraintStart_toStartOf="@id/gameTitleHeader"
+                app:layout_constraintTop_toBottomOf="@id/gameTitleHeader" />
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/searchCard"
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="52dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="12dp"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="18dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
-                app:strokeWidth="1dp"
+                app:strokeWidth="1.2dp"
                 app:strokeColor="#1AFFFFFF"
                 app:layout_constraintEnd_toStartOf="@id/btnGoToOffers"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/gameTitleHeader">
+                app:layout_constraintTop_toBottomOf="@id/gameSubtitle">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp">
+                    android:paddingHorizontal="14dp">
 
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/search_icon"
-                        app:tint="?attr/grayTextColor" />
+                        app:tint="?attr/colorPrimary" />
 
                     <EditText
                         android:id="@+id/searchEditText"
@@ -78,10 +91,11 @@
 
             <ImageButton
                 android:id="@+id/btnGoToOffers"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:background="@drawable/countdown_bg"
                 android:src="@drawable/ic_offers"
+                android:stateListAnimator="@animator/card_press_anim"
                 app:tint="?attr/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="@id/searchCard"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -93,12 +107,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="6dp"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
-                app:strokeWidth="1dp"
+                app:strokeWidth="1.2dp"
                 app:strokeColor="#33FFFFFF"
                 android:foreground="?attr/selectableItemBackground"
+                android:stateListAnimator="@animator/card_press_anim"
                 app:layout_constraintTop_toBottomOf="@id/searchCard"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -113,7 +128,7 @@
                     <FrameLayout
                         android:layout_width="56dp"
                         android:layout_height="56dp">
-                        
+
                         <ImageView
                             android:id="@+id/savedGamesIcon"
                             android:layout_width="match_parent"
@@ -123,7 +138,7 @@
                             android:backgroundTint="#1AFFFFFF"
                             android:padding="14dp"
                             app:tint="?attr/colorPrimary" />
-                            
+
                         <TextView
                             android:id="@+id/savedGamesCount"
                             android:layout_width="20dp"
@@ -221,8 +236,9 @@
             android:layout_height="match_parent"
             android:padding="6dp"
             android:clipToPadding="false"
+            android:layoutAnimation="@anim/layout_animation_game_grid"
             android:visibility="gone" />
-            
+
         <TextView
             android:id="@+id/emptyTextView"
             android:layout_width="wrap_content"

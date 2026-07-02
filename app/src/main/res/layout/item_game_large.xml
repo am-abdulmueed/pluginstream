@@ -9,12 +9,13 @@
         android:id="@+id/gameCardView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="8dp"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="10dp"
         app:cardBackgroundColor="?attr/primaryGrayBackground"
         app:strokeWidth="1.5dp"
-        app:strokeColor="#1AFFFFFF"
+        app:strokeColor="#26FFFFFF"
         android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:stateListAnimator="@animator/card_press_anim"
         app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -47,6 +48,29 @@
                 android:background="#000000"
                 android:contentDescription="@string/game_icon" />
 
+            <!-- Black gradient overlay at bottom -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/gradient_overlay" />
+
+            <!-- Featured ribbon -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="12dp"
+                android:background="@drawable/bg_featured_pill"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:text="⭐ FEATURED"
+                android:textColor="#1A1A1A"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/google_sans"
+                android:letterSpacing="0.04" />
+
             <ImageView
                 android:id="@+id/favoriteButton"
                 android:layout_width="44dp"
@@ -58,13 +82,6 @@
                 android:background="@drawable/circle_background"
                 android:backgroundTint="#80000000"
                 app:tint="@android:color/white" />
-
-            <!-- Black gradient overlay at bottom -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:layout_gravity="bottom"
-                android:background="@drawable/gradient_overlay" />
 
             <!-- Game title with premium styling - Hidden for search style consistency -->
             <LinearLayout

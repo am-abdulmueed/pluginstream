@@ -102,7 +102,7 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
                 }
 
                 settingsGithub.setOnClickListener {
-                    openUrl("https://github.com/am-abdulmueed"/pluginstream)
+                    openUrl("https://github.com/am-abdulmueed/pluginstream")
                 }
 
                 settingsDevWebsite.setOnClickListener {

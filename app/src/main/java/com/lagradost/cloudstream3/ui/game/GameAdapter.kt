@@ -68,6 +68,20 @@ class GameAdapter(
         }
     }
 
+    override fun onBindViewHolder(holder: GameViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isNotEmpty() && payloads.contains("FAVORITE_CHANGED")) {
+            // Only update the favorite button
+            val game = games[position]
+            holder.favoriteButton.setImageResource(
+                if (game.isFavorite) R.drawable.ic_baseline_bookmark_24 
+                else R.drawable.ic_baseline_bookmark_border_24
+            )
+            return
+        }
+        // If no payload, do full bind
+        onBindViewHolder(holder, position)
+    }
+
     override fun onBindViewHolder(holder: GameViewHolder, position: Int) {
         val game = games[position]
         
@@ -152,6 +166,16 @@ class GameAdapter(
 
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
                 return games[oldItemPosition] == newGames[newItemPosition]
+            }
+
+            override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+                val oldGame = games[oldItemPosition]
+                val newGame = newGames[newItemPosition]
+                // If only isFavorite changed, send this payload
+                if (oldGame.copy(isFavorite = newGame.isFavorite) == newGame) {
+                    return "FAVORITE_CHANGED"
+                }
+                return super.getChangePayload(oldItemPosition, newItemPosition)
             }
         }
         val diffResult = DiffUtil.calculateDiff(diffCallback)
