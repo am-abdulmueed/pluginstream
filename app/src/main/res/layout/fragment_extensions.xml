@@ -94,7 +94,7 @@
     <LinearLayout
         android:id="@+id/plugin_storage_appbar"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="96dp"
         android:layout_gravity="bottom"
         android:background="?attr/primaryGrayBackground"
         android:baselineAligned="false"
@@ -104,6 +104,7 @@
         android:nextFocusUp="@id/repo_recycler_view"
         android:orientation="horizontal"
         android:padding="10dp"
+        android:paddingBottom="16dp"
         android:visibility="visible">
 
         <LinearLayout

@@ -54,12 +54,31 @@ class ExtensionsViewModel : ViewModel() {
         val urls = (getKey<Array<RepositoryData>>(REPOSITORIES_KEY)
             ?: emptyArray()) + PREBUILT_REPOSITORIES
 
+        // FIRST: Show LOCAL stats RIGHT AWAY without waiting for online
+        val savedPlugins = getPluginsOnline()
+        val localTotal = savedPlugins.size
+        val localDisabled = 0 // We can't get disabled status from just saved plugins
+        val localDownloaded = localTotal - localDisabled
+        val localNotDownloaded = 0
+
+        val localStats = PluginStats(
+            localTotal,
+            localDownloaded,
+            localDisabled,
+            localNotDownloaded,
+            txt(R.string.plugins_downloaded, localDownloaded),
+            txt(R.string.plugins_disabled, localDisabled),
+            txt(R.string.plugins_not_downloaded, localNotDownloaded)
+        )
+        _pluginStats.postValue(localStats)
+
+        // THEN: Update with ONLINE stats
         val onlinePlugins = urls.toList().amap {
             RepositoryManager.getRepoPlugins(it)?.toList() ?: emptyList()
         }.flatten().distinctBy { it.plugin.url }
 
         // Iterates over all offline plugins, compares to remote repo and returns the plugins which are outdated
-        val outdatedPlugins = getPluginsOnline().flatMap { savedData ->
+        val outdatedPlugins = savedPlugins.flatMap { savedData ->
             onlinePlugins.filter { onlineData -> savedData.internalName == onlineData.plugin.internalName }
                 .map { onlineData ->
                     PluginManager.OnlinePluginData(savedData, onlineData)
