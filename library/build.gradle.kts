@@ -83,6 +83,7 @@ kotlin {
             dependsOn(commonMain.get())
             dependencies {
                 implementation(libs.newpipeextractor)
+                implementation(libs.newpipeextractor)
             }
         }
 
