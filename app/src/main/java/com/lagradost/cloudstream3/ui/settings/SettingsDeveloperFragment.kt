@@ -122,24 +122,21 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
             isListenersSet = true
         }
 
-        // Update dynamic age in philosophy/bio with Bullet Points
-        val age = calculateAge("21-07-2006")
-        val bioPoints = "🚀 I'm a $age-year-old developer crafting high-performance, ad-free multimedia experiences.\n\n" +
-                       "🧠 Architecting modular, extension-driven apps with seamless cross-platform scaling.\n\n" +
-                       "⚡ Obsessed with optimization—replacing bloated frameworks with lightweight, lightning-fast tools."
-        binding.devPhilosophy.text = bioPoints
+        // Update bio
+        val bio = "Building fast, extension-driven multimedia applications with a focus on performance, clean architecture, and a seamless user experience. Passionate about lightweight, scalable, and privacy-first software."
+        binding.devPhilosophy.text = bio
         binding.devPhilosophy.setLineSpacing(8f, 1f)
 
         val appVersionStr = BuildConfig.VERSION_NAME
         val commitInfo = activity?.currentCommitHash() ?: ""
         val buildTimestamp = SimpleDateFormat(
-            "yyyy-MM-dd",
+            "MMMM dd, yyyy",
             Locale.getDefault()
         ).apply { timeZone = TimeZone.getTimeZone("UTC") }
             .format(Date(BuildConfig.BUILD_DATE))
 
-        binding.appVersion.text = "Version $appVersionStr"
-        binding.commitHash.text = commitInfo
+        binding.appVersion.text = "PluginStream v$appVersionStr"
+        binding.commitHash.text = "Build $commitInfo"
         binding.buildDate.text = buildTimestamp
         binding.appVersionInfo.setOnLongClickListener {
             clipboardHelper(
