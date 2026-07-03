@@ -255,6 +255,8 @@
                 android:padding="12dp"
                 android:nextFocusLeft="@id/storage_info_clickable"
                 android:nextFocusUp="@id/repo_recycler_view"
+                android:nextFocusRight="@id/add_repo_button_imageview"
+                android:nextFocusDown="@id/add_repo_button_imageview"
                 android:src="@drawable/ic_baseline_add_24"
                 app:tint="?attr/iconColor" />
         </LinearLayout>
