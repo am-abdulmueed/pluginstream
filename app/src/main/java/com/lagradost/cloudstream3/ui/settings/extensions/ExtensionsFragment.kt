@@ -187,7 +187,8 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
             }
         }
 
-        binding.pluginStorageAppbar.setOnClickListener {
+        // Set click listener on both the appbar and the inner clickable area to ensure it works on all devices
+        val navigateToPlugins = { _: View ->
             findNavController().navigate(
                 R.id.navigation_settings_extensions_to_navigation_settings_plugins,
                 PluginsFragment.newLocalInstance(
@@ -195,6 +196,8 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                 )
             )
         }
+        binding.pluginStorageAppbar.setOnClickListener(navigateToPlugins)
+        binding.storageInfoClickable.setOnClickListener(navigateToPlugins)
 
         binding.pluginRecyclerView.apply {
             setLinearListLayout(
