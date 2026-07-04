@@ -80,6 +80,7 @@ import com.lagradost.cloudstream3.extractors.FileMoonIn
 import com.lagradost.cloudstream3.extractors.FileMoonSx
 import com.lagradost.cloudstream3.extractors.FilemoonV2
 import com.lagradost.cloudstream3.extractors.Filesim
+import com.lagradost.cloudstream3.extractors.Firestream
 import com.lagradost.cloudstream3.extractors.Multimoviesshg
 import com.lagradost.cloudstream3.extractors.FlaswishCom
 import com.lagradost.cloudstream3.extractors.Flyfile
@@ -271,6 +272,7 @@ import com.lagradost.cloudstream3.extractors.VidHidePro5
 import com.lagradost.cloudstream3.extractors.VidHidePro6
 import com.lagradost.cloudstream3.extractors.VidHideHub
 import com.lagradost.cloudstream3.extractors.Ryderjet
+import com.lagradost.cloudstream3.extractors.Streamcash
 import com.lagradost.cloudstream3.extractors.VidMoxy
 import com.lagradost.cloudstream3.extractors.VidStack
 import com.lagradost.cloudstream3.extractors.VideoSeyred
@@ -1300,7 +1302,8 @@ val extractorApis: AtomicMutableList<ExtractorApi> = atomicListOf(
     GUpload(),
     HlsWish(),
     ByseQekaho(),
-    Flyfile()
+    Flyfile(),
+    Firestream(),
 )
 
 
