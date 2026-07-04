@@ -1090,6 +1090,7 @@ val extractorApis: AtomicMutableList<ExtractorApi> = atomicListOf(
     Tantifilm(),
     Userload(),
     Supervideo(),
+    Streamcash(),
 
     // StreamSB.kt works
     //  SBPlay(),
