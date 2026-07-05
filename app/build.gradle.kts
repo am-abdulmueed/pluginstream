@@ -127,6 +127,10 @@ android {
         versionCode = libs.versions.versionCode.get().toInt()
         versionName = libs.versions.versionName.get()
 
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
+
         manifestPlaceholders["target_sdk_version"] = libs.versions.targetSdk.get()
 
         // Reads local.properties
