@@ -1,5 +1,7 @@
 package com.lagradost.cloudstream3.ui.settings
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -39,6 +41,7 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
     BaseFragment.BindingCreator.Inflate(FragmentFaqBinding::inflate)
 ) {
     private lateinit var markwon: Markwon
+    private var hasPlayedListEntrance = false
 
     override fun fixLayout(view: View) {
         fixSystemBarsPadding(
@@ -151,6 +154,29 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
             adapter = faqAdapter
         }
 
+        // Staggered entrance animation the first time the list lays out
+        binding.faqRecycler.post {
+            if (!hasPlayedListEntrance) {
+                hasPlayedListEntrance = true
+                binding.faqRecycler.scheduleLayoutAnimation()
+            }
+        }
+
+        // Subtle glow on the search card's border while the user is typing
+        val defaultStrokeColor = requireContext().getColor(R.color.grayTextColor)
+        val focusedStrokeColor = requireContext().getColor(R.color.colorPrimary)
+        binding.faqSearch.setOnQueryTextFocusChangeListener { _, hasFocus ->
+            val fromColor = if (hasFocus) defaultStrokeColor else focusedStrokeColor
+            val toColor = if (hasFocus) focusedStrokeColor else defaultStrokeColor
+            ValueAnimator.ofObject(ArgbEvaluator(), fromColor, toColor).apply {
+                duration = 200
+                addUpdateListener { animator ->
+                    binding.faqSearchCard.strokeColor = animator.animatedValue as Int
+                }
+                start()
+            }
+        }
+
         binding.faqSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean = false
             override fun onQueryTextChange(newText: String?): Boolean {
@@ -172,7 +198,7 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
                         }
                     }
                 }
-                
+
                 try {
                     // Try to open in Telegram app if possible, else fallback to URL
                     val uri = Uri.parse(telegramUrl)
@@ -192,12 +218,22 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
             fullFaqList
         } else {
             fullFaqList.filter {
-                it.question.contains(query, ignoreCase = true) || 
+                it.question.contains(query, ignoreCase = true) ||
                 it.answer.contains(query, ignoreCase = true)
             }
         }
         faqAdapter.updateList(filteredList)
-        binding?.faqEmptyView?.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
+
+        val emptyView = binding?.faqEmptyView ?: return
+        if (filteredList.isEmpty()) {
+            if (emptyView.visibility != View.VISIBLE) {
+                emptyView.alpha = 0f
+                emptyView.visibility = View.VISIBLE
+                emptyView.animate().alpha(1f).setDuration(200).start()
+            }
+        } else {
+            emptyView.visibility = View.GONE
+        }
     }
 
     inner class FAQAdapter(private var items: List<FAQItem>) : RecyclerView.Adapter<FAQAdapter.ViewHolder>() {
@@ -212,10 +248,10 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
             holder.question.text = item.question
             markwon.setMarkdown(holder.answer, item.answer)
             holder.answer.movementMethod = android.text.method.LinkMovementMethod.getInstance()
-            
+
             val isExpanded = position == expandedPosition
             holder.answerLayout.visibility = if (isExpanded) View.VISIBLE else View.GONE
-            holder.arrow.rotation = if (isExpanded) 180f else 0f
+            holder.arrow.animate().rotation(if (isExpanded) 180f else 0f).setDuration(180).start()
 
             holder.questionLayout.setOnClickListener {
                 val previousExpanded = expandedPosition

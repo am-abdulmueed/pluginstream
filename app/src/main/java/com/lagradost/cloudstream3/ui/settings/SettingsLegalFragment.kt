@@ -14,7 +14,7 @@ class SettingsLegalFragment : BaseFragment<FragmentLegalBinding>(
 ) {
     override fun onBindingCreated(binding: FragmentLegalBinding) {
         val type = arguments?.getString("type") ?: "privacy"
-        
+
         binding.legalToolbar.setNavigationOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
@@ -32,6 +32,13 @@ class SettingsLegalFragment : BaseFragment<FragmentLegalBinding>(
         }
 
         binding.legalFooter.text = "Last Edited: May 13, 2026\n© 2026 PluginStream"
+
+        // Subtle fade-in as the document appears
+        binding.legalText.alpha = 0f
+        binding.legalText.animate().alpha(1f).setDuration(260).start()
+
+        binding.legalFooter.alpha = 0f
+        binding.legalFooter.animate().alpha(1f).setDuration(260).setStartDelay(80).start()
     }
 
     override fun fixLayout(view: View) {

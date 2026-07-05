@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="2dp"
+    android:stateListAnimator="@animator/card_press_anim"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="3dp"
     app:strokeWidth="1dp"
     app:strokeColor="?attr/dividerColor"
     app:cardBackgroundColor="?attr/primaryBlackBackground"
@@ -20,9 +21,9 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/itemIconContainer"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:cardCornerRadius="12dp"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            app:cardCornerRadius="13dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="?attr/boxItemBackground">
 
@@ -39,12 +40,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="12dp">
+            android:layout_marginStart="14dp">
 
             <TextView
                 android:id="@+id/itemTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/google_sans"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="?attr/textColor" />
@@ -53,6 +55,7 @@
                 android:id="@+id/itemDesc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/google_sans"
                 android:textSize="12sp"
                 android:textColor="?attr/grayTextColor"
                 android:layout_marginTop="2dp" />
@@ -60,9 +63,11 @@
 
         <ImageView
             android:id="@+id/itemArrow"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginStart="8dp"
             android:src="@drawable/ic_baseline_arrow_forward_24"
             app:tint="?attr/grayTextColor" />
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

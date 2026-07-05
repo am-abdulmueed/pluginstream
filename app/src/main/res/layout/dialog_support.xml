@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="28dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="0dp"
+    app:cardElevation="6dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/dividerColor"
     app:cardBackgroundColor="?attr/primaryGrayBackground">
 
     <LinearLayout
@@ -22,9 +23,9 @@
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/iconContainer"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:cardCornerRadius="16dp"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:cardCornerRadius="17dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="?attr/boxItemBackground"
                 android:layout_alignParentStart="true">
@@ -41,23 +42,36 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Support Development"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
+                android:fontFamily="@font/google_sans"
                 android:textColor="?attr/textColor"
+                android:layout_toStartOf="@id/closeButtonCard"
                 android:layout_toEndOf="@id/iconContainer"
                 android:layout_marginStart="16dp"
                 android:layout_centerVertical="true" />
 
-            <ImageView
-                android:id="@+id/closeButton"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/closeButtonCard"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:src="@drawable/ic_close"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:padding="8dp"
-                app:tint="?attr/grayTextColor"
                 android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true" />
+                android:layout_centerVertical="true"
+                android:stateListAnimator="@animator/card_press_anim"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/boxItemBackground">
+
+                <ImageView
+                    android:id="@+id/closeButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_close"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:padding="8dp"
+                    app:tint="?attr/grayTextColor" />
+            </com.google.android.material.card.MaterialCardView>
+
         </RelativeLayout>
 
         <TextView
@@ -65,6 +79,7 @@
             android:layout_height="wrap_content"
             android:text="Your support helps us keep improving PluginStream! Choose a way to support us!"
             android:textSize="14sp"
+            android:fontFamily="@font/google_sans"
             android:textColor="?attr/grayTextColor"
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="20dp" />
@@ -74,14 +89,16 @@
             android:id="@+id/contentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-        </LinearLayout>
+            android:orientation="vertical"
+            android:divider="@drawable/spacer_12dp"
+            android:showDividers="middle" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Thank you for your support! 🙏"
             android:textSize="12sp"
+            android:fontFamily="@font/google_sans"
             android:textColor="?attr/grayTextColor"
             android:gravity="center"
             android:layout_marginTop="20dp" />

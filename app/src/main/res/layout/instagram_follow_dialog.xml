@@ -10,12 +10,12 @@
         android:id="@+id/dialog_card"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="34dp"
         app:cardCornerRadius="32dp"
-        app:cardElevation="4dp"
-        app:strokeWidth="1.5dp"
-        app:strokeColor="#40FFFFFF"
-        app:cardBackgroundColor="#222222"
+        app:cardElevation="8dp"
+        app:strokeWidth="1.2dp"
+        app:strokeColor="#33FFFFFF"
+        app:cardBackgroundColor="#1C1C1E"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,17 +24,18 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="24dp">
+            android:paddingBottom="26dp">
 
             <TextView
                 android:id="@+id/heading"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="48dp"
+                android:layout_marginTop="46dp"
+                android:layout_marginHorizontal="20dp"
                 android:gravity="center"
                 android:text="Follow for Updates &amp; Support"
                 android:textColor="@android:color/white"
-                android:textSize="22sp"
+                android:textSize="21sp"
                 android:fontFamily="@font/google_sans"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -45,12 +46,13 @@
                 android:id="@+id/message"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginHorizontal="28dp"
                 android:gravity="center"
+                android:lineSpacingExtra="3dp"
                 android:text="Stay connected for the latest features, news, and support on our official channel."
-                android:textColor="#DDFFFFFF"
-                android:textSize="15sp"
+                android:textColor="#B3FFFFFF"
+                android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/heading" />
@@ -62,7 +64,7 @@
                 android:layout_marginTop="16dp"
                 android:text="I already followed"
                 android:textColor="@android:color/white"
-                android:buttonTint="#4285F4"
+                android:buttonTint="#D6249F"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -72,43 +74,43 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/follow_button"
                 android:layout_width="0dp"
-                android:layout_height="60dp"
-                android:layout_marginTop="24dp"
+                android:layout_height="58dp"
+                android:layout_marginTop="26dp"
                 android:background="@drawable/instagram_button_bg"
                 app:backgroundTint="@null"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
+                android:letterSpacing="0.03"
+                android:stateListAnimator="@animator/card_press_anim"
                 android:text="FOLLOW NOW"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="17sp"
                 android:textStyle="bold"
-                app:cornerRadius="30dp"
+                app:cornerRadius="29dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/already_followed_checkbox"
-                app:layout_constraintWidth_percent="0.8" />
-
-
+                app:layout_constraintWidth_percent="0.82" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/instagram_icon_card"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        app:cardCornerRadius="18dp"
+        android:layout_width="68dp"
+        android:layout_height="68dp"
+        app:cardCornerRadius="34dp"
         app:cardElevation="10dp"
-        app:cardBackgroundColor="#333333"
+        app:cardBackgroundColor="#1C1C1E"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:translationZ="12dp">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/instagram_icon_bg"
+            android:layout_margin="3dp"
+            android:background="@drawable/instagram_icon_gradient_bg"
             android:padding="16dp"
             android:src="@drawable/ic_instagram_white" />
     </androidx.cardview.widget.CardView>

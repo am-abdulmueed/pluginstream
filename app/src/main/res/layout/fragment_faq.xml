@@ -9,7 +9,8 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false">
+        android:clipToPadding="false"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -27,15 +28,27 @@
                 app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
                 app:navigationIconTint="?attr/textColor" />
 
+            <!-- Intro line -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="14dp"
+                android:fontFamily="@font/google_sans"
+                android:text="Answers to the most common questions"
+                android:textColor="?attr/grayTextColor"
+                android:textSize="13sp" />
+
             <!-- Search Card -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/faq_search_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
+                app:strokeWidth="1.2dp"
                 app:strokeColor="?attr/cardStrokeColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
@@ -57,6 +70,7 @@
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
                 android:paddingHorizontal="16dp"
+                android:layoutAnimation="@anim/layout_animation_list_fall_down"
                 android:nestedScrollingEnabled="false"
                 tools:listitem="@layout/item_faq" />
 
@@ -68,9 +82,10 @@
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginBottom="100dp"
                 android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp"
+                android:stateListAnimator="@animator/card_press_anim"
+                app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
-                app:strokeWidth="1dp"
+                app:strokeWidth="1.2dp"
                 app:strokeColor="?attr/cardStrokeColor"
                 app:cardBackgroundColor="?attr/primaryGrayBackground">
 
@@ -78,15 +93,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:padding="16dp"
+                    android:padding="18dp"
                     android:gravity="center_vertical"
                     android:background="?attr/selectableItemBackground">
 
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_telegram_logo"
-                        app:tint="#0088cc" />
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="46dp"
+                        android:layout_height="46dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#1A0088CC"
+                        app:strokeWidth="0dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_telegram_logo"
+                            app:tint="#0088cc" />
+                    </com.google.android.material.card.MaterialCardView>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -98,6 +123,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:fontFamily="@font/google_sans"
                             android:text="Still need help?"
                             android:textColor="?attr/textColor"
                             android:textSize="16sp"
@@ -106,14 +132,16 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/google_sans"
                             android:text="Chat with us on Telegram"
                             android:textColor="?attr/grayTextColor"
                             android:textSize="13sp" />
                     </LinearLayout>
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
                         app:tint="?attr/grayTextColor" />
 
@@ -132,16 +160,28 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="😅"
-            android:textSize="64sp" />
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="18dp"
+            app:cardCornerRadius="32dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="?attr/primaryGrayBackground"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/dividerColor">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="😅"
+                android:textSize="44sp" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:fontFamily="@font/google_sans"
             android:text="No results found"
             android:textColor="?attr/textColor"
             android:textSize="18sp"
@@ -151,6 +191,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:fontFamily="@font/google_sans"
             android:gravity="center"
             android:paddingHorizontal="32dp"
             android:text="Can't find what you're looking for? Join our community for instant help!"
