@@ -23,8 +23,7 @@ open class GUpload: ExtractorApi() {
     ) {
         val response = app.get(url, referer = referer).text
 
-        val playerConfigEncoded = response.substringAfter("decodePayload('").substringBefore("');")
-        val playerConfigString = base64Decode(playerConfigEncoded).substringAfter("|")
+        val playerConfigString = response.substringAfter("const config = ").substringBefore(";")
 
         val playerConfig = AppUtils.parseJson<VideoInfo>(playerConfigString)
 
