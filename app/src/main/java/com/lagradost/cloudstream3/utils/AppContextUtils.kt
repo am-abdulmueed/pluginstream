@@ -147,6 +147,7 @@ object AppContextUtils {
             text.toSpanned()
         }
     }
+
     /** Get channel ID by name */
     @SuppressLint("RestrictedApi")
     private fun buildWatchNextProgramUri(
@@ -364,15 +365,22 @@ object AppContextUtils {
         }
     }
 
+    /** Sort subtitles by names */
     fun sortSubs(subs: Set<SubtitleData>): List<SubtitleData> {
-        return subs.sortedBy { it.name }
+        // Be aware, sorting by "$originalName $nameSuffix" causes "a (b) 1" < "a 1",
+        // where "originalName then nameSuffix" preserves "a 1" < "a (b) 1", because we do not compare '(' and '1'.
+        return subs
+            .sortedWith(
+                compareBy { subtitle: SubtitleData -> subtitle.originalName }
+                    .thenBy { subtitle: SubtitleData -> subtitle.nameSuffix })
     }
 
     fun Context.getApiSettings(): HashSet<String> {
         val hashSet = HashSet<String>()
         val activeLangs = getApiProviderLangSettings()
         val hasUniversal = activeLangs.contains(AllLanguagesName)
-        hashSet.addAll(apis.filter { hasUniversal || activeLangs.contains(it.lang) }.map { it.name })
+        hashSet.addAll(apis.filter { hasUniversal || activeLangs.contains(it.lang) }
+            .map { it.name })
         return hashSet
     }
 
@@ -463,7 +471,8 @@ object AppContextUtils {
         } ?: default
         val langs = this.getApiProviderLangSettings()
         val hasUniversal = langs.contains(AllLanguagesName)
-        val allApis = apis.filter { api -> (hasUniversal || langs.contains(api.lang)) && (api.hasMainPage || !hasHomePageIsRequired) }
+        val allApis =
+            apis.filter { api -> (hasUniversal || langs.contains(api.lang)) && (api.hasMainPage || !hasHomePageIsRequired) }
         return if (currentPrefMedia.isEmpty()) {
             allApis
         } else {
@@ -535,7 +544,7 @@ object AppContextUtils {
     }
 
     fun Activity.addRepositoryDialog(
-        repositoryData: RepositoryData,
+        repositoryData: RepositoryData
     ) {
         val repos = RepositoryManager.getRepositories()
 
@@ -680,7 +689,7 @@ object AppContextUtils {
             "$seasonNameShort${rSeason}:$episodeNameShort${rEpisode}"
         } else if (rEpisode != null) {
             "$episodeNameShort$rEpisode"
-        }else null
+        } else null
     }
 
     fun Activity?.loadCache() {
@@ -703,7 +712,7 @@ object AppContextUtils {
     fun loadResult(
         url: String,
         apiName: String,
-        name : String,
+        name: String,
         startAction: Int = 0,
         startValue: Int = 0
     ) {
@@ -713,7 +722,7 @@ object AppContextUtils {
     fun FragmentActivity.loadResult(
         url: String,
         apiName: String,
-        name : String,
+        name: String,
         startAction: Int = 0,
         startValue: Int = 0
     ) {
@@ -838,17 +847,9 @@ object AppContextUtils {
         }
     }
 
-    fun Context.setDefaultFocus(view: View?) {
-        if (!Globals.isLayout(Globals.TV or Globals.EMULATOR)) return
-        view?.apply {
-            isFocusable = true
-            isFocusableInTouchMode = true
-            requestFocus()
-        }
-    }
-
     fun Context.isUsingMobileData(): Boolean {
-        val connectionManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectionManager =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val activeNetwork: Network? = connectionManager.activeNetwork
             val networkCapabilities = connectionManager.getNetworkCapabilities(activeNetwork)
