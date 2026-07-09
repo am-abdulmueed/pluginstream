@@ -583,6 +583,39 @@ object UIHelper {
         }
     }
 
+    /**
+     * Source: https://stackoverflow.com/questions/70954321/circular-progress-indicator-inside-buttons-android-material-design
+     *
+     * Shows indeterminate progress bar on this button in place of where icon would be.
+     * By default the tint of progress bar is the same as iconTint.
+     *
+     * @param tintColor (@ColorInt Int) Sets custom progress bar tint color.
+     */
+    fun MaterialButton.showProgress(@ColorInt tintColor: Int = this.iconTint.defaultColor) =
+        // Use runOnMainThreadNative to allow process on io threads, to make the code a bit cleaner
+        runOnMainThreadNative {
+            val spec = CircularProgressIndicatorSpec(
+                context, null, 0,
+                com.google.android.material.R.style.Widget_Material3_CircularProgressIndicator_ExtraSmall
+            )
+
+            spec.indicatorColors = intArrayOf(tintColor)
+
+            val progressIndicatorDrawable =
+                IndeterminateDrawable.createCircularDrawable(context, spec)
+
+            this.icon = progressIndicatorDrawable
+            if (this.getTag(R.id.text1) == null)
+                this.setTag(R.id.text1, this.text)
+            this.text = ""
+        }
+
+    fun MaterialButton.hideProgress() =
+        runOnMainThreadNative {
+            this.text = this.getTag(R.id.text1) as? String
+            this.icon = null
+        }
+
     /**id, stringRes */
     @SuppressLint("RestrictedApi")
     fun View.popupMenuNoIcons(
