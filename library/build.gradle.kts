@@ -90,6 +90,19 @@ kotlin {
     }
 }
 
+
+    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+    // https://kotlinlang.org/docs/gradle-binary-compatibility-validation.html
+    abiValidation {
+        enabled.set(true)
+        this.filters {
+            exclude {
+                annotatedWith.add("com.lagradost.cloudstream3.Prerelease")
+                annotatedWith.add("com.lagradost.cloudstream3.InternalAPI")
+            }
+        }
+    }
+    
 tasks.withType<KotlinJvmCompile> {
     compilerOptions {
         jvmTarget.set(javaTarget)
