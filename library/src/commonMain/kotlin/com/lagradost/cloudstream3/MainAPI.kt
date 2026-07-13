@@ -1824,7 +1824,7 @@ interface LoadResponse {
 
         /** Read the id string to get all other ids */
         fun readIdFromString(idString: String?): Map<SimklSyncServices, String> {
-            return tryParseJson(idString) ?: return emptyMap()
+            return tryParseJson<Map<SimklSyncServices, String>>(idString) ?: return emptyMap()
         }
 
         fun LoadResponse.isMovie(): Boolean {
