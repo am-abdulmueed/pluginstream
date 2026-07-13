@@ -46,11 +46,11 @@ object AesHelper {
         }
     }
 
-    // Deprecate after next stable
-    /* @Deprecated(
+    @Deprecated(
+
         message = "Set padding = false for no padding",
         level = DeprecationLevel.WARNING,
-    ) */
+    )
     fun cryptoAESHandler(
         data: String,
         pass: ByteArray,
