@@ -845,6 +845,17 @@ object AppContextUtils {
         }
     }
 
+    /**
+     * Sets the focus to the given view when in TV and Emulator layout.
+     **/
+    fun Context.setDefaultFocus(view: View) {
+        if (!Globals.isLayout(Globals.TV or Globals.EMULATOR)) return
+        view.run {
+            isFocusableInTouchMode = true
+            requestFocus()
+        }
+    }
+
     fun Context.isUsingMobileData(): Boolean {
         val connectionManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

@@ -65,9 +65,12 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.palette.graphics.Palette
 import androidx.preference.PreferenceManager
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipDrawable
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.progressindicator.CircularProgressIndicatorSpec
+import com.google.android.material.progressindicator.IndeterminateDrawable
 import com.lagradost.cloudstream3.CloudStreamApp.Companion.context
 import com.lagradost.cloudstream3.CommonActivity.activity
 import com.lagradost.cloudstream3.CommonActivity.showToast
@@ -591,7 +594,7 @@ object UIHelper {
      *
      * @param tintColor (@ColorInt Int) Sets custom progress bar tint color.
      */
-    fun MaterialButton.showProgress(@ColorInt tintColor: Int = this.iconTint.defaultColor) =
+    fun MaterialButton.showProgress(@ColorInt tintColor: Int = this.iconTint?.defaultColor ?: context.colorFromAttribute(android.R.attr.textColorPrimary)) =
         // Use runOnMainThreadNative to allow process on io threads, to make the code a bit cleaner
         runOnMainThreadNative {
         // No need to set it again, as then it will reset the animation

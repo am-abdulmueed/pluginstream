@@ -797,38 +797,35 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
 
         binding.applyBtt.setOnClickListener {
-                       val api = providers.firstOrNull { it.idPrefix == currentSubtitle.idPrefix }
+            val currentSubtitleNonNull = currentSubtitle ?: run {
+                dialog.dismissSafe()
+                return@setOnClickListener
+            }
+            val api = providers.firstOrNull { it.idPrefix == currentSubtitleNonNull.idPrefix }
             if (api == null) {
                 dialog.dismissSafe()
                 return@setOnClickListener
             }
-
-            val api = providers.firstOrNull { it.idPrefix == currentSubtitle.idPrefix }
-            if (api == null) {
-                dialog.dismissSafe()
-                return@setOnClickListener
-            }
-
 
             binding.applyBtt.showProgress()
             ioSafe {
                 val apiResource =
-                    Resource.fromResult(api.resource(currentSubtitle))
+                    Resource.fromResult(api.resource(currentSubtitleNonNull))
                 binding.applyBtt.hideProgress()
                 when (apiResource) {
                     is Resource.Success -> {
                         val subtitles = apiResource.value.getSubtitles().map { resource ->
                             SubtitleData(
                                 originalName = resource.name ?: getName(
-                                    currentSubtitle,
+                                    currentSubtitleNonNull,
                                     true
                                 ),
                                 nameSuffix = "",
                                 url = resource.url,
                                 origin = resource.origin,
                                 mimeType = resource.url.toSubtitleMimeType(),
-                                headers = currentSubtitle.headers,
-                                languageCode = currentSubtitle.lang
+                                headers = currentSubtitleNonNull.headers,
+                                languageCode = currentSubtitleNonNull.lang
                             )
                         }
                         if (subtitles.isEmpty()) {
