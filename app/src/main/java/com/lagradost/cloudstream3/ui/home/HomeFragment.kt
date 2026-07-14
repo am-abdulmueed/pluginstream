@@ -810,7 +810,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                     fromUI = true
                 )
                 showToast(R.string.action_reload, Toast.LENGTH_SHORT)
-                true
             }
 
             homePreviewSearchButton.setOnClickListener { _ ->
