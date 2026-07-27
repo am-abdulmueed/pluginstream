@@ -26,6 +26,8 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
+import com.lagradost.cloudstream3.plugins.PluginManager
+import com.lagradost.cloudstream3.CloudStreamApp.Companion.getActivity
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
@@ -45,6 +47,7 @@ import com.lagradost.cloudstream3.mvvm.Resource
 import com.lagradost.cloudstream3.mvvm.logError
 import com.lagradost.cloudstream3.mvvm.observe
 import com.lagradost.cloudstream3.mvvm.observeNullable
+import com.lagradost.cloudstream3.plugins.Plugin
 import com.lagradost.cloudstream3.ui.APIRepository.Companion.noneApi
 import com.lagradost.cloudstream3.ui.APIRepository.Companion.randomApi
 import com.lagradost.cloudstream3.ui.BaseFragment
@@ -474,6 +477,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         val titleText: TextView = view.findViewById(R.id.text1)
                         val pinIcon: ImageView = view.findViewById(R.id.pinicon)
                         val prefixIcon: ImageView = view.findViewById(R.id.prefix_icon)
+                        val settingsIcon: ImageView = view.findViewById(R.id.action_settings)
                         val pinCheckbox: com.google.android.material.checkbox.MaterialCheckBox = view.findViewById(R.id.pin_checkbox)
                     }
 
@@ -510,6 +514,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                         
                         if (isPinningMode) {
                             vh.pinIcon.visibility = View.GONE
+                            vh.settingsIcon.visibility = View.GONE
                             vh.pinCheckbox.visibility = View.VISIBLE
                             vh.pinCheckbox.isChecked = tempPinnedProviders.contains(api.name)
                             
@@ -526,6 +531,23 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                             val isPinned = pinnedphashset.contains(api.name) || isSmartPinned(api.name)
                             vh.pinIcon.visibility = if (isPinned) View.VISIBLE else View.GONE
                             vh.pinCheckbox.setOnCheckedChangeListener(null)
+
+                            val pluginInstance = api.sourcePlugin?.let { PluginManager.plugins[it] } as? Plugin
+                            val isDownloadedPluginWithSettings = pluginInstance?.openSettings != null && !isLayout(TV)
+
+                            vh.settingsIcon.visibility = if (isDownloadedPluginWithSettings) View.VISIBLE else View.GONE
+                            if (isDownloadedPluginWithSettings) {
+                                vh.settingsIcon.setOnClickListener {
+                                    try {
+                                        val activityContext = it.context.getActivity() ?: it.context
+                                        pluginInstance.openSettings?.invoke(activityContext)
+                                    } catch (e: Throwable) {
+                                        logError(e)
+                                    }
+                                }
+                            } else {
+                                vh.settingsIcon.setOnClickListener(null)
+                            }
 
                             vh.itemView.setOnClickListener {
                                 if (currentValidApis.isNotEmpty()) {
