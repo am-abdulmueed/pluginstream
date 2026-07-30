@@ -12,7 +12,9 @@ import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
@@ -539,8 +541,92 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                             if (isDownloadedPluginWithSettings) {
                                 vh.settingsIcon.setOnClickListener {
                                     try {
-                                        val activityContext = it.context.getActivity() ?: it.context
+                                        val ctx = it.context
+                                        val activityContext = ctx.getActivity() ?: ctx
+                                        val activityDecor = (activityContext as? android.app.Activity)?.window?.decorView
+
+                                        fun getAllWindowRoots(): List<View> {
+                                            return try {
+                                                val wmgClass = Class.forName("android.view.WindowManagerGlobal")
+                                                val getInstance = wmgClass.getMethod("getInstance")
+                                                val wmg = getInstance.invoke(null)
+                                                val mViewsField = wmgClass.getDeclaredField("mViews")
+                                                mViewsField.isAccessible = true
+                                                @Suppress("UNCHECKED_CAST")
+                                                (mViewsField.get(wmg) as? java.util.ArrayList<View>)?.toList().orEmpty()
+                                            } catch (_: Throwable) {
+                                                emptyList()
+                                            }
+                                        }
+
+                                        val rootsBefore = getAllWindowRoots().toHashSet()
+
+                                        fun tryInjectHandleBar() {
+                                            try {
+                                                val allRoots = getAllWindowRoots()
+                                                val decorViews = allRoots.filterIsInstance<ViewGroup>()
+                                                val candidate = decorViews.firstOrNull { root ->
+                                                    root !== activityDecor &&
+                                                        !rootsBefore.contains(root) &&
+                                                        root.findViewById<View>(android.R.id.content) != null
+                                                } ?: decorViews.firstOrNull { root ->
+                                                    root !== activityDecor &&
+                                                        root.findViewById<View>(android.R.id.content) != null
+                                                }
+                                                if (candidate == null) return
+                                                val contentFrame = candidate.findViewById<FrameLayout>(android.R.id.content) ?: return
+                                                if (contentFrame.findViewWithTag<View>("legal_handle_injected") != null) return
+                                                if (contentFrame.childCount == 0) return
+
+                                                val handleWidth = 40.toPx
+                                                val handleHeight = 4.toPx
+                                                val handleMarginTop = 12.toPx
+                                                val cornerRadiusPx = 2.toPx.toFloat()
+                                                val dividerColor = try {
+                                                    val typedValue = android.util.TypedValue()
+                                                    ctx.theme.resolveAttribute(R.attr.dividerColor, typedValue, true)
+                                                    typedValue.data
+                                                } catch (_: Throwable) { 0x33FFFFFF.toInt() }
+
+                                                val handleBar = View(ctx).apply {
+                                                    tag = "legal_handle_injected"
+                                                    layoutParams = LinearLayout.LayoutParams(handleWidth, handleHeight).apply {
+                                                        gravity = android.view.Gravity.CENTER_HORIZONTAL
+                                                        topMargin = handleMarginTop
+                                                    }
+                                                    background = android.graphics.drawable.GradientDrawable().apply {
+                                                        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                                                        setColor(dividerColor)
+                                                        this.cornerRadius = cornerRadiusPx
+                                                    }
+                                                }
+
+                                                val originalContent = contentFrame.getChildAt(0)
+                                                val originalLP = originalContent.layoutParams
+                                                contentFrame.removeView(originalContent)
+
+                                                val wrapper = LinearLayout(ctx).apply {
+                                                    orientation = LinearLayout.VERTICAL
+                                                    layoutParams = FrameLayout.LayoutParams(
+                                                        originalLP?.width ?: FrameLayout.LayoutParams.MATCH_PARENT,
+                                                        originalLP?.height ?: FrameLayout.LayoutParams.MATCH_PARENT
+                                                    )
+                                                    setPadding(0, 0, 0, 24.toPx)
+                                                    addView(handleBar)
+                                                    addView(originalContent, LinearLayout.LayoutParams(
+                                                        LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f
+                                                    ))
+                                                }
+                                                contentFrame.addView(wrapper, 0)
+                                            } catch (_: Throwable) { }
+                                        }
+
                                         pluginInstance.openSettings?.invoke(activityContext)
+
+                                        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+                                        handler.postDelayed({ tryInjectHandleBar() }, 120)
+                                        handler.postDelayed({ tryInjectHandleBar() }, 350)
+                                        handler.postDelayed({ tryInjectHandleBar() }, 700)
                                     } catch (e: Throwable) {
                                         logError(e)
                                     }

@@ -1,7 +1,13 @@
 package com.lagradost.cloudstream3.ui.settings
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
+import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.FragmentLegalBinding
 import com.lagradost.cloudstream3.ui.BaseFragment
 import io.noties.markwon.Markwon
@@ -15,20 +21,58 @@ class SettingsLegalFragment : BaseFragment<FragmentLegalBinding>(
     override fun onBindingCreated(binding: FragmentLegalBinding) {
         val type = arguments?.getString("type") ?: "privacy"
 
-        binding.legalToolbar.setNavigationOnClickListener {
-            activity?.onBackPressedDispatcher?.onBackPressed()
+        val content = if (type == "privacy") {
+            binding.legalToolbar.title = "Privacy Policy"
+            getPrivacyPolicyMarkdown()
+        } else {
+            binding.legalToolbar.title = "Terms & Conditions"
+            getTermsMarkdown()
         }
 
         val markwon = Markwon.builder(requireContext())
             .usePlugin(LinkifyPlugin.create())
             .build()
 
-        if (type == "privacy") {
-            binding.legalToolbar.title = "Privacy Policy"
-            markwon.setMarkdown(binding.legalText, getPrivacyPolicyMarkdown())
-        } else {
-            binding.legalToolbar.title = "Terms & Conditions"
-            markwon.setMarkdown(binding.legalText, getTermsMarkdown())
+        markwon.setMarkdown(binding.legalText, content)
+
+        binding.legalToolbar.setNavigationOnClickListener {
+            activity?.onBackPressedDispatcher?.onBackPressed()
+        }
+
+        binding.legalToolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_copy -> {
+                    try {
+                        val ctx = requireContext()
+                        val clip = ClipData.newPlainText(
+                            binding.legalToolbar.title?.toString() ?: "Legal",
+                            content
+                        )
+                        (ctx.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)
+                            ?.setPrimaryClip(clip)
+
+                        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                            val copied = ctx.getString(R.string.toast_copied)
+                            val label = binding.legalToolbar.title?.toString() ?: ""
+                            Toast.makeText(ctx, "$label $copied", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (t: Throwable) {
+                        when (t) {
+                            is android.os.TransactionTooLargeException -> {
+                                Toast.makeText(requireContext(), R.string.clipboard_too_large, Toast.LENGTH_SHORT).show()
+                            }
+                            is SecurityException -> {
+                                Toast.makeText(requireContext(), R.string.clipboard_permission_error, Toast.LENGTH_SHORT).show()
+                            }
+                            else -> {
+                                Toast.makeText(requireContext(), R.string.clipboard_unknown_error, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                    true
+                }
+                else -> false
+            }
         }
 
         binding.legalFooter.text = "Last Edited: May 13, 2026\n© 2026 PluginStream"
