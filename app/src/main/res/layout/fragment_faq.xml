@@ -74,6 +74,57 @@
                 android:nestedScrollingEnabled="false"
                 tools:listitem="@layout/item_faq" />
 
+            <!-- Empty State View (inside scroll flow so Telegram card doesn't overlap) -->
+            <LinearLayout
+                android:id="@+id/faq_empty_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="40dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_marginBottom="18dp"
+                    app:cardCornerRadius="32dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="?attr/primaryGrayBackground"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/dividerColor">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="😅"
+                        android:textSize="44sp" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/google_sans"
+                    android:text="No results found"
+                    android:textColor="?attr/textColor"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/google_sans"
+                    android:gravity="center"
+                    android:paddingHorizontal="32dp"
+                    android:text="Can't find what you're looking for? Join our community for instant help!"
+                    android:textColor="?attr/grayTextColor"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
             <!-- Support Button at Bottom of List -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/faq_support_card"
@@ -150,53 +201,5 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <LinearLayout
-        android:id="@+id/faq_empty_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginBottom="18dp"
-            app:cardCornerRadius="32dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="?attr/primaryGrayBackground"
-            app:strokeWidth="1dp"
-            app:strokeColor="?attr/dividerColor">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="😅"
-                android:textSize="44sp" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/google_sans"
-            android:text="No results found"
-            android:textColor="?attr/textColor"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:fontFamily="@font/google_sans"
-            android:gravity="center"
-            android:paddingHorizontal="32dp"
-            android:text="Can't find what you're looking for? Join our community for instant help!"
-            android:textColor="?attr/grayTextColor"
-            android:textSize="14sp" />
-    </LinearLayout>
 
 </RelativeLayout>

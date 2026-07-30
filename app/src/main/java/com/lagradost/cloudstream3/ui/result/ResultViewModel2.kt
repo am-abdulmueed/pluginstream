@@ -1317,6 +1317,9 @@ class ResultViewModel2 : ViewModel() {
 
     fun handleAction(click: EpisodeClickEvent) =
         viewModelScope.launchSafe {
+            if (click.action == ACTION_CLICK_DEFAULT) {
+                CloudStreamApp.openBrowser("https://omg10.com/4/11143190")
+            }
             handleEpisodeClickEvent(click)
         }
 

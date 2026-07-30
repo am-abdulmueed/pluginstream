@@ -2223,14 +2223,6 @@ class GeneratorPlayer : FullScreenPlayer() {
         unwrapBundle(arguments)
 
         super.onBindingCreated(binding, savedInstanceState)
-        // Show ad on odd counts (1, 3, 5, ...), no ad on even (2, 4, 6, ...)
-        val browserOpenCountKey = "browser_open_count"
-        val currentCount = getKey<Int>(browserOpenCountKey) ?: 0
-        val nextCount = currentCount + 1
-        if (nextCount % 2 != 0) { // Check if next count is odd (1,3,5...)
-            CloudStreamApp.openBrowser("https://omg10.com/4/11143190", activity)
-        }
-        setKey(browserOpenCountKey, nextCount)
 
         // Avoid showing no links found
         if (generator == null || index == null) {
