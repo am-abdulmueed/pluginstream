@@ -790,7 +790,6 @@
         <item quantity="other">%d downloads queued</item>
     </plurals>
     <string name="player_is_live">Live</string>
-
     <string name="settings">Settings</string>
     <string name="general">General</string>
     <string name="providers">Providers</string>
