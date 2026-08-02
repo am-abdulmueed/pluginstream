@@ -97,6 +97,7 @@ val appLanguages = arrayListOf(
     Pair("Português", "pt"),
     Pair("Português (Brasil)", "pt-BR"),
     Pair("Română", "ro"),
+    Pair("Shqip мова", "sq"),
     Pair("Slovenčina", "sk"),
     Pair("Soomaaliga", "so"),
     Pair("Svenska", "sv"),
@@ -106,6 +107,7 @@ val appLanguages = arrayListOf(
     Pair("Wikang Filipino", "fil"),
     Pair("Čeština", "cs"),
     Pair("Ελληνικά", "el"),
+    Pair("беларуская мова", "be"),
     Pair("български", "bg"),
     Pair("македонски", "mk"),
     Pair("русский", "ru"),
@@ -132,9 +134,6 @@ val appLanguages = arrayListOf(
     Pair("日本語 (にほんご)", "ja"),
     Pair("正體中文(臺灣)", "zh-TW"),
     Pair("한국어", "ko"),
-    Pair("беларуская мова", "be"),
-    Pair("català", "ca"),
-    Pair("Shqip мова", "sq"),
 /* end language list */
 ).sortedBy { it.first.lowercase(Locale.ROOT) } // ye, we go alphabetical, so ppl don't put their lang on top
 
