@@ -174,7 +174,7 @@
     <string name="delete">ডিলিট</string>
     <string name="start">শুরু</string>
     <string name="cartoons">কার্টুন</string>
-    <string name="apk_installer_settings_des">কিছু ফোন নতুন প্যাকেজ ইনস্টলার সাপোর্ট করে না। যদি আপডেটগুলি ইনস্টল না হয় তবে পুরোনো পদ্ধতি ব্যবহার করে দেখুন।</string>
+    <string name="apk_installer_settings_des">Some devices do not support the new package installer. Try the legacy option if updates do not install।</string>
     <string name="no_subtitles">সাবটাইটেল নেই</string>
     <string name="no_chromecast_support_toast">এই প্রোভাইডার ক্রোমকাস্ট সাপোর্ট করে না</string>
     <string name="advanced_search">উন্নত অনুসন্ধান</string>

@@ -77,6 +77,7 @@ val appLanguages = arrayListOf(
     Pair("Azərbaycan dili", "az"),
     Pair("Bahasa Indonesia", "in"),
     Pair("Bahasa Melayu", "ms"),
+    Pair("català", "ca"),
     Pair("Deutsch", "de"),
     Pair("English", "en"),
     Pair("Español", "es"),
