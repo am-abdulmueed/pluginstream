@@ -522,6 +522,9 @@
     <string name="delete_repository_plugins">This will also delete all repository plugins</string>
     <string name="delete_repository">Delete repository</string>
     <string name="delete_plugin">Delete plugin</string>
+    <string name="delete_all_extensions_title">Delete All Extensions</string>
+    <string name="delete_all_extensions_message">Are you sure you want to delete all downloaded extensions?</string>
+    <string name="batch_delete_finish_format" formatted="true">Deleted %1$d %2$s</string>
     <string name="plugins_downloaded" formatted="true">Downloaded: %d</string>
     <string name="plugins_disabled" formatted="true">Disabled: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Not downloaded: %d</string>

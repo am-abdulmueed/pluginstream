@@ -36,6 +36,7 @@ import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.main
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.UIHelper.hideProgress
+import com.lagradost.cloudstream3.utils.UIHelper.navigateSafe
 import com.lagradost.cloudstream3.utils.UIHelper.showProgress
 import com.lagradost.cloudstream3.utils.setText
 
@@ -115,7 +116,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                 }
             }
             adapter = RepoAdapter(false, { repo ->
-                findNavController().navigate(
+                findNavController().navigateSafe(
                     R.id.navigation_settings_extensions_to_navigation_settings_plugins,
                     PluginsFragment.newInstance(repo)
                 )
@@ -191,7 +192,7 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
         // Set click listener on both the appbar and the inner clickable area to ensure it works on all devices
         val navigateToPlugins = { _: View ->
-            findNavController().navigate(
+            findNavController().navigateSafe(
                 R.id.navigation_settings_extensions_to_navigation_settings_plugins,
                 PluginsFragment.newLocalInstance(
                     getString(R.string.extensions)
@@ -225,6 +226,50 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
         binding.settingsToolbar.apply {
             val searchItem = menu?.findItem(R.id.search_button)
             val searchView = searchItem?.actionView as? SearchView
+
+            setOnMenuItemClickListener { menuItem ->
+                when (menuItem?.itemId) {
+                    R.id.download_all -> {
+                        val repos = (extensionViewModel.repositories.value ?: emptyArray()).toList().ifEmpty {
+                            RepositoryManager.getRepositories().toList()
+                        }
+                        PluginsViewModel.downloadAllFromAllRepositories(
+                            activity,
+                            repos,
+                            pluginViewModel,
+                            extensionViewModel
+                        )
+                        true
+                    }
+                    R.id.delete_all -> {
+                        main {
+                            val uiContext = context ?: binding.root.context
+                            val builder = AlertDialog.Builder(uiContext)
+                            val dialogClickListener =
+                                DialogInterface.OnClickListener { _, which ->
+                                    when (which) {
+                                        DialogInterface.BUTTON_POSITIVE -> {
+                                            PluginsViewModel.deleteAllDownloadedPlugins(
+                                                activity,
+                                                pluginViewModel,
+                                                extensionViewModel
+                                            )
+                                        }
+                                        DialogInterface.BUTTON_NEGATIVE -> {}
+                                    }
+                                }
+
+                            builder.setTitle(R.string.delete_all_extensions_title)
+                                .setMessage(R.string.delete_all_extensions_message)
+                                .setPositiveButton(R.string.delete, dialogClickListener)
+                                .setNegativeButton(R.string.cancel, dialogClickListener)
+                                .show()
+                        }
+                        true
+                    }
+                    else -> false
+                }
+            }
 
             searchItem?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionCollapse(p0: MenuItem): Boolean {

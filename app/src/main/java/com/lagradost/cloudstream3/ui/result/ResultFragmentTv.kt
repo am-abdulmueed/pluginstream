@@ -54,6 +54,7 @@ import com.lagradost.cloudstream3.utils.AppContextUtils.updateHasTrailers
 import com.lagradost.cloudstream3.utils.BackPressedCallbackHelper.attachBackPressedCallback
 import com.lagradost.cloudstream3.utils.BackPressedCallbackHelper.detachBackPressedCallback
 import com.lagradost.cloudstream3.utils.ImageLoader.loadImage
+import com.lagradost.cloudstream3.ui.home.HomeFragment.Companion.toPluginStream
 import com.lagradost.cloudstream3.utils.SingleSelectionHelper.showBottomDialog
 import com.lagradost.cloudstream3.utils.SingleSelectionHelper.showBottomDialogInstant
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
@@ -867,7 +868,7 @@ class ResultFragmentTv : BaseFragment<FragmentResultTvBinding>(
                         resultInfo.setText(d.metaText)
                         resultNoEpisodes.setText(d.noEpisodesFoundText)
                         resultTitle.setText(d.titleText)
-                        resultMetaSite.setText(d.apiName)
+                        resultMetaSite.setText(d.apiName.toPluginStream())
                         resultMetaType.setText(d.typeText)
                         resultMetaYear.setText(d.yearText)
                         resultMetaDuration.setText(d.durationText)

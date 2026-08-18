@@ -37,6 +37,7 @@ import kotlin.math.pow
 data class PluginViewData(
     val pluginWrapper: PluginWrapper,
     val isDownloaded: Boolean,
+    val isDownloading: Boolean = false,
 )
 
 class RepositoryViewHolderState(view: ViewBinding) : ViewHolderState<Any>(view) {
@@ -97,6 +98,15 @@ class PluginAdapter(
 
         binding.nsfwMarker.isVisible = metadata.tvTypes?.contains(TvType.NSFW.name) ?: false
         binding.actionButton.setImageResource(drawableInt)
+
+        val isDownloading = item.isDownloading || PluginsViewModel.currentDownloadingRepos.contains(item.pluginWrapper.repositoryData.url)
+        if (isDownloading) {
+            binding.actionButton.isVisible = false
+            binding.actionProgress.isVisible = true
+        } else {
+            binding.actionButton.isVisible = true
+            binding.actionProgress.isVisible = false
+        }
 
         binding.actionButton.setOnClickListener {
             iconClickCallback.invoke(item.pluginWrapper)

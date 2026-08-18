@@ -13,11 +13,11 @@ import android.view.WindowManager
 import android.widget.AbsListView
 import android.widget.ArrayAdapter
 import android.widget.ImageView
-import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
@@ -161,6 +161,8 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     override fun onDestroyView() {
         hideKeyboard()
         bottomSheetDialog?.ownHide()
+        bottomSheetDialog?.dismissSafe(activity)
+        bottomSheetDialog = null
         activity?.detachBackPressedCallback("SearchFragment")
         if (::voiceSearchManager.isInitialized) {
             voiceSearchManager.destroy()
@@ -330,6 +332,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
         selectedApis = DataStoreHelper.searchPreferenceProviders.toMutableSet()
 
         binding.searchFilter.setOnClickListener { searchView ->
+            if (bottomSheetDialog?.isShowing == true) return@setOnClickListener
             searchView?.context?.let { ctx ->
                 val validAPIs = ctx.filterProviderByPreferredMedia(hasHomePageIsRequired = false)
                 var currentValidApis = listOf<MainAPI>()
@@ -338,6 +341,12 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
 
                 val builder =
                     BottomSheetDialog(ctx)
+                bottomSheetDialog = builder
+                builder.setOnDismissListener {
+                    if (bottomSheetDialog == builder) {
+                        bottomSheetDialog = null
+                    }
+                }
 
                 builder.behavior.state = BottomSheetBehavior.STATE_EXPANDED
 
@@ -357,51 +366,97 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                         set.size > 1 || set.contains(AllLanguagesName)
                     }
 
-                    val cancelBtt = dialog.findViewById<MaterialButton>(R.id.cancel_btt)
-                    val applyBtt = dialog.findViewById<MaterialButton>(R.id.apply_btt)
+                    selectMainpageBinding.selfPinBtt.visibility = View.GONE
+                    selectMainpageBinding.donePinBtt.visibility = View.GONE
+                    selectMainpageBinding.applyBttHolder.visibility = View.VISIBLE
 
-                    val listView = dialog.findViewById<ListView>(R.id.listview1)
-                    val arrayAdapter = ArrayAdapter<String>(ctx, R.layout.sort_bottom_single_choice)
-                    listView?.adapter = arrayAdapter
-                    listView?.choiceMode = AbsListView.CHOICE_MODE_MULTIPLE
+                    val cancelBtt = selectMainpageBinding.cancelBtt
+                    val applyBtt = selectMainpageBinding.applyBtt
+                    val recyclerView = selectMainpageBinding.listview1
+                    val searchBar = selectMainpageBinding.searchBarEditText
 
-                    listView?.setOnItemClickListener { _, _, i, _ ->
-                        if (currentValidApis.isNotEmpty()) {
-                            val api = currentValidApis[i].name
-                            if (currentSelectedApis.contains(api)) {
-                                listView.setItemChecked(i, false)
-                                currentSelectedApis -= api
-                            } else {
-                                listView.setItemChecked(i, true)
-                                currentSelectedApis += api
+                    val providerNames = mutableListOf<String>()
+                    var currentSearchQuery = ""
+
+                    val providerAdapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+                        inner class ViewHolder(view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
+                            val titleText: TextView = view.findViewById(R.id.text1)
+                            val pinIcon: ImageView = view.findViewById(R.id.pinicon)
+                            val prefixIcon: ImageView = view.findViewById(R.id.prefix_icon)
+                            val settingsIcon: ImageView = view.findViewById(R.id.action_settings)
+                            val pinCheckbox: com.google.android.material.checkbox.MaterialCheckBox = view.findViewById(R.id.pin_checkbox)
+                        }
+
+                        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
+                            val view = LayoutInflater.from(parent.context)
+                                .inflate(R.layout.sort_bottom_single_provider_choice, parent, false)
+                            return ViewHolder(view)
+                        }
+
+                        override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+                            if (position >= currentValidApis.size) return
+                            val api = currentValidApis[position]
+                            val name = providerNames.getOrNull(position) ?: api.name
+                            val vh = holder as ViewHolder
+                            vh.titleText.text = name
+                            vh.prefixIcon.visibility = View.GONE
+                            vh.pinIcon.visibility = View.GONE
+                            vh.settingsIcon.visibility = View.GONE
+                            vh.pinCheckbox.visibility = View.VISIBLE
+
+                            vh.pinCheckbox.setOnCheckedChangeListener(null)
+                            vh.pinCheckbox.isChecked = currentSelectedApis.contains(api.name)
+
+                            fun toggle() {
+                                if (currentSelectedApis.contains(api.name)) {
+                                    currentSelectedApis -= api.name
+                                    vh.pinCheckbox.isChecked = false
+                                } else {
+                                    currentSelectedApis += api.name
+                                    vh.pinCheckbox.isChecked = true
+                                }
+                            }
+
+                            vh.pinCheckbox.setOnClickListener {
+                                toggle()
+                            }
+
+                            vh.itemView.setOnClickListener {
+                                toggle()
                             }
                         }
+
+                        override fun getItemCount(): Int = currentValidApis.size
                     }
+
+                    recyclerView.adapter = providerAdapter
 
                     fun updateList(types: List<TvType>) {
                         DataStoreHelper.searchPreferenceTags = types
 
-                        arrayAdapter.clear()
                         currentValidApis = validAPIs.filter { api ->
-                            api.supportedTypes.any {
-                                types.contains(it)
-                            }
+                            api.supportedTypes.any { types.contains(it) } &&
+                                (currentSearchQuery.isEmpty() || api.name.contains(currentSearchQuery, ignoreCase = true))
                         }.sortedBy { it.name.lowercase() }
 
-                        val names = currentValidApis.map {
-                            if (isMultiLang) "${
-                                SubtitleHelper.getFlagFromIso(
-                                    it.lang
-                                )?.plus(" ") ?: ""
-                            }${it.name}" else it.name
-                        }
-                        for ((index, api) in currentValidApis.map { it.name }.withIndex()) {
-                            listView?.setItemChecked(index, currentSelectedApis.contains(api))
-                        }
+                        providerNames.clear()
+                        providerNames.addAll(
+                            currentValidApis.map {
+                                val displayName = HomeFragment.getDisplayApiName(it.name) ?: it.name
+                                if (isMultiLang) "${
+                                    SubtitleHelper.getFlagFromIso(
+                                        it.lang
+                                    )?.plus(" ") ?: ""
+                                }$displayName" else displayName
+                            }
+                        )
 
-                        //arrayAdapter.notifyDataSetChanged()
-                        arrayAdapter.addAll(names)
-                        arrayAdapter.notifyDataSetChanged()
+                        providerAdapter.notifyDataSetChanged()
+                    }
+
+                    searchBar.addTextChangedListener { text ->
+                        currentSearchQuery = text?.toString()?.trim() ?: ""
+                        updateList(selectedSearchTypes.toList())
                     }
 
                     bindChips(
@@ -419,23 +474,14 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
                                 binding.tvtypesChipsScroll.tvtypesChips,
                                 selectedSearchTypes
                             )
-
                         }
                     }
 
-
-                    cancelBtt?.setOnClickListener {
+                    cancelBtt.setOnClickListener {
                         dialog.dismissSafe()
                     }
 
-                    cancelBtt?.setOnClickListener {
-                        dialog.dismissSafe()
-                    }
-
-                    applyBtt?.setOnClickListener {
-                        //if (currentApiName != selectedApiName) {
-                        //    currentApiName?.let(callback)
-                        //}
+                    applyBtt.setOnClickListener {
                         dialog.dismissSafe()
                     }
 

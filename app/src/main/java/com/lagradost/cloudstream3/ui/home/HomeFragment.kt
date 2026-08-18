@@ -418,7 +418,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             }
         }
 
+        private var selectHomepageDialog: BottomSheetDialog? = null
+
         fun Context.selectHomepage(selectedApiName: String?, callback: (String) -> Unit) {
+            if (selectHomepageDialog?.isShowing == true) return
+
             val validAPIs = filterProviderByPreferredMedia().toMutableList()
 
             validAPIs.add(0, randomApi)
@@ -427,6 +431,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
             //builder.setView(R.layout.home_select_mainpage)
             val builder =
                 BottomSheetDialog(this)
+            selectHomepageDialog = builder
+
+            builder.setOnDismissListener {
+                if (selectHomepageDialog == builder) {
+                    selectHomepageDialog = null
+                }
+            }
 
             val binding: HomeSelectMainpageBinding = HomeSelectMainpageBinding.inflate(
                 builder.layoutInflater,
@@ -833,6 +844,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
     override fun onDestroyView() {
         (activity as? ComponentActivity)?.detachBackPressedCallback("HomeFragment_BackPress")
         bottomSheetDialog?.ownHide()
+        selectHomepageDialog?.dismissSafe(activity)
+        selectHomepageDialog = null
         super.onDestroyView()
     }
 

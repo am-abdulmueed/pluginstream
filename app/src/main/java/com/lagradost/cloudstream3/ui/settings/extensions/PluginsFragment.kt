@@ -178,6 +178,13 @@ class PluginsFragment : BaseFragment<FragmentPluginsBinding>(
             }
         }
 
+        PluginsViewModel.downloadingRepos.observe(viewLifecycleOwner) {
+            pluginViewModel.updateFilteredPlugins()
+        }
+        PluginsViewModel.downloadedRepos.observe(viewLifecycleOwner) {
+            pluginViewModel.updateFilteredPlugins()
+        }
+
         if (isLocal) {
             // No download button and no categories on local
             downloadAllButton?.isVisible = false

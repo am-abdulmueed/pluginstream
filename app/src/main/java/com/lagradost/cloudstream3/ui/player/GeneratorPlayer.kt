@@ -84,6 +84,7 @@ import com.lagradost.cloudstream3.ui.player.source_priority.ProfileSettings
 import com.lagradost.cloudstream3.ui.player.source_priority.QualityDataHelper
 import com.lagradost.cloudstream3.ui.player.source_priority.QualityDataHelper.getLinkPriority
 import com.lagradost.cloudstream3.ui.player.source_priority.QualityProfileDialog
+import com.lagradost.cloudstream3.ui.home.HomeFragment.Companion.toPluginStream
 import com.lagradost.cloudstream3.ui.result.ACTION_CLICK_DEFAULT
 import com.lagradost.cloudstream3.ui.result.EpisodeAdapter
 import com.lagradost.cloudstream3.ui.result.FOCUS_SELF
@@ -641,7 +642,7 @@ class GeneratorPlayer : FullScreenPlayer() {
                     val language =
                         item?.let { fromTagToLanguageName(it.lang) ?: it.lang } ?: ""
                     val providerSuffix =
-                        if (isSingleProvider || item == null) "" else " · ${item.source}"
+                        if (isSingleProvider || item == null) "" else " · ${(item.source.toPluginStream() ?: item.source)}"
                     @SuppressLint("SetTextI18n")
                     secondaryTextView?.text = language + providerSuffix
 
@@ -1867,11 +1868,12 @@ class GeneratorPlayer : FullScreenPlayer() {
     }
 
     private fun getHeaderName(): String? {
-        return when (val meta = currentMeta) {
+        val raw = when (val meta = currentMeta) {
             is ResultEpisode -> meta.headerName
             is ExtractorUri -> meta.headerName
             else -> null
         }
+        return raw?.toPluginStream() ?: raw
     }
 
     private fun getPlayerVideoTitle(): String {
@@ -1900,8 +1902,9 @@ class GeneratorPlayer : FullScreenPlayer() {
         }
         context?.let { ctx ->
             //Generate video title
-            val playerVideoTitle = if (headerName != null) {
-                (headerName + if (tvType.isEpisodeBased() && episode != null) if (season == null) " - ${
+            val displayHeader = (headerName?.toPluginStream() ?: headerName)
+            val playerVideoTitle = if (displayHeader != null) {
+                (displayHeader + if (tvType.isEpisodeBased() && episode != null) if (season == null) " - ${
                     ctx.getString(
                         R.string.episode
                     )
@@ -1943,7 +1946,8 @@ class GeneratorPlayer : FullScreenPlayer() {
 
     fun setPlayerDimen(widthHeight: Pair<Int, Int>?) {
         val resolution = widthHeight?.let { "${it.first}x${it.second}" }
-        val name = currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name
+        val rawName = currentSelectedLink?.first?.name ?: currentSelectedLink?.second?.name
+        val name = rawName?.toPluginStream() ?: rawName
         val title = getHeaderName()
 
         val result = listOfNotNull(

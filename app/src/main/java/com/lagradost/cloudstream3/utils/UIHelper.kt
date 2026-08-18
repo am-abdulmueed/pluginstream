@@ -60,6 +60,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.palette.graphics.Palette
@@ -253,11 +254,29 @@ object UIHelper {
                     val navHostFragment =
                         supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
                     Log.i(tag, "Navigating to fragment: $navigationId")
-                    navHostFragment?.navController?.navigate(navigationId, args, navOptions)
+                    navHostFragment?.navController?.navigateSafe(navigationId, args, navOptions)
                 }
             } catch (t: Throwable) {
                 logError(t)
             }
+        }
+    }
+
+    fun NavController.navigateSafe(
+        navigationId: Int,
+        args: Bundle? = null,
+        navOptions: NavOptions? = null
+    ) {
+        try {
+            val action = currentDestination?.getAction(navigationId)
+            if (action != null) {
+                navigate(navigationId, args, navOptions)
+            } else if (currentDestination?.id != navigationId) {
+                // If it's a destination ID rather than an action ID
+                navigate(navigationId, args, navOptions)
+            }
+        } catch (t: Throwable) {
+            logError(t)
         }
     }
 

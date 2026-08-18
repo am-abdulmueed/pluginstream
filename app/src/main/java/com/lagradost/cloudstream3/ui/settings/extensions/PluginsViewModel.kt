@@ -180,6 +180,156 @@ class PluginsViewModel : ViewModel() {
                     viewModel?.updateFilteredPlugins()
                 }
             }
+
+        /**
+         * Download all plugins from multiple repositories
+         */
+        fun downloadAllFromAllRepositories(
+            activity: Activity?,
+            repositories: List<RepositoryData>,
+            viewModel: PluginsViewModel?,
+            extensionViewModel: ExtensionsViewModel? = null
+        ) = ioSafe {
+            if (activity == null) return@ioSafe
+            if (repositories.isEmpty()) {
+                main {
+                    showToast(R.string.no_plugins_found_error, Toast.LENGTH_SHORT)
+                }
+                return@ioSafe
+            }
+
+            repositories.forEach { currentDownloadingRepos.add(it.url) }
+            _downloadingRepos.postValue(currentDownloadingRepos.toSet())
+            viewModel?.updateFilteredPlugins()
+
+            val allPlugins = repositories.flatMap { repo ->
+                getPlugins(repo)
+            }
+
+            val notDownloaded = allPlugins.filter { pluginWrapper ->
+                !isDownloaded(
+                    activity,
+                    pluginWrapper.plugin.internalName,
+                    pluginWrapper.repositoryData.url
+                )
+            }
+
+            main {
+                showToast(
+                    when {
+                        allPlugins.isEmpty() -> txt(R.string.no_plugins_found_error)
+                        notDownloaded.isEmpty() -> txt(
+                            R.string.batch_download_nothing_to_download_format,
+                            txt(R.string.plugin)
+                        )
+                        else -> txt(
+                            R.string.batch_download_start_format,
+                            notDownloaded.size,
+                            txt(if (notDownloaded.size == 1) R.string.plugin_singular else R.string.plugin)
+                        )
+                    },
+                    Toast.LENGTH_SHORT
+                )
+            }
+
+            if (notDownloaded.isEmpty()) {
+                repositories.forEach { repo ->
+                    currentDownloadingRepos.remove(repo.url)
+                    currentDownloadedRepos.add(repo.url)
+                }
+                _downloadingRepos.postValue(currentDownloadingRepos.toSet())
+                _downloadedRepos.postValue(currentDownloadedRepos.toSet())
+                viewModel?.updateFilteredPlugins()
+                return@ioSafe
+            }
+
+            val results = notDownloaded.amap { (_, repo, metadata) ->
+                viewModel?.setDownloading(metadata.url, true)
+                val res = PluginManager.downloadPlugin(
+                    activity,
+                    metadata.url,
+                    metadata.fileHash,
+                    metadata.internalName,
+                    repo.url,
+                    metadata.status != PROVIDER_STATUS_DOWN
+                )
+                viewModel?.setDownloading(metadata.url, false)
+                res
+            }
+
+            main {
+                if (results.any { it }) {
+                    showToast(
+                        txt(
+                            R.string.batch_download_finish_format,
+                            results.count { it },
+                            txt(if (results.size == 1) R.string.plugin_singular else R.string.plugin)
+                        ),
+                        Toast.LENGTH_SHORT
+                    )
+                    viewModel?.updatePluginListPrivate(activity, repositories)
+                    extensionViewModel?.loadStats()
+                    extensionViewModel?.loadRepositories()
+                } else if (results.isNotEmpty()) {
+                    showToast(R.string.download_failed, Toast.LENGTH_SHORT)
+                }
+                repositories.forEach { repo ->
+                    currentDownloadingRepos.remove(repo.url)
+                    currentDownloadedRepos.add(repo.url)
+                }
+                _downloadingRepos.postValue(currentDownloadingRepos.toSet())
+                _downloadedRepos.postValue(currentDownloadedRepos.toSet())
+                viewModel?.updateFilteredPlugins()
+            }
+        }
+
+        /**
+         * Delete all downloaded plugins
+         */
+        fun deleteAllDownloadedPlugins(
+            activity: Activity?,
+            viewModel: PluginsViewModel?,
+            extensionViewModel: ExtensionsViewModel? = null
+        ) = ioSafe {
+            if (activity == null) return@ioSafe
+            val downloadedPlugins = (PluginManager.getPluginsOnline() + PluginManager.getPluginsLocal())
+                .distinctBy { it.filePath }
+
+            if (downloadedPlugins.isEmpty()) {
+                main {
+                    showToast(R.string.no_plugins_found_error, Toast.LENGTH_SHORT)
+                }
+                return@ioSafe
+            }
+
+            var deletedCount = 0
+            downloadedPlugins.forEach { plugin ->
+                val file = File(plugin.filePath)
+                if (file.exists() && PluginManager.deletePlugin(file)) {
+                    deletedCount++
+                }
+            }
+
+            currentDownloadedRepos.clear()
+            _downloadedRepos.postValue(emptySet())
+
+            main {
+                showToast(
+                    txt(
+                        R.string.batch_delete_finish_format,
+                        deletedCount,
+                        txt(if (deletedCount == 1) R.string.plugin_singular else R.string.plugin)
+                    ),
+                    Toast.LENGTH_SHORT
+                )
+                val repos = (extensionViewModel?.repositories?.value ?: emptyArray()).toList().ifEmpty {
+                    RepositoryManager.getRepositories().toList()
+                }
+                viewModel?.updatePluginListPrivate(activity, repos)
+                extensionViewModel?.loadStats()
+                extensionViewModel?.loadRepositories()
+            }
+        }
     }
 
     /**
@@ -206,16 +356,21 @@ class PluginsViewModel : ViewModel() {
         val (success, message) = if (file.exists()) {
             PluginManager.deletePlugin(file) to R.string.plugin_deleted
         } else {
-            val isEnabled = pluginWrapper.plugin.status != PROVIDER_STATUS_DOWN
-            val message = if (isEnabled) R.string.plugin_loaded else R.string.plugin_downloaded
-            PluginManager.downloadPlugin(
-                activity,
-                metadata.url,
-                metadata.fileHash,
-                metadata.internalName,
-                repositoryData.url,
-                isEnabled
-            ) to message
+            setDownloading(metadata.url, true)
+            try {
+                val isEnabled = pluginWrapper.plugin.status != PROVIDER_STATUS_DOWN
+                val message = if (isEnabled) R.string.plugin_loaded else R.string.plugin_downloaded
+                PluginManager.downloadPlugin(
+                    activity,
+                    metadata.url,
+                    metadata.fileHash,
+                    metadata.internalName,
+                    repositoryData.url,
+                    isEnabled
+                ) to message
+            } finally {
+                setDownloading(metadata.url, false)
+            }
         }
 
         runOnMainThread {
@@ -244,7 +399,11 @@ class PluginsViewModel : ViewModel() {
             // Show all non-nsfw plugins or all if nsfw is enabled
             it.plugin.tvTypes?.contains(TvType.NSFW.name) != true || isAdult
         }.map { plugin ->
-            PluginViewData(plugin, isDownloaded(context, plugin.plugin.internalName, plugin.repositoryData.url))
+            PluginViewData(
+                plugin,
+                isDownloaded(context, plugin.plugin.internalName, plugin.repositoryData.url),
+                downloadingPlugins.contains(plugin.plugin.url) || currentDownloadingRepos.contains(plugin.repositoryData.url)
+            )
         }
 
         this.plugins = list
@@ -300,8 +459,14 @@ class PluginsViewModel : ViewModel() {
     }
 
     fun updateFilteredPlugins() {
+        val updated = plugins.map {
+            it.copy(
+                isDownloading = downloadingPlugins.contains(it.pluginWrapper.plugin.url) ||
+                    currentDownloadingRepos.contains(it.pluginWrapper.repositoryData.url)
+            )
+        }
         _filteredPlugins.postValue(
-            false to plugins.filterTvTypes().filterLang().sortByQuery(currentQuery)
+            false to updated.filterTvTypes().filterLang().sortByQuery(currentQuery)
         )
     }
 

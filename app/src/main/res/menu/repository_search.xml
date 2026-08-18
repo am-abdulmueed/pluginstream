@@ -10,4 +10,14 @@
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always|collapseActionView"
         tools:ignore="AppCompatResource" />
+    <item
+        android:id="@+id/download_all"
+        android:icon="@drawable/netflix_download"
+        android:title="@string/batch_download"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/delete_all"
+        android:icon="@drawable/ic_baseline_delete_outline_24"
+        android:title="@string/delete_all_extensions_title"
+        app:showAsAction="always" />
 </menu>
