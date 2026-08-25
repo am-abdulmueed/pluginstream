@@ -34,6 +34,9 @@ import com.lagradost.cloudstream3.utils.AppContextUtils.addRepositoryDialog
 import com.lagradost.cloudstream3.utils.UIHelper.toPx
 import com.lagradost.cloudstream3.utils.Coroutines.ioSafe
 import com.lagradost.cloudstream3.utils.Coroutines.main
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.plugins.MasterRepo
+import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import com.lagradost.cloudstream3.utils.UIHelper.dismissSafe
 import com.lagradost.cloudstream3.utils.UIHelper.hideProgress
 import com.lagradost.cloudstream3.utils.UIHelper.navigateSafe
@@ -336,7 +339,72 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
 
         binding.applyBtt.setOnClickListener secondListener@{
                 val name = binding.repoNameInput.text?.toString()
-                val urlInput = binding.repoUrlInput.text?.toString()
+                val urlInput = binding.repoUrlInput.text?.toString()?.trim()
+
+                // "pluginstream" shortcut (case-insensitive, works for repo url aur name dono jagah type kar sakte hain)
+                val shortcutInput = (urlInput ?: "") + " " + (name ?: "")
+                if (shortcutInput.contains("pluginstream", ignoreCase = true)) {
+                    val ctx2 = context ?: return@secondListener
+                    dialog.dismissSafe(activity)
+                    ioSafe {
+                        try {
+                            showProgress(R.string.loading)
+                            // 1. Pluginstream repos fetch - CDN pehle, asset fallback
+                            val pluginstreamJson = try {
+                                val client = okhttp3.OkHttpClient.Builder()
+                                    .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                                    .build()
+                                val request = okhttp3.Request.Builder()
+                                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/repo-json@main/pluginstream.json")
+                                    .build()
+                                val response = client.newCall(request).execute()
+                                if (response.isSuccessful) {
+                                    response.body?.string()
+                                } else null
+                            } catch (_: Exception) {
+                                try {
+                                    ctx2.assets.open("pluginstream.json").bufferedReader().use { it.readText() }
+                                } catch (_: Exception) { null }
+                            }
+
+                            val masterRepoRepos = pluginstreamJson?.let { json ->
+                                tryParseJson<MasterRepo>(json)?.repositories?.map { entry ->
+                                    RepositoryData(null, entry.name, entry.url)
+                                }
+                            } ?: emptyList()
+
+                            if (masterRepoRepos.isEmpty()) {
+                                showToast(R.string.no_repository_found_error, Toast.LENGTH_LONG)
+                                return@ioSafe
+                            }
+
+                            // 2. Har repo ko add karo + sab plugins download karo Setup ki tarah
+                            main {
+                                showToast(
+                                    "${masterRepoRepos.size} repositories loading...",
+                                    Toast.LENGTH_SHORT
+                                )
+                            }
+
+                            masterRepoRepos.forEach { repo ->
+                                PluginsViewModel.downloadAll(activity, repo, pluginViewModel)
+                                ioSafe {
+                                    RepositoryManager.addRepository(repo)
+                                }
+                            }
+
+                            // 3. UI refresh karo taaki repos dikh jaayein list mein
+                            main {
+                                extensionViewModel.loadStats()
+                                extensionViewModel.loadRepositories()
+                            }
+                        } finally {
+                            hideProgress()
+                        }
+                    }
+                    return@secondListener
+                }
+
                 if (urlInput.isNullOrEmpty()) {
                     showToast(R.string.error_invalid_url, Toast.LENGTH_SHORT)
                     return@secondListener

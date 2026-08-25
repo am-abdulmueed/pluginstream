@@ -104,16 +104,12 @@ PluginStream is designed with a **Privacy-First** approach:
 
 ### 2. Third-Party Services
 We use a few trusted third-party services for app functionality and maintenance:
-- **Advertising (OGADS, CPALEAD, CPAGRIP):** These services may use your **IP Address** to show relevant offers. No other personal data is shared.
 - **Analytics & Stability (Firebase):** We use Firebase to monitor **Daily Active Users (DAU)** and receive **Crash Reports** to keep the app stable.
 - **Games (PLAYGAMA):** Our games section is powered by PlayGama.
 - **Video Content (YouTube):** ProTube features fetch content directly from YouTube.
 
 ### 3. Third-Party Links
 For more details, you can visit the privacy policies of our partners:
-- [CPALead Privacy](https://www.cpalead.com/en/policy)
-- [OGAds Privacy](https://ogads.com/privacy-policy)
-- [CPAGrip Privacy](https://www.cpagrip.com/privacy.php)
 - [PlayGama Confidentiality](https://playgama.com/confidential)
 
 ### 4. Contact Us

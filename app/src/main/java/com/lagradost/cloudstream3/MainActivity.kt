@@ -573,7 +573,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     private fun showFloatingMenu() {
         val menuBinding = binding?.moreMenuLayout ?: return
         val floatingContainer = menuBinding.floatingMenuContainer
-        val fabOffers = menuBinding.fabOffers
         val fabLibrary = menuBinding.fabLibrary
         val fabDownloads = menuBinding.fabDownloads
         val fabSettings = menuBinding.fabSettings
@@ -585,9 +584,9 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
 
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val fabs = if (isLandscape) {
-            listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
+            listOf(fabDownloads, fabLibrary, fabSettings)
         } else {
-            listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
+            listOf(fabSettings, fabLibrary, fabDownloads)
         }
 
         fabs.forEachIndexed { index, fab ->
@@ -614,16 +613,15 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
     private fun hideFloatingMenu() {
         val menuBinding = binding?.moreMenuLayout ?: return
         val floatingContainer = menuBinding.floatingMenuContainer
-        val fabOffers = menuBinding.fabOffers
         val fabLibrary = menuBinding.fabLibrary
         val fabDownloads = menuBinding.fabDownloads
         val fabSettings = menuBinding.fabSettings
 
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val fabs = if (isLandscape) {
-            listOf(fabSettings, fabLibrary, fabDownloads, fabOffers)
+            listOf(fabSettings, fabLibrary, fabDownloads)
         } else {
-            listOf(fabOffers, fabDownloads, fabLibrary, fabSettings)
+            listOf(fabDownloads, fabLibrary, fabSettings)
         }
 
         fabs.forEachIndexed { index, fab ->
@@ -719,7 +717,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_downloads,
             R.id.navigation_settings,
             R.id.navigation_game,
-            R.id.navigation_offers,
             R.id.navigation_more,
             R.id.navigation_download_child,
             R.id.navigation_download_queue,
@@ -826,19 +823,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 }
 
                 in listOf(
-                    R.id.navigation_offers,
-                    R.id.navigation_offer_detail
-                ) -> {
-                    navRailView.menu.findItem(R.id.navigation_offers)?.isChecked = true
-                    navView.menu.findItem(R.id.navigation_offers)?.isChecked = true
-                    // If we are on phone, Offers is in More
-                    if (navRailView.menu.findItem(R.id.navigation_offers) == null) {
-                        navRailView.menu.findItem(R.id.navigation_more)?.isChecked = true
-                        navView.menu.findItem(R.id.navigation_more)?.isChecked = true
-                    }
-                }
-
-                in listOf(
                     R.id.navigation_more
                 ) -> {
                     navRailView.menu.findItem(R.id.navigation_more)?.isChecked = true
@@ -879,8 +863,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         val backgroundColor = getResourceColor(R.attr.primaryBlackBackground)
         val textColor = getResourceColor(R.attr.textColor)
 
-        val isOffers =
-            destinationId == R.id.navigation_offers || destinationId == R.id.navigation_offer_detail
         val isLibrary = destinationId == R.id.navigation_library
         val isDownloads =
             destinationId == R.id.navigation_downloads || destinationId == R.id.navigation_download_child || destinationId == R.id.navigation_download_queue
@@ -899,11 +881,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             R.id.navigation_test_providers
         ).contains(destinationId)
 
-        menuBinding.fabOffers.apply {
-            backgroundTintList =
-                ColorStateList.valueOf(if (isOffers) primaryColor else backgroundColor)
-            imageTintList = ColorStateList.valueOf(if (isOffers) primaryColor else textColor)
-        }
         menuBinding.fabLibrary.apply {
             backgroundTintList =
                 ColorStateList.valueOf(if (isLibrary) primaryColor else backgroundColor)
@@ -1656,47 +1633,10 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         setNavigationBarColorCompat(R.attr.primaryGrayBackground)
         updateLocale()
         super.onCreate(savedInstanceState)
-        
-        // Download queue initialization
-        DownloadQueueManager.init(this)
-        
-        try {
-            if (isCastApiAvailable()) {
-                CastContext.getSharedInstance(this) { it.run() }
-                    .addOnSuccessListener { mSessionManager = it.sessionManager }
-            }
-        } catch (t: Throwable) {
-            logError(t)
-        }
 
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         updateTv()
-        showDialogAd()
 
-        // backup when we update the app, I don't trust myself to not boot lock users, might want to make this a setting?
-        safe {
-            val appVer = BuildConfig.VERSION_NAME
-            val lastAppAutoBackup: String = getKey<String>("VERSION_NAME") ?: ""
-            if (appVer != lastAppAutoBackup) {
-                setKey("VERSION_NAME", BuildConfig.VERSION_NAME)
-                if (lastAppAutoBackup.isEmpty()) return@safe
-
-                safe {
-                    backup(this)
-                }
-                safe {
-                    // Recompile oat on new version
-                    PluginManager.deleteAllOatFiles(this)
-                }
-                
-                // Show What's New dialog on version update
-                main {
-                    showChangelogDialog()
-                }
-            }
-        }
-
-        // just in case, MAIN SHOULD *NEVER* BOOT LOOP CRASH
         binding = try {
             if (isLayout(TV or EMULATOR)) {
                 val newLocalBinding = ActivityMainTvBinding.inflate(layoutInflater, null, false)
@@ -1800,76 +1740,11 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
         }
 
-        // Automatically enable jsdelivr if cant connect to raw.githubusercontent.com
-        if (this.getKey<Boolean>(getString(R.string.jsdelivr_proxy_key)) == null && isNetworkAvailable()) {
-            main {
-                if (checkGithubConnectivity()) {
-                    this.setKey(getString(R.string.jsdelivr_proxy_key), false)
-                } else {
-                    this.setKey(getString(R.string.jsdelivr_proxy_key), true)
-                    showSnackbar(
-                        this@MainActivity,
-                        R.string.jsdelivr_enabled,
-                        Snackbar.LENGTH_LONG,
-                        R.string.revert
-                    ) { setKey(getString(R.string.jsdelivr_proxy_key), false) }
-                }
-            }
-        }
-
-        ioSafe { SafeFile.check(this@MainActivity) }
-
         if (PluginManager.checkSafeModeFile()) {
             safe {
                 showToast(R.string.safe_mode_file, Toast.LENGTH_LONG)
             }
-        } else if (lastError == null) {
-            ioSafe {
-                DataStoreHelper.currentHomePage?.let { homeApi ->
-                    mainPluginsLoadedEvent.invoke(loadSinglePlugin(this@MainActivity, homeApi))
-                } ?: run {
-                    mainPluginsLoadedEvent.invoke(false)
-                }
-
-                ioSafe {
-                    if (settingsManager.getBoolean(
-                            getString(R.string.auto_update_plugins_key),
-                            true
-                        )
-                    ) {
-                        PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_updateAllOnlinePluginsAndLoadThem(
-                            this@MainActivity
-                        )
-                    } else {
-                        ___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins(this@MainActivity)
-                    }
-
-                    //Automatically download not existing plugins, using mode specified.
-                    val autoDownloadPlugin = AutoDownloadMode.getEnum(
-                        settingsManager.getInt(
-                            getString(R.string.auto_download_plugins_key),
-                            0
-                        )
-                    ) ?: AutoDownloadMode.Disable
-                    if (autoDownloadPlugin != AutoDownloadMode.Disable) {
-                        PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_downloadNotExistingPluginsAndLoad(
-                            this@MainActivity,
-                            autoDownloadPlugin
-                        )
-                    }
-                }
-
-                ioSafe {
-                    PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_loadAllLocalPlugins(
-                        this@MainActivity,
-                        false
-                    )
-                }
-
-// Add your channel creation here
-
-            }
-        } else {
+        } else if (lastError != null) {
             val dialogView = layoutInflater.inflate(R.layout.crash_initial_dialog, null)
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
             builder.setView(dialogView)
@@ -1911,6 +1786,104 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
 
             dialog.show()
+        }
+
+        // Defer ALL heavy non-critical work until after the first draw.
+        // This dramatically improves perceived startup time.
+        binding?.homeRoot?.post {
+            // Queue + Cast (needed after UI is laid out)
+            DownloadQueueManager.init(this)
+
+            try {
+                if (isCastApiAvailable()) {
+                    CastContext.getSharedInstance(this) { it.run() }
+                        .addOnSuccessListener { mSessionManager = it.sessionManager }
+                }
+            } catch (t: Throwable) {
+                logError(t)
+            }
+
+            // Dialog Ad - network fetch + OkHttp build
+            showDialogAd()
+
+            // Version backup / oat deletion / changelog
+            safe {
+                val appVer = BuildConfig.VERSION_NAME
+                val lastAppAutoBackup: String = getKey<String>("VERSION_NAME") ?: ""
+                if (appVer != lastAppAutoBackup) {
+                    setKey("VERSION_NAME", BuildConfig.VERSION_NAME)
+                    if (lastAppAutoBackup.isNotEmpty()) {
+                        safe { backup(this@MainActivity) }
+                        safe { PluginManager.deleteAllOatFiles(this@MainActivity) }
+                        main { showChangelogDialog() }
+                    }
+                }
+            }
+
+            // jsdelivr proxy connectivity check
+            if (this@MainActivity.getKey<Boolean>(getString(R.string.jsdelivr_proxy_key)) == null && isNetworkAvailable()) {
+                ioSafe {
+                    val enabled = !checkGithubConnectivity()
+                    this@MainActivity.setKey(getString(R.string.jsdelivr_proxy_key), enabled)
+                    if (enabled) {
+                        main {
+                            showSnackbar(
+                                this@MainActivity,
+                                R.string.jsdelivr_enabled,
+                                Snackbar.LENGTH_LONG,
+                                R.string.revert
+                            ) { setKey(getString(R.string.jsdelivr_proxy_key), false) }
+                        }
+                    }
+                }
+            }
+
+            ioSafe { SafeFile.check(this@MainActivity) }
+
+            // Plugin loading - heaviest block, absolutely must run after first draw
+            if (!PluginManager.checkSafeModeFile() && lastError == null) {
+                ioSafe {
+                    DataStoreHelper.currentHomePage?.let { homeApi ->
+                        mainPluginsLoadedEvent.invoke(loadSinglePlugin(this@MainActivity, homeApi))
+                    } ?: run {
+                        mainPluginsLoadedEvent.invoke(false)
+                    }
+
+                    ioSafe {
+                        if (settingsManager.getBoolean(
+                                getString(R.string.auto_update_plugins_key),
+                                true
+                            )
+                        ) {
+                            PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_updateAllOnlinePluginsAndLoadThem(
+                                this@MainActivity
+                            )
+                        } else {
+                            ___DO_NOT_CALL_FROM_A_PLUGIN_loadAllOnlinePlugins(this@MainActivity)
+                        }
+
+                        val autoDownloadPlugin = AutoDownloadMode.getEnum(
+                            settingsManager.getInt(
+                                getString(R.string.auto_download_plugins_key),
+                                0
+                            )
+                        ) ?: AutoDownloadMode.Disable
+                        if (autoDownloadPlugin != AutoDownloadMode.Disable) {
+                            PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_downloadNotExistingPluginsAndLoad(
+                                this@MainActivity,
+                                autoDownloadPlugin
+                            )
+                        }
+                    }
+
+                    ioSafe {
+                        PluginManager.___DO_NOT_CALL_FROM_A_PLUGIN_loadAllLocalPlugins(
+                            this@MainActivity,
+                            false
+                        )
+                    }
+                }
+            }
         }
 
 
@@ -2337,15 +2310,6 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             .setPopUpTo(navController.graph.findStartDestination().id, inclusive = false, saveState = true)
             .build()
 
-        findViewById<View?>(R.id.fabOffers)?.apply {
-            TooltipCompat.setTooltipText(this, context.getString(R.string.title_offers))
-            setOnClickListener {
-                if (navController.currentDestination?.id != R.id.navigation_offers) {
-                    hideFloatingMenu()
-                    navController.navigate(R.id.navigation_offers, null, navOptions)
-                }
-            }
-        }
         findViewById<View?>(R.id.fabLibrary)?.apply {
             TooltipCompat.setTooltipText(this, context.getString(R.string.library))
             setOnClickListener {

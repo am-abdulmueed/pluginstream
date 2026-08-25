@@ -52,7 +52,6 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         val emptyTextView = binding.emptyTextView
         val gamesRecyclerView = binding.gamesRecyclerView
         val shimmerLayout = binding.shimmerLayout
-        val btnOffers = binding.btnGoToOffers
         val offlineScreen = binding.offlineScreen
         val offlineShimmer = binding.offlineShimmer
         val retryButton = binding.retryButton
@@ -105,11 +104,6 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
                 }
                 start()
             }
-        }
-
-        // 1. Offers Icon Click
-        btnOffers.setOnClickListener {
-            findNavController().navigate(R.id.navigation_offers)
         }
 
         // Retry button click

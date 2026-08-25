@@ -101,7 +101,7 @@ class AccountSelectActivity : FragmentActivity(), BiometricCallback {
         if (!isEditingFromMainActivity && skipStartup) {
             val currentAccount = accounts.firstOrNull { it.keyIndex == selectedKeyIndex }
             if (currentAccount?.lockPin != null) {
-                CommonActivity.init(this)
+                CommonActivity.init(this, deferHeavyInit = true)
                 accountViewModel.handleAccountSelect(currentAccount, this, true)
             } else {
                 if (accounts.count() > 1) {
@@ -119,7 +119,7 @@ class AccountSelectActivity : FragmentActivity(), BiometricCallback {
             return
         }
 
-        CommonActivity.init(this)
+        CommonActivity.init(this, deferHeavyInit = true)
 
         val binding = ActivityAccountSelectBinding.inflate(layoutInflater)
         setContentView(binding.root)

@@ -261,9 +261,7 @@ android {
 
     packaging {
         jniLibs {
-            // Enables legacy JNI packaging to reduce APK size (similar to builds before minSdk 23).
-            // Note: This may increase app startup time slightly.
-            useLegacyPackaging = true
+            useLegacyPackaging = false
         }
     }
 

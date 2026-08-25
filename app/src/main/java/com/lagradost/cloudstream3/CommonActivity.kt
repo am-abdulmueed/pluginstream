@@ -276,15 +276,28 @@ object CommonActivity {
         setLocale(this, localeCode)
     }
 
-    fun init(act: Activity) {
+    fun init(act: Activity, deferHeavyInit: Boolean = false) {
         setActivityInstance(act)
-        ioSafe { Torrent.deleteAllFiles() }
         val componentActivity = activity as? ComponentActivity ?: return
 
         componentActivity.updateLocale()
         componentActivity.updateTv()
-        AccountManager.initMainAPI()
-        NewPipe.init(DownloaderTestImpl.getInstance())
+
+        if (deferHeavyInit) {
+            componentActivity.window.decorView.post {
+                ioSafe {
+                    Torrent.deleteAllFiles()
+                    AccountManager.initMainAPI()
+                    NewPipe.init(DownloaderTestImpl.getInstance())
+                }
+            }
+        } else {
+            ioSafe {
+                Torrent.deleteAllFiles()
+                AccountManager.initMainAPI()
+                NewPipe.init(DownloaderTestImpl.getInstance())
+            }
+        }
 
         MainActivity.activityResultLauncher =
             componentActivity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -300,7 +313,6 @@ object CommonActivity {
                 }
             }
 
-        // Ask for notification permissions on Android 13
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(
                 componentActivity,
@@ -312,9 +324,9 @@ object CommonActivity {
             ) { isGranted: Boolean ->
                 Log.d(TAG, "Notification permission: $isGranted")
             }
-            requestPermissionLauncher.launch(
-                Manifest.permission.POST_NOTIFICATIONS
-            )
+            componentActivity.window.decorView.post {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 

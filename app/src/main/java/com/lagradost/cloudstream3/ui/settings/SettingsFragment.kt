@@ -555,28 +555,6 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         
         contentContainer.addView(watchAdView)
 
-        // Install Offers button
-        val installOffersView = inflater.inflate(R.layout.item_support_dialog, contentContainer, false)
-        val installOffersIcon = installOffersView.findViewById<android.widget.ImageView>(R.id.itemIcon)
-        val installOffersTitle = installOffersView.findViewById<android.widget.TextView>(R.id.itemTitle)
-        val installOffersDesc = installOffersView.findViewById<android.widget.TextView>(R.id.itemDesc)
-        
-        installOffersIcon.setImageResource(R.drawable.ic_baseline_extension_24)
-        installOffersTitle.text = "Install Offers"
-        installOffersDesc.text = "Check out available offers"
-        
-        installOffersView.setOnClickListener {
-            dialog.dismiss()
-            try {
-                val navController = androidx.navigation.fragment.NavHostFragment.findNavController(this)
-                navController.navigate(R.id.action_navigation_global_to_navigation_offers)
-            } catch (e: Exception) {
-                logError(e)
-            }
-        }
-        
-        contentContainer.addView(installOffersView)
-
         closeButton.setOnClickListener {
             dialog.dismiss()
         }

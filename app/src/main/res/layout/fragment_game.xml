@@ -57,7 +57,7 @@
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
                 app:strokeWidth="1.2dp"
                 app:strokeColor="#1AFFFFFF"
-                app:layout_constraintEnd_toStartOf="@id/btnGoToOffers"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/gameSubtitle">
 
@@ -88,18 +88,6 @@
                         android:fontFamily="@font/google_sans" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
-            <ImageButton
-                android:id="@+id/btnGoToOffers"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:background="@drawable/countdown_bg"
-                android:src="@drawable/ic_offers"
-                android:stateListAnimator="@animator/card_press_anim"
-                app:tint="?attr/colorPrimary"
-                app:layout_constraintBottom_toBottomOf="@id/searchCard"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/searchCard" />
 
             <!-- Saved Games Shortcut Card -->
             <com.google.android.material.card.MaterialCardView

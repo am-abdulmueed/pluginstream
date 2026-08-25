@@ -10,21 +10,6 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <!-- Offers Icon -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabOffers"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:contentDescription="@string/title_offers"
-        app:tooltipText="@string/title_offers"
-        android:src="@drawable/ic_offers"
-        android:backgroundTint="?attr/primaryBlackBackground"
-        app:tint="?attr/textColor"
-        app:borderWidth="0dp"
-        app:elevation="8dp"
-        app:fabSize="normal" />
-
     <!-- Downloads Icon -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabDownloads"

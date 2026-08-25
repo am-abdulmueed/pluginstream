@@ -75,10 +75,6 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
             "We strive to keep PluginStream stable. If the app crashes, please click **'Report Crash'** in the dialog that appears on screen. This sends **error reports** directly to our developers."
         ),
         FAQItem(
-            "Offers Tab & Supporting PluginStream 💎",
-            "PluginStream is ad-free. When you complete tasks from the **Offers Tab**, it helps developers earn a small income that is used to **improve servers and hardware**."
-        ),
-        FAQItem(
             "ProTube (YouTube Integration) 📺",
             "**ProTube** is PluginStream's own feature where you can enjoy **YouTube and YouTube Music** without going to any other app."
         ),
@@ -100,7 +96,7 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
         ),
         FAQItem(
             "Subscription & Payments 💸",
-            "PluginStream is **completely free**. We don't charge any monthly fees. You can help us by **completing tasks** in the 'Offer Tab'."
+            "PluginStream is **completely free**. We don't charge any monthly fees. Enjoy unlimited streaming with no hidden costs!"
         )
     )
 

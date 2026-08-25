@@ -1,5 +1,20 @@
 # Offer Tab Configuration Guide
 
+> ⚠️ **[DISCONTINUED] — We are permanently shutting down the Offer Tab.**
+>
+> All offers-related code, files, and UI components have been completely removed. This documentation is now kept for archival/reference purposes only and there are no plans to reintroduce this feature in the future.
+>
+> **Changes made:**
+> - Entire `ui/offers/` directory (all Kotlin files + models) deleted
+> - All layout files (`fragment_offers.xml`, `fragment_offer_detail.xml`, `item_offer.xml`) deleted
+> - Removed `navigation_offers` and related actions from the navigation graph
+> - Removed Offers button from Bottom nav, More menu, Floating menu, and Game screen
+> - Removed "Install Offers" option from Settings support dialog
+> - Removed offers references from FAQ and Legal sections
+> - Deleted `ic_offers` drawable and `title_offers` string
+
+---
+
 ## Overview
 
 This document is a complete guide for the app's offer tab system. In this system, you can fetch CPA (Cost Per Action) offers from multiple APIs and display them to users for completion and earning rewards.
