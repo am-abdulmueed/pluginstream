@@ -132,9 +132,6 @@ By using **PluginStream**, you agree to the following terms and conditions.
 
 ### 2. Use of Third-Party Services
 By using certain features, you agree to the terms of our partners:
-- [CPALead Terms](https://www.cpalead.com/en/terms)
-- [OGAds Terms](https://tracking.ogmobi.com/terms)
-- [CPAGrip Terms](https://www.cpagrip.com/terms.php)
 - [PlayGama Terms of Use](https://playgama.com/termsofuse)
 
 ### 3. Limitation of Liability

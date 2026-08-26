@@ -115,4 +115,4 @@ Made with ❤️ by **Abdul Mueed**
 
 ## 📄 License
 
-MIT License © 2026 PluginStream Max
+GPL 2.0 License © 2026 PluginStream Max

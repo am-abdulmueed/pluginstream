@@ -71,13 +71,8 @@ class SetupFragmentLanguage : BaseFragment<FragmentSetupLanguageBinding>(
                 }
 
                 nextBtt.setOnClickListener {
-                    // If no plugins go to plugins page
-                    val nextDestination = if (
-                        PluginManager.getPluginsOnline().isEmpty()
-                        && PluginManager.getPluginsLocal().isEmpty()
-                    //&& PREBUILT_REPOSITORIES.isNotEmpty()
-                    ) R.id.action_navigation_global_to_navigation_setup_extensions
-                    else R.id.action_navigation_setup_language_to_navigation_setup_provider_languages
+                    // Skip extensions screen, go directly to provider languages
+                    val nextDestination = R.id.action_navigation_setup_language_to_navigation_setup_provider_languages
 
                     findNavController().navigate(
                         nextDestination,

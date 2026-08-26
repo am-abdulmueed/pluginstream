@@ -346,62 +346,48 @@ class ExtensionsFragment : BaseFragment<FragmentExtensionsBinding>(
                 if (shortcutInput.contains("pluginstream", ignoreCase = true)) {
                     val ctx2 = context ?: return@secondListener
                     dialog.dismissSafe(activity)
-                    ioSafe {
-                        try {
-                            showProgress(R.string.loading)
-                            // 1. Pluginstream repos fetch - CDN pehle, asset fallback
-                            val pluginstreamJson = try {
-                                val client = okhttp3.OkHttpClient.Builder()
-                                    .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
-                                    .build()
-                                val request = okhttp3.Request.Builder()
-                                    .url("https://cdn.jsdelivr.net/gh/am-abdulmueed/repo-json@main/pluginstream.json")
-                                    .build()
-                                val response = client.newCall(request).execute()
-                                if (response.isSuccessful) {
-                                    response.body?.string()
-                                } else null
-                            } catch (_: Exception) {
-                                try {
+
+                    AlertDialog.Builder(ctx2, R.style.AlertDialogCustom)
+                        .setTitle("PluginStream")
+                        .setMessage(R.string.download_all_plugins_from_repo)
+                        .setPositiveButton(R.string.add_repository) { dialogInterface, _ ->
+                            dialogInterface.dismiss()
+                            ioSafe {
+                                // 1. Pluginstream repos fetch - local asset se
+                                val pluginstreamJson = try {
                                     ctx2.assets.open("pluginstream.json").bufferedReader().use { it.readText() }
                                 } catch (_: Exception) { null }
-                            }
 
-                            val masterRepoRepos = pluginstreamJson?.let { json ->
-                                tryParseJson<MasterRepo>(json)?.repositories?.map { entry ->
-                                    RepositoryData(null, entry.name, entry.url)
+                                val masterRepoRepos = pluginstreamJson?.let { json ->
+                                    tryParseJson<MasterRepo>(json)?.repositories?.map { entry ->
+                                        RepositoryData(null, entry.name, entry.url)
+                                    }
+                                } ?: emptyList()
+
+                                if (masterRepoRepos.isEmpty()) {
+                                    showToast(R.string.no_repository_found_error, Toast.LENGTH_LONG)
+                                    return@ioSafe
                                 }
-                            } ?: emptyList()
 
-                            if (masterRepoRepos.isEmpty()) {
-                                showToast(R.string.no_repository_found_error, Toast.LENGTH_LONG)
-                                return@ioSafe
-                            }
-
-                            // 2. Har repo ko add karo + sab plugins download karo Setup ki tarah
-                            main {
-                                showToast(
-                                    "${masterRepoRepos.size} repositories loading...",
-                                    Toast.LENGTH_SHORT
-                                )
-                            }
-
-                            masterRepoRepos.forEach { repo ->
-                                PluginsViewModel.downloadAll(activity, repo, pluginViewModel)
-                                ioSafe {
+                                // 2. Har repo ko add karo (autodownload band)
+                                masterRepoRepos.forEach { repo ->
                                     RepositoryManager.addRepository(repo)
                                 }
-                            }
 
-                            // 3. UI refresh karo taaki repos dikh jaayein list mein
-                            main {
-                                extensionViewModel.loadStats()
-                                extensionViewModel.loadRepositories()
+                                // 3. UI refresh karo taaki repos dikh jaayein list mein
+                                main {
+                                    showToast(
+                                        "${masterRepoRepos.size} repositories added",
+                                        Toast.LENGTH_SHORT
+                                    )
+                                    extensionViewModel.loadStats()
+                                    extensionViewModel.loadRepositories()
+                                }
                             }
-                        } finally {
-                            hideProgress()
                         }
-                    }
+                        .setNegativeButton(R.string.dismiss, null)
+                        .show()
+
                     return@secondListener
                 }
 

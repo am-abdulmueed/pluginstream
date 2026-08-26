@@ -127,6 +127,8 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                 if (hasRepos) {
                     repoAdapter.submitList(repositoriesList)
 
+                    // AUTO PLUGIN DOWNLOAD DISABLED
+                    /*
                     // Only trigger automatic downloads once
                     if (!isDownloadingStarted) {
                         isDownloadingStarted = true
@@ -137,6 +139,7 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                             }
                         }
                     }
+                    */
                 }
             }
         }
