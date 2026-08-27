@@ -837,4 +837,22 @@
     <string name="game_details">Game Details</string>
     <string name="play_now">Play Now</string>
     <string name="game_icon">Game Icon</string>
+
+    <!-- Sponsor & Earn -->
+    <string name="sponsor_earn_title">Sponsor &amp; Earn</string>
+    <string name="sponsor_tagline">Fun. Safe. Cash!</string>
+    <string name="sponsor_bonus_headline">Get $3 Bonus</string>
+    <string name="sponsor_description">Get paid for surveys, rewarded games, and more with Pawns.app. Quick setup, no commitment!</string>
+    <string name="sponsor_secondary_note">Register now and get $3, on each of your first three withdrawals.</string>
+    <string name="sponsor_cta_button">Claim $3 NOW!</string>
+    <string name="sponsor_payouts_title">Payouts in</string>
+
+    <!-- How It Works Referral Program -->
+    <string name="how_it_works_title">How It Works</string>
+    <string name="referrer_rewards_title">👤 What YOU Get (Referrer)</string>
+    <string name="referrer_rewards_bonus">💵 Total $3 Cash Bonus:\n • $1 when your friend makes their 1st payout.\n • $1 when your friend makes their 2nd payout.\n • $1 when your friend makes their 3rd payout.</string>
+    <string name="referrer_rewards_commission" formatted="false">♾️ 10% Lifetime Commission:\n You earn 10% of every single payout your friend makes in the future.</string>
+    <string name="referred_rewards_title">👥 What YOUR FRIEND Gets (Referred User)</string>
+    <string name="referred_rewards_bonus">💵 Total $3 Cash Bonus:\n • $1 Instant signup bonus when joining through link.\n • $1 Extra bonus on their 1st payout.\n • $1 Extra bonus on their 2nd payout.</string>
+    <string name="referral_quick_summary" formatted="false">📌 Quick Summary:\nBoth of you get $3 total in bonuses, and you get an extra 10% commission on all of your friend\'s payouts forever!</string>
 </resources>

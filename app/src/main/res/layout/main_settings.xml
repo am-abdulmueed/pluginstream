@@ -454,6 +454,21 @@
                         android:drawableTint="?attr/textColor"
                         android:text="Support Development" />
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="56dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="?attr/dividerColor" />
+
+                    <TextView
+                        android:id="@+id/settings_sponsor_earn"
+                        style="@style/SettingsItem"
+                        android:drawableStart="@drawable/ic_baseline_attach_money_24"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="#00E676"
+                        android:text="@string/sponsor_earn_title" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

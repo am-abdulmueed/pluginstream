@@ -276,6 +276,10 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 showSupportDialog()
             }
 
+            settingsSponsorEarn.setOnClickListener {
+                activity?.navigate(R.id.action_navigation_global_to_navigation_sponsor_earn)
+            }
+
             settingsShare.setOnClickListener {
                 try {
                     val i = Intent(Intent.ACTION_SEND)
