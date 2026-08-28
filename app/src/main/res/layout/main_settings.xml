@@ -466,7 +466,7 @@
                         style="@style/SettingsItem"
                         android:drawableStart="@drawable/ic_baseline_attach_money_24"
                         android:drawablePadding="16dp"
-                        android:drawableTint="#00E676"
+                        android:drawableTint="?attr/textColor"
                         android:text="@string/sponsor_earn_title" />
 
                 </LinearLayout>

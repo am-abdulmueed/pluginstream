@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="?attr/primaryBlackBackground">
 
+    <!-- Top App Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar_layout"
         android:layout_width="match_parent"
@@ -37,44 +38,57 @@
             android:paddingHorizontal="16dp"
             android:paddingTop="8dp">
 
-            <!-- 1. TOP SECTION: Logo & Tagline (Enlarged Header) -->
+            <!-- 1. TOP HEADER SECTION: Prominent Logo & Tagline -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingVertical="12dp">
+                android:paddingVertical="14dp">
 
-                <ImageView
-                    android:id="@+id/img_logo"
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
-                    android:contentDescription="@string/app_name"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/logo" />
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="104dp"
+                    android:layout_height="104dp"
+                    android:clipToOutline="true"
+                    app:cardBackgroundColor="?attr/primaryGrayBackground"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="?attr/dividerColor"
+                    app:strokeWidth="1dp">
+
+                    <ImageView
+                        android:id="@+id/img_logo"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/app_name"
+                        android:padding="12dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/logo" />
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="12dp"
                     android:fontFamily="@font/google_sans"
+                    android:letterSpacing="0.04"
                     android:text="@string/sponsor_tagline"
                     android:textColor="#00E676"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
 
-            <!-- 1. TOP SECTION: Main Banner Visual (Full Image, No Crop, Rounded Corners) -->
+            <!-- 2. MAIN BANNER VISUAL (Full Image, No Crop, Smooth Rounded Corners) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="4dp"
+                android:layout_marginHorizontal="2dp"
                 android:layout_marginVertical="12dp"
                 android:clipToOutline="true"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
                 app:strokeColor="?attr/dividerColor"
                 app:strokeWidth="1dp">
 
@@ -89,16 +103,16 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 2. CORE VALUE PROPOSITION -->
+            <!-- 3. CORE VALUE PROPOSITION CARD -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="8dp"
+                android:layout_marginVertical="10dp"
                 android:clipToOutline="true"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeColor="#1E88E5"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="4dp"
+                app:strokeColor="?attr/dividerColor"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
@@ -106,28 +120,16 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="22dp">
 
-                    <!-- Highlighting Badge / Headline -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/badge_bg"
-                        android:fontFamily="@font/google_sans"
-                        android:paddingHorizontal="16dp"
-                        android:paddingVertical="6dp"
-                        android:text="@string/sponsor_bonus_headline"
-                        android:textColor="#FFFFFF"
-                        android:textSize="22sp"
-                        android:textStyle="bold" />
 
                     <!-- Description -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
+                        android:layout_marginTop="16dp"
                         android:gravity="center"
-                        android:lineSpacingExtra="3dp"
+                        android:lineSpacingExtra="4dp"
                         android:text="@string/sponsor_description"
                         android:textColor="?attr/textColor"
                         android:textSize="15sp" />
@@ -136,7 +138,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="12dp"
                         android:gravity="center"
                         android:text="@string/sponsor_secondary_note"
                         android:textColor="#FFD54F"
@@ -147,35 +149,43 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 3. CALL TO ACTION (PRIMARY BUTTON) -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_claim_now"
+            <!-- 4. PRIMARY CALL TO ACTION BUTTON -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginVertical="16dp"
-                android:backgroundTint="#00E676"
-                android:fontFamily="@font/google_sans"
-                android:text="@string/sponsor_cta_button"
-                android:textAllCaps="false"
-                android:textColor="#000000"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:cornerRadius="16dp"
-                app:elevation="6dp"
-                app:icon="@drawable/ic_baseline_attach_money_24"
-                app:iconGravity="textStart"
-                app:iconPadding="8dp"
-                app:iconTint="#000000" />
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginVertical="16dp">
 
-            <!-- 3.5 HOW IT WORKS (REFERRAL PROGRAM BREAKDOWN) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_claim_now"
+                    android:layout_width="wrap_content"
+                    android:layout_height="54dp"
+                    android:backgroundTint="#00E676"
+                    android:fontFamily="@font/google_sans"
+                    android:paddingHorizontal="28dp"
+                    android:text="@string/sponsor_cta_button"
+                    android:textAllCaps="false"
+                    android:textColor="#000000"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="28dp"
+                    app:elevation="6dp"
+                    app:icon="@drawable/ic_baseline_attach_money_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconTint="#000000" />
+
+            </LinearLayout>
+
+            <!-- 5. HOW IT WORKS (MARKDOWN REFERRAL PROGRAM SUMMARY) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="12dp"
                 android:clipToOutline="true"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="3dp"
                 app:strokeColor="?attr/dividerColor"
                 app:strokeWidth="1dp">
 
@@ -183,24 +193,24 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="22dp">
 
                     <TextView
                         android:id="@+id/txt_how_it_works_markdown"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:lineSpacingExtra="4dp"
+                        android:lineSpacingExtra="5dp"
                         android:textColor="?attr/textColor"
                         android:textSize="14sp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 4. SOCIAL PROOF & TRUST BADGES (PAYOUT OPTIONS - CLIPPED ROUNDED CORNERS) -->
+            <!-- 6. SOCIAL PROOF & PAYOUT OPTIONS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:layout_marginBottom="48dp"
                 android:orientation="vertical">
 
@@ -208,17 +218,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/google_sans"
-                    android:letterSpacing="0.05"
+                    android:letterSpacing="0.08"
                     android:text="@string/sponsor_payouts_title"
                     android:textAllCaps="true"
                     android:textColor="?attr/grayTextColor"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
 
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="12dp"
                     android:clipToPadding="false"
                     android:scrollbars="none">
 
@@ -229,109 +239,101 @@
                         android:orientation="horizontal">
 
                         <com.google.android.material.card.MaterialCardView
-                            android:layout_width="80dp"
-                            android:layout_height="50dp"
-                            android:layout_marginEnd="10dp"
+                            android:layout_width="84dp"
+                            android:layout_height="52dp"
+                            android:layout_marginEnd="12dp"
                             android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
                             app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp">
+                            app:cardElevation="3dp"
+                            app:strokeColor="#E0E0E0"
+                            app:strokeWidth="1dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:contentDescription="PayPal"
-                                android:padding="8dp"
+                                android:padding="9dp"
                                 android:scaleType="fitCenter"
                                 android:src="@drawable/logo_paypal" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <com.google.android.material.card.MaterialCardView
-                            android:layout_width="80dp"
-                            android:layout_height="50dp"
-                            android:layout_marginEnd="10dp"
+                            android:layout_width="84dp"
+                            android:layout_height="52dp"
+                            android:layout_marginEnd="12dp"
                             android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
                             app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp">
+                            app:cardElevation="3dp"
+                            app:strokeColor="#E0E0E0"
+                            app:strokeWidth="1dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:contentDescription="Bitcoin"
-                                android:padding="8dp"
+                                android:padding="9dp"
                                 android:scaleType="fitCenter"
                                 android:src="@drawable/logo_bitcoin" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <com.google.android.material.card.MaterialCardView
-                            android:layout_width="80dp"
-                            android:layout_height="50dp"
-                            android:layout_marginEnd="10dp"
+                            android:layout_width="84dp"
+                            android:layout_height="52dp"
+                            android:layout_marginEnd="12dp"
                             android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
                             app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp">
+                            app:cardElevation="3dp"
+                            app:strokeColor="#E0E0E0"
+                            app:strokeWidth="1dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:contentDescription="Venmo"
-                                android:padding="8dp"
+                                android:padding="9dp"
                                 android:scaleType="fitCenter"
                                 android:src="@drawable/logo_venmo" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <com.google.android.material.card.MaterialCardView
-                            android:layout_width="80dp"
-                            android:layout_height="50dp"
-                            android:layout_marginEnd="10dp"
+                            android:layout_width="84dp"
+                            android:layout_height="52dp"
+                            android:layout_marginEnd="12dp"
                             android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
                             app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp">
+                            app:cardElevation="3dp"
+                            app:strokeColor="#E0E0E0"
+                            app:strokeWidth="1dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:contentDescription="Cash App"
-                                android:padding="8dp"
+                                android:padding="9dp"
                                 android:scaleType="fitCenter"
                                 android:src="@drawable/logo_cash_app" />
                         </com.google.android.material.card.MaterialCardView>
 
                         <com.google.android.material.card.MaterialCardView
-                            android:layout_width="80dp"
-                            android:layout_height="50dp"
-                            android:layout_marginEnd="10dp"
+                            android:layout_width="84dp"
+                            android:layout_height="52dp"
+                            android:layout_marginEnd="12dp"
                             android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
                             app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp">
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:contentDescription="Google Play"
-                                android:padding="8dp"
-                                android:scaleType="fitCenter"
-                                android:src="@drawable/logo_google_play" />
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="80dp"
-                            android:layout_height="50dp"
-                            android:layout_marginEnd="10dp"
-                            android:clipToOutline="true"
-                            app:cardBackgroundColor="#FFFFFF"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp">
+                            app:cardElevation="3dp"
+                            app:strokeColor="#E0E0E0"
+                            app:strokeWidth="1dp">
 
                             <ImageView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:contentDescription="Amazon"
-                                android:padding="8dp"
+                                android:padding="9dp"
                                 android:scaleType="fitCenter"
                                 android:src="@drawable/logo_amazon" />
                         </com.google.android.material.card.MaterialCardView>
