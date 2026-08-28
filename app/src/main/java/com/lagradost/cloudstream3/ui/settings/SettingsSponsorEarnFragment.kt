@@ -25,7 +25,7 @@ class SettingsSponsorEarnFragment : BaseFragment<FragmentSponsorEarnBinding>(
     override fun fixLayout(view: View) {
         fixSystemBarsPadding(
             view,
-            padBottom = isLandscape(),
+            padBottom = true,
             padLeft = isLayout(TV or EMULATOR)
         )
     }

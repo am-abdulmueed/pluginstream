@@ -26,7 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingBottom="32dp"
+        android:paddingBottom="64dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/appbar_layout">
 
@@ -37,39 +37,41 @@
             android:paddingHorizontal="16dp"
             android:paddingTop="8dp">
 
-            <!-- 1. TOP SECTION: Logo & Tagline -->
+            <!-- 1. TOP SECTION: Logo & Tagline (Enlarged Header) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:paddingVertical="8dp">
+                android:paddingVertical="12dp">
 
                 <ImageView
                     android:id="@+id/img_logo"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
                     android:contentDescription="@string/app_name"
+                    android:scaleType="fitCenter"
                     android:src="@drawable/logo" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="8dp"
                     android:fontFamily="@font/google_sans"
                     android:text="@string/sponsor_tagline"
                     android:textColor="#00E676"
-                    android:textSize="16sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
 
-            <!-- 1. TOP SECTION: Main Banner Visual -->
+            <!-- 1. TOP SECTION: Main Banner Visual (Full Image, No Crop, Rounded Corners) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="12dp"
+                android:layout_marginHorizontal="4dp"
                 android:layout_marginVertical="12dp"
+                android:clipToOutline="true"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp"
@@ -79,10 +81,10 @@
                 <ImageView
                     android:id="@+id/img_banner"
                     android:layout_width="match_parent"
-                    android:layout_height="180dp"
+                    android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/sponsor_earn_title"
-                    android:scaleType="centerCrop"
+                    android:scaleType="fitCenter"
                     android:src="@drawable/banner_630" />
 
             </com.google.android.material.card.MaterialCardView>
@@ -92,6 +94,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="8dp"
+                android:clipToOutline="true"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
@@ -169,6 +172,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="12dp"
+                android:clipToOutline="true"
                 app:cardBackgroundColor="?attr/primaryGrayBackground"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
@@ -192,11 +196,12 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 4. SOCIAL PROOF & TRUST BADGES (PAYOUT OPTIONS) -->
+            <!-- 4. SOCIAL PROOF & TRUST BADGES (PAYOUT OPTIONS - CLIPPED ROUNDED CORNERS) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="48dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -227,8 +232,9 @@
                             android:layout_width="80dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="10dp"
+                            android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
-                            app:cardCornerRadius="12dp"
+                            app:cardCornerRadius="16dp"
                             app:cardElevation="2dp">
 
                             <ImageView
@@ -244,8 +250,9 @@
                             android:layout_width="80dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="10dp"
+                            android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
-                            app:cardCornerRadius="12dp"
+                            app:cardCornerRadius="16dp"
                             app:cardElevation="2dp">
 
                             <ImageView
@@ -261,8 +268,9 @@
                             android:layout_width="80dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="10dp"
+                            android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
-                            app:cardCornerRadius="12dp"
+                            app:cardCornerRadius="16dp"
                             app:cardElevation="2dp">
 
                             <ImageView
@@ -278,8 +286,9 @@
                             android:layout_width="80dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="10dp"
+                            android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
-                            app:cardCornerRadius="12dp"
+                            app:cardCornerRadius="16dp"
                             app:cardElevation="2dp">
 
                             <ImageView
@@ -295,8 +304,9 @@
                             android:layout_width="80dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="10dp"
+                            android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
-                            app:cardCornerRadius="12dp"
+                            app:cardCornerRadius="16dp"
                             app:cardElevation="2dp">
 
                             <ImageView
@@ -312,8 +322,9 @@
                             android:layout_width="80dp"
                             android:layout_height="50dp"
                             android:layout_marginEnd="10dp"
+                            android:clipToOutline="true"
                             app:cardBackgroundColor="#FFFFFF"
-                            app:cardCornerRadius="12dp"
+                            app:cardCornerRadius="16dp"
                             app:cardElevation="2dp">
 
                             <ImageView
@@ -323,82 +334,6 @@
                                 android:padding="8dp"
                                 android:scaleType="fitCenter"
                                 android:src="@drawable/logo_amazon" />
-                        </com.google.android.material.card.MaterialCardView>
-
-                    </LinearLayout>
-                </HorizontalScrollView>
-            </LinearLayout>
-
-            <!-- 5. BOTTOM FEATURE SECTION (FOOTER HIGHLIGHTS) -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:orientation="vertical">
-
-                <HorizontalScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clipToPadding="false"
-                    android:scrollbars="none">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="140dp"
-                            android:layout_height="110dp"
-                            android:layout_marginEnd="12dp"
-                            app:cardBackgroundColor="?attr/primaryGrayBackground"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp"
-                            app:strokeColor="?attr/dividerColor"
-                            app:strokeWidth="1dp">
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:contentDescription="Lifestyle"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/lifestyle" />
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="140dp"
-                            android:layout_height="110dp"
-                            android:layout_marginEnd="12dp"
-                            app:cardBackgroundColor="?attr/primaryGrayBackground"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp"
-                            app:strokeColor="?attr/dividerColor"
-                            app:strokeWidth="1dp">
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:contentDescription="Quality Choice"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/quality_choice" />
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="140dp"
-                            android:layout_height="110dp"
-                            android:layout_marginEnd="12dp"
-                            app:cardBackgroundColor="?attr/primaryGrayBackground"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="2dp"
-                            app:strokeColor="?attr/dividerColor"
-                            app:strokeWidth="1dp">
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:contentDescription="Trusted Vendor"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/trusted_vendor" />
                         </com.google.android.material.card.MaterialCardView>
 
                     </LinearLayout>
