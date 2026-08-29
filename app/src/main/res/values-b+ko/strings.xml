@@ -294,7 +294,7 @@
     <string name="delete_repository">저장소 삭제</string>
     <string name="setup_extensions_subtext">사용하려는 사이트 목록 다운로드</string>
     <string name="plugins_downloaded" formatted="true">다운로드됨: %d</string>
-    <string name="blank_repo_message">PluginStream에는 기본적으로 설치된 사이트가 없습니다. 저장소에서 사이트를 설치해야 합니다. \n \nDiscord에 가입하거나 온라인으로 검색해 보세요.</string>
+    <string name="blank_repo_message">설치된 소스가 없습니다.\n시작하려면 저장소 URL 또는 단축 코드를 추가하세요.</string>
     <string name="view_public_repositories_button">커뮤니티 저장소 보기</string>
     <string name="view_public_repositories_button_short">공개 목록</string>
     <string name="uppercase_all_subtitles">자막 대문자화 표시</string>

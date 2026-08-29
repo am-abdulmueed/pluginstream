@@ -402,7 +402,7 @@
     <string formatted="true" name="plugins_disabled">Деактивирано: %d</string>
     <string formatted="true" name="plugins_not_downloaded">Не е изтеглено: %d</string>
     <string formatted="true" name="plugins_updated">Актуализирани %d плъгини</string>
-    <string name="blank_repo_message">PluginStream няма инсталирани сайтове по подразбиране. Трябва да инсталирате сайтовете от хранилища. \n \nПрисъединете се към нашия Дискорд или потърсете онлайн.</string>
+    <string name="blank_repo_message">Няма инсталирани източници.\nДобавете URL адрес на хранилище или кратък код, за да започнете.</string>
     <string name="view_public_repositories_button">Вижте хранилищата на общността</string>
     <string name="view_public_repositories_button_short">Публичен списък</string>
     <string name="uppercase_all_subtitles">Всички субтитри с главни букви</string>

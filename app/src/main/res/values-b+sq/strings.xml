@@ -496,7 +496,7 @@
     <string name="no_repository_found_error">Repository nuk u gjet, verifiko URL-në ose provoje me VPN</string>
     <string name="safe_mode_description">Të gjitha shtesat u ndaluan për shkak të një gabimi për të ndihmuar në gjetjen e shkaktarit.</string>
     <string name="view_public_repositories_button_short">Lista publike</string>
-    <string name="blank_repo_message">PluginStream nuk vjen me faqe të instaluara. Duhet ti shtosh faqet nga repository-t.\n\nNa u bashko në Discord ose kërko në internet.</string>
+    <string name="blank_repo_message">Asnjë burim i instaluar.\nShto një URL repository ose kod të shkurtër për të filluar.</string>
     <string name="extension_authors">Autorët</string>
     <string name="plugin_singular">shtesë</string>
     <string name="uppercase_all_subtitles">Titrat vetëm me shkronja të mëdha</string>

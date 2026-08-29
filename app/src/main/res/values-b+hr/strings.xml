@@ -408,7 +408,7 @@
     <string name="plugins_downloaded" formatted="true">Preuzeto: %d</string>
     <string name="plugins_disabled" formatted="true">Onemogućeno: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Nepreuzeto: %d</string>
-    <string name="blank_repo_message">PluginStream standardno nema instalirane web stranice. Stranice morate instalirati iz repozitorija. \n \nPridružite se našem Discordu ili tražite online.</string>
+    <string name="blank_repo_message">Nema instaliranih izvora.\nDodajte URL repozitorija ili kratki kôd za početak.</string>
     <string name="view_public_repositories_button">Prikaži repozitorije zajednice</string>
     <string name="view_public_repositories_button_short">Javni popis</string>
     <string name="uppercase_all_subtitles">Koristi velika slova za sve titlove</string>

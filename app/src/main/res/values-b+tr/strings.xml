@@ -410,7 +410,7 @@
     <string name="plugins_disabled" formatted="true">Devre dışı: %d</string>
     <string name="plugins_not_downloaded" formatted="true">İndirilmeyen: %d</string>
     <string name="plugins_updated" formatted="true">%d eklentiler güncellendi</string>
-    <string name="blank_repo_message">PluginStream, varsayılan olarak hiçbir site ile gelmez. Siteleri depolardan kurmanız gerekir. \n \nDiscord\'umuza katılın veya internet üzerinden arama yapın.</string>
+    <string name="blank_repo_message">Yüklü kaynak yok.\nBaşlamak için bir depo URL\'si veya kısa kod ekleyin.</string>
     <string name="view_public_repositories_button">Topluluk depolarını görüntüle</string>
     <string name="view_public_repositories_button_short">Herkese açık liste</string>
     <string name="uppercase_all_subtitles">Tüm altyazılar büyük harf</string>

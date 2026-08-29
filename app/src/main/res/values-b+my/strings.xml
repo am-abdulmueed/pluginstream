@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="cast_format" formatted="true">သရုပ်ဆောင်များ: %s</string>
     <string name="next_episode_time_day_format" formatted="true">%1$dရက် %2$ddနာရီ %3$ddမိနစ်</string>
@@ -339,7 +339,7 @@
     <string name="apk_installer_legacy">သမားရိုးကျ</string>
     <string name="apk_installer_package_installer">ထည့်သွင်းသူ</string>
     <string name="delayed_update_notice">ထွက်ချိန်တွင် အက်ပ်ကို အပ်ဒိတ်လုပ်ပါမည်</string>
-    <string name="blank_repo_message">PluginStream တွင် မူရင်းအတိုင်း ထည့်သွင်းထားသည့်ဆိုက်များ မရှိပါ။ ရီပိုစစ်ထရီများ မှ ဆိုဒ် များကို ထည့်သွင်းရန်လိုအပ်သည်။ \n \nSky UK Limited မှ ဦးနှောက်မဲ့ DMCA ကို ဖယ်ရှားလိုက်ခြင်းကြောင့် 🤮 ကျွန်ုပ်တို့သည် ရီပိုစစ်ထရီဆိုဒ်ကို အက်ပ်တွင် ချိတ်ဆက်၍မရပါ။ \n \nကျွန်ုပ်တို့၏ Discord တွင်ပါဝင်ပါ သို့မဟုတ် အွန်လိုင်းတွင်ရှာဖွေပါ။</string>
+        <string name="blank_repo_message">အရင်းအမြစ်များ ထည့်သွင်းမထားပါ။\nစတင်ရန် ရီပိုစစ်ထရီ URL သို့မဟုတ် အတိုကောက်ကုဒ် ထည့်ပါ။</string>
     <string name="view_public_repositories_button">အခြားသူများ၏ရီပိုစစ်ထရီများကိုရှာဖွေမည်</string>
     <string name="tracks">အသံများ</string>
     <string name="audio_tracks">အသံဖိုင်များ</string>

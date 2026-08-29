@@ -467,7 +467,7 @@
     <string name="error_invalid_url">URL invalid</string>
     <string name="safe_mode_description">Toate extensiile au fost dezactivate din cauza unei defecțiuni pentru a vă ajuta să o găsiți pe cea care cauzează probleme.</string>
     <string name="update_notification_downloading">Se descarcă actualizarea aplicației…</string>
-    <string name="blank_repo_message">PluginStream nu are niciun site instalat din start. Trebuie să instalați site-urile din depozite. \n \nAlăturați-vă Discord-ului nostru sau căutați online.</string>
+    <string name="blank_repo_message">Nicio sursă instalată.\nAdăugați un URL de depozit sau un cod scurt pentru a începe.</string>
     <string name="batch_download_start_format" formatted="true">A început să descarce %1$d %2$s…</string>
     <string name="safe_mode_title">Mod sigur pornit</string>
     <string name="safe_mode_file">Fișier Mod Sigur găsit! \nNu încarcă nicio extensie la pornire până când fișierul nu este eliminat.</string>

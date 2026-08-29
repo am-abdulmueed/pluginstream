@@ -361,7 +361,7 @@
     <string name="plugins_downloaded" formatted="true">Transferido: %d</string>
     <string name="plugins_disabled" formatted="true">Desativado: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Não transferido: %d</string>
-    <string name="blank_repo_message">O PluginStream não tem sites instalados por padrão. É necessário instalar os sites a partir de repositórios. \n \nJunte-se ao nosso Discord ou pesquise online.</string>
+    <string name="blank_repo_message">Nenhuma fonte instalada.\nAdicione um URL de repositório ou código curto para começar.</string>
     <string name="view_public_repositories_button">Ver repositórios da comunidade</string>
     <string name="view_public_repositories_button_short">Lista pública</string>
     <string name="uppercase_all_subtitles">Todas as legendas em maiúsculas</string>

@@ -320,7 +320,7 @@
     <string name="plugins_disabled" formatted="true">Απενεργοποιήθηκε: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Δεν κατέβηκε: %d</string>
     <string name="plugins_updated" formatted="true">Ενημερώθηκαν %d πρόσθετα</string>
-    <string name="blank_repo_message">Το PluginStream δεν έχει προεγκατεστημένους ιστότοπους. Πρέπει να εγκαταστήσετε ιστότοπους μέσω ορισμένων αποθετηρίων. \n \nΒρείτε μας στο Discord ή ψάξτε στο διαδίκτυο.</string>
+    <string name="blank_repo_message">Дεν έχουν εγκατασταθεί πηγές.\nΠροσθέστε μια διεύθυνση URL αποθετηρίου ή έναν σύντομο κωδικό για να ξεκινήσετε.</string>
     <string name="view_public_repositories_button">Προβολή αποθετηρίων κοινότητας</string>
     <string name="view_public_repositories_button_short">Δημόσια λίστα</string>
     <string name="uppercase_all_subtitles">Κεφαλοποίηση υποτίτλων</string>

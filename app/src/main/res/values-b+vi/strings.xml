@@ -408,7 +408,7 @@
     <string name="plugins_downloaded" formatted="true">Đã tải xuống: %d</string>
     <string name="plugins_disabled" formatted="true">Đã vô hiệu: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Chưa tải xuống: %d</string>
-    <string name="blank_repo_message">PluginStream không có sẵn trang web nào. Bạn cần cài đặt các trang web từ kho lưu trữ. \n \nHãy tham gia Discord của chúng tôi hoặc tìm kiếm trực tuyến.</string>
+    <string name="blank_repo_message">Chưa cài đặt nguồn nào.\nThêm URL kho lưu trữ hoặc mã ngắn để bắt đầu.</string>
     <string name="view_public_repositories_button">Xem các kho nguồn phim của cộng đồng</string>
     <string name="view_public_repositories_button_short">Danh sách công khai</string>
     <string name="uppercase_all_subtitles">In hoa toàn bộ phụ đề</string>

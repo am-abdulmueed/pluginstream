@@ -499,7 +499,7 @@
     <string name="subtitles_remove_captions">سب ٹائٹلز سے بند کیپشنز کو ہٹا دیں</string>
     <string name="app_layout_subtext">اپنے آلے کے مطابق ایپ کی شکل تبدیل کریں</string>
     <string name="next">اگلے</string>
-    <string name="blank_repo_message">PluginStream میں بذریعہ ڈیفالٹ کوئی سائٹ انسٹال نہیں ہے۔ آپ کو ریپوزٹری سے سائٹس انسٹال کرنے کی ضرورت ہے۔ \n \nہمارے Discord میں شامل ہوں یا آن لائن تلاش کریں۔</string>
+    <string name="blank_repo_message">کوئی ذرائع انسٹال نہیں ہیں۔\nشروع کرنے کے لیے ریپوزٹری URL یا شارٹ کوڈ شامل کریں۔</string>
     <string name="safe_mode_description">تمام ایکسٹینشنز کریش کی وجہ سے آف کر دی گئیں تاکہ آپ کو پریشانی کا باعث تلاش کرنے میں مدد مل سکے۔</string>
     <string name="extension_install_first">پہلے ایکسٹینشن انسٹال کریں</string>
     <string name="clipboard_too_large">بہت زیادہ متن۔ کلپ بورڈ میں محفوظ کرنے سے قاصر۔</string>

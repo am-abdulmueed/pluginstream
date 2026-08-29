@@ -228,6 +228,7 @@ fabric.properties
 # End of https://www.toptal.com/developers/gitignore/api/kotlin,java,android,androidstudio,visualstudiocode
 
 ### TODO
+NuvioMobile/
 todo.md
 1.bat
 2.bat

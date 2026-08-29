@@ -409,7 +409,7 @@
     <string name="plugins_disabled" formatted="true">Disabilitato: %d</string>
     <string name="plugins_not_downloaded" formatted="true">Non scaricato: %d</string>
     <string name="plugins_updated" formatted="true">Aggiornati %d plugin</string>
-    <string name="blank_repo_message">PluginStream non ha siti installati per impostazione predefinita. È necessario installare i siti dai repository. \n \nUnisciti al nostro Discord o cerca online.</string>
+    <string name="blank_repo_message">Nessuna fonte installata.\nAggiungi un URL del repository o un codice breve per iniziare.</string>
     <string name="view_public_repositories_button">Visualizza i repository della comunità</string>
     <string name="view_public_repositories_button_short">Lista pubblica</string>
     <string name="uppercase_all_subtitles">Tutti i sottotitoli in maiuscolo</string>

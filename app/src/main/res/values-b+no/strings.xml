@@ -370,7 +370,7 @@
     <string name="error_invalid_url">Ugyldig nettadresse</string>
     <string name="batch_download">Knippe-nedlasting</string>
     <string name="delete_repository">Slett pakkebrønn</string>
-    <string name="blank_repo_message">PluginStream har ingen sider installert som forvalg. Du må installere sidene fra pakkebrønner. \n \nSom følge av en hjernedød DMCA-forespørsel fra Sky UK Limited 🤮 kan vi ikke lenke til pakkebrønnssiden i programmet. \n \nTa del i vår Discord, eller søk på nett.</string>
+    <string name="blank_repo_message">Ingen kilder installert.\nLegg til en pakkebrønn-URL eller kortkode for å komme i gang.</string>
     <string name="subtitle_offset_extra_hint_before_format">Bruk dette hvis undertekster vises %d ms for sent</string>
     <string name="plugin_loaded">Programtillegg innlastet</string>
     <string name="audio_tracks">Lydspor</string>

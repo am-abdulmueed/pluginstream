@@ -366,7 +366,7 @@
     <string name="enter_pin_with_name" formatted="true">حطو الأرقام السرية لـ\"%s\"</string>
     <string name="apk_installer_legacy">الطريقة القديمة</string>
     <string name="subtitles_raised">معلى</string>
-    <string name="blank_repo_message">\"كلود ستريم\" م بتجي مع مصادر ڤيديوات. لازم تنزلو المصادر من ريپويات. \n \nفيه معلومات على الـ\"ديسكورد\" تبعنا، أو فيكن تنبشو ع معلومات على الإنترنت.</string>
+    <string name="blank_repo_message">ما في مصادر مثبتة.\nضِف رابط ريبو أو كود قصير للبدء.</string>
     <string name="add_sync">زبد تتبع</string>
     <string name="mobile_data">3G/4G…</string>
     <string name="player_loaded_subtitles" formatted="true">نفَتح %s</string>
