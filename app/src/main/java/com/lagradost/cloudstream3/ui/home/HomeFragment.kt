@@ -34,7 +34,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.chip.Chip
 import com.lagradost.api.Log
+import com.lagradost.cloudstream3.APIHolder
 import com.lagradost.cloudstream3.APIHolder.apis
+import com.lagradost.cloudstream3.APIHolder.getApiFromNameNull
 import com.lagradost.cloudstream3.AllLanguagesName
 import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.lagradost.cloudstream3.MainAPI
@@ -70,6 +72,7 @@ import com.lagradost.cloudstream3.utils.AppContextUtils.getApiProviderLangSettin
 import com.lagradost.cloudstream3.utils.AppContextUtils.isNetworkAvailable
 import com.lagradost.cloudstream3.utils.AppContextUtils.isRecyclerScrollable
 import com.lagradost.cloudstream3.utils.AppContextUtils.loadSearchResult
+import com.lagradost.cloudstream3.utils.AppContextUtils.openBrowser
 import com.lagradost.cloudstream3.utils.AppContextUtils.ownHide
 import com.lagradost.cloudstream3.utils.AppContextUtils.ownShow
 import com.lagradost.cloudstream3.utils.AppContextUtils.setDefaultFocus
@@ -114,6 +117,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
         )
 
         val errorProfilePic = errorProfilePics.random()
+
+        fun Context.getDisplayName(apiName: String?): String? {
+            return when (apiName) {
+                noneApi.name -> getString(R.string.none)
+                randomApi.name -> getString(R.string.home_random)
+                else -> getDisplayApiName(apiName) ?: apiName
+            }
+        }
 
         private val pinKeywords = listOf("castel","castle tv (use vlc)", "castle", "caslte", "netflix", "prime", "hbo", "disney", "hotstar", "hotstart", "jiohotstar", "moviebox", "moveibox", "bilibili")
         private fun isSmartPinned(apiName: String): Boolean {
@@ -945,6 +956,21 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                 homeViewModel.queryTextSubmit("")
             }
 
+            homePreviewSettingsButton.setOnClickListener { view ->
+                val apiName = homeViewModel.apiName.value
+                val plugin = APIHolder.getApiFromNameNull(apiName)
+                    ?.sourcePlugin?.let { PluginManager.plugins[it] } as? com.lagradost.cloudstream3.plugins.Plugin
+                val openSettings = plugin?.openSettings
+                if (openSettings != null) {
+                    try {
+                        val activityContext = view.context.getActivity() ?: view.context
+                        openSettings.invoke(activityContext)
+                    } catch (e: Throwable) {
+                        logError(e)
+                    }
+                }
+            }
+
             // Load value for toggling Tv layout real time clock. Hide by default at startup
             // set visibility first, to apply a scroll effect later
             context?.let {
@@ -1033,7 +1059,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         observe(homeViewModel.apiName) { apiName ->
             currentApiName = apiName
-            val displayApiName = getDisplayApiName(apiName) ?: apiName
+            val displayApiName = context?.getDisplayName(apiName) ?: apiName
             binding.apply {
                 homeApiFab.text = displayApiName
                 homeChangeApi.text = displayApiName
@@ -1044,6 +1070,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         observe(homeViewModel.page) { data ->
             binding.apply {
+                if (isLayout(TV or EMULATOR)) {
+                    val plugin = APIHolder.getApiFromNameNull(homeViewModel.apiName.value)
+                        ?.sourcePlugin?.let { PluginManager.plugins[it] } as? com.lagradost.cloudstream3.plugins.Plugin
+                    homePreviewSettingsButton.isGone = plugin?.openSettings == null
+                }
+
                 when (data) {
                     is Resource.Success -> {
                         val d = data.value
@@ -1089,22 +1121,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                                 showToast("Still offline...", Toast.LENGTH_SHORT)
                             }
                         }
-                        homeReloadConnectionOpenInBrowser.setOnClickListener { view ->
-                            val validAPIs = apis//.filter { api -> api.hasMainPage }
-
-                            view.popupMenuNoIconsAndNoStringRes(validAPIs.mapIndexed { index, api ->
-                                Pair(
-                                    index,
-                                    api.name
-                                )
-                            }) {
-                                try {
-                                    val i = Intent(Intent.ACTION_VIEW)
-                                    i.data = validAPIs[itemId].mainUrl.toUri()
-                                    startActivity(i)
-                                } catch (e: Exception) {
-                                    logError(e)
-                                }
+                        homeReloadConnectionOpenInBrowser.setOnClickListener {
+                            val currentApi = currentApiName?.let { getApiFromNameNull(it) }
+                                ?: homeViewModel.apiName.value?.let { getApiFromNameNull(it) }
+                            val mainUrl = currentApi?.mainUrl
+                            if (!mainUrl.isNullOrBlank()) {
+                                context?.openBrowser(mainUrl)
                             }
                         }
 

@@ -502,7 +502,9 @@
     <string name="setup_done">Done</string>
     <string name="extensions">Extensions</string>
     <string name="setup_extensions_subtext">Connecting to the best providers, please wait...</string>
-    <string name="blank_repo_message">No sites are currently installed in PluginStream. Please close and reopen the app to refresh.</string>
+    <string name="blank_repo_message">PluginStream has no sites installed by default. You need to install the sites from repositories.
+\n
+\nJoin our Telegram or search online.</string>
     <string name="add_repository">Add repository</string>
     <string name="repository_name_hint">Repository name (Optional)</string>
     <string name="repository_url_hint">Repository URL or Shortcode</string>
