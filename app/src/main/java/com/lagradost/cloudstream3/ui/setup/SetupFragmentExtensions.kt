@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
 import androidx.appcompat.app.AlertDialog
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.lagradost.cloudstream3.APIHolder.apis
+import com.lagradost.cloudstream3.CloudStreamApp.Companion.setKey
 import com.lagradost.cloudstream3.MainActivity.Companion.afterRepositoryLoadedEvent
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.databinding.FragmentSetupExtensionsBinding
@@ -185,18 +185,11 @@ class SetupFragmentExtensions : BaseFragment<FragmentSetupExtensionsBinding>(
                 prevBtt.isVisible = isSetup
 
                 nextBtt.setOnClickListener {
-                    // Continue setup
                     if (isSetup) {
                         val currentDestination = findNavController().currentDestination?.id
                         if (currentDestination == R.id.navigation_setup_extensions) {
-                            if (
-                            // If any available languages
-                                apis.distinctBy { it.lang }.size > 1
-                            ) {
-                                findNavController().navigate(R.id.action_navigation_setup_extensions_to_navigation_setup_provider_languages)
-                            } else {
-                                findNavController().navigate(R.id.action_navigation_setup_extensions_to_navigation_setup_media)
-                            }
+                            setKey(HAS_DONE_SETUP_KEY, true)
+                            findNavController().navigate(R.id.navigation_home)
                         }
                     } else {
                         findNavController().navigate(R.id.navigation_home)

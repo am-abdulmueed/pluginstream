@@ -38,7 +38,7 @@ if "%choice%"=="3" (
 if "%choice%"=="4" (
     echo Starting Python Server on Port 1010...
     echo Press Ctrl+C to stop the server.
-    cd /d "E:\Projects\IN_BUILD\cloudstream\app\build\outputs\apk\prerelease\debug"
+    cd /d "E:\Projects\IN_BUILD\pluginstream\app\build\outputs\apk\stable\debug"
     python -m http.server 1010
     pause
     goto menu
