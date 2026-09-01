@@ -270,19 +270,27 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
     // Null if defined as a variable
     // This needs to be run after view created
 
-    private fun reloadRepos(success: Boolean = false) = main {
+    private fun reloadRepos(success: Boolean = false) {
         searchViewModel.reloadRepos()
-        context?.filterProviderByPreferredMedia()?.let { validAPIs ->
-            bindChips(
-                binding?.tvtypesChipsScroll?.tvtypesChips,
-                selectedSearchTypes,
-                validAPIs.flatMap { api -> api.supportedTypes }.distinct()
-            ) { list ->
-                if (selectedSearchTypes.toSet() != list.toSet()) {
-                    DataStoreHelper.searchPreferenceTags = list
-                    selectedSearchTypes.clear()
-                    selectedSearchTypes.addAll(list)
-                    search(binding?.mainSearch?.query?.toString())
+        ioSafe {
+            val ctx = context ?: return@ioSafe
+            val apisList = DataStoreHelper.searchPreferenceProviders.toMutableSet()
+            val validAPIs = ctx.filterProviderByPreferredMedia()
+            val types = validAPIs.flatMap { api -> api.supportedTypes }.distinct()
+
+            main {
+                selectedApis = apisList
+                bindChips(
+                    binding?.tvtypesChipsScroll?.tvtypesChips,
+                    selectedSearchTypes,
+                    types
+                ) { list ->
+                    if (selectedSearchTypes.toSet() != list.toSet()) {
+                        DataStoreHelper.searchPreferenceTags = list
+                        selectedSearchTypes.clear()
+                        selectedSearchTypes.addAll(list)
+                        search(binding?.mainSearch?.query?.toString())
+                    }
                 }
             }
         }
@@ -328,8 +336,6 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>(
 
         val searchExitIcon =
             binding.mainSearch.findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn)
-
-        selectedApis = DataStoreHelper.searchPreferenceProviders.toMutableSet()
 
         binding.searchFilter.setOnClickListener { searchView ->
             if (bottomSheetDialog?.isShowing == true) return@setOnClickListener

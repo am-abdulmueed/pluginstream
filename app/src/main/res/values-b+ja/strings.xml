@@ -622,7 +622,7 @@
     <string name="action_remove_from_watched">視聴済みから削除</string>
     <string name="confirm_exit_dialog">本当に終了しますか？</string>
     <string name="yes">はい</string>
-    <string name="battery_dialog_message">中断のないダウンロードと購読しているテレビ番組の通知を確実にするために、PluginStreamはバックグラウンドで実行する許可が必要です。\'OK\'を押すと、リクエストダイアログが表示されます。\'許可\'を押してください。\n\nこの許可は、CS3がバッテリーを消耗することを意味するものではありません。通知の受信や公式拡張機能からのビデオのダウンロードなど、必要な場合にのみバックグラウンドで動作します。</string>
+    <string name="battery_dialog_message">To ensure uninterrupted background tasks, status updates, and timely notifications, PluginStream needs permission to run in the background. By pressing "OK", you\'ll be shown a system request dialog. Please select \'Allow\'.\n\nPlease note, this permission does not drain your battery. The app will only operate in the background when necessary to sync data or execute active user requests.</string>
     <string name="sort_updated_old">更新日 (古い順)</string>
     <string name="sort_episodes_number_asc">エピソード (昇順)</string>
     <string name="sort_episodes_rating_low_high">評価 (最低)</string>

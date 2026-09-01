@@ -1,7 +1,8 @@
 {
   "name": "PluginStream Repositories Master List",
-  "version": 1,
+  "version": 2,
   "last_updated": "2026-05-02",
+  "total_repositories": 34,
   "repositories": [
     {
       "name": "PluginStream",
@@ -9,54 +10,9 @@
       "description": "Official repository - Dailymotion, Invidious (YouTube), Twitch and more."
     },
     {
-      "name": "Phisher Repo",
-      "url": "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json",
-      "description": "Huge Indian/Hindi + English repository (AllMovieLand, HiAnime, YTS, MovieBox, etc.)"
-    },
-    {
-      "name": "CSX",
-      "url": "https://raw.githubusercontent.com/SaurabhKaperwan/CSX/builds/CS.json",
-      "description": "Hindi & English content (Bollyflix, CineStream, Moviesmod, VegaMovies etc.)"
-    },
-    {
-      "name": "3arabi",
-      "url": "https://raw.githubusercontent.com/Abodabodd/re-3arabi/refs/heads/main/repo.json",
-      "description": "Arabic repository (CimaClub, Akwam, Mycima, Shahid, Anime etc.)"
-    },
-    {
-      "name": "IndoStream",
-      "url": "https://raw.githubusercontent.com/TeKuma25/IndoStream/builds/repo.json",
-      "description": "Indonesian repository (Anoboy, Kuronime, Samehadaku, NontonAnime etc.)"
-    },
-    {
-      "name": "CloudX",
-      "url": "https://raw.githubusercontent.com/Asm0d3usX/CloudX/builds/repo.json",
-      "description": "Indonesian repository (LayarKaca, Samehadaku, Pencurimovie etc.)"
-    },
-    {
-      "name": "doGior",
-      "url": "https://raw.githubusercontent.com/doGior/doGiorsHadEnough/refs/heads/builds/repo.json",
-      "description": "Italian repository (StreamingCommunity, AnimeWorld, CalcioStreaming etc.)"
-    },
-    {
-      "name": "CNC Verse",
-      "url": "https://raw.githubusercontent.com/NivinCNC/CNCVerse-Cloud-Stream-Extension/refs/heads/builds/CNC.json",
-      "description": "Multi-language (Tamil, Hindi, English) - DoFlix, Tamilian, MovieBox etc."
-    },
-    {
-      "name": "Italia In Streaming",
-      "url": "https://pastebin.com/raw/qndZtL6D",
-      "description": "Italian repository (AnimeSaturn, StreamingCommunity, CB01 etc.)"
-    },
-    {
-      "name": "CS Karma",
-      "url": "https://raw.githubusercontent.com/Kraptor123/cs-Karma/refs/heads/master/repo.json",
-      "description": "Multi content (Sports, Anime, Movies, Cricket etc.)"
-    },
-    {
-      "name": "UK Extensions",
-      "url": "https://codeberg.org/CakesTwix/cloudstream-extensions-uk/raw/branch/master/repo.json",
-      "description": "Ukrainian providers repository"
+      "name": "Aniyomi Compat Extension",
+      "url": "https://raw.githubusercontent.com/CranberrySoup/AniyomiCompatExtension/master/repo.json",
+      "description": "Aniyomi compatibility extensions"
     },
     {
       "name": "Italian Provider",
@@ -64,24 +20,59 @@
       "description": "Italian providers (Altadefinizione, GuardaSerie)"
     },
     {
+      "name": "UK Extensions",
+      "url": "https://codeberg.org/CakesTwix/cloudstream-extensions-uk/raw/branch/master/repo.json",
+      "description": "Ukrainian providers repository"
+    },
+    {
+      "name": "SkillShare Repo",
+      "url": "https://raw.githubusercontent.com/techtanic/SkillShare-Repo/builds/repo.json",
+      "description": "Educational content and courses"
+    },
+    {
+      "name": "CSX",
+      "url": "https://raw.githubusercontent.com/SaurabhKaperwan/CSX/builds/CS.json",
+      "description": "Hindi & English content (Bollyflix, CineStream, Moviesmod, VegaMovies etc.)"
+    },
+    {
+      "name": "FStream",
+      "url": "https://git.disroot.org/ayza/FStream/raw/branch/main/repo.json",
+      "description": "Streaming extensions repository"
+    },
+    {
+      "name": "Phisher Repo",
+      "url": "https://raw.githubusercontent.com/phisher98/cloudstream-extensions-phisher/refs/heads/builds/repo.json",
+      "description": "Huge Indian/Hindi + English repository (AllMovieLand, HiAnime, YTS, MovieBox, etc.)"
+    },
+    {
+      "name": "Luna712 Master",
+      "url": "https://raw.githubusercontent.com/Luna712/Luna712-CloudStream-Extensions/master/repo.json",
+      "description": "Dailymotion + Internet Archive"
+    },
+    {
       "name": "Redowan",
       "url": "https://raw.githubusercontent.com/redowan99/Redowan-CloudStream/master/repo.json",
       "description": "Bangladeshi / BDix repositories"
     },
     {
-      "name": "German Providers",
-      "url": "https://raw.githubusercontent.com/Bnyro/GermanProviders/refs/heads/master/repo.json",
-      "description": "German providers repository"
+      "name": "3arabi",
+      "url": "https://raw.githubusercontent.com/Abodabodd/re-3arabi/refs/heads/main/repo.json",
+      "description": "Arabic repository (CimaClub, Akwam, Mycima, Shahid, Anime etc.)"
     },
     {
-      "name": "Luna712",
-      "url": "https://raw.githubusercontent.com/Luna712/Luna712-CloudStream-Extensions/28885d17ceb7f24782b732b6056085c14c1fd027/repo.json",
-      "description": "Dailymotion + Internet Archive"
+      "name": "doGior",
+      "url": "https://raw.githubusercontent.com/doGior/doGiorsHadEnough/refs/heads/builds/repo.json",
+      "description": "Italian repository (StreamingCommunity, AnimeWorld, CalcioStreaming etc.)"
     },
     {
-      "name": "Saimuel Repo",
-      "url": "https://raw.githubusercontent.com/saimuelbr/saimuelrepo/refs/heads/main/builds/repo.json",
-      "description": "Portuguese/Spanish (PobreFlix, AnimesCloud, Doramas etc.)"
+      "name": "Italia In Streaming (GitHub)",
+      "url": "https://raw.githubusercontent.com/DieGon7771/ItaliaInStreaming/builds/repo.json",
+      "description": "Italian streaming extensions"
+    },
+    {
+      "name": "Vietnamese",
+      "url": "https://gitlab.com/tearrs/cloudstream-vietnamese/-/raw/main/repo.json",
+      "description": "Vietnamese repository"
     },
     {
       "name": "CuxPlug",
@@ -89,9 +80,74 @@
       "description": "International (AnimeLuxe, AnimeSama, FrenchStream, Watch32 etc.)"
     },
     {
-      "name": "Vietnamese",
-      "url": "https://gitlab.com/tearrs/cloudstream-vietnamese/-/raw/main/repo.json",
-      "description": "Vietnamese repository"
+      "name": "German Providers",
+      "url": "https://raw.githubusercontent.com/Bnyro/GermanProviders/refs/heads/master/repo.json",
+      "description": "German providers repository"
+    },
+    {
+      "name": "Pitipitii",
+      "url": "https://raw.githubusercontent.com/sarapcanagii/Pitipitii/master/repo.json",
+      "description": "Turkish and international providers"
+    },
+    {
+      "name": "IndoStream",
+      "url": "https://raw.githubusercontent.com/TeKuma25/IndoStream/builds/repo.json",
+      "description": "Indonesian repository (Anoboy, Kuronime, Samehadaku, NontonAnime etc.)"
+    },
+    {
+      "name": "Saimuel Repo",
+      "url": "https://raw.githubusercontent.com/saimuelbr/saimuelrepo/refs/heads/main/builds/repo.json",
+      "description": "Portuguese/Spanish (PobreFlix, AnimesCloud, Doramas etc.)"
+    },
+    {
+      "name": "CS Kraptor",
+      "url": "https://raw.githubusercontent.com/Kraptor123/cs-kraptor/refs/heads/master/repo.json",
+      "description": "Movies and media extensions"
+    },
+    {
+      "name": "CS Karma",
+      "url": "https://raw.githubusercontent.com/Kraptor123/cs-Karma/refs/heads/master/repo.json",
+      "description": "Multi content (Sports, Anime, Movies, Cricket etc.)"
+    },
+    {
+      "name": "Storm Extensions",
+      "url": "https://raw.githubusercontent.com/redblacker8/storm-ext/refs/heads/builds/repo.json",
+      "description": "Streaming providers repository"
+    },
+    {
+      "name": "Cinephile",
+      "url": "https://raw.githubusercontent.com/rockhero1234/cinephile/refs/heads/builds/repo.json",
+      "description": "Movie and series streaming plugins"
+    },
+    {
+      "name": "Cartoony Repo",
+      "url": "https://raw.githubusercontent.com/med1245/cartoonyrepo/builds/repo.json",
+      "description": "Cartoons and animated content"
+    },
+    {
+      "name": "Reflex Repo",
+      "url": "https://raw.githubusercontent.com/Reflex755/ReflexRepo/refs/heads/builds/repo.json",
+      "description": "Streaming extensions repository"
+    },
+    {
+      "name": "CloudX",
+      "url": "https://raw.githubusercontent.com/Asm0d3usX/CloudX/builds/repo.json",
+      "description": "Indonesian repository (LayarKaca, Samehadaku, Pencurimovie etc.)"
+    },
+    {
+      "name": "CNC Verse",
+      "url": "https://raw.githubusercontent.com/NivinCNC/CNCVerse-Cloud-Stream-Extension/refs/heads/builds/CNC.json",
+      "description": "Multi-language (Tamil, Hindi, English) - DoFlix, Tamilian, MovieBox etc."
+    },
+    {
+      "name": "Italia In Streaming (Pastebin)",
+      "url": "https://pastebin.com/raw/qndZtL6D",
+      "description": "Italian repository (AnimeSaturn, StreamingCommunity, CB01 etc.)"
+    },
+    {
+      "name": "Luna712 Commit Build",
+      "url": "https://raw.githubusercontent.com/Luna712/Luna712-CloudStream-Extensions/28885d17ceb7f24782b732b6056085c14c1fd027/repo.json",
+      "description": "Dailymotion + Internet Archive (Specific version)"
     },
     {
       "name": "LietRepo",
@@ -102,6 +158,16 @@
       "name": "KingLucius Xtream",
       "url": "https://pastebin.com/raw/Cd2g2tfz",
       "description": "Xtream IPTV plugin (requires Xtream codes)"
+    },
+    {
+      "name": "UK Extensions (Alternative Direct)",
+      "url": "https://raw.githubusercontent.com/CakesTwix/cloudstream-extensions-uk/master/repo.json",
+      "description": "Ukrainian providers repository (GitHub raw direct link)"
+    },
+    {
+      "name": "3arabi (Branch Repo)",
+      "url": "https://raw.githubusercontent.com/Abodabodd/re-3arabi/refs/heads/main/repo",
+      "description": "Arabic repository direct route"
     }
   ]
 }

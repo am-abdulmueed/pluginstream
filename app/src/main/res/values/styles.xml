@@ -737,9 +737,9 @@
 
     <style name="WhiteButton" parent="NiceButton">
         <item name="strokeColor">?attr/iconGrayBackground</item>
-        <item name="backgroundTint">?attr/textColor</item>
-        <item name="iconTint">?attr/iconGrayBackground</item>
-        <item name="android:textColor">?attr/iconGrayBackground</item>
+        <item name="backgroundTint">?attr/white</item>
+        <item name="iconTint">?attr/black</item>
+        <item name="android:textColor">?attr/black</item>
         <item name="rippleColor">?attr/primaryBlackBackground</item>
     </style>
     <!-- This is so shit, because android has no native way to either changing the layout (android:layout) or changing the layout_height for no reason.

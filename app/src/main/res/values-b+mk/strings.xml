@@ -586,7 +586,7 @@
     <string name="custom_media_singular">Медиуми</string>
     <string name="episode_upcoming_format" formatted="true">Претстои во %s</string>
     <string name="resume_remaining" formatted="true">%s \nпреостанати</string>
-    <string name="battery_dialog_message">За да се обезбедат непрекинати преземања и известувања за претплатените ТВ серии, PluginStream треба дозвола за работа во позадина. Со притискање на „ОК“, ќе ви биде прикажан дијалог за барање дозвола. Ве молиме, притиснете „Дозволи“.\n\nИмајте предвид дека оваа дозвола не значи дека CS3 ќе ја троши вашата батерија. Ќе работи во позадина само кога е потребно, како на пример при примање известувања или преземање видеа од официјални екстензии.</string>
+    <string name="battery_dialog_message">To ensure uninterrupted background tasks, status updates, and timely notifications, PluginStream needs permission to run in the background. By pressing "OK", you\'ll be shown a system request dialog. Please select \'Allow\'.\n\nPlease note, this permission does not drain your battery. The app will only operate in the background when necessary to sync data or execute active user requests.</string>
     <string name="clipboard_permission_error">Грешка при пристапот до таблата со исечоци, обиди се повторно.</string>
     <string name="clipboard_unknown_error">Грешка при копирање, молам копирај го логот и контактирај ја поддршката на апликацијата.</string>
     <string name="audio_book_singular">Аудио книга</string>

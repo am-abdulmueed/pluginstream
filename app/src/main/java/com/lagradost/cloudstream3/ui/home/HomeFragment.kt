@@ -120,7 +120,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
 
         fun Context.getDisplayName(apiName: String?): String? {
             return when (apiName) {
-                noneApi.name -> getString(R.string.none)
+                noneApi.name -> "Select"
                 randomApi.name -> getString(R.string.home_random)
                 else -> getDisplayApiName(apiName) ?: apiName
             }
@@ -749,7 +749,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(
                     providerNames.clear()
                     providerNames.addAll(
                         currentValidApis.map {
-                            val displayName = getDisplayApiName(it.name) ?: it.name
+                            val displayName = this@selectHomepage.getDisplayName(it.name) ?: it.name
                             if (isMultiLang) "${getFlagFromIso(it.lang)?.plus(" ") ?: ""}$displayName" else displayName
                         }
                     )

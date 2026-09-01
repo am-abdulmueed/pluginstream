@@ -10,122 +10,107 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/primaryBlackBackground"
-        app:liftOnScroll="false"
-        app:elevation="0dp">
+        app:elevation="4dp"
+        app:liftOnScroll="true"
+        app:liftOnScrollTargetViewId="@id/gamesRecyclerView">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/headerContainer"
+        <!-- Scrollable Header Top Area (Title + Saved Games Card) -->
+        <LinearLayout
+            android:id="@+id/headerTopSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingHorizontal="16dp"
-            android:paddingVertical="12dp"
-            app:layout_scrollFlags="scroll|enterAlways">
+            android:paddingTop="16dp"
+            android:paddingBottom="6dp"
+            app:layout_scrollFlags="scroll">
+
+            <!-- Instant Arcade Live Pill Badge -->
+            <LinearLayout
+                android:id="@+id/gameBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_bottom_sheet_handle"
+                android:backgroundTint="?attr/primaryGrayBackground"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp">
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="#10B981" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:fontFamily="@font/google_sans"
+                    android:letterSpacing="0.08"
+                    android:text="INSTANT ARCADE"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/gameTitleHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/google_sans"
                 android:text="Explore Games"
                 android:textColor="?attr/textColor"
-                android:textSize="27sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/google_sans"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:textSize="28sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/gameSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="2dp"
+                android:alpha="0.85"
+                android:fontFamily="@font/google_sans"
                 android:text="Play instantly, no downloads needed"
                 android:textColor="?attr/grayTextColor"
-                android:textSize="14sp"
-                android:fontFamily="@font/google_sans"
-                android:alpha="0.8"
-                app:layout_constraintStart_toStartOf="@id/gameTitleHeader"
-                app:layout_constraintTop_toBottomOf="@id/gameTitleHeader" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/searchCard"
-                android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginEnd="12dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="?attr/primaryGrayBackground"
-                app:strokeWidth="1.2dp"
-                app:strokeColor="#1AFFFFFF"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/gameSubtitle">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/search_icon"
-                        app:tint="?attr/colorPrimary" />
-
-                    <EditText
-                        android:id="@+id/searchEditText"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="10dp"
-                        android:background="@android:color/transparent"
-                        android:hint="Search games..."
-                        android:inputType="text"
-                        android:maxLines="1"
-                        android:textColor="?attr/textColor"
-                        android:textColorHint="?attr/grayTextColor"
-                        android:textSize="15sp"
-                        android:fontFamily="@font/google_sans" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                android:textSize="13sp" />
 
             <!-- Saved Games Shortcut Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/savedGamesCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="?attr/primaryGrayBackground"
-                app:strokeWidth="1.2dp"
-                app:strokeColor="#33FFFFFF"
+                android:layout_marginTop="14dp"
                 android:foreground="?attr/selectableItemBackground"
                 android:stateListAnimator="@animator/card_press_anim"
-                app:layout_constraintTop_toBottomOf="@id/searchCard"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:cardBackgroundColor="?attr/primaryGrayBackground"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:strokeColor="?attr/dividerColor"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp"
-                    android:gravity="center_vertical">
+                    android:padding="14dp">
 
                     <FrameLayout
-                        android:layout_width="56dp"
-                        android:layout_height="56dp">
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_bottom_sheet_handle"
+                        android:backgroundTint="#10FFFFFF">
 
                         <ImageView
                             android:id="@+id/savedGamesIcon"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:src="@drawable/ic_baseline_bookmark_24"
-                            android:background="@drawable/circle_background"
-                            android:backgroundTint="#1AFFFFFF"
-                            android:padding="14dp"
-                            app:tint="?attr/colorPrimary" />
+                            android:padding="6dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_saved" />
 
                         <TextView
                             android:id="@+id/savedGamesCount"
@@ -145,29 +130,29 @@
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
                         android:layout_weight="1"
-                        android:layout_marginStart="16dp"
                         android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/savedGamesTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:fontFamily="@font/google_sans"
                             android:text="My Saved Games"
                             android:textColor="?attr/textColor"
-                            android:textSize="17sp"
-                            android:textStyle="bold"
-                            android:fontFamily="@font/google_sans" />
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/savedGamesSubtitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/google_sans"
                             android:text="No games saved yet"
                             android:textColor="?attr/grayTextColor"
-                            android:textSize="13sp"
-                            android:fontFamily="@font/google_sans"
-                            android:layout_marginTop="2dp" />
+                            android:textSize="12.5sp" />
                     </LinearLayout>
 
                     <ImageView
@@ -179,7 +164,68 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+
+        <!-- Sticky Modern Search Bar Bar (Pinned at top when scrolling) -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/primaryBlackBackground"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="10dp">
+
+            <!-- Modern Squircle Search Bar -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/searchCard"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                app:cardBackgroundColor="?attr/primaryGrayBackground"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="?attr/dividerColor"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/search_icon"
+                        app:tint="?attr/colorPrimary" />
+
+                    <EditText
+                        android:id="@+id/searchEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:background="@android:color/transparent"
+                        android:fontFamily="@font/google_sans"
+                        android:hint="Search games..."
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="?attr/textColor"
+                        android:textColorHint="?attr/grayTextColor"
+                        android:textSize="14sp" />
+
+                    <ImageView
+                        android:id="@+id/searchClearButton"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="2dp"
+                        android:src="@drawable/ic_baseline_close_24"
+                        android:visibility="gone"
+                        app:tint="?attr/grayTextColor" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </FrameLayout>
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Main Content Container -->

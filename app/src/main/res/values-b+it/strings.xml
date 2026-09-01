@@ -600,7 +600,7 @@
     <string name="battery_dialog_title">Disabilita ottimizzazione della batteria</string>
     <string name="app_info_intent_error">Impossibile aprire le informazioni sull\'app PluginStream.</string>
     <string name="custom_media_singular">Media</string>
-    <string name="battery_dialog_message">Per garantire download e notifiche ininterrotti per le serie TV a cui si è abbonati, PluginStream necessita dell\'autorizzazione per funzionare in background. Premendo OK, verrà mostrata una finestra di dialogo di richiesta. Premi \"Consenti\".\n\nNota che questa autorizzazione non significa che CS3 scaricherà la batteria. Funzionerà in background solo quando necessario, ad esempio quando si ricevono notifiche o si scaricano video da estensioni ufficiali.</string>
+    <string name="battery_dialog_message">To ensure uninterrupted background tasks, status updates, and timely notifications, PluginStream needs permission to run in the background. By pressing "OK", you\'ll be shown a system request dialog. Please select \'Allow\'.\n\nPlease note, this permission does not drain your battery. The app will only operate in the background when necessary to sync data or execute active user requests.</string>
     <string name="app_unrestricted_toast">L\'utilizzo della batteria dell\'app è già impostato su \"Senza restrizioni\"</string>
     <string name="music_singular">Musica</string>
     <string name="audio_book_singular">Audiolibro</string>

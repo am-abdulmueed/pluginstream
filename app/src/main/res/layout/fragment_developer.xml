@@ -36,53 +36,69 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ================= HERO HEADER ================= -->
-            <FrameLayout
+            <!-- ================= HERO PROFILE HEADER ================= -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="16dp"
-                android:paddingHorizontal="16dp">
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingTop="24dp"
+                android:paddingBottom="10dp">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
+                <!-- Modern Squircle Avatar with Accent Stroke & Status Indicator -->
+                <RelativeLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="0dp">
+                    android:layout_gravity="center_horizontal">
 
-                    <ImageView
-                        android:id="@+id/dev_banner"
-                        android:layout_width="match_parent"
-                        android:layout_height="150dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/dev_banner" />
+                    <!-- Outer Glow Ring Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/dev_avatar_card"
+                        android:layout_width="114dp"
+                        android:layout_height="114dp"
+                        android:foreground="?attr/selectableItemBackground"
+                        app:cardBackgroundColor="?attr/primaryGrayBackground"
+                        app:cardCornerRadius="34dp"
+                        app:cardElevation="6dp"
+                        app:strokeColor="?attr/dividerColor"
+                        app:strokeWidth="1dp">
 
-                    <!-- Soft scrim so the floating avatar always reads cleanly -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="#40000000" />
-                </com.google.android.material.card.MaterialCardView>
+                        <ImageView
+                            android:id="@+id/dev_banner"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="@string/dev_profile"
+                            android:scaleType="centerCrop" />
 
-                <!-- Floating circular avatar, overlapping banner + body -->
-                <!--<com.google.android.material.card.MaterialCardView
-                    android:layout_width="92dp"
-                    android:layout_height="92dp"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="-30dp"
-                    app:cardCornerRadius="26dp"
-                    app:cardElevation="8dp"
-                    app:strokeWidth="3dp"
-                    app:strokeColor="?attr/primaryBlackBackground"
-                    app:cardBackgroundColor="?attr/primaryGrayBackground">
+                    </com.google.android.material.card.MaterialCardView>
 
-                    <ImageView
-                        android:id="@+id/dev_avatar"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/dev_avatar" />
-                </com.google.android.material.card.MaterialCardView>-->
-            </FrameLayout>
+                    <!-- Modern Discord-Style Active Status Badge -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_alignBottom="@id/dev_avatar_card"
+                        android:layout_alignEnd="@id/dev_avatar_card"
+                        android:layout_marginEnd="2dp"
+                        android:layout_marginBottom="2dp"
+                        app:cardBackgroundColor="?attr/primaryBlackBackground"
+                        app:cardCornerRadius="11dp"
+                        app:cardElevation="10dp"
+                        app:strokeWidth="0dp">
+
+                        <!-- Inner Pulsing Active Dot -->
+                        <View
+                            android:id="@+id/dev_status_dot"
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/circle_background"
+                            android:backgroundTint="#2ECC71" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </RelativeLayout>
+
+            </LinearLayout>
 
             <!-- Name / role / mini stats -->
             <LinearLayout

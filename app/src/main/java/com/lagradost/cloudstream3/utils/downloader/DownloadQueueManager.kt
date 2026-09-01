@@ -226,8 +226,6 @@ object DownloadQueueManager {
     fun addToQueue(downloadQueueWrapper: DownloadQueueWrapper) = safe {
         val context = CloudStreamApp.context ?: return@safe
 
-        CloudStreamApp.openBrowser("https://omg10.com/4/11143190")
-
         val fileInfo = getDownloadFileInfo(context, downloadQueueWrapper.id)
         val isComplete = fileInfo != null &&
                 // Assure no division by 0

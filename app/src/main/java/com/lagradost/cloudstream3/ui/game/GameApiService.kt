@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 
 object GameApiService {
-    private const val GITHUB_RAW_URL = "https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@main/games_final_lite.json"
+    private const val GITHUB_RAW_URL = "https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@refs/heads/main/psgames.json"
     
     private val objectMapper = jacksonObjectMapper()
     private val client = Requests().apply {
@@ -25,13 +25,8 @@ object GameApiService {
         if (response.code in 200..299) {
             val json = response.text
             val gameResponse = objectMapper.readValue<GameResponse>(json)
-            
-            // Set featured games: Premium pattern (4 normal + 1 poster = every 5th game)
-            val featuredGames = gameResponse.hits.mapIndexed { index: Int, game: GameModel ->
-                game.copy(isFeatured = (index + 1) % 5 == 0)
-            }
-            
-            gameResponse.copy(hits = featuredGames)
+            val gamesList = gameResponse.getGameList()
+            gameResponse.copy(hits = gamesList)
         } else {
             throw Exception("Failed to fetch games: ${response.code}")
         }

@@ -38,14 +38,12 @@ class SavedGamesFragment : BaseFragment<FragmentSavedGamesBinding>(
         val spanCount = if (isLayout(TV or EMULATOR)) 4 else 2
         
         gameAdapter = GameAdapter({ game ->
-            val bundle = Bundle().apply {
-                putString("game_url", game.gameURL)
-                putString("game_title", game.title)
+            context?.let { ctx ->
+                GameDetailDialogHelper.showGameDetailsDialog(ctx, game, viewModel, findNavController())
             }
-            findNavController().navigate(R.id.navigation_game_player, bundle)
         }, { game ->
             viewModel.toggleFavorite(game)
-        }, forceNormal = true)
+        }, forceNormal = true, showFooter = false)
 
         binding.savedGamesRecyclerView.apply {
             layoutManager = GridLayoutManager(requireContext(), spanCount)

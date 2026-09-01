@@ -599,7 +599,7 @@
     <string name="app_info_intent_error">無法開啟 PluginStream 的應用程式資訊頁面。</string>
     <string name="biometric_warning">您的 PluginStream 資料已完成備份。儘管可能性非常低，但因不同裝置的行為都有所不同，在極少數情況下，您可能會無法存取本應用程式。此時請完全清除本應用程式的資料，再使用已有的備份進行還原。若因此造成任何不便，我們深感抱歉。</string>
     <string name="test_extensions_summary">此測試是供開發人員參考，而不是用以驗證任何擴充功能的正常運作與否。</string>
-    <string name="battery_dialog_message">為了確保已訂閱的電視節目的不間斷下載與通知，PluginStream 需要取得在背景執行的權限。若點選「確定」，將顯示「請求權限」，請選擇「允許」。\n\n請注意，取得此權限並不表示本程式會明顯增加電池用量，而是只在必要時在背景執行，例如取得通知或使用擴充功能下載影片。</string>
+    <string name="battery_dialog_message">To ensure uninterrupted background tasks, status updates, and timely notifications, PluginStream needs permission to run in the background. By pressing "OK", you\'ll be shown a system request dialog. Please select \'Allow\'.\n\nPlease note, this permission does not drain your battery. The app will only operate in the background when necessary to sync data or execute active user requests.</string>
     <string name="cs3wiki">PluginStream Wiki</string>
     <string name="biometric_unsupported">此裝置不支援生物特徵認證</string>
     <string name="device_pin_error_message">無法取得裝置 PIN 碼，請嘗試本機驗證</string>

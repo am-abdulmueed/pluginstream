@@ -273,7 +273,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
             }
 
             settingsSupport.setOnClickListener {
-                showSupportDialog()
+                // showSupportDialog()
             }
 
             settingsSponsorEarn.setOnClickListener {
@@ -287,7 +287,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                     i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_plugin))
                     i.putExtra(
                         Intent.EXTRA_TEXT,
-                        "🚀 *Stream Unlimited Movies & Shows – Ad-Free!*\n\nExperience the next-gen *PluginStream Max.* No subscriptions, no hidden fees—just pure entertainment.\n\n🌐 *Download Now:* https://PluginStream.pages.dev\n🛡 *Join Official Community:* https://t.me/PluginStreamofficial (Official APK available here for easy download)\n\nEnjoy high-speed streaming without limits.\n\n❎ ~Netflix | Prime | HBO | Disney+~\n✅ *PluginStream Max* (Everything in ONE place!)"
+                        "🚀 Discover *PluginStream* – Your Ultimate Modular Utility & Game Hub!\n\nEnjoy seamless app customization, fast performance, and built-in interactive games with zero hassle.\n\n🌐 *Get it on Google Play:* https://play.google.com/store/apps/details?id=com.betapix.pluginstream\n🛡 *Official Website:* https://pluginstream.pages.dev\n\nTry it today for a faster and cleaner mobile experience!"
                     )
                     startActivity(Intent.createChooser(i, getString(R.string.share_plugin)))
                 } catch (e: Exception) {
@@ -530,6 +530,7 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
         }
     }
 
+    /*
     private fun showSupportDialog() {
         val dialog = Dialog(requireContext(), R.style.AlertDialogCustom)
         val dialogView = layoutInflater.inflate(R.layout.dialog_support, null)
@@ -565,4 +566,5 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
 
         dialog.show()
     }
+    */
 }

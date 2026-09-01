@@ -95,25 +95,39 @@ class SettingsLegalFragment : BaseFragment<FragmentLegalBinding>(
 
 **Effective Date:** May 12, 2026
 
-At **PluginStream**, we take your privacy seriously. This policy explains how we handle your information.
+At **PluginStream**, accessible from https://pluginstream.pages.dev, protecting the privacy of our users is one of our main priorities. This Privacy Policy document outlines the types of information that is collected and recorded by PluginStream and how we use it.
 
-### 1. Data Collection
-PluginStream is designed with a **Privacy-First** approach:
-- **No Personal Data:** We do not collect names, email addresses, or phone numbers.
-- **No Data Selling:** Since we don't collect your personal data, we have nothing to sell to third parties.
+### 1. Information We Collect
+PluginStream is designed with a Privacy-First approach:
+- **No Direct Personal Data:** We do not collect names, phone numbers, or physical addresses.
+- **Account & Registration:** You are not required to create an account to use the main functionality of the application.
+- **Local Device Storage:** All custom settings, module imports, and configuration data remain locally stored on your Android device.
 
-### 2. Third-Party Services
-We use a few trusted third-party services for app functionality and maintenance:
-- **Analytics & Stability (Firebase):** We use Firebase to monitor **Daily Active Users (DAU)** and receive **Crash Reports** to keep the app stable.
-- **Games (PLAYGAMA):** Our games section is powered by PlayGama.
-- **Video Content (YouTube):** ProTube features fetch content directly from YouTube.
+### 2. Automatically Collected Usage Data & Diagnostics
+To ensure application stability, monitor performance, and analyze usage trends, we utilize standard diagnostic infrastructure:
+- **Firebase Analytics & Crash Reporting:** We collect anonymous device diagnostic data, operating system versions, and automated crash logs to fix bugs and optimize app performance.
 
-### 3. Third-Party Links
-For more details, you can visit the privacy policies of our partners:
-- [PlayGama Confidentiality](https://playgama.com/confidential)
+### 3. Integrated Third-Party Services
+PluginStream integrates trusted third-party SDKs for built-in utilities and gaming content:
+- **PlayGama:** Powers the built-in mini-games section.
+- **Google Firebase:** Used for crash diagnostics and operational performance monitoring.
 
-### 4. Contact Us
-If you have any questions about this policy, feel free to contact us via the support channels in Settings.
+We encourage users to review the respective privacy policies of these third-party services:
+- [PlayGama Privacy Policy](https://playgama.com/confidential)
+
+### 4. External Web Links & Modules
+Our framework allows users to view external web content and custom modules. Please note that when you interact with third-party web services, their own terms and privacy policies will apply. PluginStream has no control over external third-party content.
+
+### 5. Children's Privacy Protection
+PluginStream does not knowingly collect any Personal Identifiable Information from children under the age of 13. If you believe your child provided such information, please contact us immediately, and we will promptly remove it.
+
+### 6. Updates to This Policy
+We may update our Privacy Policy from time to time. Any updates will be published directly on this page with an updated effective date.
+
+### 7. Contact Us
+If you have questions or require more information about our Privacy Policy, feel free to contact us:
+- **Email:** am.abdulmueed1@gmail.com
+- **Website Support:** https://pluginstream.pages.dev/contact
         """.trimIndent()
     }
 
@@ -123,22 +137,26 @@ If you have any questions about this policy, feel free to contact us via the sup
 
 **Effective Date:** May 12, 2026
 
-By using **PluginStream**, you agree to the following terms and conditions.
+By downloading or using **PluginStream** (https://pluginstream.pages.dev), you automatically agree to the following terms and conditions.
 
-### 1. Content Disclaimer
-- **Third-Party Plugins:** PluginStream is a modular media player. All content is fetched from original websites through community-developed plugins.
-- **Copyright:** We do not host or upload any media. Content availability depends on the source sites. Users are responsible for complying with local laws regarding the use of such content.
-- **ProTube:** ProTube fetches content directly from YouTube's website for playback.
+### 1. Disclaimer of Warranties & Software Usage
+PluginStream operates strictly as a modular web utility framework and game dashboard. The software is provided "as is" without warranties of any kind, express or implied.
 
-### 2. Use of Third-Party Services
-By using certain features, you agree to the terms of our partners:
+### 2. Third-Party Content & External Resources
+- **No Media Hosting:** PluginStream does not host, upload, manage, or store digital media files on its servers.
+- **User Responsibility:** Users are solely responsible for any external web modules or configurations they add into the app, and must comply with local copyright and data laws governing their region.
+
+### 3. Third-Party Partners
+By using built-in interactive features such as mini-games, you agree to comply with the terms of our feature providers:
 - [PlayGama Terms of Use](https://playgama.com/termsofuse)
 
-### 3. Limitation of Liability
-PluginStream is provided "as is" without any warranties. We are not responsible for the content provided by third-party plugins or external websites.
+### 4. Limitation of Liability
+In no event shall PluginStream, its developers, or affiliates be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the application or external links.
 
-### 4. Changes to Terms
-We reserve the right to update these terms at any time. Continued use of the app constitutes acceptance of the new terms.
+### 5. Contact Information
+For legal inquiries, feedback, or support regarding our terms, please reach out to us:
+- **Email:** am.abdulmueed1@gmail.com
+- **Support Portal:** https://pluginstream.pages.dev/contact
         """.trimIndent()
     }
 }

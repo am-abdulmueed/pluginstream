@@ -40,8 +40,10 @@ class GameViewModel : ViewModel() {
                 val response = GameCacheManager.fetchGamesWithCache(context)
                 val savedUrls = getKey<Set<String>>(SAVED_GAMES_KEY) ?: emptySet()
                 
-                val games = response.hits.map { game ->
-                    game.copy(isFavorite = savedUrls.contains(game.gameURL))
+                val games = response.getGameList().map { game ->
+                    val playUrl = game.getPlayUrl()
+                    val isFav = savedUrls.contains(playUrl) || savedUrls.contains(game.gameURL) || savedUrls.contains(game.title)
+                    game.copy(isFavorite = isFav)
                 }
                 
                 _allGames.value = games
@@ -56,20 +58,31 @@ class GameViewModel : ViewModel() {
     }
 
     fun toggleFavorite(game: GameModel) {
-        val currentGames = _allGames.value ?: return
+        val currentGames = _allGames.value ?: emptyList()
         val savedUrls = getKey<Set<String>>(SAVED_GAMES_KEY)?.toMutableSet() ?: mutableSetOf()
         
+        val key = game.getPlayUrl().ifBlank { game.title }
         val newIsFavorite = !game.isFavorite
+        // Do NOT mutate game.isFavorite here — let DiffUtil detect the change via copy() below
+        
         if (newIsFavorite) {
-            savedUrls.add(game.gameURL)
+            savedUrls.add(key)
+            if (game.gameURL.isNotBlank()) savedUrls.add(game.gameURL)
+            if (game.title.isNotBlank()) savedUrls.add(game.title)
         } else {
+            savedUrls.remove(key)
             savedUrls.remove(game.gameURL)
+            savedUrls.remove(game.title)
         }
         
         setKey(SAVED_GAMES_KEY, savedUrls)
         
         val updatedGames = currentGames.map { 
-            if (it.gameURL == game.gameURL) it.copy(isFavorite = newIsFavorite) else it 
+            if ((it.getPlayUrl().isNotBlank() && it.getPlayUrl() == game.getPlayUrl()) || (it.title.isNotBlank() && it.title == game.title)) {
+                it.copy(isFavorite = newIsFavorite)
+            } else {
+                it
+            }
         }
         
         _allGames.value = updatedGames

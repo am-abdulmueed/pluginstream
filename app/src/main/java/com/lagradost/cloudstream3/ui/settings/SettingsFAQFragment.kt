@@ -55,48 +55,36 @@ class SettingsFAQFragment : BaseFragment<FragmentFaqBinding>(
 
     private val fullFaqList = listOf(
         FAQItem(
-            "New Features & Suggestions 💡",
-            "We're always looking for your ideas! If you want something new added to PluginStream, you can **contact us** through the Contact Us button or **DM us** on our official Instagram/Telegram."
+            "New Features & Feature Requests 💡",
+            "We're always looking for your ideas! If you want a new feature added to the app, you can contact us via the support channels in Settings."
         ),
         FAQItem(
-            "Movie Plugin Issues & Fix 🎬",
-            "1. First try **switching** to a different plugin.\n2. If the problem persists, go to **[Settings > Extensions](app://extensions)**.\n3. Click the **[bin icon](app://extensions)** at the top to remove all plugins.\n4. **Restart the app** (close and reopen) to fresh install all plugins."
-        ),
-        FAQItem(
-            "If Bilibili and other providers not working? 🌐",
-            "• **VPN Usage:** Some regional providers or plugins may require a **VPN (USA/Region specific)** to function correctly.\n• **Indian Content:** All Indian plugins work perfectly **without VPN**.\n• **Troubleshooting:** If any provider or plugin is not working, try connecting to a **VPN**. If you are already connected, try **disconnecting** it and refresh."
-        ),
-        FAQItem(
-            "If any provider or plugin is not working? 🌐",
-            "• **Regional Restrictions:** Some providers restrict content based on your location. This is why you might see **'Content not available'** or 'Failed to load' errors.\n• **Solution:** Using a **VPN** is the best way to bypass these regional issues. Connect to a server in the **USA or UK** for the best results with English providers."
+            "Content Loading Issues & Network Error 🌐",
+            "• Check your active internet connection.\n• Some network environments or firewalls may block external connections. Try switching between Wi-Fi and Mobile Data.\n• Ensure your custom module configurations are updated to their latest versions."
         ),
         FAQItem(
             "App Crashing & Bug Reports ⚠️",
-            "We strive to keep PluginStream stable. If the app crashes, please click **'Report Crash'** in the dialog that appears on screen. This sends **error reports** directly to our developers."
+            "We strive to keep the application stable. If the app crashes, please use the 'Report Crash' dialog to send automated diagnostic logs via Firebase to help our developers fix performance issues."
         ),
         FAQItem(
-            "ProTube (YouTube Integration) 📺",
-            "**ProTube** is PluginStream's own feature where you can enjoy **YouTube and YouTube Music** without going to any other app."
+            "Built-in Games & Performance 🕹️",
+            "• Our games section is powered by PlayGama. Close background apps for smoother performance.\n• Lower game graphics settings if lag occurs.\n• Ensure your device is not overheating or running in Power Saving mode."
         ),
         FAQItem(
-            "App running slow, what to do? 🔌",
-            "• Check your **internet connection**.\n• **[Clear Cache](app://clear_cache)** in Settings.\n• Always use the **Latest Version**."
+            "App Running Slow or Freezing 🔌",
+            "• Check your internet connection.\n• Use **[Clear Cache](app://clear_cache)** in Settings to free up space.\n• Make sure you are using the latest version from the Play Store."
         ),
         FAQItem(
             "Account & Privacy 🔒",
-            "Absolutely! PluginStream takes your **privacy** very seriously. We've designed the app with a **'Safety-First'** approach to keep your data secure."
+            "Your privacy is our top priority. The app operates on a Privacy-First approach—we do not collect your name, email, or personal identity data. Settings are stored locally on your device."
         ),
         FAQItem(
-            "Download Issues (Movies/Games) 📥",
-            "1. Check your **phone storage**.\n2. **Disable VPN**.\n3. **Update or reinstall** the plugin."
+            "Third-Party Services & Links 🔗",
+            "We use trusted partners like Firebase for app stability and PlayGama for game integration. You can review their privacy policies and terms through the provided links in our Privacy Policy section."
         ),
         FAQItem(
-            "Game Performance & Lag 🕹️",
-            "• **Close background apps**.\n• Set graphics to **'Medium' or 'Low'**.\n• Check for phone **overheating**."
-        ),
-        FAQItem(
-            "Subscription & Payments 💸",
-            "PluginStream is **completely free**. We don't charge any monthly fees. Enjoy unlimited streaming with no hidden costs!"
+            "Content & Add-on Disclaimer ⚠️",
+            "PluginStream is a utility framework. We do not host, store, or upload external media content. All custom modules operate under standard web protocols, and users are responsible for complying with local regulations."
         )
     )
 

@@ -1,15 +1,15 @@
 ---
-title: PluginStream Max
-description: Ultimate Multi-Source Entertainment Hub for Android
+title: PluginStream
+description: Lightweight Modular Utility & Interactive Games Dashboard for Android
 ---
 
-# 🎬 PluginStream Max
+# ⚙️ PluginStream
 
-### 🚀 Ultimate Multi-Source Entertainment Hub for Android
+### 🚀 Lightweight Modular Utility & Interactive Games Dashboard for Android
 
 ---
 
-[![Download APK](https://img.shields.io/badge/DOWNLOAD-APK_NOW-blue?style=for-the-badge&logo=android)](https://pluginstream.pages.dev)
+[![Get it on Google Play](https://img.shields.io/badge/Google_Play-Available_Now-green?style=for-the-badge&logo=googleplay)](https://play.google.com/store/apps/details?id=com.betapix.pluginstream)
 
 ![Version](https://img.shields.io/badge/Version-5.1.1-green) ![Platform](https://img.shields.io/badge/Platform-Android-orange) ![Status](https://img.shields.io/badge/Status-Stable-brightgreen)
 
@@ -17,56 +17,50 @@ description: Ultimate Multi-Source Entertainment Hub for Android
 
 ## 📌 Overview
 
-**PluginStream Max** is a powerful Android entertainment app that combines movies, series, and live TV into a single platform using a plugin-based architecture.
+**PluginStream** is a lightweight, high-performance Android application framework designed to offer custom modular extensions and built-in interactive HTML5 gaming experiences powered by PlayGama.
 
-No switching apps. No ads. Just entertainment.
+No clutter. Privacy-first. Built for speed and performance.
 
 ---
 
 ## ⚡ Key Features
 
-- 🎬 Movies & Series in one place  
-- 📡 Live TV streaming support  
-- 🚫 Ad-free experience  
-- ⚡ Lightweight & fast performance  
-- 🔄 Auto-updating plugins  
-- 📺 Chromecast support  
-- 🔐 Privacy-first (no login required)
+- 🕹️ Built-in HTML5 Games Dashboard (Powered by PlayGama)  
+- ⚙️ Custom Module & Extension Management  
+- ⚡ Lightweight & Low Memory Footprint  
+- 🔄 Auto-syncing Local Configurations  
+- 🔐 Privacy-first Architecture (No Account Required)  
 
 ---
 
 ## 📸 Screenshots
 
-![Screen 1](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/1.png)
-![Screen 2](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/2.png)
-![Screen 3](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/3.png)
-![Screen 4](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/4.png)
-![Screen 5](https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/5.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/1.png" width="170" alt="Screen 1" />
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/2.png" width="170" alt="Screen 2" />
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/3.png" width="170" alt="Screen 3" />
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/4.png" width="170" alt="Screen 4" />
+  <img src="https://raw.githubusercontent.com/am-abdulmueed/pluginstream/main/images/5.png" width="170" alt="Screen 5" />
+</p>
 
 ---
 
-## 📥 Download & Install
+## 📥 Get PluginStream
 
-👉 Download APK:
+Download the official release directly from the Google Play Store:
 
-**Official Site:** [https://pluginstream.pages.dev](https://pluginstream.pages.dev)  
-
-### Steps:
-1. Enable "Unknown Sources" on Android  
-2. Download APK  
-3. Install & Open app  
-4. Enjoy streaming 🎉  
+👉 **Official Download:** [Get PluginStream on Play Store](https://play.google.com/store/apps/details?id=com.betapix.pluginstream)
 
 ---
 
 ## 🧠 How It Works
 
-PluginStream Max uses a **plugin-based streaming system**:
+PluginStream acts as a **modular web utility engine**:
 
-- Fetches multiple streaming sources  
-- Auto-updates working links  
-- Removes broken links automatically  
-- Provides unified library experience  
+- Renders lightweight interactive games directly via WebEngine  
+- Manages user-configured custom modules locally  
+- Optimizes resource caching for low data consumption  
+- Ensures privacy by keeping all app preferences on your device  
 
 ---
 
@@ -74,45 +68,46 @@ PluginStream Max uses a **plugin-based streaming system**:
 
 | Feature | Value |
 |--------|------|
-| App Size | ~70MB |
+| App Size | ~50MB |
 | Startup | <2 seconds |
 | RAM Usage | 80–150MB |
-| Status | Stable |
+| Package | `com.betapix.pluginstream` |
+| Status | Stable ✅ |
 
 ---
 
-## 🛡 Security
+## 🛡️ Privacy & Security
 
-- No tracking  
-- No user login required  
-- Clean APK verified  
-- No background data collection  
+- Zero personal data tracking  
+- No registration or login required  
+- Safe execution environment  
+- Strict privacy-first local storage policy  
 
 ---
 
 ## 🔥 Roadmap
 
-- 🎵 Music streaming integration  
-- 📱 Android TV UI upgrade  
-- ⬇ Advanced downloader  
-- 🌍 More plugin sources  
+- 🎵 Enhanced audio & media utility modules  
+- 📱 Android TV UI layout optimization  
+- ⬇ Advanced file & cache manager  
+- 🌐 Expanded module configuration options  
 
 ---
 
 ## 👨‍💻 Developer
 
-Made with ❤️ by **Abdul Mueed**
+Made with ❤️ by **BetaPix Game Studio (BGS)** | **Abdul Mueed**
 
 ---
 
 ## 🌍 Links
 
 - **Website:** [https://pluginstream.pages.dev](https://pluginstream.pages.dev)  
-- **Telegram:** [https://t.me/pluginstreamofficial](https://t.me/pluginstreamofficial)  
-- **Support:** [https://t.me/pluginstreamsupport](https://t.me/pluginstreamsupport)  
+- **Contact:** [am.abdulmueed1@gmail.com](mailto:am.abdulmueed1@gmail.com)  
+- **Support Portal:** [https://pluginstream.pages.dev/contact](https://pluginstream.pages.dev/contact)  
 
 ---
 
 ## 📄 License
 
-GPL 3.0 License © 2026 PluginStream Max
+GPL 3.0 License © 2026 PluginStream

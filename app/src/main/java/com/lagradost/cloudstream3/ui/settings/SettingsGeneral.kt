@@ -27,6 +27,7 @@ import com.lagradost.cloudstream3.mvvm.logError
 import com.lagradost.cloudstream3.mvvm.safe
 import com.lagradost.cloudstream3.network.initClient
 import com.lagradost.cloudstream3.ui.BasePreferenceFragmentCompat
+import com.lagradost.cloudstream3.ui.dialog.DisclaimerDialog
 import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
 import com.lagradost.cloudstream3.ui.settings.Globals.TV
 import com.lagradost.cloudstream3.ui.settings.Globals.beneneCount
@@ -317,11 +318,7 @@ class SettingsGeneral : BasePreferenceFragmentCompat() {
         }
 
         getPref(R.string.legal_notice_key)?.setOnPreferenceClickListener {
-            val builder: AlertDialog.Builder =
-                AlertDialog.Builder(it.context, R.style.AlertDialogCustom)
-            builder.setTitle(R.string.legal_notice)
-            builder.setMessage(R.string.legal_notice_text)
-            builder.show()
+            DisclaimerDialog().show(childFragmentManager, "DisclaimerDialog")
             return@setOnPreferenceClickListener true
         }
 

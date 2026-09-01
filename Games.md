@@ -24,7 +24,7 @@ The Games tab in PluginStream provides users with access to a curated collection
 - **Icons**: `app/src/main/res/drawable/ic_game_selector.xml`, `app/src/main/res/drawable/ic_game_placeholder.xml`
 
 ### External Data
-- **Games JSON**: `https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@main/games_final_lite.json`
+- **Games JSON**: `https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@refs/heads/main/psgames.json`
 - **GitHub API**: `https://api.github.com/repos/am-abdulmueed/PluginStream-Games/commits`
 
 ## Data Models
@@ -32,28 +32,35 @@ The Games tab in PluginStream provides users with access to a curated collection
 ### GameResponse
 ```kotlin
 data class GameResponse(
-    val title: String,
-    val total_count: Int,
-    val hits: List<GameModel>
+    val title: String? = null,
+    val total_count: Int? = null,
+    val hits: List<GameModel>? = null,
+    val games: List<GameModel>? = null
 )
 ```
 
 ### GameModel
 ```kotlin
 data class GameModel(
-    val title: String,
-    val gameURL: String,
+    val id: String? = null,
+    val slug: String? = null,
+    val title: String = "",
+    val description: String? = null,
+    val howToPlayText: String? = null,
+    val gameURL: String = "",
+    val playgamaGameUrl: String? = null,
     val genres: List<String> = emptyList(),
-    val images: GameImages,
-    val isFeatured: Boolean = false // For large poster display
-)
-```
-
-### GameImages
-```kotlin
-data class GameImages(
-    val icon: String,
-    val poster: String
+    val tags: List<String> = emptyList(),
+    val images: Any? = null, // List<String>, Map<String, String>, or GameImages
+    val videos: List<String> = emptyList(),
+    val mobileReady: List<String> = emptyList(),
+    val gender: List<String> = emptyList(),
+    val inGamePurchases: String? = null,
+    val supportedLanguages: List<String> = emptyList(),
+    val screenOrientation: ScreenOrientation? = null,
+    val embed: String? = null,
+    val isFeatured: Boolean = false,
+    var isFavorite: Boolean = false
 )
 ```
 
@@ -81,7 +88,7 @@ data class GameImages(
 ## API Integration
 
 ### GitHub-Based Data Source
-- **Primary URL**: `https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@main/games_final_lite.json`
+- **Primary URL**: `https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@refs/heads/main/psgames.json`
 - **Version Control**: GitHub API for commit hash checking
 - **Update Detection**: Smart cache invalidation based on file changes
 

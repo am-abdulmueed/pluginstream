@@ -1,5 +1,10 @@
 package com.lagradost.cloudstream3.ui.game
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,7 +12,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import coil3.request.crossfade
 import com.facebook.shimmer.ShimmerFrameLayout
 import com.lagradost.cloudstream3.utils.ImageLoader.loadImage
 import com.lagradost.cloudstream3.R
@@ -15,7 +19,8 @@ import com.lagradost.cloudstream3.R
 class GameAdapter(
     private val onGameClick: (GameModel) -> Unit,
     private val onFavoriteClick: (GameModel) -> Unit,
-    private val forceNormal: Boolean = false
+    private val forceNormal: Boolean = false,
+    private val showFooter: Boolean = true
 ) : RecyclerView.Adapter<GameAdapter.GameViewHolder>() {
 
     init {
@@ -25,25 +30,27 @@ class GameAdapter(
     private var games: List<GameModel> = emptyList()
     
     sealed class GameViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        abstract val imageView: ImageView
-        abstract val favoriteButton: ImageView
-        abstract val loadingView: ShimmerFrameLayout?
-        
         class NormalViewHolder(view: View) : GameViewHolder(view) {
-            override val imageView: ImageView = view.findViewById(R.id.gameImageView)
-            override val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
-            override val loadingView: ShimmerFrameLayout? = view.findViewById(R.id.gameLoadingView)
+            val imageView: ImageView = view.findViewById(R.id.gameImageView)
+            val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
+            val loadingView: ShimmerFrameLayout? = view.findViewById(R.id.gameLoadingView)
+            val titleView: TextView? = view.findViewById(R.id.gameTitleTextView)
         }
         
         class LargeViewHolder(view: View) : GameViewHolder(view) {
-            override val imageView: ImageView = view.findViewById(R.id.gameImageView)
-            override val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
-            override val loadingView: ShimmerFrameLayout? = view.findViewById(R.id.gameLoadingView)
-            val titleView: TextView = view.findViewById<TextView>(R.id.gameTitleTextView)
+            val imageView: ImageView = view.findViewById(R.id.gameImageView)
+            val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
+            val loadingView: ShimmerFrameLayout? = view.findViewById(R.id.gameLoadingView)
+            val titleView: TextView? = view.findViewById(R.id.gameTitleTextView)
         }
+
+        class FooterViewHolder(view: View) : GameViewHolder(view)
     }
 
     override fun getItemViewType(position: Int): Int {
+        if (showFooter && position == games.size) {
+            return VIEW_TYPE_FOOTER
+        }
         // Use isFeatured flag to determine if it should be a large poster
         // unless forceNormal is true
         return if (games[position].isFeatured && !forceNormal) {
@@ -55,6 +62,11 @@ class GameAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GameViewHolder {
         return when (viewType) {
+            VIEW_TYPE_FOOTER -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_game_footer, parent, false)
+                GameViewHolder.FooterViewHolder(view)
+            }
             VIEW_TYPE_LARGE -> {
                 val view = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_game_large, parent, false)
@@ -69,13 +81,25 @@ class GameAdapter(
     }
 
     override fun onBindViewHolder(holder: GameViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (holder is GameViewHolder.FooterViewHolder) return
         if (payloads.isNotEmpty() && payloads.contains("FAVORITE_CHANGED")) {
-            // Only update the favorite button
-            val game = games[position]
-            holder.favoriteButton.setImageResource(
-                if (game.isFavorite) R.drawable.ic_baseline_bookmark_24 
-                else R.drawable.ic_baseline_bookmark_border_24
-            )
+            // Only update the favorite button icon
+            val game = games.getOrNull(position) ?: return
+            val favButton = when (holder) {
+                is GameViewHolder.NormalViewHolder -> holder.favoriteButton
+                is GameViewHolder.LargeViewHolder -> holder.favoriteButton
+                else -> return
+            }
+            if (game.isFavorite) {
+                favButton.setImageResource(R.drawable.ic_saved)
+                favButton.colorFilter = null // no tint on saved icon
+            } else {
+                favButton.setImageResource(R.drawable.ic_baseline_bookmark_border_24)
+                favButton.setColorFilter(
+                    android.graphics.Color.WHITE,
+                    android.graphics.PorterDuff.Mode.SRC_IN
+                )
+            }
             return
         }
         // If no payload, do full bind
@@ -83,76 +107,104 @@ class GameAdapter(
     }
 
     override fun onBindViewHolder(holder: GameViewHolder, position: Int) {
-        val game = games[position]
+        if (holder is GameViewHolder.FooterViewHolder) return
+        val game = games.getOrNull(position) ?: return
         
-        // Setup Favorite Icon
-        holder.favoriteButton.setImageResource(
-            if (game.isFavorite) R.drawable.ic_baseline_bookmark_24 
-            else R.drawable.ic_baseline_bookmark_border_24
-        )
-        holder.favoriteButton.setOnClickListener { onFavoriteClick(game) }
+        val favButton = when (holder) {
+            is GameViewHolder.NormalViewHolder -> holder.favoriteButton
+            is GameViewHolder.LargeViewHolder -> holder.favoriteButton
+            else -> return
+        }
 
-        // Show loading shimmer initially
-        holder.loadingView?.visibility = View.VISIBLE
-        holder.loadingView?.startShimmer()
-        holder.imageView.visibility = View.INVISIBLE
+        val loadingView = when (holder) {
+            is GameViewHolder.NormalViewHolder -> holder.loadingView
+            is GameViewHolder.LargeViewHolder -> holder.loadingView
+            else -> null
+        }
+
+        val imageView = when (holder) {
+            is GameViewHolder.NormalViewHolder -> holder.imageView
+            is GameViewHolder.LargeViewHolder -> holder.imageView
+            else -> return
+        }
+
+        // Setup Favorite Icon — ic_saved.png (no tint) when saved, border icon (white tint) when not
+        if (game.isFavorite) {
+            favButton.setImageResource(R.drawable.ic_saved)
+            favButton.colorFilter = null
+        } else {
+            favButton.setImageResource(R.drawable.ic_baseline_bookmark_border_24)
+            favButton.setColorFilter(
+                android.graphics.Color.WHITE,
+                android.graphics.PorterDuff.Mode.SRC_IN
+            )
+        }
+        favButton.setOnClickListener {
+            val pos = holder.bindingAdapterPosition
+            if (pos == RecyclerView.NO_POSITION || pos >= games.size) return@setOnClickListener
+            val nowFavorite = !games[pos].isFavorite  // flip: ViewModel won't mutate in-place
+            onFavoriteClick(games[pos])
+            // Immediately show new icon without waiting for DiffUtil
+            if (nowFavorite) {
+                favButton.setImageResource(R.drawable.ic_saved)
+                favButton.colorFilter = null
+            } else {
+                favButton.setImageResource(R.drawable.ic_baseline_bookmark_border_24)
+                favButton.setColorFilter(
+                    android.graphics.Color.WHITE,
+                    android.graphics.PorterDuff.Mode.SRC_IN
+                )
+            }
+        }
+
+        // Image & Shimmer
+        loadingView?.visibility = View.GONE
+        imageView.visibility = View.VISIBLE
+        imageView.loadImage(game.getIconUrl())
 
         when (holder) {
             is GameViewHolder.NormalViewHolder -> {
-                holder.imageView.loadImage(game.images.icon) {
-                    crossfade(true)
-                    listener(
-                        onStart = {
-                            holder.loadingView?.visibility = View.VISIBLE
-                            holder.loadingView?.startShimmer()
-                            holder.imageView.visibility = View.INVISIBLE
-                        },
-                        onSuccess = { _, _ ->
-                            holder.loadingView?.stopShimmer()
-                            holder.loadingView?.visibility = View.GONE
-                            holder.imageView.visibility = View.VISIBLE
-                        },
-                        onError = { _, _ ->
-                            holder.loadingView?.stopShimmer()
-                            holder.loadingView?.visibility = View.GONE
-                            holder.imageView.visibility = View.VISIBLE
-                        }
-                    )
+                holder.titleView?.text = game.title
+                // Hide title as requested for search results style consistency
+                holder.titleView?.visibility = View.GONE
+                holder.itemView.setOnClickListener {
+                    val pos = holder.bindingAdapterPosition
+                    if (pos != RecyclerView.NO_POSITION && pos < games.size) onGameClick(games[pos])
                 }
-                holder.itemView.setOnClickListener { onGameClick(game) }
+                holder.itemView.setOnLongClickListener {
+                    val pos = holder.bindingAdapterPosition
+                    if (pos == RecyclerView.NO_POSITION || pos >= games.size) return@setOnLongClickListener false
+                    vibrateDevice(it.context)
+                    onGameClick(games[pos])
+                    true
+                }
             }
             is GameViewHolder.LargeViewHolder -> {
-                holder.imageView.loadImage(game.images.poster) {
-                    crossfade(true)
-                    listener(
-                        onStart = {
-                            holder.loadingView?.visibility = View.VISIBLE
-                            holder.loadingView?.startShimmer()
-                            holder.imageView.visibility = View.INVISIBLE
-                        },
-                        onSuccess = { _, _ ->
-                            holder.loadingView?.stopShimmer()
-                            holder.loadingView?.visibility = View.GONE
-                            holder.imageView.visibility = View.VISIBLE
-                        },
-                        onError = { _, _ ->
-                            holder.loadingView?.stopShimmer()
-                            holder.loadingView?.visibility = View.GONE
-                            holder.imageView.visibility = View.VISIBLE
-                        }
-                    )
-                }
+                holder.titleView?.text = game.title
                 // Hide title as requested for search results style consistency
-                holder.titleView.visibility = View.GONE
-                holder.itemView.setOnClickListener { onGameClick(game) }
+                holder.titleView?.visibility = View.GONE
+                holder.itemView.setOnClickListener {
+                    val pos = holder.bindingAdapterPosition
+                    if (pos != RecyclerView.NO_POSITION && pos < games.size) onGameClick(games[pos])
+                }
+                holder.itemView.setOnLongClickListener {
+                    val pos = holder.bindingAdapterPosition
+                    if (pos == RecyclerView.NO_POSITION || pos >= games.size) return@setOnLongClickListener false
+                    vibrateDevice(it.context)
+                    onGameClick(games[pos])
+                    true
+                }
             }
+            is GameViewHolder.FooterViewHolder -> Unit
         }
     }
 
-    override fun getItemCount(): Int = games.size
+    override fun getItemCount(): Int = if (games.isEmpty()) 0 else if (showFooter) games.size + 1 else games.size
 
     override fun getItemId(position: Int): Long {
-        return games[position].gameURL.hashCode().toLong()
+        if (position == games.size) return Long.MAX_VALUE - 100L
+        val playUrl = games.getOrNull(position)?.getPlayUrl() ?: ""
+        return if (playUrl.isNotBlank()) playUrl.hashCode().toLong() else (games.getOrNull(position)?.title?.hashCode()?.toLong() ?: position.toLong())
     }
 
     fun updateList(newGames: List<GameModel>) {
@@ -161,7 +213,8 @@ class GameAdapter(
             override fun getNewListSize(): Int = newGames.size
 
             override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                return games[oldItemPosition].gameURL == newGames[newItemPosition].gameURL
+                return games[oldItemPosition].getPlayUrl() == newGames[newItemPosition].getPlayUrl() &&
+                       games[oldItemPosition].title == newGames[newItemPosition].title
             }
 
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
@@ -186,5 +239,24 @@ class GameAdapter(
     companion object {
         private const val VIEW_TYPE_NORMAL = 0
         private const val VIEW_TYPE_LARGE = 1
+        private const val VIEW_TYPE_FOOTER = 2
+
+        fun vibrateDevice(context: Context) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val manager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                manager?.defaultVibrator?.vibrate(
+                    VibrationEffect.createOneShot(55, VibrationEffect.DEFAULT_AMPLITUDE)
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator?.vibrate(VibrationEffect.createOneShot(55, VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator?.vibrate(55)
+                }
+            }
+        }
     }
 }

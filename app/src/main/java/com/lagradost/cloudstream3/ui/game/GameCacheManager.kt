@@ -21,8 +21,8 @@ object GameCacheManager {
     private const val KEY_LAST_COMMIT = "last_commit_hash"
     private const val KEY_CACHE_TIMESTAMP = "cache_timestamp"
     
-    private const val GAMES_JSON_URL = "https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@main/games_final_lite.json"
-    private const val GITHUB_API_URL = "https://api.github.com/repos/am-abdulmueed/PluginStream-Games/commits?path=games_final_lite.json&per_page=1"
+    private const val GAMES_JSON_URL = "https://cdn.jsdelivr.net/gh/am-abdulmueed/PluginStream-Games@refs/heads/main/psgames.json"
+    private const val GITHUB_API_URL = "https://api.github.com/repos/am-abdulmueed/PluginStream-Games/commits?path=psgames.json&per_page=1"
     
     private val objectMapper = jacksonObjectMapper()
     private val client = Requests().apply {
@@ -158,13 +158,8 @@ object GameCacheManager {
             
             if (cachedJson != null) {
                 val gameResponse = objectMapper.readValue<GameResponse>(cachedJson)
-                
-                // Set featured games: Premium pattern (4 normal + 1 poster = every 5th game)
-                val featuredGames = gameResponse.hits.mapIndexed { index: Int, game: GameModel ->
-                    game.copy(isFeatured = (index + 1) % 5 == 0)
-                }
-                
-                gameResponse.copy(hits = featuredGames)
+                val gamesList = gameResponse.getGameList()
+                gameResponse.copy(hits = gamesList)
             } else {
                 null
             }

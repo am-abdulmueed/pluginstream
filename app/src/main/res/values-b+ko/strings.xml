@@ -585,7 +585,7 @@
     <string name="automatic_plugin_download_mode_title">플러그인 다운로드를 필터링할 모드 선택</string>
     <string name="biometric_warning">PluginStream 데이터 백업이 완료되었습니다. 드문 경우지만, 기기에 따라 앱 접속이 안 되는 오류가 발생할 수 있습니다. 만약 앱이 열리지 않는다면, 앱 데이터를 완전히 삭제(초기화)한 후 이 백업 파일로 복구해 주시기 바랍니다. 이용에 불편을 드려 대단히 죄송합니다.</string>
     <string name="device_pin_url_message">스마트폰이나 컴퓨터에서 <b>%s</b> 위의 코드를 입력하세요</string>
-    <string name="battery_dialog_message">구독 중인 TV 쇼의 알림을 받고 다운로드를 끊김 없이 완료하려면, PluginStream의 백그라운드 실행 권한이 필요합니다. \'확인\'을 누른 후 나타나는 요청 창에서 \'허용\'을 선택해 주세요.\n\n참고로, 이 권한을 허용한다고 해서 배터리가 계속 소모되는 것은 아닙니다. 알림을 받거나 공식 확장 프로그램에서 영상을 다운로드할 때처럼 꼭 필요한 상황에서만 백그라운드 작업을 수행합니다.</string>
+    <string name="battery_dialog_message">To ensure uninterrupted background tasks, status updates, and timely notifications, PluginStream needs permission to run in the background. By pressing "OK", you\'ll be shown a system request dialog. Please select \'Allow\'.\n\nPlease note, this permission does not drain your battery. The app will only operate in the background when necessary to sync data or execute active user requests.</string>
     <string name="quality_profile_help">여기서 소스의 순서를 변경할 수 있습니다. 비디오의 우선 순위가 높은 경우에는 소스 선택 화면에 더 높게 나타납니다. 소스 우선 순위와 품질 우선 순위의 합이 비디오 우선 순위입니다. \n \n참고 A: 3 \n품질 B: 7 \n총 비디오 우선 순위는 10입니다. \n \n참고: 합이 10 이상이면 해당 링크가 로드되면 플레이어는 자동으로 로드를 건너뜁니다!</string>
     <string name="next_season_episode_format" formatted="true">시즌 %1$d 에피소드 %2$d 공개 예정</string>
     <string name="result_search_tooltip">다른 확장프로그램에서 검색</string>

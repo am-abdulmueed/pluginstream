@@ -21,6 +21,7 @@ import com.lagradost.cloudstream3.utils.UIHelper.fixSystemBarsPadding
 import com.lagradost.cloudstream3.utils.UIHelper.navigate
 import com.lagradost.cloudstream3.utils.txt
 import com.lagradost.cloudstream3.utils.GitInfo.currentCommitHash
+import com.lagradost.cloudstream3.utils.ImageLoader.loadImage
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -63,6 +64,17 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
     override fun onBindingCreated(binding: FragmentDeveloperBinding) {
         setUpToolbar(R.string.dev_profile)
 
+        val avatarUrl = "https://avatars.githubusercontent.com/u/218471065"
+        binding.devBanner.loadImage(avatarUrl)
+
+        // Smooth blinking pulse animation on active status dot
+        val blinkAnim = android.view.animation.AlphaAnimation(0.25f, 1.0f).apply {
+            duration = 900
+            repeatMode = android.view.animation.Animation.REVERSE
+            repeatCount = android.view.animation.Animation.INFINITE
+        }
+        binding.devStatusDot.startAnimation(blinkAnim)
+
         // Only set listeners once
         if (!isListenersSet) {
             binding.apply {
@@ -76,6 +88,9 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
                         logError(e)
                     }
                 }
+
+                devBanner.setOnClickListener { openUrl("https://github.com/am-abdulmueed") }
+                devAvatarCard.setOnClickListener { openUrl("https://github.com/am-abdulmueed") }
 
                 CommonActivity.getSocialLinks { json ->
                     val handles = json?.optJSONArray("social_handles")
@@ -123,7 +138,9 @@ class SettingsDeveloperFragment : BaseFragment<FragmentDeveloperBinding>(
         }
 
         // Update bio
-        val bio = "Building fast, extension-driven multimedia applications with a focus on performance, clean architecture, and a seamless user experience. Passionate about lightweight, scalable, and privacy-first software."
+        val bio = "Building fast, modular utility applications with a focus on performance, " +
+            "clean architecture, and a seamless user experience. Passionate about lightweight, " +
+            "scalable, and privacy-first software."
         binding.devPhilosophy.text = bio
         binding.devPhilosophy.setLineSpacing(8f, 1f)
 

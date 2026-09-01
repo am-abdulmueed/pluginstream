@@ -67,7 +67,7 @@ class SearchViewModel : ViewModel() {
     private var currentSearchIndex = 0
     private var onGoingSearch: Job? = null
 
-    fun reloadRepos() {
+    fun reloadRepos() = ioSafe {
         repos = apis.withLock { apis.map { APIRepository(it) } }
     }
 

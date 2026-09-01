@@ -1039,12 +1039,15 @@ open class ResultFragmentPhone : BaseFragment<FragmentResultSwipeBinding>(
                                     "https://pluginstream.pages.dev/psredirect?redirectto=$encodedUri"
 
                                 val finalMessage = """
-                                    🚀 Stream Unlimited Movies & Shows – Ad-Free! ... 
-                                    🎥 Now Watching: ${d.title}
-                                    🎭 Genre: $genres
-                                    🔗 Movei Link: $redirectUrl
-                                    
-                                    Free Install: https://pluginstream.pages.dev
+                                    🚀 Check out this item on PluginStream!
+
+                                    📌 Title: ${d.title}
+                                    🎭 Category: $genres
+
+                                    🔗 Open Link: $redirectUrl
+
+                                    *Get PluginStream:* https://play.google.com/store/apps/details?id=com.betapix.pluginstream
+                                    🛡 *Official Website:* https://pluginstream.pages.dev
                                 """.trimIndent()
 
                                 val intent = Intent(Intent.ACTION_SEND)

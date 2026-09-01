@@ -62,11 +62,9 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         // Use existing adapter if available to maintain state
         if (gameAdapter == null) {
             gameAdapter = GameAdapter({ game ->
-                val bundle = Bundle().apply {
-                    putString("game_url", game.gameURL)
-                    putString("game_title", game.title)
+                context?.let { ctx ->
+                    GameDetailDialogHelper.showGameDetailsDialog(ctx, game, viewModel, findNavController())
                 }
-                findNavController().navigate(R.id.navigation_game_player, bundle)
             }, { game ->
                 viewModel.toggleFavorite(game)
             })
@@ -76,7 +74,8 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         gamesRecyclerView.layoutManager = GridLayoutManager(requireContext(), spanCount).apply {
             spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                 override fun getSpanSize(position: Int): Int {
-                    val games = viewModel.allGames.value ?: emptyList()
+                    val games = viewModel.filterGames(currentSearchQuery)
+                    if (position >= games.size) return spanCount // Footer spans entire grid width!
                     return if (games.getOrNull(position)?.isFeatured == true) spanCount else 1
                 }
             }
@@ -92,8 +91,13 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         }
 
         // Subtle glow on the search bar's border while the user is typing
-        val defaultStrokeColor = 0x1AFFFFFF
-        val focusedStrokeColor = requireContext().getColor(R.color.colorPrimary)
+        val typedValue = android.util.TypedValue()
+        val theme = requireContext().theme
+        theme.resolveAttribute(R.attr.dividerColor, typedValue, true)
+        val defaultStrokeColor = typedValue.data
+        theme.resolveAttribute(R.attr.colorPrimary, typedValue, true)
+        val focusedStrokeColor = typedValue.data
+
         searchEditText.setOnFocusChangeListener { _, hasFocus ->
             val fromColor = if (hasFocus) defaultStrokeColor else focusedStrokeColor
             val toColor = if (hasFocus) focusedStrokeColor else defaultStrokeColor
@@ -209,11 +213,16 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
         }
 
         // Search functionality
+        binding.searchClearButton.setOnClickListener {
+            searchEditText.setText("")
+        }
+
         searchEditText.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: android.text.Editable?) {
                 currentSearchQuery = s.toString()
+                binding.searchClearButton.visibility = if (currentSearchQuery.isNotEmpty()) View.VISIBLE else View.GONE
                 gameAdapter?.updateList(viewModel.filterGames(currentSearchQuery))
             }
         })

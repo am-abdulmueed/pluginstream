@@ -22,6 +22,8 @@ import com.facebook.shimmer.ShimmerFrameLayout
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.utils.AppContextUtils.isNetworkAvailable
 
+import androidx.navigation.fragment.findNavController
+
 class GamePlayerFragment : Fragment() {
 
     private lateinit var webView: WebView
@@ -74,7 +76,7 @@ class GamePlayerFragment : Fragment() {
                     webView.goBack()
                 } else {
                     isEnabled = false
-                    requireActivity().onBackPressed()
+                    findNavController().popBackStack()
                 }
             }
         }
@@ -270,7 +272,13 @@ class GamePlayerFragment : Fragment() {
 
     private fun loadGame(gameUrl: String) {
         if (gameUrl.isNotEmpty()) {
-            webView.loadUrl(gameUrl)
+            if (gameUrl.startsWith("http://") || gameUrl.startsWith("https://")) {
+                webView.loadUrl(gameUrl)
+            } else if (gameUrl.contains("<iframe") || gameUrl.contains("<html")) {
+                webView.loadDataWithBaseURL("https://games.playtropolis.com", gameUrl, "text/html", "UTF-8", null)
+            } else {
+                webView.loadUrl(gameUrl)
+            }
         }
     }
 
