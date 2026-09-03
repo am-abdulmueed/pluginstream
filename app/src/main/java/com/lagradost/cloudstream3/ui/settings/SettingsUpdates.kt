@@ -74,21 +74,29 @@ class SettingsUpdates : BasePreferenceFragmentCompat() {
             getDefaultChangelog()
         }
 
-        // Theme adaptive and stylish Material Dialog
-        val dialog = android.app.Dialog(context, R.style.AlertDialogCustom)
+        // Theme adaptive and stylish BottomSheetDialog
+        val dialog = com.google.android.material.bottomsheet.BottomSheetDialog(context, R.style.AppBottomSheetDialogTheme)
         val dialogView = layoutInflater.inflate(R.layout.dialog_changelog, null)
         dialog.setContentView(dialogView)
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.setCancelable(true)
 
-        val closeButton = dialogView.findViewById<android.widget.ImageView>(R.id.closeButton)
+        dialog.setOnShowListener {
+            val bottomSheet = dialog.findViewById<android.view.View>(com.google.android.material.R.id.design_bottom_sheet)
+            if (bottomSheet != null) {
+                val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bottomSheet)
+                behavior.state = com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+                behavior.skipCollapsed = true
+            }
+        }
+
+        // X button removed from layout (commented in dialog_changelog.xml)
+        // val closeButton = dialogView.findViewById<android.widget.ImageView>(R.id.closeButton)
         val changelogTextView = dialogView.findViewById<android.widget.TextView>(R.id.changelogTextView)
 
         markwon.setMarkdown(changelogTextView, changelog)
 
-        closeButton.setOnClickListener {
-            dialog.dismiss()
-        }
+        // closeButton?.setOnClickListener {
+        //     dialog.dismiss()
+        // }
 
         dialog.show()
     }

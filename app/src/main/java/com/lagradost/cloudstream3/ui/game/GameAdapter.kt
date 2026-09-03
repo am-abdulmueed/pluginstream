@@ -33,6 +33,7 @@ class GameAdapter(
         class NormalViewHolder(view: View) : GameViewHolder(view) {
             val imageView: ImageView = view.findViewById(R.id.gameImageView)
             val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
+            val lockBadge: ImageView? = view.findViewById(R.id.lockBadge)
             val loadingView: ShimmerFrameLayout? = view.findViewById(R.id.gameLoadingView)
             val titleView: TextView? = view.findViewById(R.id.gameTitleTextView)
         }
@@ -40,6 +41,7 @@ class GameAdapter(
         class LargeViewHolder(view: View) : GameViewHolder(view) {
             val imageView: ImageView = view.findViewById(R.id.gameImageView)
             val favoriteButton: ImageView = view.findViewById(R.id.favoriteButton)
+            val lockBadge: ImageView? = view.findViewById(R.id.lockBadge)
             val loadingView: ShimmerFrameLayout? = view.findViewById(R.id.gameLoadingView)
             val titleView: TextView? = view.findViewById(R.id.gameTitleTextView)
         }
@@ -156,6 +158,14 @@ class GameAdapter(
                 )
             }
         }
+
+        val lockBadge = when (holder) {
+            is GameViewHolder.NormalViewHolder -> holder.lockBadge
+            is GameViewHolder.LargeViewHolder -> holder.lockBadge
+            else -> null
+        }
+        val isLocked = GameRewardedAdManager.isGameLocked(game)
+        lockBadge?.visibility = if (isLocked) View.VISIBLE else View.GONE
 
         // Image & Shimmer
         loadingView?.visibility = View.GONE

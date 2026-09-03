@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="28dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="0dp"
-    app:cardBackgroundColor="?attr/primaryGrayBackground">
+    android:background="@drawable/bg_bottom_sheet_rounded"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="28dp">
+
+        <!-- Drag Handle -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_bottom_sheet_handle"
+            android:backgroundTint="?attr/grayTextColor" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -39,9 +48,9 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/closeButtonCard"
                 android:layout_toEndOf="@id/iconContainer"
                 android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
                 android:layout_marginStart="16dp"
                 android:orientation="vertical">
 
@@ -66,6 +75,7 @@
                     android:textColor="?attr/grayTextColor" />
             </LinearLayout>
 
+            <!--
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/closeButtonCard"
                 android:layout_width="36dp"
@@ -86,6 +96,7 @@
                     android:padding="8dp"
                     app:tint="?attr/grayTextColor" />
             </com.google.android.material.card.MaterialCardView>
+            -->
 
         </RelativeLayout>
 
@@ -96,21 +107,13 @@
             android:background="?attr/dividerColor"
             android:alpha="0.6" />
 
-        <ScrollView
+        <TextView
+            android:id="@+id/disclaimerText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:scrollbars="vertical"
-            android:overScrollMode="never">
-
-            <TextView
-                android:id="@+id/disclaimerText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/google_sans"
-                android:textColor="?attr/textColor"
-                android:textSize="14sp"
-                android:lineSpacingExtra="5dp" />
-        </ScrollView>
+            android:fontFamily="@font/google_sans"
+            android:textColor="?attr/textColor"
+            android:textSize="14sp"
+            android:lineSpacingExtra="5dp" />
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</androidx.core.widget.NestedScrollView>

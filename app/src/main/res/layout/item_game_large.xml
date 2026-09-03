@@ -71,17 +71,36 @@
                 android:fontFamily="@font/google_sans"
                 android:letterSpacing="0.04" />
 
-            <ImageView
-                android:id="@+id/favoriteButton"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="top|end"
                 android:layout_margin="12dp"
-                android:padding="10dp"
-                android:src="@drawable/ic_baseline_bookmark_border_24"
-                android:background="@drawable/circle_background"
-                android:backgroundTint="#80000000"
-                app:tint="@android:color/white" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/lockBadge"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="#B3000000"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_baseline_lock_24"
+                    android:visibility="gone"
+                    app:tint="@android:color/white" />
+
+                <ImageView
+                    android:id="@+id/favoriteButton"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="#80000000"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_baseline_bookmark_border_24"
+                    app:tint="@android:color/white" />
+            </LinearLayout>
 
             <!-- Game title with premium styling - Hidden for search style consistency -->
             <LinearLayout

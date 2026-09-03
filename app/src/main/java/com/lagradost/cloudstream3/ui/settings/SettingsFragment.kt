@@ -272,9 +272,11 @@ class SettingsFragment : BaseFragment<MainSettingsBinding>(
                 activity?.navigate(R.id.action_navigation_global_to_navigation_faq)
             }
 
+            /*
             settingsSupport.setOnClickListener {
                 // showSupportDialog()
             }
+            */
 
             settingsSponsorEarn.setOnClickListener {
                 activity?.navigate(R.id.action_navigation_global_to_navigation_sponsor_earn)

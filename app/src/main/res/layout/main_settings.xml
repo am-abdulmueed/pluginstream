@@ -446,6 +446,7 @@
                         android:layout_marginEnd="20dp"
                         android:background="?attr/dividerColor" />
 
+                    <!--
                     <TextView
                         android:id="@+id/settings_support"
                         style="@style/SettingsItem"
@@ -460,6 +461,7 @@
                         android:layout_marginStart="56dp"
                         android:layout_marginEnd="20dp"
                         android:background="?attr/dividerColor" />
+                    -->
 
                     <TextView
                         android:id="@+id/settings_sponsor_earn"

@@ -84,6 +84,20 @@ class CloudStreamApp : Application(), SingletonImageLoader.Factory {
         }
 
         AppDebug.isDebug = BuildConfig.DEBUG
+
+        // Initialize GMA App Open Ads
+        try {
+            com.lagradost.cloudstream3.ui.game.AppOpenAdManager.init(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        // Preload Banner Ad at startup so it's instantly ready when game WebView opens
+        try {
+            com.lagradost.cloudstream3.ui.game.GameBannerAdManager.init(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun attachBaseContext(base: Context?) {

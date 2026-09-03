@@ -7,21 +7,24 @@ import android.graphics.Bitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.*
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import com.facebook.shimmer.ShimmerFrameLayout
+import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.lagradost.cloudstream3.R
 import com.lagradost.cloudstream3.utils.AppContextUtils.isNetworkAvailable
-
 import androidx.navigation.fragment.findNavController
 
 class GamePlayerFragment : Fragment() {
@@ -30,8 +33,13 @@ class GamePlayerFragment : Fragment() {
     private lateinit var progressBar: ProgressBar
     private lateinit var offlineScreen: LinearLayout
     private lateinit var offlineShimmer: ShimmerFrameLayout
+    private var bannerContainer: FrameLayout? = null
     private var isOnline = true
     private var hasMainFrameLoadError = false
+
+    companion object {
+        private const val TAG = "GamePlayerFragment"
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -81,6 +89,9 @@ class GamePlayerFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+
+        // Load bottom Adaptive Banner Ad
+        loadAdaptiveBanner()
     }
 
     private fun setupWebView(gameUrl: String) {
@@ -382,5 +393,23 @@ class GamePlayerFragment : Fragment() {
         offlineScreen.visibility = View.GONE
         offlineShimmer.stopShimmer()
         webView.visibility = View.VISIBLE
+    }
+
+    private fun loadAdaptiveBanner() {
+        val container = view?.findViewById<FrameLayout>(R.id.bannerContainer) ?: return
+        val ctx = context ?: return
+        this.bannerContainer = container
+
+        try {
+            GameBannerAdManager.attachToContainer(container, ctx)
+        } catch (e: Exception) {
+            Log.e("GamePlayerBanner", "Failed to attach banner", e)
+        }
+    }
+
+    override fun onDestroyView() {
+        bannerContainer?.removeAllViews()
+        bannerContainer = null
+        super.onDestroyView()
     }
 }

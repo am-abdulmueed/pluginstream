@@ -47,6 +47,26 @@ class GameFragment : BaseFragment<FragmentGameBinding>(
     override fun onBindingCreated(binding: FragmentGameBinding) {
         viewModel = ViewModelProvider(requireActivity())[GameViewModel::class.java]
 
+        // Fix: AppBarLayout 'lifted' state changes background to colorSurface (black/gray).
+        // Force it to always keep the theme background color, regardless of scroll state.
+        val typedValueBg = android.util.TypedValue()
+        requireContext().theme.resolveAttribute(R.attr.primaryBlackBackground, typedValueBg, true)
+        val headerBgColor = typedValueBg.data
+        binding.appBarLayout.setBackgroundColor(headerBgColor)
+        binding.appBarLayout.addOnOffsetChangedListener(
+            com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener { appBar, _ ->
+                appBar.setBackgroundColor(headerBgColor)
+            }
+        )
+
+        // Safe Initialization on Main Thread without blocking UI
+        viewLifecycleOwner.lifecycleScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            context?.applicationContext?.let {
+                GameRewardedAdManager.init(it)
+                GameInterstitialAdManager.startPreload()
+            }
+        }
+
         val searchEditText = binding.searchEditText
         val progressBar = binding.progressBar
         val emptyTextView = binding.emptyTextView

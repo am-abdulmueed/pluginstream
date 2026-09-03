@@ -43,7 +43,7 @@ PluginStream is built as a modular application container. It allows users to run
 ---
 
 ## 📝 Requirements
-- **Android Version:** Android 6.0 (Marshmallow) or higher (API 23+)
+- **Android Version:** Android 7.0 (Nougat) or higher (API 24+)
 - **Storage:** Minimum 50MB free space.
 - **RAM:** 2GB RAM recommended.
 

@@ -8,6 +8,11 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
@@ -281,90 +286,106 @@ object InAppUpdater {
                     packageManager.getPackageInfo(it, 0)
                 }
 
-                val builder = AlertDialog.Builder(this, R.style.AlertDialogCustom)
-                builder.setTitle(
+                val dialog = BottomSheetDialog(this, R.style.AppBottomSheetDialogTheme)
+                val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_update, null)
+                dialog.setContentView(dialogView)
+
+                dialog.setOnShowListener {
+                    val bottomSheet = dialog.findViewById<android.view.View>(com.google.android.material.R.id.design_bottom_sheet)
+                    if (bottomSheet != null) {
+                        val behavior = BottomSheetBehavior.from(bottomSheet)
+                        behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                        behavior.skipCollapsed = true
+                    }
+                }
+
+                // Set title with version info
+                dialogView.findViewById<TextView>(R.id.updateTitle)?.text =
                     getString(R.string.new_update_format).format(
                         currentVersion?.versionName, update.updateVersion
                     )
-                )
 
-                // Create a TextView to display Markdown
-                val textView = android.widget.TextView(this)
-                val padding = 24.toPx
-                textView.setPadding(padding, padding, padding, padding)
-                textView.textSize = 14f
-                
+                // Render changelog markdown
                 val markwon = Markwon.builder(this)
                     .usePlugin(LinkifyPlugin.create())
                     .build()
-
                 val changelogText = update.changelog ?: ""
-                markwon.setMarkdown(textView, changelogText)
+                dialogView.findViewById<TextView>(R.id.updateChangelogText)?.let {
+                    markwon.setMarkdown(it, changelogText)
+                }
 
-                // Wrap TextView in ScrollView for smooth scrolling
-                val scrollView = android.widget.ScrollView(this)
-                scrollView.addView(textView)
-                builder.setView(scrollView)
-                builder.apply {
-                    setPositiveButton(R.string.update) { _, _ ->
-                        // Forcefully start any delayed installations
-                        if (ApkInstaller.delayedInstaller?.startInstallation() == true) return@setPositiveButton
+                // Close button (commented out — X button removed from layout)
+                // dialogView.findViewById<android.view.View>(R.id.closeButton)?.setOnClickListener {
+                //     dialog.dismiss()
+                // }
 
-                        showToast(R.string.download_started, Toast.LENGTH_LONG)
+                // Cancel button
+                dialogView.findViewById<Button>(R.id.cancelButton)?.setOnClickListener {
+                    dialog.dismiss()
+                }
 
-                        // Check if the setting hasn't been changed
-                        if (settingsManager.getInt(
-                                getString(R.string.apk_installer_key), -1
-                            ) == -1
-                        ) {
-                            // Set to legacy installer as default
-                            settingsManager.edit {
-                                putInt(getString(R.string.apk_installer_key), 1)
-                            }
+                // Skip update button (only in auto-update mode)
+                val skipButton = dialogView.findViewById<Button>(R.id.skipUpdateButton)
+                if (checkAutoUpdate) {
+                    skipButton?.visibility = android.view.View.VISIBLE
+                    skipButton?.setOnClickListener {
+                        settingsManager.edit {
+                            putString(
+                                getString(R.string.skip_update_key), update.updateNodeId ?: ""
+                            )
                         }
+                        dialog.dismiss()
+                    }
+                }
 
-                        val currentInstaller = settingsManager.getInt(
-                            getString(R.string.apk_installer_key), 1
-                        )
+                // Update / install button
+                dialogView.findViewById<Button>(R.id.updateButton)?.setOnClickListener {
+                    // Forcefully start any delayed installations
+                    if (ApkInstaller.delayedInstaller?.startInstallation() == true) {
+                        dialog.dismiss()
+                        return@setOnClickListener
+                    }
 
-                        when (currentInstaller) {
-                            // New method
-                            0 -> {
-                                val intent = PackageInstallerService.Companion.getIntent(
-                                    this@runAutoUpdate, update.updateURL
-                                )
-                                ContextCompat.startForegroundService(
-                                    this@runAutoUpdate, intent
-                                )
-                            }
-                            // Legacy
-                            1 -> {
-                                ioSafe {
-                                    if (!downloadUpdate(update.updateURL)) {
-                                        runOnUiThread {
-                                            showToast(
-                                                R.string.download_failed, Toast.LENGTH_LONG
-                                            )
-                                        }
+                    showToast(R.string.download_started, Toast.LENGTH_LONG)
+
+                    // Set default installer if not already set
+                    if (settingsManager.getInt(getString(R.string.apk_installer_key), -1) == -1) {
+                        settingsManager.edit {
+                            putInt(getString(R.string.apk_installer_key), 1)
+                        }
+                    }
+
+                    val currentInstaller = settingsManager.getInt(
+                        getString(R.string.apk_installer_key), 1
+                    )
+
+                    when (currentInstaller) {
+                        // New method
+                        0 -> {
+                            val intent = PackageInstallerService.Companion.getIntent(
+                                this@runAutoUpdate, update.updateURL
+                            )
+                            ContextCompat.startForegroundService(
+                                this@runAutoUpdate, intent
+                            )
+                        }
+                        // Legacy
+                        1 -> {
+                            ioSafe {
+                                if (!downloadUpdate(update.updateURL)) {
+                                    runOnUiThread {
+                                        showToast(
+                                            R.string.download_failed, Toast.LENGTH_LONG
+                                        )
                                     }
                                 }
                             }
                         }
                     }
-
-                    setNegativeButton(R.string.cancel) { _, _ -> }
-
-                    if (checkAutoUpdate) {
-                        setNeutralButton(R.string.skip_update) { _, _ ->
-                            settingsManager.edit {
-                                putString(
-                                    getString(R.string.skip_update_key), update.updateNodeId ?: ""
-                                )
-                            }
-                        }
-                    }
+                    dialog.dismiss()
                 }
-                builder.show().setDefaultFocus()
+
+                dialog.show()
             }
         }
         return true

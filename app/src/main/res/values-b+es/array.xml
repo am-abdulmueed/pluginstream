@@ -220,9 +220,9 @@
 
 
     <string-array name="themes_names">
+        <item>Amoled</item>
         <item>Oscuro</item>
         <item>Gris</item>
-        <item>Amoled</item>
         <item>Destello</item>
         <item>Sistema</item>
         <item>Material You</item>
@@ -231,9 +231,9 @@
         <item>Azul Silencioso</item>
     </string-array>
     <string-array name="themes_names_values">
+        <item>Amoled</item>
         <item>AmoledLight</item>
         <item>Black</item>
-        <item>Amoled</item>
         <item>Light</item>
         <item>System</item>
         <item>Monet</item>

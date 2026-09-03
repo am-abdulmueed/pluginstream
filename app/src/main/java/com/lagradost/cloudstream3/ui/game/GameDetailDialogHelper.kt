@@ -1,5 +1,6 @@
 package com.lagradost.cloudstream3.ui.game
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -82,10 +83,10 @@ object GameDetailDialogHelper {
             dialogLayoutHowToPlay?.visibility = View.GONE
         }
 
-        val hasInGamePurchases = game.inGamePurchases?.trim()?.equals("Yes", ignoreCase = true) == true
+        val isLocked = GameRewardedAdManager.isGameLocked(game)
 
-        // Dynamic Play Button Styling based on inGamePurchases ("Yes" vs "No")
-        if (hasInGamePurchases) {
+        // Dynamic Play Button Styling based on lock / unlock state
+        if (isLocked) {
             dialogBtnPlayGame?.text = "WATCH AD & PLAY"
             dialogBtnPlayGame?.setIconResource(R.drawable.ic_baseline_lock_24)
         } else {
@@ -93,17 +94,65 @@ object GameDetailDialogHelper {
             dialogBtnPlayGame?.setIconResource(R.drawable.ic_baseline_play_arrow_24)
         }
 
+        val activity = (context as? Activity) ?: context.getActivity() ?: com.lagradost.cloudstream3.CommonActivity.activity
+
+        fun launchGamePlayer() {
+            val runAction = Runnable {
+                try {
+                    if (dialog.isShowing) {
+                        dialog.dismiss()
+                    }
+                    val playUrl = game.getPlayUrl()
+                    val bundle = Bundle().apply {
+                        putString("game_url", playUrl)
+                        putString("game_title", game.title)
+                    }
+                    navController.navigate(R.id.navigation_game_player, bundle)
+                } catch (e: Exception) {
+                    android.util.Log.e("GameDetailDialog", "Failed to navigate to game player", e)
+                }
+            }
+
+            if (activity != null) {
+                activity.runOnUiThread(runAction)
+            } else {
+                runAction.run()
+            }
+        }
+
         // Play Game Click
         dialogBtnPlayGame?.setOnClickListener {
-            dialog.dismiss()
-            val playUrl = game.getPlayUrl()
-            val bundle = Bundle().apply {
-                putString("game_url", playUrl)
-                putString("game_title", game.title)
+            if (GameRewardedAdManager.isGameLocked(game)) {
+                if (activity != null) {
+                    dialog.dismiss()
+                    GameRewardedAdManager.showRewardedAd(
+                        activity,
+                        game,
+                        onRewardEarned = {
+                            launchGamePlayer()
+                        }
+                    )
+                } else {
+                    launchGamePlayer()
+                }
+            } else {
+                // Non-locked game: record play and show interstitial every 3 plays
+                if (activity != null) {
+                    GameInterstitialAdManager.recordPlayAndShowIfDue(activity)
+                }
+                launchGamePlayer()
             }
-            navController.navigate(R.id.navigation_game_player, bundle)
         }
 
         dialog.show()
+    }
+
+    private fun Context.getActivity(): android.app.Activity? {
+        var cur: Context? = this
+        while (cur is android.content.ContextWrapper) {
+            if (cur is android.app.Activity) return cur
+            cur = cur.baseContext
+        }
+        return null
     }
 }

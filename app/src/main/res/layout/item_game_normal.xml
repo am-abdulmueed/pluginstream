@@ -55,6 +55,19 @@
                     android:scaleType="centerCrop" />
 
                 <ImageView
+                    android:id="@+id/lockBadge"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="top|start"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="#B3000000"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_baseline_lock_24"
+                    android:visibility="gone"
+                    app:tint="@android:color/white" />
+
+                <ImageView
                     android:id="@+id/favoriteButton"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
