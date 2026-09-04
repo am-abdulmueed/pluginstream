@@ -29,7 +29,7 @@ object GameDetailDialogHelper {
         val dialogGameTitle = dialogView.findViewById<TextView>(R.id.dialogGameTitle)
         val dialogBtnPlayGame = dialogView.findViewById<MaterialButton>(R.id.dialogBtnPlayGame)
         val dialogFavoriteButton = dialogView.findViewById<ImageView>(R.id.dialogFavoriteButton)
-        val dialogCloseButton = dialogView.findViewById<ImageView>(R.id.dialogCloseButton)
+        // val dialogCloseButton = dialogView.findViewById<ImageView>(R.id.dialogCloseButton)
 
         val dialogLayoutDescription = dialogView.findViewById<View>(R.id.dialogLayoutDescription)
         val dialogGameDescription = dialogView.findViewById<TextView>(R.id.dialogGameDescription)
@@ -63,9 +63,9 @@ object GameDetailDialogHelper {
             updateFavIcon()            // instant icon refresh
         }
 
-        dialogCloseButton?.setOnClickListener {
-            dialog.dismiss()
-        }
+        // dialogCloseButton?.setOnClickListener {
+        //     dialog.dismiss()
+        // }
 
         // Description
         if (!game.description.isNullOrBlank()) {

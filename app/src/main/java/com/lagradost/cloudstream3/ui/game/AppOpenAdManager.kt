@@ -16,7 +16,9 @@ import com.google.android.libraries.ads.mobile.sdk.MobileAds
 import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
 import android.app.Application
 import android.os.Bundle
+import java.lang.ref.WeakReference
 import java.util.Date
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Interface definition for a callback to be invoked when an app open ad is complete.
@@ -35,9 +37,9 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
     const val APP_ID = "ca-app-pub-3940256099942544~3347511713"
     const val AD_UNIT_ID = "ca-app-pub-3940256099942544/9257395921"
 
-    private var currentActivity: Activity? = null
+    private var currentActivity: WeakReference<Activity>? = null
     private var appOpenAd: AppOpenAd? = null
-    private var isLoadingAd = false
+    private val isLoadingAd = AtomicBoolean(false)
     var isShowingAd = false
         private set
     var isOtherAdShowing = false
@@ -74,12 +76,12 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
      * Load an App Open Ad.
      */
     fun loadAd(context: Context) {
-        if (isLoadingAd || isAdAvailable()) {
+        if (isLoadingAd.get() || isAdAvailable()) {
             Log.d(TAG, "App open ad is either loading or already loaded.")
             return
         }
 
-        isLoadingAd = true
+        if (!isLoadingAd.compareAndSet(false, true)) return
         val adRequest = AdRequest.Builder(AD_UNIT_ID).build()
 
         AppOpenAd.load(
@@ -87,15 +89,14 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
             object : AdLoadCallback<AppOpenAd> {
                 override fun onAdLoaded(ad: AppOpenAd) {
                     appOpenAd = ad
-                    isLoadingAd = false
+                    isLoadingAd.set(false)
                     loadTime = Date().time
                     Log.d(TAG, "App open ad loaded successfully.")
                     if (BuildConfig.DEBUG) showToast("App open ad loaded ✅", Toast.LENGTH_SHORT)
 
-                    // If loaded on cold start, show immediately on current active non-ad activity
                     if (showOnFirstLoad) {
                         showOnFirstLoad = false
-                        currentActivity?.let { act ->
+                        currentActivity?.get()?.let { act ->
                             if (!isAdActivity(act) && !isOtherAdShowing) {
                                 showAdIfAvailable(act)
                             }
@@ -104,7 +105,7 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    isLoadingAd = false
+                    isLoadingAd.set(false)
                     Log.w(TAG, "App open ad failed to load: $loadAdError")
                     if (BuildConfig.DEBUG) showToast("App open ad failed to load", Toast.LENGTH_SHORT)
                 }
@@ -198,7 +199,7 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
 
     override fun onActivityStarted(activity: Activity) {
         if (isAdActivity(activity)) return
-        currentActivity = activity
+        currentActivity = WeakReference(activity)
 
         // Only trigger when entire app moves from background (0 activities) to foreground (1 activity)
         if (startedActivitiesCount == 0) {
@@ -214,7 +215,7 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
     override fun onActivityResumed(activity: Activity) {
         if (!isAdActivity(activity)) {
-            currentActivity = activity
+            currentActivity = WeakReference(activity)
         }
     }
     override fun onActivityPaused(activity: Activity) {}
@@ -224,7 +225,7 @@ object AppOpenAdManager : Application.ActivityLifecycleCallbacks {
     }
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
     override fun onActivityDestroyed(activity: Activity) {
-        if (currentActivity == activity) {
+        if (currentActivity?.get() == activity) {
             currentActivity = null
         }
     }

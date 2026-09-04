@@ -323,8 +323,6 @@ class GamePlayerFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        webView.destroy()
-        // Clean up
         disableScreenRotation()
     }
     
@@ -408,8 +406,25 @@ class GamePlayerFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        try {
+            (bannerContainer?.getChildAt(0) as? com.google.android.libraries.ads.mobile.sdk.banner.AdView)?.destroy()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to destroy banner AdView", e)
+        }
         bannerContainer?.removeAllViews()
         bannerContainer = null
+
+        try {
+            webView.stopLoading()
+            webView.clearHistory()
+            webView.loadUrl("about:blank")
+            (webView.parent as? ViewGroup)?.removeView(webView)
+            webView.removeAllViews()
+            webView.destroy()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to destroy WebView", e)
+        }
+
         super.onDestroyView()
     }
 }

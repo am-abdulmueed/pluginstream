@@ -15,6 +15,7 @@ import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdPreloader
 import android.widget.Toast
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -31,7 +32,7 @@ object GameInterstitialAdManager {
     private const val COOLDOWN_PLAYS = 3
 
     private val playCount = AtomicInteger(0)
-    private var preloadStarted = false
+    private val preloadStarted = AtomicBoolean(false)
 
     private val preloadCallback = object : PreloadCallback {
         override fun onAdPreloaded(preloadId: String, responseInfo: ResponseInfo) {
@@ -52,8 +53,7 @@ object GameInterstitialAdManager {
      * Start preloading interstitial ads. Call once on game screen entry or after an ad is shown.
      */
     fun startPreload(force: Boolean = false) {
-        if (preloadStarted && !force) return
-        preloadStarted = true
+        if (!preloadStarted.compareAndSet(false, true) && !force) return
         try {
             val adRequest = AdRequest.Builder(AD_UNIT_ID).build()
             val preloadConfig = PreloadConfiguration(adRequest)

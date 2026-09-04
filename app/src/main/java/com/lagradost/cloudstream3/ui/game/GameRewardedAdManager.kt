@@ -76,8 +76,9 @@ object GameRewardedAdManager {
     /**
      * Start preloading rewarded ads using RewardedAdPreloader.
      */
-    fun startPreload(context: Context) {
+    fun startPreload(context: Context, force: Boolean = false) {
         appContext = context.applicationContext
+        if (!isPreloadStarted.compareAndSet(false, true) && !force) return
         try {
             val adRequest = AdRequest.Builder(AD_UNIT_ID).build()
             val preloadConfig = PreloadConfiguration(adRequest)
@@ -197,10 +198,9 @@ object GameRewardedAdManager {
             ad.adEventCallback = object : RewardedAdEventCallback {
                 override fun onAdImpression() {
                     Log.d(TAG, "Rewarded ad recorded an impression.")
-                    // While ad is showing, preload next ad in background
                     appContext?.let { ctx ->
                         Thread {
-                            startPreload(ctx)
+                            startPreload(ctx, force = true)
                         }.start()
                     }
                 }

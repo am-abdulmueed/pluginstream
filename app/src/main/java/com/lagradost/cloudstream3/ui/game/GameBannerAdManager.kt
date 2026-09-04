@@ -15,6 +15,7 @@ import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRefreshCallbac
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
 import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Singleton that preloads a Banner Ad at app startup so it is
@@ -28,9 +29,10 @@ object GameBannerAdManager {
     private const val TAG = "GameBannerAd"
     const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/9214589741"
 
+    private val preloadLock = Any()
     private var preloadedAdView: AdView? = null
     private var preloadedBannerAd: BannerAd? = null
-    private var isLoading = false
+    private val isLoading = AtomicBoolean(false)
     private var appContext: Context? = null
 
     /**
@@ -46,74 +48,77 @@ object GameBannerAdManager {
      * Safe to call multiple times — skips if already loading or preloaded.
      */
     fun preload(context: Context, force: Boolean = false) {
-        if (isLoading && !force) return
+        if (isLoading.get()) return
         if (preloadedBannerAd != null && !force) {
             Log.d(TAG, "Banner already preloaded — skipping.")
             return
         }
 
-        // Destroy old AdView before creating a new one
-        preloadedAdView?.destroy()
-        preloadedAdView = null
-        preloadedBannerAd = null
+        synchronized(preloadLock) {
+            if (isLoading.get()) return
+            if (preloadedBannerAd != null && !force) return
+            if (!isLoading.compareAndSet(false, true)) return
 
-        isLoading = true
-        appContext = context.applicationContext
+            preloadedAdView?.destroy()
+            preloadedAdView = null
+            preloadedBannerAd = null
 
-        try {
-            val ctx = context.applicationContext
-            val displayMetrics = ctx.resources.displayMetrics
-            val adWidthPixels = displayMetrics.widthPixels
-            val density = displayMetrics.density
-            val adWidth = (adWidthPixels / density).toInt()
+            appContext = context.applicationContext
 
-            val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(ctx, adWidth)
-            val adView = AdView(ctx)
-            preloadedAdView = adView
+            try {
+                val ctx = context.applicationContext
+                val displayMetrics = ctx.resources.displayMetrics
+                val adWidthPixels = displayMetrics.widthPixels
+                val density = displayMetrics.density
+                val adWidth = (adWidthPixels / density).toInt()
 
-            val bannerRequest = BannerAdRequest.Builder(BANNER_AD_UNIT_ID, adSize).build()
+                val adSize = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(ctx, adWidth)
+                val adView = AdView(ctx)
+                preloadedAdView = adView
 
-            adView.loadAd(
-                bannerRequest,
-                object : AdLoadCallback<BannerAd> {
-                    override fun onAdLoaded(ad: BannerAd) {
-                        isLoading = false
-                        preloadedBannerAd = ad
-                        Log.d(TAG, "Banner ad preloaded successfully ✅")
-                        if (BuildConfig.DEBUG) showToast("Banner ad preloaded ✅", Toast.LENGTH_SHORT)
+                val bannerRequest = BannerAdRequest.Builder(BANNER_AD_UNIT_ID, adSize).build()
 
-                        ad.adEventCallback = object : BannerAdEventCallback {
-                            override fun onAdImpression() {
-                                Log.d(TAG, "Banner impression recorded.")
-                                // Preload the next banner in background after impression
-                                appContext?.let { preload(it, force = true) }
+                adView.loadAd(
+                    bannerRequest,
+                    object : AdLoadCallback<BannerAd> {
+                        override fun onAdLoaded(ad: BannerAd) {
+                            isLoading.set(false)
+                            preloadedBannerAd = ad
+                            Log.d(TAG, "Banner ad preloaded successfully ✅")
+                            if (BuildConfig.DEBUG) showToast("Banner ad preloaded ✅", Toast.LENGTH_SHORT)
+
+                            ad.adEventCallback = object : BannerAdEventCallback {
+                                override fun onAdImpression() {
+                                    Log.d(TAG, "Banner impression recorded.")
+                                    appContext?.let { preload(it, force = true) }
+                                }
+                                override fun onAdClicked() {
+                                    Log.d(TAG, "Banner ad clicked.")
+                                }
                             }
-                            override fun onAdClicked() {
-                                Log.d(TAG, "Banner ad clicked.")
+
+                            ad.bannerAdRefreshCallback = object : BannerAdRefreshCallback {
+                                override fun onAdRefreshed() {
+                                    Log.d(TAG, "Banner ad refreshed.")
+                                    if (BuildConfig.DEBUG) showToast("Banner ad refreshed", Toast.LENGTH_SHORT)
+                                }
+                                override fun onAdFailedToRefresh(adError: LoadAdError) {
+                                    Log.w(TAG, "Banner failed to refresh: ${adError.message}")
+                                }
                             }
                         }
 
-                        ad.bannerAdRefreshCallback = object : BannerAdRefreshCallback {
-                            override fun onAdRefreshed() {
-                                Log.d(TAG, "Banner ad refreshed.")
-                                if (BuildConfig.DEBUG) showToast("Banner ad refreshed", Toast.LENGTH_SHORT)
-                            }
-                            override fun onAdFailedToRefresh(adError: LoadAdError) {
-                                Log.w(TAG, "Banner failed to refresh: ${adError.message}")
-                            }
+                        override fun onAdFailedToLoad(adError: LoadAdError) {
+                            isLoading.set(false)
+                            preloadedBannerAd = null
+                            Log.w(TAG, "Banner ad failed to preload: ${adError.message}")
                         }
                     }
-
-                    override fun onAdFailedToLoad(adError: LoadAdError) {
-                        isLoading = false
-                        preloadedBannerAd = null
-                        Log.w(TAG, "Banner ad failed to preload: ${adError.message}")
-                    }
-                }
-            )
-        } catch (e: Exception) {
-            isLoading = false
-            Log.e(TAG, "Exception during banner preload", e)
+                )
+            } catch (e: Exception) {
+                isLoading.set(false)
+                Log.e(TAG, "Exception during banner preload", e)
+            }
         }
     }
 
@@ -125,11 +130,15 @@ object GameBannerAdManager {
      * @param context   Fragment context for fallback loading.
      */
     fun attachToContainer(container: FrameLayout, context: Context) {
-        val ad = preloadedBannerAd
-        val adView = preloadedAdView
+        val (ad, adView, ctxForPreload) = synchronized(preloadLock) {
+            val a = preloadedBannerAd
+            val v = preloadedAdView
+            preloadedBannerAd = null
+            preloadedAdView = null
+            Triple(a, v, appContext)
+        }
 
         if (ad != null && adView != null) {
-            // Detach from old parent if any
             (adView.parent as? FrameLayout)?.removeView(adView)
 
             container.removeAllViews()
@@ -139,14 +148,8 @@ object GameBannerAdManager {
             Log.d(TAG, "Preloaded banner attached to container ✅")
             if (BuildConfig.DEBUG) showToast("Banner ad shown ✅", Toast.LENGTH_SHORT)
 
-            // Mark consumed so next open triggers a fresh preload
-            preloadedBannerAd = null
-            preloadedAdView = null
-
-            // Start preloading the next banner immediately
-            appContext?.let { preload(it, force = true) }
+            ctxForPreload?.let { preload(it, force = true) }
         } else {
-            // Fallback: load fresh directly into container
             Log.d(TAG, "No preloaded banner — falling back to direct load.")
             loadDirectlyInto(container, context)
         }
