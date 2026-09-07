@@ -24,6 +24,8 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
+import android.widget.FrameLayout
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.blue
@@ -48,6 +50,7 @@ import com.lagradost.cloudstream3.databinding.SubtitleOffsetBinding
 import com.lagradost.cloudstream3.mvvm.logError
 import com.lagradost.cloudstream3.ui.player.GeneratorPlayer.Companion.subsProvidersIsActive
 import com.lagradost.cloudstream3.ui.player.source_priority.QualityDataHelper
+import com.lagradost.cloudstream3.ui.game.VideoBannerAdManager
 import com.lagradost.cloudstream3.ui.settings.Globals.EMULATOR
 import com.lagradost.cloudstream3.ui.settings.Globals.PHONE
 import com.lagradost.cloudstream3.ui.settings.Globals.TV
@@ -74,9 +77,14 @@ private const val SUBTITLE_DELAY_BUNDLE_KEY = "subtitle_delay"
 open class FullScreenPlayer : AbstractPlayerFragment<FragmentPlayerBinding>(
     BindingCreator.Bind(FragmentPlayerBinding::bind)
 ) {
+    companion object {
+        private const val TAG = "FullScreenPlayer"
+    }
+
     override fun pickLayout(): Int = R.layout.fragment_player
     protected open var lockRotation = true
     protected var playerBinding: PlayerCustomLayoutBinding? = null
+    private var bannerContainer: FrameLayout? = null
 
     // state of player UI
     protected var isShowing = false
@@ -223,6 +231,15 @@ open class FullScreenPlayer : AbstractPlayerFragment<FragmentPlayerBinding>(
     override fun onDestroyView() {
         playerHostView?.releaseOverlayLayoutListener()
         playerBinding = null
+
+        try {
+            (bannerContainer?.getChildAt(0) as? com.google.android.libraries.ads.mobile.sdk.banner.AdView)?.destroy()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to destroy banner AdView", e)
+        }
+        bannerContainer?.removeAllViews()
+        bannerContainer = null
+
         super.onDestroyView()
     }
 
@@ -1300,6 +1317,9 @@ open class FullScreenPlayer : AbstractPlayerFragment<FragmentPlayerBinding>(
         } catch (e: Exception) {
             logError(e)
         }
+
+        // Load bottom Adaptive Banner Ad
+        loadAdaptiveBanner(binding)
     }
 
     private fun toggleRotate() {
@@ -1368,6 +1388,18 @@ open class FullScreenPlayer : AbstractPlayerFragment<FragmentPlayerBinding>(
                     }
                 }
                 .start()
+        }
+    }
+
+    private fun loadAdaptiveBanner(binding: FragmentPlayerBinding) {
+        val container = binding.root.findViewById<FrameLayout>(R.id.bannerContainer) ?: return
+        val ctx = context ?: return
+        this.bannerContainer = container
+
+        try {
+            VideoBannerAdManager.attachToContainer(container, ctx)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to attach banner", e)
         }
     }
 }

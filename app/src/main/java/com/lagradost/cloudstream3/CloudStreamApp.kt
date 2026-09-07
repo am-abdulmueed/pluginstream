@@ -98,6 +98,14 @@ class CloudStreamApp : Application(), SingletonImageLoader.Factory {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
+        // Preload Video Player Banner Ad at startup — independent pool so it never
+        // contends with the games banner slot.
+        try {
+            com.lagradost.cloudstream3.ui.game.VideoBannerAdManager.init(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun attachBaseContext(base: Context?) {
